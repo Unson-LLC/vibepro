@@ -175,11 +175,9 @@
     },
     {
       "name": "review",
-      "responsibility": "agent review・裁定・修復ループ",
+      "responsibility": "agent review（軽量レビュー1周: prepare/record/summary）",
       "paths": [
         "src/agent-review.js",
-        "src/review-repair.js",
-        "src/review-finding-repair-loop.js",
         "src/adjudication.js",
         "src/responsibility-authority.js",
         "src/review-inspection-inputs.js",

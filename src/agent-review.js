@@ -13,8 +13,6 @@ import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evi
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 import {
-  buildReviewDispatchDecision,
-  planLifecycleTerminalization,
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
@@ -22,9 +20,7 @@ import {
   REVIEW_SURFACE_INTEGRITY_GATE_ID,
   REVIEW_SURFACE_LEDGER_UNREADABLE,
   REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID,
-  appendReviewSurfaceViolation,
   buildUnreadableReviewSurfaceViolationSummary,
-  detectReviewSurfaceMutation,
   getReviewSurfaceViolationsPath,
   readReviewSurfaceViolations,
   summarizeReviewSurfaceViolations
@@ -288,13 +284,8 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       },
       coordinator_behavior: {
         expected: 'dispatch_parallel_subagents',
-        pre_spawn_authorization_required: true,
-        authorization_command: 'vibepro review authorize',
-        start_consumes_authorization: true,
         user_confirmation_required_by_vibepro: false,
         runner_policy_may_require_user_delegation: false,
-        subagent_lifecycle: 'close_before_record',
-        closure_required_for_pass: true,
         serial_stage_barrier: 'complete_stage_before_next_stage',
         fallback: 'If the runtime cannot spawn subagents, block or record a human waiver decision; manual_review does not satisfy Agent Review Gate.'
       },
@@ -367,7 +358,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
         return finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });
       }
     }
-    const lifecycle = await readLifecycle(root, storyId, stage);
     const inspection = buildInspectionBlock(options);
     const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
     const freshnessPolicy = await resolveReviewFreshnessPolicy(root, storyId, stage, reviewPolicy, role, options);
@@ -407,7 +397,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
     ...(options.runtimeDispatchId ? { runtime_dispatch_id: options.runtimeDispatchId } : {}),
     agent_provenance: buildAgentProvenance(root, {
       ...options,
-      lifecycleEntries: lifecycle.entries,
       defaultRequestPath: getReviewRequestPath(reviewDir, role)
     }),
     agent_usage: buildAgentUsage(options)
@@ -448,79 +437,12 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
     result = existingResult;
     reused = true;
   }
-  // Same detection the explicit close performs, for the record-side close.
-  const recordCloseHeadSha = gitContext.head_sha ?? null;
-  const recordCloseSurfaceDigest = gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null;
-  const recordSurfaceViolation = result.agent_provenance.lifecycle?.agent_closed
-    ? await recordReviewSurfaceViolationForClose(root, storyId, stage, {
-      role,
-      agentId: result.agent_provenance.agent_id,
-      agentSystem: result.agent_provenance.system,
-      closeReason: 'completed',
-      closeEvidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath),
-      closeHeadSha: recordCloseHeadSha,
-      closeSurfaceDigest: recordCloseSurfaceDigest,
-      detectedBy: 'review record'
-    })
-    : null;
   let summary = null;
-  await updateLifecycle(root, storyId, stage, async (lifecycle) => {
-    if (result.agent_provenance.lifecycle?.agent_closed) {
-      let entry = findLifecycleEntry(lifecycle.entries, {
-        role,
-        agentId: result.agent_provenance.agent_id,
-        agentSystem: result.agent_provenance.system
-      });
-      if (!entry) {
-        entry = buildSyntheticLifecycleEntryFromReviewResult(result, root, resultPath);
-        lifecycle.entries.push(entry);
-      } else if (entry.closed_at && entry.close_reason !== 'completed') {
-        throw new Error(
-          `review record ${stage}:${role} cannot attach a result to lifecycle closed as ${entry.close_reason ?? 'unknown'}`
-        );
-      }
-
-      if (entry.closed_at) {
-        entry.result_artifact = toWorkspaceRelative(root, resultPath);
-        entry.result_status = result.status;
-        if (!entry.close_evidence) {
-          entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
-        }
-      } else {
-        // `review record --agent-closed` closes the lifecycle itself when
-        // `review close` was skipped. That is a completed close like any other,
-        // so it must record the close-time surface too — otherwise the whole
-        // detection is opt-out by simply not running `review close`.
-        entry.status = 'closed';
-        entry.closed_at = result.recorded_at ?? new Date().toISOString();
-        entry.close_reason = 'completed';
-        entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
-        entry.result_artifact = toWorkspaceRelative(root, resultPath);
-        entry.result_status = result.status;
-        entry.closed_head_sha = recordCloseHeadSha;
-        entry.closed_surface_digest = recordCloseSurfaceDigest;
-        entry.surface_detection = (entry.head_sha && recordCloseHeadSha) || (entry.surface_digest && recordCloseSurfaceDigest)
-          ? 'evaluated'
-          : 'skipped_missing_snapshot';
-        if (recordSurfaceViolation?.entry?.violation_id) {
-          // Accumulate, never replace: one lifecycle can produce a violation at
-          // an orphaned close and another at the record that completes it, and
-          // an overwritten pointer would leave the first erasure undetectable.
-          entry.surface_violation_id = recordSurfaceViolation.entry.violation_id;
-          entry.surface_violation_ids = addViolationPointer(entry.surface_violation_ids, recordSurfaceViolation.entry.violation_id);
-        }
-      }
-    }
-  }, async () => {
-    // Persist lifecycle authority first. A later result write failure leaves
-    // an explicit lifecycle pointer to missing evidence, which fails closed;
-    // the inverse would expose an unauthorized durable review result.
-    if (existingResult?.operation_idempotency_key !== operationIdempotencyKey) {
-      await Promise.all([writeJson(resultPath, result), writeJson(historyPath, result)]);
-    }
-    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
-    await writeReviewSummaryArtifacts(root, reviewDir, summary);
-  });
+  if (existingResult?.operation_idempotency_key !== operationIdempotencyKey) {
+    await Promise.all([writeJson(resultPath, result), writeJson(historyPath, result)]);
+  }
+  summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+  await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     review: result,
     summary,
@@ -600,385 +522,39 @@ async function resolveReviewFreshnessPolicy(root, storyId, stage, reviewPolicy, 
   };
 }
 
-export async function startAgentReviewLifecycle(repoRoot, options = {}) {
-  const storyId = requireStoryId(options.storyId, 'review start');
-  const stage = requireStage(options.stage, 'review start');
-  const root = path.resolve(repoRoot);
-  await assertInitializedWorkspace(root, 'review start');
-  const reviewPolicy = await readAgentReviewPolicy(root);
-  const role = requireRole(reviewPolicy, stage, options.role, 'review start');
-  const rolePolicy = getRolePolicy(reviewPolicy, role);
-  const agentModel = normalizeNullable(options.agentModel);
-  const agentReasoningEffort = normalizeReasoningEffort(options.agentReasoningEffort);
-  const agentCostTier = normalizeCostTier(options.agentCostTier);
-  const modelPolicyPreflight = buildModelPolicyPreflight(rolePolicy.model_policy, {
-    agent_model: agentModel,
-    agent_reasoning_effort: agentReasoningEffort,
-    agent_cost_tier: agentCostTier
-  }, {
-    allowOverride: options.allowModelPolicyOverride,
-    overrideReason: options.modelPolicyOverrideReason ?? options.overrideReason ?? options.reason,
-    stage,
-    role
-  });
-  const reviewDir = await getReviewStageDir(root, storyId, stage);
-  await mkdir(reviewDir, { recursive: true });
-  const gitContext = await collectReviewGitContext(root, storyId);
-  const reviewKind = normalizeNullable(options.reviewKind);
-  const closesRisks = options.closesRisks ?? [];
-  const expectedJudgmentDelta = normalizeNullable(options.expectedJudgmentDelta);
-  const reusableEvidence = options.reusableEvidence ?? [];
-  const freeze = normalizeReviewFreeze(options.freeze);
-  const now = new Date().toISOString();
-  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
-  const entry = {
-    schema_version: '0.1.0', lifecycle_id: options.lifecycleId ?? crypto.randomUUID(),
-    story_id: storyId, stage, role, status: 'running', head_sha: gitContext.head_sha,
-    surface_digest: gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null,
-    agent_system: normalizeReviewSystem(options.agentSystem ?? options.reviewerSystem), agent_id: normalizeNullable(options.agentId),
-    agent_model: agentModel, agent_reasoning_effort: agentReasoningEffort, agent_cost_tier: agentCostTier,
-    intended_model_policy: rolePolicy.model_policy ?? null,
-    model_policy_preflight: modelPolicyPreflight,
-    thread_id: normalizeNullable(options.agentThreadId), session_id: normalizeNullable(options.agentSessionId),
-    tool_call_id: normalizeNullable(options.agentCallId ?? options.agentToolCallId), started_at: now,
-    timeout_ms: normalizeTimeoutMs(options.timeoutMs ?? rolePolicy.timeout_ms ?? reviewPolicy.defaults.timeout_ms),
-    replacement_for: normalizeNullable(options.replacementFor), close_reason: null, close_evidence: null,
-    closed_at: null, result_artifact: null,
-    ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
-  };
-  const existingLifecycle = operationIdempotencyKey ? (await readLifecycle(root, storyId, stage)).entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey) : null;
-  if (existingLifecycle) return { lifecycle: existingLifecycle, dispatch_decision: existingLifecycle.dispatch_decision ?? null, summary: await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy }), artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir)) };
-  let summary = null;
-  let dispatchDecision = null;
-  const persistLifecycle = async () => updateLifecycle(root, storyId, stage, (lifecycle) => {
-    const existing = operationIdempotencyKey && lifecycle.entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey);
-    if (existing) return void Object.assign(entry, existing);
-    const roleEntries = lifecycle.entries.filter((candidate) => candidate.role === role);
-    const replacementFor = normalizeNullable(options.replacementFor);
-    if (replacementFor) {
-      const replaced = roleEntries.find((candidate) => candidate.lifecycle_id === replacementFor);
-      if (!replaced) {
-        throw new Error('review start --replacement-for must reference an existing lifecycle for the same story, stage, and role');
-      }
-      if (!['closed', 'replaced'].includes(replaced.status)
-        || !['timeout', 'manual_shutdown', 'replaced'].includes(replaced.close_reason)
-        || !normalizeNullable(replaced.close_evidence)) {
-        throw new Error('review start replacement requires the prior lifecycle to be closed first with timeout, manual_shutdown, or replaced reason and close evidence');
-      }
-      const latest = roleEntries.at(-1);
-      if (latest?.lifecycle_id !== replaced.lifecycle_id) {
-        throw new Error(`review start --replacement-for must reference the latest same-role lifecycle ${latest?.lifecycle_id ?? 'none'}`);
-      }
-    } else {
-      const latest = roleEntries.at(-1);
-      if (latest && ['running', 'timed_out'].includes(resolveLifecycleEffectiveStatus(latest))) {
-        throw new Error(`review start found an open prior lifecycle ${latest.lifecycle_id}; close it with evidence and start the replacement with --replacement-for`);
-      }
-      if (isTerminalReplacementCloseReason(latest?.close_reason)) {
-        if (latest.close_reason === 'manual_shutdown') {
-          throw new Error(`review start found a manually shut down prior lifecycle ${latest.lifecycle_id}; start the replacement with --replacement-for`);
-        }
-        throw new Error(`review start found terminal prior lifecycle ${latest.lifecycle_id} closed as ${latest.close_reason}; start the replacement with --replacement-for`);
-      }
-    }
-    lifecycle.entries.push(entry);
-  }, async () => {
-    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
-    await writeReviewSummaryArtifacts(root, reviewDir, summary);
-  });
-  // An authorization consumed from `review authorize` still binds a start to a
-  // prior dispatch decision when the caller supplies one; delivery-efficiency
-  // policy no longer makes this mandatory.
-  const authorizationId = normalizeNullable(options.dispatchAuthorization);
-  if (authorizationId) {
-    const storyReviewDir = path.dirname(reviewDir);
-    await withDirectoryLock(path.join(storyReviewDir, '.dispatch.lock'), async () => {
-      const authorizations = await readDispatchAuthorizations(storyReviewDir, storyId);
-      const authorization = authorizations.entries.find((item) => item.authorization_id === authorizationId);
-      assertConsumableDispatchAuthorization(authorization, {
-        storyId, stage, role, gitContext, agentModel, agentReasoningEffort, agentCostTier
-      });
-      dispatchDecision = authorization.dispatch_decision;
-      entry.dispatch_authorization_id = authorization.authorization_id;
-      entry.dispatch_decision = authorization.dispatch_decision;
-      await persistLifecycle();
-      authorization.status = 'consumed';
-      authorization.consumed_at = new Date().toISOString();
-      authorization.agent_id = entry.agent_id;
-      await writeDispatchAuthorizations(storyReviewDir, storyId, authorizations);
-    });
-  } else {
-    await persistLifecycle();
+
+
+/**
+ * Lenient read of any lifecycle.json files still present under a story's
+ * review directory, for the surface-violation ledger's cross-check. Nothing
+ * in this codebase writes lifecycle.json anymore (review lifecycle
+ * accounting was removed); this only guards against a still-present or
+ * hand-authored file disagreeing with the ledger.
+ */
+async function readStoryLifecyclePointers(storyReviewDir) {
+  let stages = [];
+  try {
+    stages = await readdir(storyReviewDir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return { entries: [], readable: true };
+    return { entries: [], readable: false };
   }
-  return {
-    lifecycle: entry,
-    dispatch_decision: dispatchDecision,
-    summary,
-    artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir))
-  };
-}
-
-export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
-  const storyId = requireStoryId(options.storyId, 'review authorize');
-  const stage = requireStage(options.stage, 'review authorize');
-  const root = path.resolve(repoRoot);
-  await assertInitializedWorkspace(root, 'review authorize');
-  const reviewPolicy = await readAgentReviewPolicy(root);
-  const role = requireRole(reviewPolicy, stage, options.role, 'review authorize');
-  const rolePolicy = getRolePolicy(reviewPolicy, role);
-  const agentModel = normalizeNullable(options.agentModel);
-  const agentReasoningEffort = normalizeReasoningEffort(options.agentReasoningEffort);
-  const agentCostTier = normalizeCostTier(options.agentCostTier);
-  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
-  const modelPolicyPreflight = buildModelPolicyPreflight(rolePolicy.model_policy, {
-    agent_model: agentModel,
-    agent_reasoning_effort: agentReasoningEffort,
-    agent_cost_tier: agentCostTier
-  }, {
-    allowOverride: options.allowModelPolicyOverride,
-    overrideReason: options.modelPolicyOverrideReason ?? options.overrideReason ?? options.reason,
-    stage,
-    role
-  });
-  const reviewDir = await getReviewStageDir(root, storyId, stage);
-  const storyReviewDir = path.dirname(reviewDir);
-  await mkdir(storyReviewDir, { recursive: true });
-  const gitContext = await collectGitContext(root);
-  const now = new Date();
-  let authorization = null;
-  await withDirectoryLock(path.join(storyReviewDir, '.dispatch.lock'), async () => {
-    const authorizations = await readDispatchAuthorizations(storyReviewDir, storyId);
-    expireDispatchAuthorizations(authorizations.entries, now);
-    const existing = operationIdempotencyKey ? authorizations.entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey && item.binding?.head_sha === gitContext.head_sha && item.binding?.surface_digest === (gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash)) : null;
-    if (existing) return void (authorization = existing);
-    const lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir);
-    const activeReservations = authorizations.entries.filter((item) => item.status === 'authorized');
-    const lifecycles = [
-      ...lifecycleEntries.map(normalizeLifecycleForDispatch),
-      ...activeReservations.map((item) => ({
-        ...item.binding,
-        status: 'running',
-        lifecycle_id: `authorization:${item.authorization_id}`
-      }))
-    ];
-    const dispatchDecision = buildReviewDispatchDecision({
-      story_id: storyId,
-      stage,
-      role,
-      head_sha: gitContext.head_sha,
-      surface_digest: gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash,
-      review_kind: normalizeNullable(options.reviewKind),
-      closes_risks: options.closesRisks ?? [],
-      expected_judgment_delta: normalizeNullable(options.expectedJudgmentDelta),
-      reusable_evidence: options.reusableEvidence ?? [],
-      freeze: normalizeReviewFreeze(options.freeze),
-      lifecycles
-    });
-    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision);
-    const timeoutMs = normalizeTimeoutMs(options.timeoutMs ?? rolePolicy.timeout_ms ?? reviewPolicy.defaults.timeout_ms);
-    authorization = {
-      schema_version: '0.1.0',
-      authorization_id: options.authorizationId ?? crypto.randomUUID(),
-      story_id: storyId,
-      stage,
-      role,
-      status: 'authorized',
-      binding: {
-        story_id: storyId,
-        stage,
-        role,
-        head_sha: gitContext.head_sha,
-        surface_digest: gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash
-      },
-      agent_model: agentModel,
-      agent_reasoning_effort: agentReasoningEffort,
-      agent_cost_tier: agentCostTier,
-      model_policy_preflight: modelPolicyPreflight,
-      dispatch_decision: dispatchDecision,
-      created_at: now.toISOString(),
-      expires_at: new Date(now.getTime() + timeoutMs).toISOString(),
-      consumed_at: null,
-      agent_id: null, ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
-    };
-    authorizations.entries.push(authorization);
-    await writeDispatchAuthorizations(storyReviewDir, storyId, authorizations);
-  });
-  return {
-    authorization,
-    dispatch_decision: authorization.dispatch_decision,
-    artifact: toWorkspaceRelative(root, getDispatchAuthorizationsPath(storyReviewDir))
-  };
-}
-
-function normalizeReviewFreeze(value) {
-  const selected = new Set(Array.isArray(value) ? value : []);
-  return Object.fromEntries(['source', 'spec', 'test', 'review_surface'].map((key) => [key, selected.has(key)]));
-}
-
-export function normalizeLifecycleForDispatch(entry) {
-  let status = entry.status;
-  if (status === 'closed') {
-    const closeReason = normalizeNullable(entry.close_reason);
-    if (!REVIEW_CLOSE_REASONS.includes(closeReason)) {
-      status = 'result_uncollected';
-    } else if (closeReason === 'completed') {
-      if (!entry.result_artifact) status = 'result_uncollected';
-      else if (entry.result_status === 'pass') status = 'completed_pass';
+  const paths = stages
+    .filter((entry) => entry.isDirectory() && REVIEW_STAGES.has(entry.name))
+    .map((entry) => path.join(storyReviewDir, entry.name, 'lifecycle.json'));
+  const entries = [];
+  for (const filePath of paths) {
+    let lifecycle;
+    try {
+      lifecycle = await readJsonIfExists(filePath);
+    } catch {
+      return { entries: [], readable: false };
     }
+    if (lifecycle === null || lifecycle === undefined) continue;
+    if (!Array.isArray(lifecycle.entries)) return { entries: [], readable: false };
+    entries.push(...lifecycle.entries);
   }
-  return { ...entry, status };
-}
-
-export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
-  const storyId = requireStoryId(options.storyId, 'review close');
-  const stage = requireStage(options.stage, 'review close');
-  const root = path.resolve(repoRoot);
-  await assertInitializedWorkspace(root, 'review close');
-  const reviewPolicy = await readAgentReviewPolicy(root);
-  const role = requireRole(reviewPolicy, stage, options.role, 'review close');
-  const reviewDir = await getReviewStageDir(root, storyId, stage);
-  // Coercing an unrecognized value to `completed` used to only mislabel a row.
-  // It now decides whether an irreversible violation is recorded, so a typo like
-  // `--close-reason timed_out` must fail loudly instead of being read as a
-  // completed review over a moved surface.
-  assertRecognizedCloseReason(options.closeReason);
-  const closeReason = normalizeCloseReason(options.closeReason);
-  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
-  const closeEvidence = normalizeNullable(options.closeEvidence);
-  if (!closeEvidence) {
-    throw new Error('review close requires --close-evidence so the lifecycle boundary is auditable');
-  }
-  let match = null;
-  const gitContext = await collectReviewGitContext(root, storyId);
-  const closeHeadSha = gitContext.head_sha ?? null;
-  const closeSurfaceDigest = gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null;
-  // Record the violation before the lifecycle write. If the close itself fails
-  // afterwards the ledger has still captured an observed mid-review mutation,
-  // which is the direction we want to fail in.
-  const surfaceViolation = await recordReviewSurfaceViolationForClose(root, storyId, stage, {
-    role,
-    lifecycleId: options.lifecycleId,
-    agentId: options.agentId,
-    agentSystem: options.agentSystem,
-    operationIdempotencyKey,
-    closeReason,
-    closeEvidence,
-    closeHeadSha,
-    closeSurfaceDigest,
-    cancellationConfirmed: options.cancellationConfirmed
-  });
-  let summary = null;
-  await updateLifecycle(root, storyId, stage, (lifecycle) => {
-    const alreadyClosed = operationIdempotencyKey && lifecycle.entries.find((entry) => entry.close_operation_idempotency_key === operationIdempotencyKey);
-    if (alreadyClosed) return void (match = alreadyClosed);
-    match = findLifecycleEntry(lifecycle.entries, {
-      lifecycleId: options.lifecycleId,
-      role,
-      agentId: options.agentId,
-      agentSystem: options.agentSystem
-    });
-    if (!match) {
-      throw new Error('review close could not find a matching lifecycle entry; pass --lifecycle-id or matching --role/--agent-id');
-    }
-    if (['closed', 'replaced'].includes(match.status)) {
-      throw new Error(`review close cannot rewrite already ${match.status} lifecycle ${match.lifecycle_id}; lifecycle closure is immutable`);
-    }
-    // Recorded on every close path, including the terminalized ones below, so the
-    // surface a review ended on is always reconstructable from the artifact.
-    match.closed_head_sha = closeHeadSha;
-    match.closed_surface_digest = closeSurfaceDigest;
-    // Detection needs both snapshots. Say so on the entry rather than leaving a
-    // silent skip that reads identically to "nothing moved".
-    match.surface_detection = (match.head_sha && closeHeadSha) || (match.surface_digest && closeSurfaceDigest)
-      ? 'evaluated'
-      : 'skipped_missing_snapshot';
-    if (surfaceViolation?.entry?.violation_id) {
-      match.surface_violation_id = surfaceViolation.entry.violation_id;
-      match.surface_violation_ids = addViolationPointer(match.surface_violation_ids, surfaceViolation.entry.violation_id);
-    }
-    if (match.head_sha && match.head_sha !== gitContext.head_sha) {
-      if (options.cancellationConfirmed !== true) {
-        match.terminal_status = 'orphaned_agent';
-        match.terminal_reason = 'head_mutated_cancellation_unconfirmed';
-        match.terminal_head_sha = gitContext.head_sha;
-        match.cancel_confirmed = false;
-        match.cancellation_evidence = closeEvidence;
-        return;
-      }
-      match.terminal_status = 'obsolete';
-      match.terminal_reason = 'head_mutated_after_dispatch';
-      match.terminal_head_sha = gitContext.head_sha;
-      match.cancel_confirmed = true;
-      match.cancellation_evidence = closeEvidence;
-    }
-    const agentThreadId = normalizeNullable(options.agentThreadId);
-    const agentSessionId = normalizeNullable(options.agentSessionId);
-    if (agentThreadId) match.thread_id = agentThreadId;
-    if (agentSessionId) match.session_id = agentSessionId;
-    match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
-    if (operationIdempotencyKey) match.close_operation_idempotency_key = operationIdempotencyKey;
-    match.closed_at = new Date().toISOString();
-    match.close_reason = closeReason;
-    match.close_evidence = closeEvidence;
-  }, async () => {
-    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
-    await writeReviewSummaryArtifacts(root, reviewDir, summary);
-  });
-  return {
-    lifecycle: decorateLifecycleEntry(match),
-    surface_violation: surfaceViolation?.entry ?? null,
-    summary,
-    artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir)),
-    ...(surfaceViolation ? {
-      surface_violations_artifact: toWorkspaceRelative(root, getReviewSurfaceViolationsPath(path.dirname(reviewDir)))
-    } : {})
-  };
-}
-
-async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
-  role,
-  lifecycleId,
-  agentId,
-  agentSystem,
-  operationIdempotencyKey,
-  closeReason,
-  closeEvidence,
-  closeHeadSha,
-  closeSurfaceDigest,
-  cancellationConfirmed,
-  detectedBy = 'review close'
-}) {
-  const lifecycle = await readLifecycle(root, storyId, stage);
-  if (operationIdempotencyKey
-    && lifecycle.entries.some((entry) => entry.close_operation_idempotency_key === operationIdempotencyKey)) {
-    return null;
-  }
-  const candidate = findLifecycleEntry(lifecycle.entries, { lifecycleId, role, agentId, agentSystem });
-  // No candidate, or an already-terminal one, means this close will throw; do not
-  // record a violation for a close that never happens.
-  if (!candidate || ['closed', 'replaced'].includes(candidate.status)) return null;
-  // An orphaned_agent close (head moved, cancellation unconfirmed) is NOT exempt.
-  // It was, on the reasoning that no review result could attach to such a
-  // lifecycle — but that reasoning was wrong: the entry keeps closed_at unset, so
-  // `review record --agent-closed` walks straight into the not-yet-closed branch
-  // and completes it. The default CLI close passes no --cancellation-confirmed,
-  // so exempting it left the most common path undetected.
-  void cancellationConfirmed;
-  const mutation = detectReviewSurfaceMutation(candidate, { closeHeadSha, closeSurfaceDigest, closeReason });
-  if (!mutation) return null;
-  const storyReviewDir = path.dirname(await getReviewStageDir(root, storyId, stage));
-  return appendReviewSurfaceViolation(storyReviewDir, storyId, {
-    ...mutation,
-    stage,
-    role: candidate.role ?? role,
-    lifecycle_id: candidate.lifecycle_id,
-    agent_system: candidate.agent_system ?? null,
-    agent_id: candidate.agent_id ?? null,
-    started_at: candidate.started_at ?? null,
-    close_reason: closeReason,
-    close_evidence: closeEvidence ?? null,
-    detected_by: detectedBy
-  });
+  return { entries, readable: true };
 }
 
 export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { decisionRecords = null } = {}) {
@@ -1171,21 +747,6 @@ function buildReviewStatusViews({
         });
       }
     }
-    for (const entry of stage.lifecycle?.entries ?? []) {
-      history.push({
-        kind: 'lifecycle',
-        stage: stage.stage,
-        role: entry.role,
-        status: entry.effective_status ?? entry.status,
-        agent_id: entry.agent_id ?? null,
-        lifecycle_id: entry.lifecycle_id ?? null,
-        blocking: ['running', 'timed_out'].includes(entry.effective_status ?? entry.status)
-          && requiredRequirements.some((item) => item.stage === stage.stage && item.role === entry.role),
-        history_reason: ['closed', 'replaced'].includes(entry.effective_status ?? entry.status)
-          ? 'audit history only'
-          : 'lifecycle may affect current readiness'
-      });
-    }
   }
 
   const nextCommands = buildReviewStatusNextCommands(blockingItems, {
@@ -1289,8 +850,7 @@ function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt, latestPrPre
     let newestTime = hasRelevantDispatch ? dispatchTime : null;
     const hasRelevantResult = requiredRoles.some((role) => {
       const recordedAt = Date.parse(role.recorded_at ?? '');
-      const lifecycleAt = Date.parse(role.lifecycle?.latest?.closed_at ?? role.lifecycle?.latest?.started_at ?? '');
-      const roleTimes = [recordedAt, lifecycleAt].filter((time) => Number.isFinite(time) && time > prTime);
+      const roleTimes = [recordedAt].filter((time) => Number.isFinite(time) && time > prTime);
       if (roleTimes.length === 0) return false;
       newestTime = Math.max(newestTime ?? 0, ...roleTimes);
       return true;
@@ -1336,32 +896,21 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
       strictHeadAuthorized: isStrictHeadBindingAuthorizedNow(reviewPolicy, validationSequenceState, requirement.stage, requirement.role)
     }),
     artifact: role?.artifact ?? null,
-    history_artifacts: role?.history_artifacts ?? [],
-    lifecycle: role?.lifecycle ?? null
+    history_artifacts: role?.history_artifacts ?? []
   };
 }
 
 function buildReviewStatusNextCommands(blockingItems, { storyId, latestPrPrepare, prPrepareFreshness, stageLookup }) {
-  const closeCommands = [];
   const recordCommands = [];
   const prepareCommands = [];
   for (const item of blockingItems) {
     const stage = stageLookup.get(item.stage);
     if (!stage?.parallel_dispatch?.prepared) prepareCommands.push(item.prepare_command);
-    if (item.lifecycle?.effective_status === 'running') {
-      const latest = item.lifecycle.latest;
-      const selector = latest?.agent_id
-        ? `--agent-id ${shellQuote(latest.agent_id)}`
-        : `--lifecycle-id ${shellQuote(latest?.lifecycle_id ?? '<lifecycle-id>')}`;
-      closeCommands.push(`vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(item.stage)} --role ${shellQuote(item.role)} ${selector} --close-reason completed --close-evidence ${shellQuote('<evidence>')}`);
-    } else if (item.effective_status !== 'running') {
-      recordCommands.push(item.record_command);
-    }
+    recordCommands.push(item.record_command);
   }
   const baseRef = prPrepareFreshness?.base_ref ?? latestPrPrepare?.git?.base_ref ?? '<base-ref>';
   const prPrepareCommand = `vibepro pr prepare . --story-id ${shellQuote(storyId)} --base ${shellQuote(baseRef)}`;
   const commands = [
-    ...closeCommands,
     ...prepareCommands,
     ...recordCommands
   ];
@@ -1429,14 +978,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
       detail: role?.stale ? role.stale_reason : role?.provenance_reason ?? role?.summary ?? null
     };
   });
-  const lifecycleRequiredReviews = requiredReviews.flatMap((requirement) => {
-    const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
-    return buildLifecycleUnmetReview(requirement, role);
-  });
-  const allUnmetRequiredReviews = mergeUnmetReviews(
-    unmetRequiredReviews,
-    lifecycleRequiredReviews
-  );
+  const allUnmetRequiredReviews = unmetRequiredReviews;
   const unmetCheckpointReviews = checkpointRequiredReviews.filter((requirement) => {
     const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
     return !role || role.effective_status !== 'pass';
@@ -1448,14 +990,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
       detail: role?.stale ? role.stale_reason : role?.provenance_reason ?? role?.summary ?? null
     };
   });
-  const lifecycleCheckpointReviews = checkpointRequiredReviews.flatMap((requirement) => {
-    const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
-    return buildLifecycleUnmetReview(requirement, role);
-  });
-  const allUnmetCheckpointReviews = mergeUnmetReviews(
-    unmetCheckpointReviews,
-    lifecycleCheckpointReviews
-  );
+  const allUnmetCheckpointReviews = unmetCheckpointReviews;
   const allUnmetReviews = [
     ...allUnmetRequiredReviews,
     ...allUnmetCheckpointReviews
@@ -1493,41 +1028,15 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     summary: {
       required_review_count: requiredReviews.length,
       unmet_required_review_count: allUnmetRequiredReviews.length,
-      source_unmet_required_review_count: unmetRequiredReviews.length + lifecycleRequiredReviews.length,
+      source_unmet_required_review_count: unmetRequiredReviews.length,
       checkpoint_required_review_count: checkpointRequiredReviews.length,
       unmet_checkpoint_review_count: allUnmetCheckpointReviews.length,
-      source_unmet_checkpoint_review_count: unmetCheckpointReviews.length + lifecycleCheckpointReviews.length,
+      source_unmet_checkpoint_review_count: unmetCheckpointReviews.length,
       stage_count: stageSummaries.length,
       stale_result_count: stageSummaries.reduce((sum, stage) => sum + stage.stale_count, 0),
-      block_result_count: stageSummaries.reduce((sum, stage) => sum + stage.block_count, 0),
-      lifecycle_running_count: stageSummaries.reduce((sum, stage) => sum + (stage.lifecycle?.running_count ?? 0), 0),
-      lifecycle_timed_out_count: stageSummaries.reduce((sum, stage) => sum + (stage.lifecycle?.timed_out_count ?? 0), 0)
+      block_result_count: stageSummaries.reduce((sum, stage) => sum + stage.block_count, 0)
     }
   };
-}
-
-function mergeUnmetReviews(resultReviews, lifecycleReviews) {
-  const lifecycleByRole = new Map(
-    lifecycleReviews.map((review) => [`${review.stage}:${review.role}`, review])
-  );
-  const merged = resultReviews
-    .filter((review) => !lifecycleByRole.has(`${review.stage}:${review.role}`));
-  return [...merged, ...lifecycleReviews];
-}
-
-function buildLifecycleUnmetReview(requirement, role) {
-  const lifecycle = role?.lifecycle;
-  const latest = lifecycle?.latest;
-  if (!lifecycle || !['running', 'timed_out', 'orphaned_agent'].includes(lifecycle.effective_status)) return [];
-  return [{
-    ...requirement,
-    status: lifecycle.effective_status,
-    detail: lifecycle.effective_status === 'timed_out'
-      ? `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} timed out; close and replace it before PR readiness`
-      : lifecycle.effective_status === 'orphaned_agent'
-        ? `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} belongs to stale HEAD and cancellation is unconfirmed; fail closed, close it, and start a current-HEAD replacement`
-        : `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} is still running; close it before PR readiness`
-  }];
 }
 
 function buildCheckpointReviewPolicy({ changeClassification, reviewPolicy, fileGroups, riskAdaptiveCoverage }) {
@@ -1622,57 +1131,6 @@ ${warnings}
 `;
 }
 
-export function renderAgentReviewLifecycleStartSummary(result) {
-  return `# Agent Review Lifecycle Start
-
-- story: ${result.lifecycle.story_id}
-- stage: ${result.lifecycle.stage}
-- role: ${result.lifecycle.role}
-- status: ${result.lifecycle.status}
-- agent: ${result.lifecycle.agent_system}/${result.lifecycle.agent_id ?? '-'}
-- model_policy_preflight: ${result.lifecycle.model_policy_preflight?.status ?? '-'}
-- timeout_ms: ${result.lifecycle.timeout_ms}
-- artifact: ${result.artifact}
-`;
-}
-
-export function renderAgentReviewDispatchAuthorizationSummary(result) {
-  return `# Agent Review Dispatch Authorization
-
-- story: ${result.authorization.story_id}
-- stage: ${result.authorization.stage}
-- role: ${result.authorization.role}
-- action: ${result.dispatch_decision.action}
-- authorization_id: ${result.authorization.authorization_id}
-- model: ${result.authorization.agent_model ?? '-'}
-- reasoning_effort: ${result.authorization.agent_reasoning_effort ?? '-'}
-- expires_at: ${result.authorization.expires_at}
-- artifact: ${result.artifact}
-`;
-}
-
-export function renderAgentReviewLifecycleCloseSummary(result) {
-  return `# Agent Review Lifecycle Close
-
-- story: ${result.lifecycle.story_id}
-- stage: ${result.lifecycle.stage}
-- role: ${result.lifecycle.role}
-- status: ${result.lifecycle.effective_status ?? result.lifecycle.status}
-- agent: ${result.lifecycle.agent_system}/${result.lifecycle.agent_id ?? '-'}
-- close_reason: ${result.lifecycle.close_reason ?? '-'}
-- closed_head_sha: ${result.lifecycle.closed_head_sha ?? '-'}
-- closed_surface_digest: ${result.lifecycle.closed_surface_digest ?? '-'}
-- artifact: ${result.artifact}
-${result.surface_violation ? `
-## Review Surface Violation Recorded
-
-- violation_id: ${result.surface_violation.violation_id}
-- changed_fields: ${(result.surface_violation.changed_fields ?? []).join(', ')}
-- artifact: ${result.surface_violations_artifact ?? '-'}
-- note: append-only. Re-running this review does not remove this record. Resolve it with an accepted decision record on ${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${result.surface_violation.violation_id}.
-` : ''}`;
-}
-
 export function renderReviewSurfaceViolationSummary(summary) {
   const rows = summary.entries.length
     ? summary.entries.map((entry) => [
@@ -1730,7 +1188,7 @@ export function renderAgentReviewStatusSummary(status) {
     ? `- ${prPrepareFreshness.status}: ${prPrepareFreshness.reason ?? 'unknown'}`
     : '- unknown';
   const rows = status.stages.map((stage) => (
-    `- ${stage.stage}: ${stage.status} (${stage.roles.filter((role) => role.effective_status === 'pass').length}/${stage.roles.length} pass, stale=${stage.stale_count}, running=${stage.lifecycle?.running_count ?? 0}, timed_out=${stage.lifecycle?.timed_out_count ?? 0})`
+    `- ${stage.stage}: ${stage.status} (${stage.roles.filter((role) => role.effective_status === 'pass').length}/${stage.roles.length} pass, stale=${stage.stale_count})`
   ));
   return `# Agent Review Status
 
@@ -2314,15 +1772,6 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = pl
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
   const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
   const modelPolicySection = renderModelPolicySection(rolePolicy.model_policy);
-  const startCommand = buildReviewStartCommand({
-    storyId,
-    stage,
-    role,
-    timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms,
-    modelPolicy: rolePolicy.model_policy
-  });
-  const authorizeCommand = buildReviewAuthorizeCommand({ storyId, stage, role, modelPolicy: rolePolicy.model_policy });
-  const closeCommand = buildReviewCloseCommand({ storyId, stage, role });
   const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   const evidenceHandling = localizedEvidenceHandlingBlock(language);
   const investigationGuidelines = localizedInvestigationGuidelinesBlock(language);
@@ -2365,14 +1814,6 @@ ${agentSkillDiscipline}
   \`${recordCommand}\`
 - Codex coordinators must include the spawned subagent id/thread/call id when recording the result.
 - Claude Code coordinators must include the Task/subagent id or transcript/session artifact when recording the result.
-- Before spawning, the coordinator must obtain a dispatch authorization. If it stops, do not spawn:
-  \`${authorizeCommand}\`
-- Immediately after spawning, consume that authorization when recording lifecycle start:
-  \`${startCommand}\`
-- If the subagent does not return by the timeout, close/shutdown it and start a replacement; do not wait indefinitely.
-- After receiving the result, the coordinator must close/shutdown the subagent thread or session before recording the review. Required Agent Review Gate pass requires \`--agent-closed\` evidence.
-- To record closure without a result yet:
-  \`${closeCommand}\`
 
 ## Result Shape
 \`\`\`json
@@ -2426,14 +1867,6 @@ ${agentSkillDiscipline}
   \`${recordCommand}\`
 - Codex coordinatorは記録時にspawned subagent id/thread/call idを含める。
 - Claude Code coordinatorはTask/subagent idまたはtranscript/session artifactを含める。
-- spawn前にdispatch authorizationを取得する。stopならspawnしない:
-  \`${authorizeCommand}\`
-- spawn直後にauthorizationを消費してlifecycle startを記録する:
-  \`${startCommand}\`
-- subagentがtimeoutまでに返らない場合はclose/shutdownしてreplacementを開始し、無期限に待たない。
-- 結果受領後、review記録前にsubagent thread/sessionをclose/shutdownする。Required Agent Review Gate passには \`--agent-closed\` evidenceが必要。
-- 結果なしでclosureだけ記録する場合:
-  \`${closeCommand}\`
 
 ## 結果形式
 \`\`\`json
@@ -2462,14 +1895,6 @@ function renderParallelDispatchMarkdown({ storyId, stage, roles, plan, language 
     const command = buildReviewRecordCommand({ storyId, stage, role });
     const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
     const modelPolicyBlock = renderModelPolicyInlineBlock(rolePolicy.model_policy);
-    const startCommand = buildReviewStartCommand({
-      storyId,
-      stage,
-      role,
-      timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms,
-      modelPolicy: rolePolicy.model_policy
-    });
-    const authorizeCommand = buildReviewAuthorizeCommand({ storyId, stage, role, modelPolicy: rolePolicy.model_policy });
     if (language === 'en') {
       return `## Subagent ${index + 1}: ${stage}:${role}
 
@@ -2483,19 +1908,9 @@ ${modelPolicyBlock}
 Record command after the subagent returns:
 \`${command}\`
 
-Dispatch authorization command (run before spawn; do not spawn unless action is dispatch):
-\`${authorizeCommand}\`
-
-Lifecycle start command:
-\`${startCommand}\`
-
-Lifecycle close command for timeout/replacement/manual shutdown:
-\`${buildReviewCloseCommand({ storyId, stage, role })}\`
-
 Required provenance:
 - Codex: keep the spawned subagent id plus thread/call id when available and pass them with \`--agent-system codex --execution-mode parallel_subagent\`.
 - Claude Code: keep the Task/subagent id, session id, or transcript artifact and pass them with \`--agent-system claude_code --execution-mode parallel_subagent\`.
-- Lifecycle: after receiving the result, close/shutdown the subagent thread/session before running the record command. Required Agent Review Gate pass requires \`--agent-closed\`; if a runtime cannot close agents, return \`needs_changes\` or record a waiver outside the required Agent Review Gate.
 - Human waiver: if subagents are unavailable, report the blocker or record a human waiver decision outside Agent Review Gate. Do not record manual_review as a passing substitute for required subagent review.
 `;
     }
@@ -2511,19 +1926,9 @@ ${modelPolicyBlock}
 subagentの結果受領後に記録するcommand:
 \`${command}\`
 
-Dispatch authorization command（spawn前に実行し、actionがdispatchでなければspawnしない）:
-\`${authorizeCommand}\`
-
-Lifecycle start command:
-\`${startCommand}\`
-
-timeout/replacement/manual shutdown用Lifecycle close command:
-\`${buildReviewCloseCommand({ storyId, stage, role })}\`
-
 必要なprovenance:
 - Codex: spawned subagent idと、利用可能ならthread/call idを保持し、\`--agent-system codex --execution-mode parallel_subagent\` と一緒に渡す。
 - Claude Code: Task/subagent id、session id、またはtranscript artifactを保持し、\`--agent-system claude_code --execution-mode parallel_subagent\` と一緒に渡す。
-- Lifecycle: 結果受領後、record commandの前にsubagent thread/sessionをclose/shutdownする。Required Agent Review Gate passには \`--agent-closed\` が必要。runtimeがagentをcloseできない場合は \`needs_changes\` を返すか、required Agent Review Gate外でwaiverを記録する。
 - Human waiver: subagentが利用できない場合はblockerを報告するか、Agent Review Gate外でhuman waiver decisionを記録する。required subagent reviewの代替としてmanual_reviewをpassing扱いで記録しない。
 `;
   }).join('\n');
@@ -2544,14 +1949,12 @@ Agent Review Gate treats this file as required execution guidance. VibePro requi
 
 If your coordinator runtime supports subagents, start them as part of this gate workflow. If subagents are unavailable, block or record a human waiver decision; do not silently skip the gate and do not treat manual_review as satisfying required subagent review.
 
-1. Only when this stage is current, run \`vibepro review authorize\` for each role before spawning. Do not spawn a role unless authorization returns \`action: dispatch\`.
-2. Start only authorized subagents in parallel, then immediately record \`vibepro review start\` with the real agent id and \`--dispatch-authorization\` id.
-3. Give each subagent only its own review request.
-4. Do not let subagents edit files during review.
-5. If a subagent times out, close/shutdown it, record \`vibepro review close --close-reason timeout\`, run \`vibepro review authorize\`, and only when it returns \`action: dispatch\` start the replacement with both \`--dispatch-authorization <authorization-id>\` and \`--replacement-for <lifecycle-id>\`.
-6. After each subagent returns its result, close/shutdown that subagent thread/session. Do not leave review subagents running.
-7. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\`. \`--strict-head-binding\` is only ever authorized for the frozen validation-sequence \`implementation:runtime_contract\` final_review target, or a role whose policy declares \`freshness_mode: strict_head\` with a \`freshness_reason\`; any other use is rejected. Configured strict roles apply automatically without the flag.
-8. Do not dispatch any other Agent Review stage in the same batch. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` to advance to the next stage.
+1. Only when this stage is current, spawn all listed roles in parallel.
+2. Give each subagent only its own review request.
+3. Do not let subagents edit files during review.
+4. After each subagent returns its result, close/shutdown that subagent thread/session. Do not leave review subagents running.
+5. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\` and provenance (thread/session/call id or transcript artifact). \`--strict-head-binding\` is only ever authorized for the frozen validation-sequence \`implementation:runtime_contract\` final_review target, or a role whose policy declares \`freshness_mode: strict_head\` with a \`freshness_reason\`; any other use is rejected. Configured strict roles apply automatically without the flag.
+6. Do not dispatch any other Agent Review stage in the same batch. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` to advance to the next stage.
 
 ## Evidence Handling
 ${EVIDENCE_HANDLING_BLOCK}
@@ -2581,14 +1984,12 @@ Agent Review Gateはこのfileを必須の実行ガイドとして扱う。VibeP
 
 coordinator runtimeがsubagentを使える場合は、このgate workflowの一部として開始する。subagentが利用できない場合はblockするかhuman waiver decisionを記録し、gateをsilent skipしない。manual_reviewをrequired subagent reviewの充足として扱わない。
 
-1. このstageが現在dispatch可能な場合だけ、spawn前にroleごとに \`vibepro review authorize\` を実行する。\`action: dispatch\` でないroleはspawnしない。
-2. authorization済みsubagentだけparallel開始し、直後に実agent idと \`--dispatch-authorization\` idを付けて \`vibepro review start\` を記録する。
-3. 各subagentには自身のreview requestだけを渡す。
-4. review中にsubagentへfile編集させない。
-5. subagentがtimeoutしたらclose/shutdownし、\`vibepro review close --close-reason timeout\` を記録して \`vibepro review authorize\` を実行する。\`action: dispatch\` の場合だけ、\`--dispatch-authorization <authorization-id>\` と \`--replacement-for <lifecycle-id>\` の両方を付けてreplacementを開始する。
-6. 各subagentの結果受領後、そのsubagent thread/sessionをclose/shutdownする。review subagentを走らせたままにしない。
-7. listed \`vibepro review record\` commandで各結果を記録し、\`--agent-closed\` を含める。\`--strict-head-binding\` はfrozen validation sequenceの \`implementation:runtime_contract\` final_review target、または \`freshness_mode: strict_head\` と \`freshness_reason\` を明示したrole policyの場合だけ許可される。それ以外は拒否される。設定済みstrict roleはflagなしで自動適用される。
-8. 他のAgent Review stageを同じbatchでdispatchしない。\`vibepro review status . --id ${storyId} --stage ${stage}\` を実行し、その後 \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` で次stageへ進む。
+1. このstageが現在dispatch可能な場合だけ、listed roleをすべてparallel開始する。
+2. 各subagentには自身のreview requestだけを渡す。
+3. review中にsubagentへfile編集させない。
+4. 各subagentの結果受領後、そのsubagent thread/sessionをclose/shutdownする。review subagentを走らせたままにしない。
+5. listed \`vibepro review record\` commandで各結果を記録し、\`--agent-closed\` とprovenance（thread/session/call idまたはtranscript artifact）を含める。\`--strict-head-binding\` はfrozen validation sequenceの \`implementation:runtime_contract\` final_review target、または \`freshness_mode: strict_head\` と \`freshness_reason\` を明示したrole policyの場合だけ許可される。それ以外は拒否される。設定済みstrict roleはflagなしで自動適用される。
+6. 他のAgent Review stageを同じbatchでdispatchしない。\`vibepro review status . --id ${storyId} --stage ${stage}\` を実行し、その後 \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` で次stageへ進む。
 
 ## 証跡の扱い
 ${localizedEvidenceHandlingBlock(language)}
@@ -2634,26 +2035,6 @@ function buildReviewRecordCommand({ storyId, stage, role, strictHeadAuthorized =
   const command = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status "<pass|needs_changes|block>" --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence "<inspection-evidence>" ${inspectionInputs} --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system "<codex|claude_code>" --execution-mode parallel_subagent --agent-id "<replacement-agent-id>" --agent-thread-id "<replacement-agent-thread-id>" --agent-session-id "<replacement-agent-session-id>" --implementation-session-id "<implementation-session-id>" --reviewer-identity separate_session --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript "<replacement-agent-transcript>" --agent-closed --agent-close-evidence "<replacement-agent-close-evidence>"`;
   if (!strictHeadAuthorized) return command;
   return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
-}
-
-function buildReviewStartCommand({ storyId, stage, role, timeoutMs, modelPolicy = null }) {
-  const modelArgs = formatModelPolicyCommandArgs(modelPolicy);
-  return `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --agent-thread-id "<subagent-thread-id>" --agent-session-id "<subagent-session-id>" --dispatch-authorization "<authorization-id>"${modelArgs} --timeout-ms ${normalizeTimeoutMs(timeoutMs)}`;
-}
-
-function buildReviewAuthorizeCommand({ storyId, stage, role, modelPolicy = null }) {
-  const modelArgs = formatModelPolicyCommandArgs(modelPolicy);
-  return `vibepro review authorize . --id ${storyId} --stage ${stage} --role ${role} --review-kind <preflight|final> --closes-risk "<risk>" --expected-judgment-delta "<decision this review can change>" --reusable-evidence <ref> --freeze <source,spec,test,review_surface>${modelArgs}`;
-}
-
-// The reason must match the situation the caller is in. Every template here is
-// for a review that did NOT produce a verdict (timeout, replacement, manual
-// shutdown, closure recorded without a result), and only a `completed` close
-// records a review-surface violation — so emitting `completed` on these surfaces
-// would mint violations for reviews that never reached a verdict.
-function buildReviewCloseCommand({ storyId, stage, role, closeReason = 'manual_shutdown' }) {
-  assertRecognizedCloseReason(closeReason);
-  return `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<replacement-agent-id>" --close-reason ${closeReason} --close-evidence "<replacement-agent-close-evidence>"`;
 }
 
 function buildReviewPrepareCommand({ storyId, stage, roles = [] }) {
@@ -2744,24 +2125,14 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
   const roles = [];
-  const lifecycle = await readLifecycle(repoRoot, storyId, stage);
-  const lifecycleEntries = decorateLifecycleEntries(lifecycle.entries, currentGitContext);
-  const stageRoles = await resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles, lifecycleEntries });
+  const stageRoles = await resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles });
   for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
     const historyArtifacts = await listReviewResultHistoryArtifacts(repoRoot, reviewDir, role);
     const binding = result ? await bindReviewResult(repoRoot, result, currentGitContext) : null;
     const provenance = result ? validateAgentProvenance(result) : null;
-    const roleLifecycle = summarizeRoleLifecycle(lifecycleEntries, role);
-    const newerLifecycleSupersedesResult = Boolean(
-      result?.recorded_at
-      && roleLifecycle.latest?.started_at
-      && Date.parse(roleLifecycle.latest.started_at) > Date.parse(result.recorded_at)
-    );
     const effectiveStatus = !result
       ? 'missing'
-      : newerLifecycleSupersedesResult
-        ? 'unverified_agent'
       : CURRENT_REVIEW_BINDING_STATUSES.has(binding.status)
         ? result.status === 'pass' && !VERIFIED_REVIEW_PROVENANCE_STATUSES.has(provenance.status)
           ? 'unverified_agent'
@@ -2790,13 +2161,11 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       recorded_at: result?.recorded_at ?? null,
       git_context: result?.git_context ?? null,
       source_git_context: result?.source_git_context ?? null,
-      lifecycle: roleLifecycle,
       artifact: result ? toWorkspaceRelative(repoRoot, getReviewResultPath(reviewDir, role)) : null,
       history_artifacts: historyArtifacts
     });
   }
   const status = resolveStageStatus(roles);
-  const lifecycleSummary = summarizeLifecycle(lifecycleEntries);
   return {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -2809,12 +2178,10 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
     unverified_agent_count: roles.filter((role) => role.effective_status === 'unverified_agent').length,
     block_count: roles.filter((role) => role.effective_status === 'block').length,
     needs_changes_count: roles.filter((role) => role.effective_status === 'needs_changes').length,
-    lifecycle: lifecycleSummary,
     next_actions: buildStageNextActions({
       storyId,
       stage,
       roles,
-      lifecycleSummary,
       parallelDispatchPrepared,
       stageRoles,
       reviewPolicy,
@@ -2832,7 +2199,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   };
 }
 
-async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles = null, lifecycleEntries = [] }) {
+async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles = null }) {
   const requestedRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
     ? summaryRoles
     : await readPreparedStageRoles(reviewDir);
@@ -2840,9 +2207,8 @@ async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summar
     return [...new Set(requestedRoles)];
   }
   const existingRoles = await listExistingReviewResultRoles(reviewDir);
-  const lifecycleRoles = lifecycleEntries.map((entry) => entry.role).filter(Boolean);
   const stageRoleOrder = getStageRoles(reviewPolicy, stage);
-  const extraRoles = [...new Set([...existingRoles, ...lifecycleRoles])]
+  const extraRoles = [...new Set(existingRoles)]
     .filter((role) => !requestedRoles.includes(role))
     .sort((a, b) => {
       const aIndex = stageRoleOrder.indexOf(a);
@@ -2935,18 +2301,12 @@ function resolveOverallStatus(stageSummaries) {
   return 'needs_review';
 }
 
-function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parallelDispatchPrepared, stageRoles, reviewPolicy = null, validationSequenceState = null }) {
+function buildStageNextActions({ storyId, stage, roles, parallelDispatchPrepared, stageRoles, reviewPolicy = null, validationSequenceState = null }) {
   const actions = [];
-  actions.push(...buildLifecycleNextActions({ storyId, stage, lifecycleSummary }));
   const prepareCommand = buildReviewPrepareCommand({ storyId, stage, roles: stageRoles });
   for (const role of roles) {
     if (role.effective_status === 'pass') continue;
     const strictHeadAuthorized = isStrictHeadBindingAuthorizedNow(reviewPolicy, validationSequenceState, stage, role.role);
-    if (role.lifecycle?.effective_status === 'running') {
-      const latest = role.lifecycle.latest;
-      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role.role)} ${latest?.agent_id ? `--agent-id ${shellQuote(latest.agent_id)}` : `--lifecycle-id ${shellQuote(latest?.lifecycle_id ?? '<lifecycle-id>')}`} --close-reason completed --close-evidence ${shellQuote('<evidence>')}\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
-      continue;
-    }
     if (!parallelDispatchPrepared) {
       actions.push(`Prepare ${stage} review dispatch: \`${prepareCommand}\``);
       continue;
@@ -3171,9 +2531,8 @@ async function writeReviewSummaryArtifacts(repoRoot, reviewDir, summary) {
 
 function renderReviewSummaryMarkdown(summary) {
   const rows = summary.roles.map((role) => (
-    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}${role.artifact ? ` / artifact=${role.artifact}` : ''}${formatHistoryArtifactSuffix(role.history_artifacts)}${formatReviewHandoffSuffix(role)}`
+    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.artifact ? ` / artifact=${role.artifact}` : ''}${formatHistoryArtifactSuffix(role.history_artifacts)}${formatReviewHandoffSuffix(role)}`
   ));
-  const lifecycle = summary.lifecycle ?? {};
   const nextActions = summary.next_actions?.length
     ? summary.next_actions.map((action) => `- ${action}`).join('\n')
     : '- none';
@@ -3187,10 +2546,6 @@ function renderReviewSummaryMarkdown(summary) {
 - missing: ${summary.missing_count}
 - unverified_agent: ${summary.unverified_agent_count}
 - block: ${summary.block_count}
-- lifecycle_running: ${lifecycle.running_count ?? 0}
-- lifecycle_timed_out: ${lifecycle.timed_out_count ?? 0}
-- lifecycle_closed: ${lifecycle.closed_count ?? 0}
-- lifecycle_replaced: ${lifecycle.replaced_count ?? 0}
 
 ## Next Actions
 
@@ -3244,16 +2599,6 @@ function buildReviewerIdentity(options, provenance) {
   const implementationSessionId = normalizeNullable(options.implementationSessionId);
   const reviewerSessionId = provenance.session_id ?? provenance.thread_id ?? null;
   const declared = String(options.reviewerIdentity ?? '').trim().toLowerCase().replace(/-/g, '_');
-  const latestLifecycleEntry = (options.lifecycleEntries ?? []).filter((entry) => (
-    entry.role === options.role
-    && entry.agent_id === provenance.agent_id
-    && entry.agent_system === provenance.system
-  )).at(-1) ?? null;
-  const reviewerLifecycleBound = Boolean(
-    reviewerSessionId
-    && latestLifecycleEntry?.status === 'closed'
-    && (latestLifecycleEntry.thread_id === reviewerSessionId || latestLifecycleEntry.session_id === reviewerSessionId)
-  );
   if (declared) {
     if (!REVIEWER_IDENTITY_RELATIONS.has(declared)) {
       throw new Error(
@@ -3271,15 +2616,6 @@ function buildReviewerIdentity(options, provenance) {
           'review record --reviewer-identity separate_session requires different implementation and reviewer session ids'
         );
       }
-      if (!reviewerLifecycleBound) {
-        const lifecycleStatus = latestLifecycleEntry?.status ?? 'missing';
-        const lifecycleIdentity = latestLifecycleEntry
-          ? (latestLifecycleEntry.session_id ?? latestLifecycleEntry.thread_id ?? latestLifecycleEntry.lifecycle_id ?? 'unknown')
-          : 'unknown';
-        throw new Error(
-          `review record --reviewer-identity separate_session requires the reviewer session/thread id to match the latest closed review lifecycle; latest matching lifecycle is ${lifecycleStatus} (session/thread ${lifecycleIdentity}). Run vibepro review close for that lifecycle, then record with its session/thread id.`
-        );
-      }
     }
     if (declared === 'same_session'
       && implementationSessionId
@@ -3293,7 +2629,7 @@ function buildReviewerIdentity(options, provenance) {
       relation: declared,
       reviewer_session_id: reviewerSessionId,
       implementation_session_id: implementationSessionId,
-      source: declared === 'separate_session' ? 'lifecycle_agent_binding' : 'cli_flag'
+      source: declared === 'separate_session' ? 'declared_session_ids' : 'cli_flag'
     };
   }
   if (implementationSessionId && reviewerSessionId) {
@@ -3301,7 +2637,7 @@ function buildReviewerIdentity(options, provenance) {
       relation: implementationSessionId === reviewerSessionId ? 'same_session' : 'separate_session',
       reviewer_session_id: reviewerSessionId,
       implementation_session_id: implementationSessionId,
-      source: reviewerLifecycleBound ? 'lifecycle_agent_binding' : 'unverified_session_ids'
+      source: 'unverified_session_ids'
     };
   }
   return {
@@ -3309,37 +2645,6 @@ function buildReviewerIdentity(options, provenance) {
     reviewer_session_id: reviewerSessionId,
     implementation_session_id: implementationSessionId,
     source: 'undeclared'
-  };
-}
-
-function buildSyntheticLifecycleEntryFromReviewResult(result, repoRoot, resultPath) {
-  return {
-    schema_version: '0.1.0',
-    lifecycle_id: `synthetic-${result.stage}-${result.role}-${Date.parse(result.recorded_at ?? new Date().toISOString())}`,
-    story_id: result.story_id,
-    stage: result.stage,
-    role: result.role,
-    status: 'closed',
-    agent_system: result.agent_provenance.system,
-    agent_id: result.agent_provenance.agent_id,
-    agent_model: result.agent_provenance.model,
-    agent_reasoning_effort: result.agent_provenance.reasoning_effort,
-    agent_cost_tier: result.agent_provenance.cost_tier,
-    intended_model_policy: null,
-    model_policy_preflight: null,
-    thread_id: result.agent_provenance.thread_id,
-    session_id: result.agent_provenance.session_id,
-    tool_call_id: result.agent_provenance.tool_call_id,
-    started_at: result.recorded_at ?? new Date().toISOString(),
-    timeout_ms: null,
-    replacement_for: null,
-    close_reason: 'completed',
-    close_evidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(repoRoot, resultPath),
-    closed_at: result.recorded_at ?? new Date().toISOString(),
-    result_artifact: toWorkspaceRelative(repoRoot, resultPath),
-    result_status: result.status,
-    synthesized_from_result: true,
-    synthesized_from_provenance: true
   };
 }
 
@@ -3414,15 +2719,9 @@ function validateAgentProvenance(result) {
       reason: 'review provenance lacks subagent thread/session/call id or transcript artifact'
     };
   }
-  if (!provenance.lifecycle?.agent_closed) {
-    return {
-      status: 'agent_not_closed',
-      reason: 'parallel subagent review was recorded without --agent-closed lifecycle evidence'
-    };
-  }
   return {
     status: 'verified_agent',
-    reason: `${provenance.system} parallel subagent provenance is recorded and the subagent lifecycle is closed`
+    reason: `${provenance.system} parallel subagent provenance is recorded`
   };
 }
 
@@ -3631,14 +2930,6 @@ function getParallelDispatchPath(reviewDir) {
   return path.join(reviewDir, 'parallel-dispatch.md');
 }
 
-function getLifecyclePath(reviewDir) {
-  return path.join(reviewDir, 'lifecycle.json');
-}
-
-function getDispatchAuthorizationsPath(storyReviewDir) {
-  return path.join(storyReviewDir, 'dispatch-authorizations.json');
-}
-
 function getReviewResultPath(reviewDir, role) {
   return path.join(reviewDir, `review-result-${role}.json`);
 }
@@ -3731,321 +3022,6 @@ async function writeJson(filePath, value) {
   }
 }
 
-async function readLifecycle(repoRoot, storyId, stage) {
-  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
-  const existing = await readJsonIfExists(getLifecyclePath(reviewDir));
-  if (existing?.entries && Array.isArray(existing.entries)) return existing;
-  return {
-    schema_version: '0.1.0',
-    story_id: storyId,
-    stage,
-    entries: []
-  };
-}
-
-async function readStoryLifecycleEntries(storyReviewDir) {
-  let stages = [];
-  try {
-    stages = await readdir(storyReviewDir, { withFileTypes: true });
-  } catch (error) {
-    if (error.code === 'ENOENT') return [];
-    throw error;
-  }
-  const lifecycles = await Promise.all(stages
-    .filter((entry) => entry.isDirectory() && REVIEW_STAGES.has(entry.name))
-    .map((entry) => readJsonIfExists(path.join(storyReviewDir, entry.name, 'lifecycle.json'))));
-  return lifecycles.flatMap((lifecycle) => Array.isArray(lifecycle?.entries) ? lifecycle.entries : []);
-}
-
-/**
- * The reconciliation view of the same files, with the ledger's failure policy
- * rather than the lenient one. `readStoryLifecycleEntries` folds a lifecycle
- * whose `entries` is valid JSON but not an array into zero entries; here that is
- * an unusable cross-check, because the ledger reader rejects the identical shape
- * and the two must not disagree about what "unreadable" means.
- */
-async function readStoryLifecyclePointers(storyReviewDir) {
-  let stages = [];
-  try {
-    stages = await readdir(storyReviewDir, { withFileTypes: true });
-  } catch (error) {
-    if (error.code === 'ENOENT') return { entries: [], readable: true };
-    return { entries: [], readable: false };
-  }
-  const paths = stages
-    .filter((entry) => entry.isDirectory() && REVIEW_STAGES.has(entry.name))
-    .map((entry) => path.join(storyReviewDir, entry.name, 'lifecycle.json'));
-  const entries = [];
-  for (const filePath of paths) {
-    let lifecycle;
-    try {
-      lifecycle = await readJsonIfExists(filePath);
-    } catch {
-      return { entries: [], readable: false };
-    }
-    if (lifecycle === null || lifecycle === undefined) continue;
-    if (!Array.isArray(lifecycle.entries)) return { entries: [], readable: false };
-    entries.push(...lifecycle.entries);
-  }
-  return { entries, readable: true };
-}
-
-async function readDispatchAuthorizations(storyReviewDir, storyId) {
-  const existing = await readJsonIfExists(getDispatchAuthorizationsPath(storyReviewDir));
-  if (Array.isArray(existing?.entries)) return existing;
-  return { schema_version: '0.1.0', story_id: storyId, entries: [] };
-}
-
-async function writeDispatchAuthorizations(storyReviewDir, storyId, authorizations) {
-  await writeJson(getDispatchAuthorizationsPath(storyReviewDir), {
-    schema_version: '0.1.0',
-    story_id: storyId,
-    updated_at: new Date().toISOString(),
-    entries: authorizations.entries ?? []
-  });
-}
-
-function expireDispatchAuthorizations(entries, now = new Date()) {
-  for (const entry of entries) {
-    if (entry.status !== 'authorized') continue;
-    if (Date.parse(entry.expires_at) <= now.getTime()) {
-      entry.status = 'expired';
-      entry.expired_at = now.toISOString();
-    }
-  }
-}
-
-function assertConsumableDispatchAuthorization(authorization, expected) {
-  if (!authorization) throw new Error('review start dispatch authorization was not found');
-  if (authorization.status !== 'authorized') {
-    throw new Error(`review start dispatch authorization is ${authorization.status}, expected authorized`);
-  }
-  if (Date.parse(authorization.expires_at) <= Date.now()) {
-    throw new Error('review start dispatch authorization has expired');
-  }
-  const binding = authorization.binding ?? {};
-  const surfaceDigest = expected.gitContext.user_status_fingerprint_hash ?? expected.gitContext.status_fingerprint_hash;
-  const mismatches = [
-    ['story_id', binding.story_id, expected.storyId],
-    ['stage', binding.stage, expected.stage],
-    ['role', binding.role, expected.role],
-    ['head_sha', binding.head_sha, expected.gitContext.head_sha],
-    ['surface_digest', binding.surface_digest, surfaceDigest],
-    ['agent_model', authorization.agent_model, expected.agentModel],
-    ['agent_reasoning_effort', authorization.agent_reasoning_effort, expected.agentReasoningEffort],
-    ['agent_cost_tier', authorization.agent_cost_tier, expected.agentCostTier]
-  ].filter(([, actual, wanted]) => actual !== wanted);
-  if (mismatches.length > 0) {
-    throw new Error(`review start dispatch authorization binding mismatch: ${mismatches.map(([field, actual, wanted]) => `${field}=${actual ?? '-'} expected ${wanted ?? '-'}`).join('; ')}`);
-  }
-}
-
-function throwReviewDispatchStop(dispatchDecision, budgetOverride = null) {
-  // A stop that reads only `budget_exceeded` is misdiagnosable when the Story
-  // configured a higher override that never took effect: the operator sees the
-  // base limit while config plainly says otherwise. Name the inert override in
-  // the stop itself so the reason reaches the human at the point of the stop,
-  // not only in a separate pr prepare run.
-  const reason = dispatchDecision.stop_reason ?? dispatchDecision.duplicate_status ?? 'existing lifecycle must be reused';
-  const inertOverride = budgetOverride?.status === 'unauthorized'
-    ? ` (a Story budget override is configured but inert: ${(budgetOverride.reasons ?? []).join(', ') || 'unauthorized'}; the base budget applied)`
-    : '';
-  const error = new Error(`review dispatch ${dispatchDecision.action}: ${reason}${inertOverride}`);
-  error.code = 'VIBEPRO_REVIEW_DISPATCH_STOP';
-  error.dispatch_decision = dispatchDecision;
-  error.budget_override = budgetOverride ?? null;
-  throw error;
-}
-
-async function writeLifecycle(repoRoot, storyId, stage, lifecycle) {
-  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
-  await writeJson(getLifecyclePath(reviewDir), {
-    schema_version: '0.1.0',
-    story_id: storyId,
-    stage,
-    updated_at: new Date().toISOString(),
-    entries: lifecycle.entries ?? []
-  });
-}
-
-async function updateLifecycle(repoRoot, storyId, stage, updater, afterWrite = null) {
-  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
-  await mkdir(reviewDir, { recursive: true });
-  const lockDir = path.join(reviewDir, '.lifecycle.lock');
-  await withDirectoryLock(lockDir, async () => {
-    const lifecycle = await readLifecycle(repoRoot, storyId, stage);
-    await updater(lifecycle);
-    await writeLifecycle(repoRoot, storyId, stage, lifecycle);
-    if (afterWrite) {
-      const testDelayMs = Number(process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS ?? 0);
-      if (Number.isFinite(testDelayMs) && testDelayMs > 0) await sleep(testDelayMs);
-      await afterWrite(lifecycle);
-    }
-  });
-}
-
-async function withDirectoryLock(lockDir, callback) {
-  const staleAfterMs = 30_000;
-  const start = Date.now();
-  while (true) {
-    try {
-      await mkdir(lockDir);
-      break;
-    } catch (error) {
-      if (error.code !== 'EEXIST') throw error;
-      const lockStat = await stat(lockDir).catch((statError) => {
-        if (statError.code === 'ENOENT') return null;
-        throw statError;
-      });
-      if (lockStat && Date.now() - lockStat.mtimeMs > staleAfterMs) {
-        await rm(lockDir, { recursive: true, force: true });
-        continue;
-      }
-      if (Date.now() - start > staleAfterMs) {
-        throw new Error(`timed out waiting for lifecycle lock: ${lockDir}`);
-      }
-      await sleep(25);
-    }
-  }
-  try {
-    return await callback();
-  } finally {
-    await rm(lockDir, { recursive: true, force: true });
-  }
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function findLifecycleEntry(entries, options = {}) {
-  const candidates = entries.filter((entry) => {
-    if (options.lifecycleId && entry.lifecycle_id !== options.lifecycleId) return false;
-    if (options.role && entry.role !== options.role) return false;
-    if (options.agentId && entry.agent_id !== options.agentId) return false;
-    if (options.agentSystem && entry.agent_system !== normalizeReviewSystem(options.agentSystem)) return false;
-    return true;
-  });
-  return candidates.at(-1) ?? null;
-}
-
-function decorateLifecycleEntries(entries = [], currentGitContext = null) {
-  const replacedIds = new Set(entries.map((entry) => entry.replacement_for).filter(Boolean));
-  return entries.map((entry) => decorateLifecycleEntry(entry, { currentGitContext, replacedIds }));
-}
-
-function decorateLifecycleEntry(entry, { currentGitContext = null, replacedIds = new Set() } = {}) {
-  const replacedPredecessor = entry.status === 'running'
-    || (entry.status === 'closed' && entry.close_reason === 'timeout');
-  const effectiveStatus = replacedIds.has(entry.lifecycle_id) && replacedPredecessor
-    ? 'replaced'
-    : resolveLifecycleEffectiveStatus(entry, currentGitContext);
-  return {
-    ...entry,
-    effective_status: effectiveStatus,
-    timed_out: effectiveStatus === 'timed_out',
-    elapsed_ms: calculateElapsedMs(entry)
-  };
-}
-
-function resolveLifecycleEffectiveStatus(entry, currentGitContext = null) {
-  if (entry.terminal_status) return entry.terminal_status;
-  if (entry.status === 'closed' || entry.status === 'replaced') return entry.status;
-  if (entry.status !== 'running') return entry.status;
-  if (entry.head_sha && currentGitContext?.head_sha && entry.head_sha !== currentGitContext.head_sha) {
-    const plan = planLifecycleTerminalization({
-      current_head_sha: currentGitContext.head_sha,
-      lifecycles: [{ ...entry, cancel_confirmed: entry.cancel_confirmed === true }]
-    });
-    return plan.actions[0]?.terminal_status ?? 'orphaned_agent';
-  }
-  const elapsedMs = calculateElapsedMs(entry);
-  if (Number.isFinite(elapsedMs) && elapsedMs > normalizeTimeoutMs(entry.timeout_ms)) return 'timed_out';
-  return 'running';
-}
-
-function calculateElapsedMs(entry) {
-  const started = Date.parse(entry.started_at);
-  if (!Number.isFinite(started)) return null;
-  const end = entry.closed_at ? Date.parse(entry.closed_at) : Date.now();
-  if (!Number.isFinite(end)) return null;
-  return Math.max(0, end - started);
-}
-
-function summarizeRoleLifecycle(entries, role) {
-  const roleEntries = entries.filter((entry) => entry.role === role);
-  if (roleEntries.length === 0) return {
-    effective_status: 'not_started',
-    running_count: 0,
-    timed_out_count: 0,
-    obsolete_count: 0,
-    orphaned_agent_count: 0,
-    closed_count: 0,
-    replaced_count: 0,
-    latest: null
-  };
-  const latest = roleEntries.at(-1);
-  return {
-    effective_status: latest.effective_status,
-    running_count: roleEntries.filter((entry) => entry.effective_status === 'running').length,
-    timed_out_count: roleEntries.filter((entry) => entry.effective_status === 'timed_out').length,
-    obsolete_count: roleEntries.filter((entry) => entry.effective_status === 'obsolete').length,
-    orphaned_agent_count: roleEntries.filter((entry) => entry.effective_status === 'orphaned_agent').length,
-    closed_count: roleEntries.filter((entry) => entry.effective_status === 'closed').length,
-    replaced_count: roleEntries.filter((entry) => entry.effective_status === 'replaced').length,
-    latest
-  };
-}
-
-function summarizeLifecycle(entries) {
-  return {
-    entry_count: entries.length,
-    running_count: entries.filter((entry) => entry.effective_status === 'running').length,
-    timed_out_count: entries.filter((entry) => entry.effective_status === 'timed_out').length,
-    obsolete_count: entries.filter((entry) => entry.effective_status === 'obsolete').length,
-    orphaned_agent_count: entries.filter((entry) => entry.effective_status === 'orphaned_agent').length,
-    closed_count: entries.filter((entry) => entry.effective_status === 'closed').length,
-    replaced_count: entries.filter((entry) => entry.effective_status === 'replaced').length,
-    entries
-  };
-}
-
-function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
-  const actions = [];
-  const latestByRole = new Map();
-  for (const entry of lifecycleSummary.entries ?? []) {
-    latestByRole.set(entry.role, entry);
-  }
-  for (const entry of latestByRole.values()) {
-    const closeSelector = entry.agent_id
-      ? `--agent-id ${shellQuote(entry.agent_id)}`
-      : `--lifecycle-id ${shellQuote(entry.lifecycle_id)}`;
-    const authorizeCommand = `vibepro review authorize . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} --review-kind preflight --closes-risk ${shellQuote(`complete ${stage}:${entry.role} independent review`)} --expected-judgment-delta ${shellQuote(`resolve ${stage}:${entry.role} review state from current evidence`)} --json`;
-    const replacementCommand = `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} --agent-system ${shellQuote(entry.agent_system)} --agent-id ${shellQuote('<replacement-subagent-id>')} --agent-thread-id ${shellQuote('<replacement-subagent-thread-id>')} --agent-session-id ${shellQuote('<replacement-subagent-session-id>')} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')} --replacement-for ${shellQuote(entry.lifecycle_id)}`;
-    if (entry.effective_status === 'running') {
-      actions.push(`Wait for running ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}, then close it before recording: vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} ${closeSelector} --close-reason completed --close-evidence ${shellQuote('<evidence>')}`);
-    }
-    if (entry.effective_status === 'timed_out') {
-      actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} ${closeSelector} --close-reason timeout --close-evidence ${shellQuote('<timeout-close-evidence>')}`);
-      actions.push(`Authorize replacement for ${stage}:${entry.role}: ${authorizeCommand}`);
-      actions.push(`Only when authorization returns action: dispatch, start replacement for ${stage}:${entry.role}: ${replacementCommand}`);
-    }
-    if (entry.effective_status === 'orphaned_agent') {
-      actions.push(`Fail closed and confirm cancellation for stale-HEAD ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} ${closeSelector} --close-reason replaced --cancellation-confirmed --close-evidence ${shellQuote('<cancellation-evidence>')}`);
-      actions.push(`After cancellation is confirmed, authorize a current-HEAD replacement for ${stage}:${entry.role}: ${authorizeCommand}`);
-      actions.push(`Only when authorization returns action: dispatch, start the current-HEAD replacement: ${replacementCommand}`);
-    }
-    if (isTerminalReplacementCloseReason(entry.close_reason)) {
-      const terminalCloseDescription = entry.close_reason === 'manual_shutdown'
-        ? 'manually shut down'
-        : `closed as ${entry.close_reason}`;
-      actions.push(`Authorize replacement for ${terminalCloseDescription} ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: ${authorizeCommand}`);
-      actions.push(`Only when authorization returns action: dispatch, start the replacement: ${replacementCommand}`);
-    }
-  }
-  return actions;
-}
-
 function shellQuote(value) {
   const normalized = String(value ?? '');
   if (/^[a-zA-Z0-9_./:=@+-]+$/.test(normalized)) return normalized;
@@ -4056,30 +3032,6 @@ function normalizeTimeoutMs(value) {
   const number = Number(value ?? DEFAULT_REVIEW_TIMEOUT_MS);
   if (!Number.isFinite(number) || number <= 0) return DEFAULT_REVIEW_TIMEOUT_MS;
   return Math.floor(number);
-}
-
-function addViolationPointer(existing, violationId) {
-  const pointers = Array.isArray(existing) ? existing : [];
-  return pointers.includes(violationId) ? pointers : [...pointers, violationId];
-}
-
-const REVIEW_CLOSE_REASONS = ['completed', 'timeout', 'replaced', 'manual_shutdown'];
-const TERMINAL_REPLACEMENT_CLOSE_REASONS = ['timeout', 'replaced', 'manual_shutdown'];
-
-function isTerminalReplacementCloseReason(value) {
-  return TERMINAL_REPLACEMENT_CLOSE_REASONS.includes(value);
-}
-
-function assertRecognizedCloseReason(value) {
-  if (value === undefined || value === null || String(value).trim() === '') return;
-  const normalized = String(value).trim().toLowerCase().replace(/-/g, '_');
-  if (REVIEW_CLOSE_REASONS.includes(normalized)) return;
-  throw new Error(`review close --close-reason must be one of: ${REVIEW_CLOSE_REASONS.join(', ')} (got "${value}"). Unrecognized values are rejected rather than treated as completed, because only a completed close records a review surface violation.`);
-}
-
-function normalizeCloseReason(value) {
-  const normalized = String(value ?? 'completed').trim().toLowerCase().replace(/-/g, '_');
-  return ['completed', 'timeout', 'replaced', 'manual_shutdown'].includes(normalized) ? normalized : 'completed';
 }
 
 function normalizeGitContext(git, fingerprints = git) {

@@ -2321,7 +2321,6 @@ export function renderPrShipSummary(result) {
   const agentActions = ship.required_agent_review?.length
     ? ship.required_agent_review.flatMap((action) => [
         `- prepare: ${action.prepare_command}`,
-        `- start: ${action.start_command_template}`,
         `- record: ${action.record_command_template}`
       ]).join('\n')
     : '- none';
@@ -2380,9 +2379,6 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
         stage,
         roles,
         prepare_command: gate.command,
-        authorize_command_template: buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg),
-        start_command_template: buildReviewStartCommandTemplate(storyId, stage, roleArg),
-        close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
         record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
         artifact: gate.artifact ?? null,
         reason: gate.reason ?? 'required Agent Review prepare is missing'
@@ -2396,22 +2392,11 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
       stage,
       roles,
       prepare_command: buildReviewPrepareCommand(storyId, stage, roles),
-      authorize_command_template: buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg),
-      start_command_template: buildReviewStartCommandTemplate(storyId, stage, roleArg),
-      close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
       record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
       artifact: `.vibepro/reviews/${storyId}/${stage}/parallel-dispatch.md`,
       reason: 'required Agent Review role is missing or stale'
     };
   });
-}
-
-function buildReviewStartCommandTemplate(storyId, stage, roleArg, { identity = 'agent' } = {}) {
-  return `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id ${shellQuote(`<${identity}-id>`)} --agent-thread-id ${shellQuote(`<${identity}-thread-id>`)} --agent-session-id ${shellQuote(`<${identity}-session-id>`)} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')}`;
-}
-
-function buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg) {
-  return `vibepro review authorize . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --review-kind preflight --closes-risk ${shellQuote(`complete ${stage}:${roleArg} independent review`)} --expected-judgment-delta ${shellQuote(`resolve ${stage}:${roleArg} review state from current evidence`)} --json`;
 }
 
 // A recorded review's strict_head content_binding is not, by itself, proof
@@ -2512,7 +2497,6 @@ function buildShipNextCommands({ preparation, gateStatus, agentReviewActions, op
   const commands = [];
   for (const action of agentReviewActions) {
     commands.push(action.prepare_command);
-    commands.push(action.start_command_template);
     commands.push(action.record_command_template);
   }
   if (gateStatus?.agent_review_dispatch_required) {
@@ -10693,9 +10677,6 @@ function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null
   if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_agent_workflow_evidence_lifecycle')) return true;
   if (!agentReviews) return false;
   const s = agentReviews.summary ?? {};
-  if ((s.lifecycle_running_count ?? 0) > 0 || (s.lifecycle_timed_out_count ?? 0) > 0) {
-    return false;
-  }
   if (agentReviews.status === 'pass') return true;
   if ((s.required_review_count ?? 0) > 0
     && (s.unmet_required_review_count ?? 0) === 0
@@ -10729,7 +10710,6 @@ function collectRequiredAgentReviewOwners(agentReviews = null) {
       reviewer_identity_source: role.agent_provenance?.reviewer_identity?.source ?? 'undeclared',
       reviewer_session_id: role.agent_provenance?.reviewer_identity?.reviewer_session_id ?? null,
       implementation_session_id: role.agent_provenance?.reviewer_identity?.implementation_session_id ?? null,
-      lifecycle_status: role.lifecycle?.effective_status ?? null,
       surface_files: (role.content_binding?.surface_files ?? []).map((file) => (
         typeof file === 'string' ? file : file?.path
       )).filter(Boolean)
@@ -10746,11 +10726,10 @@ function collectRequiredAgentReviewOwners(agentReviews = null) {
       && role.effective_status === 'pass'
       && role.binding_mode === 'strict_head'
       && role.reviewer_identity === 'separate_session'
-      && role.reviewer_identity_source === 'lifecycle_agent_binding'
+      && (role.reviewer_identity_source === 'declared_session_ids' || role.reviewer_identity_source === 'unverified_session_ids')
       && role.reviewer_session_id
       && role.implementation_session_id
       && role.reviewer_session_id !== role.implementation_session_id
-      && role.lifecycle_status === 'closed'
   ));
   return {
     roles,
@@ -10773,7 +10752,7 @@ export function buildAgentReviewOwnerMapEvidence(agentReviews = null, lanes = []
       role.effective_status === 'pass'
       && role.binding_mode === 'strict_head'
       && role.reviewer_identity === 'separate_session'
-      && role.reviewer_identity_source === 'lifecycle_agent_binding'
+      && (role.reviewer_identity_source === 'declared_session_ids' || role.reviewer_identity_source === 'unverified_session_ids')
       && role.reviewer_session_id
       && role.implementation_session_id
       && role.reviewer_session_id !== role.implementation_session_id
@@ -12181,7 +12160,6 @@ export function buildArtifactRemediationCommands(artifact, storyId = null) {
   }
   if (artifact.artifact_type === 'agent_review_result') {
     const stageArg = artifact.stage ? shellQuote(artifact.stage) : '<stage>';
-    const roleArg = artifact.role ? shellQuote(artifact.role) : '<role>';
     const recordCommand = buildReviewRecordCommandTemplate(
       storyId ?? '<story-id>',
       artifact.stage ?? '<stage>',
@@ -12192,8 +12170,6 @@ export function buildArtifactRemediationCommands(artifact, storyId = null) {
       : '';
     return [
       `vibepro review prepare . --id ${storyArg} --stage ${stageArg}`,
-      buildReviewStartCommandTemplate(storyId ?? '<story-id>', artifact.stage ?? '<stage>', artifact.role ?? '<role>'),
-      `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
       `${recordCommand}${strictFreshnessArgs}`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
@@ -13775,69 +13751,23 @@ function recoveryPriority(kind) {
   }[kind] ?? 10;
 }
 
-function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, recoveryKind }) {
-  const latest = lifecycle?.latest ?? null;
-  const replacementKinds = ['timed_out', 'replaced', 'manual_shutdown', 'running'];
-  if (!latest && !replacementKinds.includes(recoveryKind)) return null;
-  const agentId = latest?.agent_id ?? null;
-  const lifecycleId = latest?.lifecycle_id ?? null;
-  const selector = agentId
-    ? `--agent-id ${shellQuote(agentId)}`
-    : `--lifecycle-id ${shellQuote(lifecycleId ?? '<lifecycle-id>')}`;
-  const closeReason = recoveryKind === 'timed_out'
-    ? 'timeout'
-    : recoveryKind === 'replaced'
-      ? 'replaced'
-    : recoveryKind === 'manual_shutdown'
-      ? 'manual_shutdown'
-      : 'completed';
-  const alreadyTerminallyClosed = ['closed', 'replaced'].includes(latest?.status)
-    && ['timeout', 'replaced', 'manual_shutdown'].includes(latest?.close_reason);
-  const closeCommand = replacementKinds.includes(recoveryKind) && !alreadyTerminallyClosed
-    ? `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} ${selector} --close-reason ${shellQuote(closeReason)} --close-evidence ${shellQuote('<close-evidence>')}`
-    : null;
-  const replacementCommand = replacementKinds.includes(recoveryKind)
-    ? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote(latest?.agent_system ?? '<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')} --timeout-ms 600000 --replacement-for ${shellQuote(lifecycleId ?? '<previous-lifecycle-id>')}`
-    : null;
-  return {
-    status: lifecycle?.effective_status ?? latest?.effective_status ?? null,
-    agent_id: agentId,
-    lifecycle_id: lifecycleId,
-    agent_system: latest?.agent_system ?? '<codex|claude_code>',
-    close_command: closeCommand,
-    replacement_command: replacementCommand
-  };
+// Review lifecycle accounting (start/authorize/close) was removed; recovery
+// no longer has a lifecycle entry to reason about, only the recorded review
+// result (or its absence). This keeps the function signature stable for
+// buildAgentReviewRecoveryItem's caller.
+function buildAgentReviewLifecycleRecovery() {
+  return null;
 }
 
-export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, freshnessPolicy = null }) {
+export function buildAgentReviewRecoveryCommands({ storyId, stage, role, freshnessPolicy = null }) {
   const prepareCommand = `vibepro review prepare . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
-  const authorizeCommand = buildReviewAuthorizeCommandTemplate(storyId, stage, role);
-  const rawStartCommand = lifecycleRecovery?.replacement_command
-    ?? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote('<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000`;
-  const startCommand = rawStartCommand.includes('--dispatch-authorization')
-    ? rawStartCommand
-    : `${rawStartCommand} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')}`;
-  const closeNewCommand = `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-id ${shellQuote('<replacement-agent-id>')} --close-reason completed --close-evidence ${shellQuote('<replacement-agent-close-evidence>')}`;
   const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, {
     strictHeadAuthorized: isRecordedStrictHeadStillAuthorized(freshnessPolicy),
     identity: 'replacement-agent',
-    agentSystem: lifecycleRecovery?.agent_system ?? '<codex|claude_code>'
+    agentSystem: '<codex|claude_code>'
   });
-  if (['timed_out', 'replaced', 'manual_shutdown', 'running'].includes(recoveryKind)) {
-    return [
-      lifecycleRecovery?.close_command,
-      prepareCommand,
-      authorizeCommand,
-      startCommand,
-      closeNewCommand,
-      recordCommand
-    ].filter(Boolean);
-  }
   return [
     prepareCommand,
-    authorizeCommand,
-    startCommand,
-    closeNewCommand,
     recordCommand
   ];
 }

@@ -1151,7 +1151,7 @@ function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
         kind: 'traceability_incomplete_review_evidence',
         artifact: review.path,
         detail: reason,
-        next_command: `vibepro review repair . --story-id ${story.story_id}`
+        next_command: `vibepro review prepare . --story-id ${story.story_id} --stage <stage>`
       });
     }
   }

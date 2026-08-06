@@ -357,7 +357,7 @@ function isVerificationEvidencePath(file) {
 }
 
 function isReviewLifecyclePath(file) {
-  return /(^|\/)(agent-review|review-repair)\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
+  return /(^|\/)agent-review\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
 }
 
 function stripMonorepoPackagePrefix(filePath) {

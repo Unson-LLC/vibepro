@@ -263,8 +263,6 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
     .replace('<implementation-session-id>', 'session-implementation')
     .replace('<replacement-agent-transcript>', 'src/content-binding-target.js')
     .replace('<replacement-agent-close-evidence>', 'src/content-binding-target.js');
-  await runCli(['review', 'start', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--role', recovery.role, '--agent-system', 'codex', '--agent-id', 'agent-minimal-recovery', '--agent-thread-id', 'thread-minimal-recovery', '--agent-session-id', 'session-minimal-recovery']);
-  await runCli(['review', 'close', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--role', recovery.role, '--agent-id', 'agent-minimal-recovery', '--close-reason', 'completed', '--close-evidence', 'src/content-binding-target.js']);
   await execFileAsync('/bin/sh', ['-c', executable], { cwd: repo, encoding: 'utf8' });
 
   const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--json']);

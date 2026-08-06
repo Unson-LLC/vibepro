@@ -639,20 +639,6 @@ async function recordAgentReviewStage(repo, storyId, stage, roles, options = {})
     const reviewerSessionId = options.reviewerIdentity === 'separate_session'
       ? (options.reviewerSessionId ?? `${agentId}-session`)
       : options.reviewerSessionId;
-    if (options.reviewerIdentity === 'separate_session') {
-      const started = await runCli([
-        'review', 'start', repo, '--id', storyId, '--stage', stage, '--role', role,
-        '--agent-system', 'codex', '--agent-id', agentId,
-        '--agent-thread-id', `${stage}-${role}-thread`,
-        '--agent-session-id', reviewerSessionId
-      ]);
-      assert.equal(started.exitCode, 0);
-      const closed = await runCli([
-        'review', 'close', repo, '--id', storyId, '--stage', stage, '--role', role,
-        '--agent-id', agentId, '--close-reason', 'completed', '--close-evidence', `agent:${agentId}:completed`
-      ]);
-      assert.equal(closed.exitCode, 0);
-    }
     const result = await runCliWithStdout([
       'review',
       'record',
@@ -2265,38 +2251,6 @@ This Story doc intentionally omits story_id frontmatter and binds by filename.
   assert.equal(recordResult.exitCode, 0);
 
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
-  await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'implementation',
-    '--role',
-    'runtime_contract',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'codex-artifact-consistency-runtime'
-  ]);
-  await runCli([
-    'review',
-    'close',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'implementation',
-    '--role',
-    'runtime_contract',
-    '--agent-id',
-    'codex-artifact-consistency-runtime',
-    '--close-reason',
-    'completed',
-    '--close-evidence',
-    'test:artifact-consistency-runtime'
-  ]);
   const reviewRecordResult = await runCli([
     'review',
     'record',
@@ -5042,12 +4996,10 @@ test('pr ship dry-run reruns prepare and stops with Agent Review commands instea
   assert.equal(ship.next_commands.some((command) => /^gh pr create\b/.test(command)), false);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review prepare')), true);
-  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review start')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review record')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro pr create')), false);
   assert.equal(ship.required_agent_review.length > 0, true);
   assert.equal(ship.required_agent_review.some((action) => action.prepare_command.includes('vibepro review prepare')), true);
-  assert.equal(ship.required_agent_review.some((action) => action.start_command_template.includes('vibepro review start')), true);
   assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('vibepro review record')), true);
   assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--inspection-summary')), true);
   assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--inspection-input')), true);
@@ -5143,7 +5095,6 @@ test('pr ship dry-run restores Agent Review commands from explicitly strict stal
   assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--agent-thread-id')), true);
   assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--agent-closed')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review prepare')), true);
-  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review start')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review record')), true);
   assert.equal(ship.raw_gh_pr_create_suggested, false);
 });
@@ -5818,8 +5769,6 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.expected, 'dispatch_parallel_subagents');
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.user_confirmation_required_by_vibepro, false);
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.runner_policy_may_require_user_delegation, false);
-  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.subagent_lifecycle, 'close_before_record');
-  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.closure_required_for_pass, true);
   assert.match(result.result.plan.parallel_dispatch.coordinator_behavior.fallback, /manual_review does not satisfy/);
   assert.equal(result.result.plan.agent_skill_discipline.required, true);
   assert.equal(result.result.plan.agent_skill_discipline.common_rationalizations.includes('tests_pass_so_review_done'), true);
@@ -5848,13 +5797,6 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /Red flags to treat as findings/);
   assert.match(dispatch, /every mandatory review lens/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
-  assert.match(dispatch, /vibepro review start .*--role e2e_ux/);
-  assert.match(dispatch, /vibepro review close .*--role e2e_ux/);
-  assert.match(dispatch, /--close-reason timeout/);
-  assert.match(dispatch, /vibepro review authorize .*--role e2e_ux/);
-  assert.match(dispatch, /action: dispatch/);
-  assert.match(dispatch, /--dispatch-authorization <authorization-id>/);
-  assert.match(dispatch, /--replacement-for <lifecycle-id>/);
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
@@ -5874,14 +5816,10 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /Required evidence shape/);
   assert.match(request, /pre-fix/);
   assert.match(request, /silent/);
-  assert.match(request, /Required Agent Review Gate pass requires `--agent-closed` evidence/);
   assert.match(request, /A `pass` must cover both the role focus and every mandatory review lens/);
   assert.match(request, /coordinator records it/);
   assert.match(request, /Codex coordinators must include/);
   assert.match(request, /Claude Code coordinators must include/);
-	  assert.match(request, /review start/);
-	  assert.match(request, /review close/);
-	  assert.match(request, /does not return by the timeout/);
 
 	  const subset = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk', '--language', 'en', '--json']);
 	  assert.equal(subset.exitCode, 0);
@@ -5943,185 +5881,6 @@ test('review prepare generates stage role requests', async () => {
   assert.deepEqual(replacement.result.summary.roles.map((role) => role.role), ['preview_smoke']);
 	});
 
-test('review lifecycle tracks timed out subagents and replacement closure', async () => {
-  const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
-
-  const start = await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-stuck',
-    '--timeout-ms',
-    '1',
-    '--json'
-  ]);
-  assert.equal(start.exitCode, 0);
-  assert.equal(start.result.lifecycle.status, 'running');
-  assert.equal(start.result.lifecycle.timeout_ms, 1);
-  await new Promise((resolve) => setTimeout(resolve, 5));
-
-  const timedOut = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
-  assert.equal(timedOut.exitCode, 0);
-  const gateStage = timedOut.result.stages[0];
-  assert.equal(gateStage.lifecycle.timed_out_count, 1);
-  assert.equal(gateStage.roles.find((role) => role.role === 'gate_evidence').lifecycle.effective_status, 'timed_out');
-  assert.equal(gateStage.next_actions.some((action) => action.includes('review close') && action.includes('agent-stuck')), true);
-  assert.equal(gateStage.next_actions.some((action) => action.includes('--close-reason timeout') && action.includes('--close-evidence') && action.includes('timeout-close-evidence')), true);
-  assert.equal(gateStage.next_actions.some((action) => action.includes('review start') && action.includes('--replacement-for')), true);
-
-  const close = await runCli([
-    'review',
-    'close',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-id',
-    'agent-stuck',
-    '--close-reason',
-    'timeout',
-    '--close-evidence',
-    'shutdown',
-    '--json'
-  ]);
-  assert.equal(close.exitCode, 0);
-  assert.equal(close.result.lifecycle.effective_status, 'closed');
-  assert.equal(close.result.lifecycle.close_reason, 'timeout');
-
-  const rewrittenClose = await runCli([
-    'review', 'close', repo,
-    '--id', 'story-pr-prepare',
-    '--stage', 'gate',
-    '--role', 'gate_evidence',
-    '--agent-id', 'agent-stuck',
-    '--close-reason', 'completed',
-    '--close-evidence', 'rewrite-attempt',
-    '--json'
-  ]);
-  assert.equal(rewrittenClose.exitCode, 1);
-  const immutableLifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
-  assert.equal(immutableLifecycle.entries.find((entry) => entry.agent_id === 'agent-stuck').close_reason, 'timeout');
-
-  const replacement = await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-replacement',
-    '--replacement-for',
-    start.result.lifecycle.lifecycle_id,
-    '--json'
-  ]);
-  assert.equal(replacement.exitCode, 0);
-  assert.equal(replacement.result.lifecycle.replacement_for, start.result.lifecycle.lifecycle_id);
-
-  const recovered = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
-  assert.equal(recovered.exitCode, 0);
-  assert.equal(recovered.result.stages[0].lifecycle.timed_out_count, 0);
-  assert.equal(recovered.result.stages[0].lifecycle.replaced_count, 1);
-  assert.equal(recovered.result.stages[0].lifecycle.entries.find((entry) => entry.lifecycle_id === start.result.lifecycle.lifecycle_id).effective_status, 'replaced');
-
-  const record = await runCli([
-    'review',
-    'record',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--status',
-    'pass',
-    '--summary',
-    'replacement passed',
-    '--inspection-summary',
-    'read lifecycle replacement evidence and verified shutdown record',
-    '--inspection-input',
-    '.vibepro/reviews/story-pr-prepare/gate/lifecycle.json',
-    '--judgment-delta',
-    'timed-out lifecycle -> pass after replacement closure evidence',
-    '--agent-system',
-    'codex',
-    '--execution-mode',
-    'parallel_subagent',
-    '--agent-id',
-    'agent-replacement',
-    '--agent-thread-id',
-    'thread-agent-replacement',
-    '--agent-closed',
-    '--agent-close-evidence',
-    'shutdown',
-    '--json'
-  ]);
-  assert.equal(record.exitCode, 0);
-  const lifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
-  const replacementEntry = lifecycle.entries.find((entry) => entry.agent_id === 'agent-replacement');
-  assert.equal(replacementEntry.status, 'closed');
-  assert.equal(replacementEntry.close_reason, 'completed');
-
-  await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-manual-stop'
-  ]);
-  const manualClose = await runCli([
-    'review',
-    'close',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-id',
-    'agent-manual-stop',
-    '--close-reason',
-    'manual_shutdown',
-    '--close-evidence',
-    'operator-shutdown',
-    '--json'
-  ]);
-  assert.equal(manualClose.exitCode, 0);
-  assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
-  const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
-  const manualActions = manualStatus.result.stages[0].next_actions;
-  assert.equal(manualActions.some((action) => action.includes('Authorize replacement for manually shut down') && action.includes('review authorize')), true);
-  assert.equal(manualActions.some((action) => action.includes('action: dispatch') && action.includes('--dispatch-authorization') && action.includes('--replacement-for')), true);
-});
-
 test('artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -6173,59 +5932,6 @@ spec_docs:
   assert.equal(axis.missing_evidence.includes('review_owner_map'), true);
 });
 
-test('review replacement lifecycle enforces same-role lineage and prior closure evidence', async () => {
-  const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
-  const start = await runCli([
-    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-system', 'codex', '--agent-id', 'agent-original', '--json'
-  ]);
-  assert.equal(start.exitCode, 0);
-
-  const unlinked = await runCliWithStdout([
-    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-system', 'codex', '--agent-id', 'agent-unlinked', '--replacement-for', 'missing-lifecycle', '--json'
-  ]);
-  assert.notEqual(unlinked.exitCode, 0);
-  assert.match(unlinked.stderr, /existing lifecycle for the same story, stage, and role/);
-
-  const premature = await runCliWithStdout([
-    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-system', 'codex', '--agent-id', 'agent-premature', '--replacement-for', start.result.lifecycle.lifecycle_id, '--json'
-  ]);
-  assert.notEqual(premature.exitCode, 0);
-  assert.match(premature.stderr, /prior lifecycle to be closed first/);
-
-  const close = await runCli([
-    'review', 'close', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-id', 'agent-original', '--close-reason', 'manual_shutdown', '--close-evidence', 'agent shutdown confirmed', '--json'
-  ]);
-  assert.equal(close.exitCode, 0);
-  const missingReplacement = await runCliWithStdout([
-    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-system', 'codex', '--agent-id', 'agent-missing-replacement', '--json'
-  ]);
-  assert.notEqual(missingReplacement.exitCode, 0);
-  assert.match(missingReplacement.stderr, /manually shut down prior lifecycle.*--replacement-for/);
-  const replacement = await runCli([
-    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-system', 'codex', '--agent-id', 'agent-valid-replacement', '--replacement-for', start.result.lifecycle.lifecycle_id, '--json'
-  ]);
-  assert.equal(replacement.exitCode, 0);
-
-  const replacementClose = await runCli([
-    'review', 'close', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-id', 'agent-valid-replacement', '--close-reason', 'manual_shutdown', '--close-evidence', 'replacement shutdown confirmed', '--json'
-  ]);
-  assert.equal(replacementClose.exitCode, 0);
-  const staleLineage = await runCliWithStdout([
-    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-    '--agent-system', 'codex', '--agent-id', 'agent-stale-lineage', '--replacement-for', start.result.lifecycle.lifecycle_id, '--json'
-  ]);
-  assert.notEqual(staleLineage.exitCode, 0);
-  assert.match(staleLineage.stderr, /latest same-role lifecycle/);
-});
-
 test('user git fingerprint includes dirty VibePro config but ignores generated artifacts', async () => {
   const repo = await makeGitRepoWithStory();
   const clean = await collectGitStatusFingerprints(repo);
@@ -6243,155 +5949,6 @@ test('user git fingerprint includes dirty VibePro config but ignores generated a
   assert.equal(artifactDirty.raw_dirty, undefined);
   assert.equal(artifactDirty.user_dirty, false);
   assert.equal(artifactDirty.user_status_fingerprint_hash, clean.user_status_fingerprint_hash);
-});
-
-test('review status and summary tell operators to close running subagents before recording', async () => {
-  const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence']);
-
-  const start = await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-running',
-    '--timeout-ms',
-    '600000',
-    '--json'
-  ]);
-  assert.equal(start.exitCode, 0);
-
-  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
-  assert.equal(status.exitCode, 0);
-  assert.equal(status.result.stages[0].lifecycle.running_count, 1);
-  assert.equal(status.result.stages[0].next_actions.some((action) => action.includes('Wait for running gate:gate_evidence subagent agent-running')), true);
-  assert.equal(status.result.stages[0].next_actions.some((action) => action.includes('review close') && action.includes('agent-running')), true);
-  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review close') && command.includes('agent-running')), true);
-  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review record')), false);
-
-  const statusText = await runCliWithStdout(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
-  assert.equal(statusText.exitCode, 0);
-  assert.match(statusText.stdout, /## Next Commands/);
-  assert.match(statusText.stdout, /vibepro review close .*agent-running/);
-  assert.doesNotMatch(statusText.stdout, /## Next Commands\n\n- vibepro review record/);
-
-  const reviewSummary = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.md'), 'utf8');
-  assert.match(reviewSummary, /Wait for running gate:gate_evidence subagent agent-running/);
-  assert.match(reviewSummary, /vibepro review close/);
-});
-
-test('review lifecycle preserves concurrent stage starts', async () => {
-  const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk']);
-
-  const previousDelay = process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS;
-  process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS = '50';
-  let evidence;
-  let release;
-  try {
-    [evidence, release] = await Promise.all([
-      runCli([
-        'review',
-        'start',
-        repo,
-        '--id',
-        'story-pr-prepare',
-        '--stage',
-        'gate',
-        '--role',
-        'gate_evidence',
-        '--agent-system',
-        'codex',
-        '--agent-id',
-        'agent-evidence',
-        '--json'
-      ]),
-      runCli([
-        'review',
-        'start',
-        repo,
-        '--id',
-        'story-pr-prepare',
-        '--stage',
-        'gate',
-        '--role',
-        'release_risk',
-        '--agent-system',
-        'codex',
-        '--agent-id',
-        'agent-release',
-        '--json'
-      ])
-    ]);
-  } finally {
-    if (previousDelay === undefined) {
-      delete process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS;
-    } else {
-      process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS = previousDelay;
-    }
-  }
-
-  assert.equal(evidence.exitCode, 0);
-  assert.equal(release.exitCode, 0);
-  const lifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
-  assert.equal(lifecycle.entries.some((entry) => entry.agent_id === 'agent-evidence'), true);
-  assert.equal(lifecycle.entries.some((entry) => entry.agent_id === 'agent-release'), true);
-  const summary = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.json'));
-  assert.equal(summary.roles.find((role) => role.role === 'gate_evidence').lifecycle.effective_status, 'running');
-  assert.equal(summary.roles.find((role) => role.role === 'release_risk').lifecycle.effective_status, 'running');
-  assert.equal(summary.next_actions.some((action) => action.includes('agent-evidence')), true);
-  assert.equal(summary.next_actions.some((action) => action.includes('agent-release')), true);
-  const summaryMarkdown = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.md'), 'utf8');
-  assert.match(summaryMarkdown, /agent-evidence/);
-  assert.match(summaryMarkdown, /agent-release/);
-});
-
-test('review status orders running close commands before stale record commands', async () => {
-  const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--role', 'e2e_ux', '--role', 'gate_coverage']);
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux', 'gate_coverage'], {
-    strictHeadRoles: ['e2e_ux', 'gate_coverage']
-  });
-  await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'mixed-review-order.js'), 'export const changed = true;\n');
-  await git(repo, ['add', '.']);
-  await git(repo, ['commit', '-m', 'feat: stale one role while another runs']);
-  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--role', 'e2e_ux', '--role', 'gate_coverage']);
-  await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'test_plan',
-    '--role',
-    'gate_coverage',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-running-mixed',
-    '--json'
-  ]);
-
-  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--json']);
-  assert.equal(status.exitCode, 0);
-  const closeIndex = status.result.blocking_summary.next_commands.findIndex((command) => command.includes('vibepro review close') && command.includes('agent-running-mixed'));
-  const recordIndex = status.result.blocking_summary.next_commands.findIndex((command) => command.includes('vibepro review record'));
-  assert.equal(closeIndex >= 0, true);
-  assert.equal(recordIndex >= 0, true);
-  assert.equal(closeIndex < recordIndex, true);
-
-  const statusText = await runCliWithStdout(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan']);
-  assert.equal(statusText.stdout.indexOf('vibepro review close') < statusText.stdout.indexOf('vibepro review record'), true);
 });
 
 test('review policy config customizes stage roles and role timeout', async () => {
@@ -6418,7 +5975,6 @@ test('review policy config customizes stage roles and role timeout', async () =>
   assert.equal(prepared.result.plan.parallel_dispatch.subagent_count, 2);
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-request-custom_security.md'), 'utf8');
   assert.match(request, /--role custom_security/);
-  assert.match(request, /--timeout-ms 12345/);
 
   const record = await runCli([
     'review',
@@ -6497,33 +6053,6 @@ test('review policy config publishes role model policy and records actual model 
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-request-gate_evidence.md'), 'utf8');
   assert.match(request, /## Model Policy/);
   assert.match(request, /reasoning_effort: high/);
-
-  const started = await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-gate-evidence',
-    '--agent-model',
-    'gpt-5.5',
-    '--agent-reasoning-effort',
-    'high',
-    '--agent-cost-tier',
-    'high',
-    '--json'
-  ]);
-  assert.equal(started.exitCode, 0);
-  assert.equal(started.result.lifecycle.agent_model, 'gpt-5.5');
-  assert.equal(started.result.lifecycle.agent_reasoning_effort, 'high');
-  assert.equal(started.result.lifecycle.agent_cost_tier, 'high');
 
   const record = await runCli([
     'review',
@@ -6726,121 +6255,6 @@ test('subagent ROI report classifies decision signal, waste signal, and missing 
   assert.deepEqual(parsed.subagent_roi.by_story[0].role_recommendations.needs_evidence, ['code_spec_alignment']);
 });
 
-test('review start rejects model policy mismatch before lifecycle start unless override is justified', async () => {
-  const repo = await makeGitRepoWithStory();
-  const configPath = path.join(repo, '.vibepro', 'config.json');
-  const config = await readJson(configPath);
-  config.agent_reviews = {
-    defaults: {
-      model_policy: {
-        model: 'gpt-5.5',
-        reasoning_effort: 'low',
-        cost_tier: 'low'
-      }
-    },
-    roles: {
-      release_risk: {
-        model_policy: {
-          reasoning_effort: 'medium',
-          cost_tier: 'medium'
-        }
-      }
-    }
-  };
-  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
-
-  const rejected = await runCliWithStdout([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-high-cost',
-    '--agent-model',
-    'gpt-5.5',
-    '--agent-reasoning-effort',
-    'high',
-    '--agent-cost-tier',
-    'high',
-    '--json'
-  ]);
-
-  assert.notEqual(rejected.exitCode, 0);
-  assert.match(rejected.stderr, /model policy preflight failed/);
-  assert.doesNotMatch(rejected.stderr, /gpt-5\.4/);
-  assert.match(rejected.stderr, /agent_reasoning_effort expected low but got high/);
-  assert.match(rejected.stderr, /agent_cost_tier expected low but got high/);
-
-  const lifecyclePath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json');
-  assert.equal(await pathExists(lifecyclePath), false, 'rejected preflight must not create a running lifecycle');
-
-  const overrideWithoutReason = await runCliWithStdout([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-high-cost',
-    '--agent-model',
-    'gpt-5.5',
-    '--agent-reasoning-effort',
-    'high',
-    '--agent-cost-tier',
-    'high',
-    '--allow-model-policy-override',
-    '--json'
-  ]);
-
-  assert.notEqual(overrideWithoutReason.exitCode, 0);
-  assert.match(overrideWithoutReason.stderr, /model policy override requires --model-policy-override-reason <text>/);
-  assert.equal(await pathExists(lifecyclePath), false, 'reasonless override must not create a running lifecycle');
-
-  const overridden = await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-high-cost',
-    '--agent-model',
-    'gpt-5.5',
-    '--agent-reasoning-effort',
-    'high',
-    '--agent-cost-tier',
-    'high',
-    '--allow-model-policy-override',
-    '--model-policy-override-reason',
-    'release manager requested high-confidence rerun',
-    '--json'
-  ]);
-
-  assert.equal(overridden.exitCode, 0);
-  assert.equal(overridden.result.lifecycle.model_policy_preflight.status, 'overridden');
-  assert.equal(overridden.result.lifecycle.model_policy_preflight.override_reason, 'release manager requested high-confidence rerun');
-  assert.equal(overridden.result.lifecycle.model_policy_preflight.mismatches.length, 2);
-});
-
 test('agent review PR policy honors role mode and changed-file activation', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -6898,7 +6312,7 @@ test('review status focuses required current blockers and moves optional history
 
   await runCli([
     'review',
-    'start',
+    'record',
     repo,
     '--id',
     'story-pr-prepare',
@@ -6906,28 +6320,17 @@ test('review status focuses required current blockers and moves optional history
     'gate',
     '--role',
     'pr_split_scope',
+    '--status',
+    'needs_changes',
+    '--summary',
+    'optional scope review recorded',
     '--agent-system',
     'codex',
+    '--execution-mode',
+    'parallel_subagent',
     '--agent-id',
     'optional-scope-agent',
-    '--json'
-  ]);
-  await runCli([
-    'review',
-    'close',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'pr_split_scope',
-    '--agent-id',
-    'optional-scope-agent',
-    '--close-reason',
-    'completed',
-    '--close-evidence',
-    'optional review closed',
+    '--agent-closed',
     '--json'
   ]);
 
@@ -6941,7 +6344,7 @@ test('review status focuses required current blockers and moves optional history
   assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review record')), true);
   assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
   assert.equal(status.result.optional.some((item) => item.role === 'pr_split_scope'), true);
-  assert.equal(status.result.history.some((item) => item.kind === 'lifecycle' && item.agent_id === 'optional-scope-agent' && item.blocking === false), true);
+  assert.equal(status.result.history.some((item) => item.stage === 'gate' && item.role === 'pr_split_scope' && item.blocking === false), true);
 
   let defaultOutput = '';
   const textStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare'], {
@@ -6960,7 +6363,6 @@ test('review status focuses required current blockers and moves optional history
   });
   assert.equal(allStatus.exitCode, 0);
   assert.match(historyOutput, /pr_split_scope/);
-  assert.match(historyOutput, /optional-scope-agent/);
 });
 
 test('review status ignores stale pr prepare required reviews from an older HEAD', async () => {
@@ -7976,11 +7378,13 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(openClaudeRecord.exitCode, 0);
   assert.equal(openClaudeRecord.result.review.agent_provenance.lifecycle.agent_closed, false);
 
+  // --agent-closed is recorded as informational provenance metadata only; it
+  // is no longer required for verified_agent status (review lifecycle
+  // start/close ceremony was retired).
   const statusWithOpenSubagent = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
   const roleWithOpenSubagent = statusWithOpenSubagent.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
-  assert.equal(roleWithOpenSubagent.effective_status, 'unverified_agent');
-  assert.equal(roleWithOpenSubagent.provenance_status, 'agent_not_closed');
-  assert.match(roleWithOpenSubagent.provenance_reason, /--agent-closed/);
+  assert.equal(roleWithOpenSubagent.effective_status, 'pass');
+  assert.equal(roleWithOpenSubagent.provenance_status, 'verified_agent');
 
   const claudeRecord = await runCli([
     'review',
@@ -8023,56 +7427,7 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(roleWithProvenance.provenance_status, 'verified_agent');
 });
 
-test('pr prepare blocks timed out required review lifecycle even when review result passed', async () => {
-  const repo = await makeGitRepoWithStory();
-  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
-story_id: story-pr-prepare
-title: PR準備
-architecture_docs:
-  reason: CLI-only utility change
----
-
-# PR準備
-`);
-  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
-
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
-  await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-stuck-after-pass',
-    '--timeout-ms',
-    '1'
-  ]);
-  await new Promise((resolve) => setTimeout(resolve, 5));
-
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-  assert.equal(result.exitCode, 0);
-  const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
-  assert.equal(agentGate.status, 'needs_review');
-  assert.equal(agentGate.required_actions.some((action) => action.includes('agent-stuck-after-pass')), true);
-  const batchNode = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:dispatch_batch:gate');
-  assert.equal(batchNode.status, 'failed');
-  const preflightNode = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
-  assert.equal(preflightNode.status, 'failed');
-  assert.equal(preflightNode.preflight_kind, 'lifecycle_recovery');
-  assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
-  assert.equal(result.result.preparation.pr_context.agent_reviews.summary.lifecycle_timed_out_count, 1);
-});
-
-test('pr prepare marks dispatch preflight for running manual shutdown and unverified review evidence', async () => {
+test('pr prepare marks unverified manual review provenance dispatch preflight as needs_review', async () => {
   const makePreparedReviewRepo = async () => {
     const repo = await makeGitRepoWithStory();
     await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -8089,71 +7444,6 @@ architecture_docs:
     await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
     return repo;
   };
-
-  const runningRepo = await makePreparedReviewRepo();
-  await recordAgentReviewStage(runningRepo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
-  await runCli([
-    'review',
-    'start',
-    runningRepo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-running-after-pass'
-  ]);
-  await writeFile(path.join(runningRepo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim().toLowerCase(); }\n');
-  const runningResult = await runCli(['pr', 'prepare', runningRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-  const runningPreflight = runningResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
-  assert.equal(runningPreflight.status, 'failed');
-  assert.equal(runningPreflight.preflight_kind, 'dedupe_running');
-  assert.match(runningPreflight.reason, /already running/);
-
-  const manualShutdownRepo = await makePreparedReviewRepo();
-  await recordAgentReviewStage(manualShutdownRepo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
-  await runCli([
-    'review',
-    'start',
-    manualShutdownRepo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'agent-manual-shutdown-after-pass'
-  ]);
-  await runCli([
-    'review',
-    'close',
-    manualShutdownRepo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-id',
-    'agent-manual-shutdown-after-pass',
-    '--close-reason',
-    'manual_shutdown',
-    '--close-evidence',
-    'agent:agent-manual-shutdown-after-pass:manual-shutdown'
-  ]);
-  const manualShutdownResult = await runCli(['pr', 'prepare', manualShutdownRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-  const manualShutdownPreflight = manualShutdownResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
-  assert.equal(manualShutdownPreflight.status, 'needs_review');
-  assert.equal(manualShutdownPreflight.preflight_kind, 'lifecycle_recovery');
-  assert.match(manualShutdownPreflight.reason, /manual_shutdown/);
-  assert.equal(manualShutdownResult.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'review:preflight:gate:gate_evidence'), true);
 
   const unverifiedRepo = await makePreparedReviewRepo();
   await runCli(['review', 'prepare', unverifiedRepo, '--id', 'story-pr-prepare', '--stage', 'gate']);
@@ -8191,45 +7481,6 @@ architecture_docs:
   assert.equal(unverifiedPreflight.status, 'needs_review');
   assert.equal(unverifiedPreflight.preflight_kind, 'provenance_recovery');
   assert.match(unverifiedPreflight.reason, /human manual review provenance|parallel subagent provenance|manual_review/);
-});
-
-test('pr prepare routes every already-closed terminal lifecycle through replacement recovery', async () => {
-  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
-    const repo = await makeGitRepoWithStory();
-    await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
-    await mkdir(path.join(repo, 'src'), { recursive: true });
-    await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
-story_id: story-pr-prepare
-title: PR準備
-architecture_docs:
-  reason: CLI-only utility change
----
-
-# PR準備
-`);
-    await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
-    await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
-    const started = await runCli([
-      'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-      '--agent-system', 'codex', '--agent-id', `agent-${closeReason}`
-    ]);
-    assert.equal(started.exitCode, 0);
-    const closed = await runCli([
-      'review', 'close', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
-      '--agent-id', `agent-${closeReason}`, '--close-reason', closeReason,
-      '--close-evidence', `${closeReason} fixture`,
-      ...(closeReason === 'timeout' ? [] : ['--cancellation-confirmed'])
-    ]);
-    assert.equal(closed.exitCode, 0);
-
-    const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-    const preflight = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
-    assert.equal(preflight.preflight_kind, 'lifecycle_recovery');
-    assert.match(preflight.reason, new RegExp(closeReason));
-    const recovery = JSON.stringify(result.result.preparation);
-    assert.match(recovery, /review authorize/);
-    assert.match(recovery, new RegExp(`--replacement-for ${started.result.lifecycle.lifecycle_id}`));
-  }
 });
 
 test('pr prepare marks recorded blocker dispatch preflight and pr ship excludes internal review gates from human judgments', async () => {
@@ -8343,80 +7594,6 @@ architecture_docs:
 
   await assertRecordedBlocker('block');
   await assertRecordedBlocker('needs_changes');
-});
-
-test('pr prepare blocks timed out workflow checkpoint review lifecycle even when checkpoint result passed', async () => {
-  const repo = await makeGitRepoWithStory();
-  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components'), { recursive: true });
-  await mkdir(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples'), { recursive: true });
-  await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
-  await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
-  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
-story_id: story-pr-prepare
-title: Workflow checkpoint review
-architecture_docs:
-  reason: workflow-heavy fixture
----
-
-# Workflow checkpoint review
-
-## 背景
-
-The workflow runs UI, API, service, worker, retry, and status transitions.
-`);
-  await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components', 'PlanTab.tsx'), 'export function PlanTab(){ return <button>Start</button>; }\n');
-  await writeFile(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples', 'route.ts'), 'export async function POST(){ return Response.json({ status: "queued" }); }\n');
-  await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
-  await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
-
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'architecture_spec', ['regression_risk']);
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux', 'gate_coverage']);
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'implementation', ['runtime_contract', 'ux_completion']);
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'release_risk']);
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'preview', ['preview_smoke', 'network_runtime', 'human_usability']);
-  await runCli([
-    'review',
-    'start',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'implementation',
-    '--role',
-    'runtime_contract',
-    '--agent-system',
-    'codex',
-    '--agent-id',
-    'checkpoint-runtime-stuck-after-pass',
-    '--timeout-ms',
-    '1'
-  ]);
-  await new Promise((resolve) => setTimeout(resolve, 5));
-
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-  assert.equal(result.exitCode, 0);
-  const agentReviews = result.result.preparation.pr_context.agent_reviews;
-  assert.equal(
-    agentReviews.summary.unmet_checkpoint_review_count,
-    1,
-    JSON.stringify(agentReviews.unmet_checkpoint_reviews, null, 2)
-  );
-  assert.equal(agentReviews.unmet_checkpoint_reviews[0].role, 'runtime_contract');
-  assert.equal(agentReviews.unmet_checkpoint_reviews[0].status, 'timed_out');
-  assert.match(agentReviews.unmet_checkpoint_reviews[0].detail, /checkpoint-runtime-stuck-after-pass/);
-  const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
-  assert.equal(agentGate.status, 'needs_review');
-  const topologyAxis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((axis) => axis.axis === 'execution_topology');
-  assert.equal(topologyAxis.matched_evidence.some((item) => item.kind === 'agent_review'), false, JSON.stringify(topologyAxis, null, 2));
-  assert.equal(topologyAxis.activation_precision?.status, 'insufficient_signal');
-  assert.equal((topologyAxis.activation_candidates?.length ?? 0) > 0, true);
-  const topologyGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_execution_topology');
-  assert.equal(topologyGate, undefined);
-  assert.equal(
-    result.result.preparation.pr_context.gate_dag.summary.suppressed_judgment_axes.some((axis) => axis.axis === 'execution_topology'),
-    true
-  );
 });
 
 test('pr prepare advances current review stage after required roles pass despite default missing roles', async () => {
@@ -10310,7 +9487,7 @@ test('atomic owner map ignores optional roles for both blocking and ownership', 
     agent_provenance: {
       reviewer_identity: {
         relation: 'separate_session',
-        source: 'lifecycle_agent_binding',
+        source: 'declared_session_ids',
         reviewer_session_id: reviewerSessionId,
         implementation_session_id: 'implementation-session'
       }
@@ -10345,19 +9522,6 @@ test('atomic owner map ignores optional roles for both blocking and ownership', 
   }, lanes);
   assert.equal(requiredOnly.verified, true);
   assert.deepEqual(requiredOnly.facets[0].owners.map((owner) => owner.role), ['gate_coverage']);
-
-  const supersededByRunningLifecycle = buildAgentReviewOwnerMapEvidence({
-    required_reviews: requiredReviews,
-    checkpoint_required_reviews: [],
-    stages: [{
-      stage: 'test_plan',
-      roles: [{
-        ...passingRole('gate_coverage', 'pass', ['src/atomic.js'], 'required-review-session'),
-        lifecycle: { effective_status: 'running' }
-      }]
-    }]
-  }, lanes);
-  assert.equal(supersededByRunningLifecycle.verified, false);
 
   const noRequiredRoles = buildAgentReviewOwnerMapEvidence({
     required_reviews: [],
@@ -10646,7 +9810,7 @@ pr_scope_dependency_boundaries:
   assert.equal(
     splitPlan.atomic_scope.review_owner_map
       .flatMap((facet) => facet.owners)
-      .every((owner) => owner.reviewer_identity_source === 'lifecycle_agent_binding'
+      .every((owner) => owner.reviewer_identity_source === 'declared_session_ids'
         && owner.reviewer_session_id !== owner.implementation_session_id),
     true
   );
