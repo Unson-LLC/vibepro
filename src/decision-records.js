@@ -5,7 +5,6 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
@@ -101,10 +100,6 @@ export async function recordDecision(repoRoot, options = {}) {
     ]
   };
   await writeJsonAtomic(evidencePath, next);
-  await refreshActiveRunContextCapsule(root, {
-    storyId,
-    reason: 'decision_recorded'
-  });
   return {
     decision,
     records: next,
