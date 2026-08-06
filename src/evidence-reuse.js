@@ -641,10 +641,29 @@ export function buildRoleContentDigests(stageSummaries = [], { headSha = null } 
         digests[key] = { mode: 'strict_head', digest: normalizedHead };
         continue;
       }
-      const surfaceHash = role?.content_binding?.current_surface_hash
-        ?? role?.content_binding?.recorded_surface_hash
-        ?? role?.content_binding?.surface_hash
-        ?? null;
+      // A role's entire previously-inspected surface can be deleted outright
+      // (not merely edited). evaluateContentBinding (content-binding.js)
+      // correctly reports current_surface_hash: null and status: 'stale'
+      // with a populated missing_files list for this, but
+      // recorded_surface_hash still unconditionally carries the old hash
+      // (it is a summary of what WAS recorded, not what is current).
+      // Falling back to it here would silently resurrect a stale digest as
+      // the role's reported "current" one, so compareEvidenceReuse would see
+      // an unchanged digest and report a false hit -- exactly the "absence
+      // of drift evidence is not the same fact as confirmed freshness"
+      // failure mode this Story exists to prevent (CRK-S-2). Only fall back
+      // to the recorded hash when there is no missing-files signal at all,
+      // i.e. content_binding was never evaluated against a missing-file
+      // check this round (legacy shape) or has no recorded surface files to
+      // go missing from.
+      const missingFiles = Array.isArray(role?.content_binding?.missing_files)
+        ? role.content_binding.missing_files
+        : [];
+      const currentSurfaceHash = role?.content_binding?.current_surface_hash ?? null;
+      const surfaceHash = currentSurfaceHash
+        ?? (missingFiles.length === 0
+          ? (role?.content_binding?.recorded_surface_hash ?? role?.content_binding?.surface_hash ?? null)
+          : null);
       if (!surfaceHash) continue;
       digests[key] = { mode: 'content_surface', digest: `sha256:${surfaceHash}` };
     }

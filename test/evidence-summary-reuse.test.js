@@ -1088,3 +1088,89 @@ test('buildRoleContentDigests omits a role whose content_binding shape is unreco
     (reason) => /neither a current inspected content surface nor a previous evidence-reuse baseline/.test(reason.reason)
   ));
 });
+
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-2
+test("buildRoleContentDigests does not resurrect a stale recorded digest when a role's entire inspected surface is deleted, so the whole artifact cannot report a false hit", () => {
+  // Real shape produced by evaluateContentBinding (src/content-binding.js)
+  // when every file in a role's recorded surface is now missing:
+  // current_surface_hash becomes null and missing_files is populated, but
+  // recorded_surface_hash still unconditionally carries the OLD hash (it is
+  // a summary of what was recorded, not what is current). Before this fix,
+  // buildRoleContentDigests's `current_surface_hash ?? recorded_surface_hash
+  // ?? surface_hash` fallback chain would slide through the null and report
+  // the stale recorded hash as the role's CURRENT digest -- an independent
+  // final_review (implementation:runtime_contract) caught this by
+  // reproducing it directly against buildEvidenceReuse().
+  const roleFullyPresent = [
+    {
+      stage: 'implementation',
+      roles: [
+        {
+          role: 'runtime_contract',
+          freshness_policy: { effective_mode: 'content_surface' },
+          content_binding: {
+            current_surface_hash: 'aaaa',
+            recorded_surface_hash: 'aaaa',
+            surface_files: ['src/deleted-module.js'],
+            missing_files: []
+          }
+        }
+      ]
+    }
+  ];
+  const roleSurfaceDeleted = [
+    {
+      stage: 'implementation',
+      roles: [
+        {
+          role: 'runtime_contract',
+          freshness_policy: { effective_mode: 'content_surface' },
+          content_binding: {
+            // The one recorded file is gone: evaluateContentBinding sets
+            // current_surface_hash to null and status to 'stale', while
+            // recorded_surface_hash keeps reporting the pre-deletion hash.
+            current_surface_hash: null,
+            recorded_surface_hash: 'aaaa',
+            surface_files: ['src/deleted-module.js'],
+            missing_files: ['src/deleted-module.js']
+          }
+        }
+      ]
+    }
+  ];
+
+  // Direct unit check on buildRoleContentDigests: the deleted-surface round
+  // must omit the role's digest entirely (landing in the existing "absent"
+  // branch), not report a digest at all -- least of all the stale one.
+  const digestsBeforeDeletion = buildRoleContentDigests(roleFullyPresent, { headSha: 'head-a' });
+  assert.deepEqual(digestsBeforeDeletion, { 'implementation:runtime_contract': { mode: 'content_surface', digest: 'sha256:aaaa' } });
+  const digestsAfterDeletion = buildRoleContentDigests(roleSurfaceDeleted, { headSha: 'head-a' });
+  assert.deepEqual(digestsAfterDeletion, {}, "a role whose entire recorded surface is missing must be omitted, not hashed into its stale recorded digest");
+
+  // End-to-end through the real buildEvidenceReuse() export, mirroring how
+  // an independent reviewer reproduced the defect: build once with the
+  // surface present, then again after deletion with previousReuse carried
+  // forward and every other input held constant.
+  const base = {
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  };
+  const first = buildEvidenceReuse({ ...base, prContext: { agent_reviews: { stages: roleFullyPresent } } });
+  assert.equal(first.role_reuse['implementation:runtime_contract'].digest, 'sha256:aaaa');
+
+  const second = buildEvidenceReuse({
+    ...base,
+    prContext: { agent_reviews: { stages: roleSurfaceDeleted } },
+    previousReuse: first
+  });
+  // The actual fix under test: the artifact must not resurrect the deleted
+  // role's stale digest as if it were current. Before the fix, evidence_key
+  // stayed byte-identical to `first` and status was 'hit' with
+  // stale_reasons: [] -- a false whole-artifact hit for a state
+  // evaluateContentBinding itself independently classifies as 'stale'.
+  assert.notEqual(second.evidence_key, first.evidence_key, 'evidence_key must change once the role surface is deleted, not stay byte-identical to the pre-deletion build');
+  assert.notEqual(second.status, 'hit', 'the aggregate status must not report a hit once a previously-tracked role has lost its entire recorded surface');
+  assert.equal(second.role_reuse['implementation:runtime_contract'], undefined, "the deleted-surface role must be absent from role_reuse, not silently marked 'hit'");
+});
