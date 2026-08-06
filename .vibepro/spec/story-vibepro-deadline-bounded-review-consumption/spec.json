@@ -47,7 +47,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "S-001",
@@ -94,7 +94,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "S-002",
@@ -106,7 +106,7 @@
           {
             "kind": "acceptance_criteria",
             "index": 2,
-            "text_snippet": "timeout_ms が欠落または非有限...の場合、close_reason に関わらず現在どおり全区間を計上する（後方互換）"
+            "text_snippet": "timeout_ms が欠落・非有限（null/undefined/NaN/非数値）、またはゼロ以下（<= 0）の場合、close_reason に関わらず現在どおり全区間を計上する（後方互換）。ゼロ以下を上限として束縛すると Math.min(duration, 0) が常にゼロを返し、実際に消費した agent 時間が丸ごと消えるという、過大計上より悪い失敗になるため、束縛せず全区間計上へフォールバックする。"
           }
         ],
         "code_refs": [
@@ -137,7 +137,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "INV-002",
@@ -180,7 +180,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "C-001",
@@ -235,13 +235,13 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
-      "id": "C-002",
+      "id": "C-003",
       "type": "contract",
-      "statement": "aggregateDeliveryMetrics's return value includes deadline_excluded_ms (total milliseconds excluded across all bounded reviews[] entries) and deadline_excluded_count (number of entries bounded), both null exactly when agent_consumption_ms is null (incomplete review timing) and otherwise numeric; withDeadlineExclusionVisibility (src/agent-review.js) carries both fields onto the dispatch-decision budget object, and story-run-portfolio.js's emptyCostAttribution/COUNT_COST_KEYS carry deadline_excluded_ms/deadline_excluded_count through persisted portfolio cost attribution, so pr prepare's efficiency report and dispatch decision evidence do not silently drop the excluded amount.",
-      "rationale": "A bound that shrinks agent_consumption_ms without a visible trail would be indistinguishable from a loosened guardrail. deadline_excluded_ms/deadline_excluded_count are threaded through every layer that persists or reports agent_consumption_ms: the aggregator return value, the dispatch-decision budget object consumed by owner-facing evidence, and the portfolio's persisted cost_attribution shape (whose emptyCostAttribution defaults and COUNT_COST_KEYS allowlist would otherwise silently drop the two new fields).",
+      "statement": "aggregateDeliveryMetrics's return value includes deadline_excluded_ms (total milliseconds excluded across all bounded reviews[] entries) and deadline_excluded_count (number of entries bounded), both null exactly when agent_consumption_ms is null (incomplete review timing) and otherwise numeric; withDeadlineExclusionVisibility (src/agent-review.js) carries both fields onto the dispatch-decision budget object, which pr prepare threads into gate_dag.summary.efficiency_debt.metrics and into the --summary-json/--view blocking-gates/--view gate-evidence canonical LLM projections, so pr prepare's efficiency report and dispatch decision evidence do not silently drop the excluded amount. story-run-portfolio.js's persisted cost_attribution shape deliberately does not carry these two fields: Portfolio state is a git-ignored, closed-schema artifact (validateState's hasExactKeys(cost, COST_KEYS)), so adding fields there would create a rollback asymmetry that this clause's visibility guarantee does not require, since gate_dag.summary and the dispatch-decision budget object already carry the fields without going through story-run-portfolio.js.",
+      "rationale": "A bound that shrinks agent_consumption_ms without a visible trail would be indistinguishable from a loosened guardrail. deadline_excluded_ms/deadline_excluded_count are threaded through every layer that reports agent_consumption_ms for pr prepare: the aggregator return value and the dispatch-decision budget object consumed by owner-facing evidence (gate_dag.summary.efficiency_debt.metrics and the three canonical LLM views). story-run-portfolio.js's persisted cost_attribution intentionally stays out of this chain (story-vibepro-deadline-bounded-review-consumption boundary, revised after review): Portfolio state persists to a git-ignored file under a closed schema enforced by hasExactKeys, so a code-only git revert cannot undo already-written state files that carry the two new fields, and validateState would then reject them as invalid_portfolio_state, permanently blocking further Portfolio operations. The visibility this clause requires is already satisfied without touching that surface.",
       "origin": {
         "story_refs": [
           {
@@ -258,24 +258,12 @@
           {
             "file": "src/agent-review.js",
             "anchor": "function withDeadlineExclusionVisibility(budget, metrics) {"
-          },
-          {
-            "file": "src/story-run-portfolio.js",
-            "anchor": "deadline_excluded_ms: null,"
-          },
-          {
-            "file": "src/story-run-portfolio.js",
-            "anchor": "'deadline_excluded_count'"
           }
         ],
         "test_refs": [
           {
             "file": "test/delivery-efficiency-guardrail.test.js",
             "case": "DBA-S-6: deadline_excluded_ms and deadline_excluded_count total every bounded lifecycle and stay null (not zero) when review timing is incomplete"
-          },
-          {
-            "file": "test/story-run-portfolio.test.js",
-            "case": "DBA-S-6: portfolio persists deadline_excluded_ms and deadline_excluded_count alongside the bounded agent_consumption_ms"
           },
           {
             "file": "test/review-inspection-first.test.js",
@@ -286,19 +274,19 @@
       "verifiable_by": {
         "code_pattern": [
           {
-            "file_glob": "src/story-run-portfolio.js",
-            "must_contain": "'deadline_excluded_count'"
+            "file_glob": "src/delivery-efficiency-guardrail.js",
+            "must_contain": "deadline_excluded_ms: consumption ? consumption.deadline_excluded_ms : null,"
           }
         ],
         "test_pattern": [
           {
-            "file_glob": "test/story-run-portfolio.test.js",
-            "must_cover": "alongside the bounded agent_consumption_ms"
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "stay null (not zero) when review timing is incomplete"
           }
         ]
       },
-      "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "first_seen_at": "2026-08-06T02:56:34.118Z",
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "S-003",
@@ -335,7 +323,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "INV-003",
@@ -405,7 +393,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     },
     {
       "id": "S-004",
@@ -460,7 +448,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:40:04.445Z",
-      "last_revised_at": "2026-08-06T01:40:04.445Z"
+      "last_revised_at": "2026-08-06T02:56:34.118Z"
     }
   ],
   "diagrams": [

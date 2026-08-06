@@ -22,8 +22,7 @@ const COST_AGGREGATION_INPUT_KEYS = new Set(['run_started_at', 'trusted_pr_ready
 const COUNT_COST_KEYS = new Set([
   'subagent_count', 'review_dispatch_count', 'accepted_finding_count', 'repair_batch_count', 'full_suite_count',
   'expensive_verification_count', 'evidence_reuse_count', 'evidence_invalidation_count',
-  'human_interruption_count', 'efficiency_debt_count', 'accepted_defect_count', 'risk_reduction_count',
-  'deadline_excluded_count'
+  'human_interruption_count', 'efficiency_debt_count', 'accepted_defect_count', 'risk_reduction_count'
 ]);
 const PROMOTED_CONTEXT_KEYS = ['source_story_id', 'artifact_path', 'digest', 'consumer_story_id', 'reason', 'promoted_at'];
 const DECISION_JOURNAL_KEYS = ['story_id', 'decision', 'policy_type', 'reason', 'decided_at'];
@@ -366,15 +365,6 @@ function emptyCostAttribution() {
     review_wait_ms: null,
     subagent_wall_clock_ms: null,
     agent_consumption_ms: null,
-    // DBA-S-6/story-vibepro-deadline-bounded-review-consumption: mergeCostAttribution
-    // (below) already routes reviews[] through aggregateDeliveryMetrics, which
-    // computes these two fields whenever agent_consumption_ms is computed. Without
-    // an entry here they would be silently dropped by the `allowed` key filter in
-    // mergeCostAttribution -- reintroducing, in this persisted shape, exactly the
-    // "excluded amount disappears silently" defect deadline-bounded attribution
-    // exists to fix. Both default to null, matching every sibling measurement.
-    deadline_excluded_ms: null,
-    deadline_excluded_count: null,
     subagent_count: null,
     review_dispatch_count: null,
     accepted_finding_count: null,

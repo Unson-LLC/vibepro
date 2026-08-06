@@ -208,33 +208,6 @@ test('portfolio aggregates raw review intervals before persisting the closed att
   assert.equal(state.entries[0].cost_attribution.fresh_input_tokens, null);
 });
 
-// story-vibepro-deadline-bounded-review-consumption DBA-S-6: mergeCostAttribution
-// routes reviews[] through aggregateDeliveryMetrics with no call-site change, so
-// it inherits the deadline bound; this proves the two new fields are not dropped
-// by the `allowed` key filter (emptyCostAttribution() must carry them for
-// mergeCostAttribution's persisted shape to stay coherent).
-test('DBA-S-6: portfolio persists deadline_excluded_ms and deadline_excluded_count alongside the bounded agent_consumption_ms', async (t) => {
-  const fixture = await createFixture(t);
-  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-deadline-bound', storyIds: STORIES.slice(0, 1) });
-  await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-deadline-bound' });
-  const runId = fixture.runs.get(STORIES[0]).run_id;
-  // gate_evidence lifecycle #10 from the real 2026-08-05 incident ledger:
-  // 7,017,457ms bounded to timeout_ms=600,000ms.
-  const state = await fixture.controller.advance(fixture.root, {
-    portfolioId: 'portfolio-deadline-bound',
-    costAttribution: {
-      story_id: STORIES[0],
-      run_id: runId,
-      reviews: [
-        { role: 'gate_evidence', started_at: '2026-08-05T12:49:56.929Z', finished_at: '2026-08-05T14:46:54.386Z', close_reason: 'timeout', timeout_ms: 600000 }
-      ]
-    }
-  });
-  assert.equal(state.entries[0].cost_attribution.agent_consumption_ms, 600000);
-  assert.equal(state.entries[0].cost_attribution.deadline_excluded_ms, 7017457 - 600000);
-  assert.equal(state.entries[0].cost_attribution.deadline_excluded_count, 1);
-});
-
 test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mode', async (t) => {
   const fixture = await createFixture(t);
   await assert.rejects(fixture.controller.create(fixture.root, {

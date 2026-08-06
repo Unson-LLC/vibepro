@@ -110,7 +110,11 @@ flowchart TD
 
 ## 残余リスク
 
-`close_reason` は運用者・エージェントが `review close --close-reason` で明示的に設定する値であり、原理的には正当に40分かけて完了した review を `timeout` として close すれば、計上を `timeout_ms`（10分）まで圧縮できてしまう。これは防止ではなく軽減である。`close_reason=completed` の close には通常 `close_evidence` と `result_artifact` が伴うため、`timeout` と偽ることは証跡整合性を土台にしたこのシステムにおいて虚偽の evidence 主張になる。加えて `deadline_excluded_ms` / `deadline_excluded_count` が `pr prepare` の出力に必ず現れるため、大きな除外は目立つ形で人間の目に入り、沈黙したままにはならない。
+`close_reason` は運用者・エージェントが `review close --close-reason` で明示的に設定する値であり、原理的には正当に40分かけて完了した review を `timeout` として close すれば、計上を `timeout_ms`（10分）まで圧縮できてしまう。これは防止ではなく軽減である。
+
+**主たる歯止め（検証済み）**: `review record` は、close 済みの lifecycle の `close_reason` が `'completed'` 以外であれば結果の添付を拒否する（`src/agent-review.js:505-508`: `entry.closed_at && entry.close_reason !== 'completed'` の場合に `review record ${stage}:${role} cannot attach a result to lifecycle closed as ${entry.close_reason}` を throw する）。この経路は既存の passing test `review record persists no result after timeout, replacement, or manual shutdown`（`test/review-inspection-first.test.js:836`）で裏付けられている。したがって、実際には review が完了して結果を残せる状態にあるのに、計上を減らす目的で `close_reason=timeout` と偽って close すると、その review 結果は current artifact にも history にも一切残らない。過小計上を狙う偽装は review dispatch を最初からやり直すコストを発生させ、節約できたはずの計上分より高くつく。これは「証跡整合性を土台にしたシステムでは虚偽の evidence 主張になる」という定性的な牽制より強い、コードが強制する具体的な牽制である。
+
+**副次的な歯止め（可視性。範囲は機械可読サーフェスに限る——過大な主張をしない）**: `deadline_excluded_ms` / `deadline_excluded_count` は `pr prepare` の機械可読サーフェス — `pr-prepare.json` の `gate_dag.summary.efficiency_debt.metrics`、`--summary-json` / `--view blocking-gates` / `--view gate-evidence` の各投影、および各 lifecycle の `dispatch_decision.decision_evidence.budget` — には必ず現れる。ただし人間向け HTML レポート（`gate-dag.html` / `pr-prepare.html` を生成する `src/html-report.js` の `renderGateDagHtml`・`renderAgentReviewPanel`）にはこれらのフィールドへの参照が一切なく（`efficiency|agent_consumption|deadline_excluded` を `src/html-report.js` に grep すると0件）、`src/pr-manager.js` の `risks` / `review_points` にも除外量に基づく callout がない。JSON/CLI サーフェスを直接見ない human reviewer にとって、大きな除外は「目立つ形で人間の目に入る」わけではなく、機械可読サーフェスに正しく記録されているに留まる（HTML への反映は「後続に残すもの」参照）。
 
 ## Invariants
 
@@ -118,7 +122,7 @@ flowchart TD
 - `timeout_ms` が欠落・非有限の lifecycle は `close_reason` に関わらず deadline bound の対象にならない（後方互換フォールバック）。
 - 束縛は `min(duration, timeout_ms)` であり、実測値を超えて計上することはない。
 - `review_wait_ms` / `subagent_wall_clock_ms`（`unionDuration` ベース）は本設計の対象外であり、上限を持たない。
-- 上限で削られた量は必ず `deadline_excluded_ms` / `deadline_excluded_count` として戻り値に現れる。黙って消える量はない。
+- 上限で削られた量は必ず `aggregateDeliveryMetrics` の戻り値の `deadline_excluded_ms` / `deadline_excluded_count` に現れ、`pr prepare` の機械可読サーフェス（`gate_dag.summary.efficiency_debt.metrics` および `--summary-json`/`--view blocking-gates`/`--view gate-evidence`、各lifecycleの`dispatch_decision.decision_evidence.budget`）まで伝播する。人間向け HTML レポート（`gate-dag.html` / `pr-prepare.html`）には伝播しない。
 - `evaluateDeliveryBudget` の budget 評価・`budget_exceeded` stop・fail-closed 送出経路（`throwReviewDispatchStop`）は本設計によって変わらない。
 - budget override authority（human grantor 必須・agent self-grant fail-closed・digest 束縛）は本設計の対象外であり、変更しない。
 - `aggregateDeliveryMetrics` の呼び出しシグネチャは変わらない。`close_reason` / `timeout_ms` を渡さない既存呼び出しは現行動作のまま動く。
@@ -132,9 +136,14 @@ flowchart TD
 - `hasCompleteReviewTiming` の `.every()` 完全性ゲート（1件でも open な lifecycle があると `agent_consumption_ms` が `unknown` に落ちる挙動）。
 - `.vibepro/config.json` の limit 値そのもの（`max_subagent_count` / `max_review_dispatches_by_role` 等）。
 - 既に記録済みの `amendment_reason` 履歴の遡及的修正。
+- `src/story-run-portfolio.js` の永続化 `cost_attribution` 形状（`emptyCostAttribution()` / `COUNT_COST_KEYS`）への `deadline_excluded_ms` / `deadline_excluded_count` の追加。Portfolio state は `.vibepro/` 配下の git-ignored ファイルであり、`validateState` は `hasExactKeys(cost, COST_KEYS)` で closed schema を強制する。フィールド追加を含むコミットを `git revert` してもコードだけが戻り、既にディスク上にある state ファイルは新フィールド付きのまま残るため、ロールバック後のコードがそれを `invalid_portfolio_state` として拒否し Portfolio 操作を永続的にブロックする——rollback の非対称性がある。DBA-S-6 が求める可視性（`pr prepare` の効率性レポートと dispatch decision evidence）は `gate_dag.summary.efficiency_debt.metrics` と各 lifecycle の `dispatch_decision.decision_evidence.budget` で既に満たされており、`story-run-portfolio.js` を経由しない。
 
 ## 後続に残すもの
 
 - `hasCompleteReviewTiming` の `.every()` 完全性ゲート自体の見直し（1件の open lifecycle が次元全体を `unknown` にする設計。`story-vibepro-owner-gated-budget-override` の architecture_boundary preflight が既に指摘済みの、本設計とは別の欠陥）。
 - `budgets.delivery_efficiency`（global default）に対する承認 gating（`story-vibepro-owner-gated-budget-override` の残余として明記済み、GE-004）。
 - 予算消費が Story 単位でモノトニックに増加し、リセット経路が無い設計そのものの見直し（同じく既知の残余）。
+- Portfolio の `agent_consumption_ms` は本 story により上限付きの値になるが、`story-run-portfolio.js` の永続化形状は `deadline_excluded_ms` / `deadline_excluded_count` を持たないため、どれだけ除外されたかを示す併記情報がない。これを埋めるには closed schema へ素朴にキーを足すのではなく、schema_version を上げた上でのマイグレーション（既存 git-ignored state ファイルの読み込み時アップグレード、または schema_version 不一致の明示的ハンドリング）が必要になる。
+- `deadline_excluded_ms` / `deadline_excluded_count` を人間向け HTML レポート（`gate-dag.html` / `pr-prepare.html`。`src/html-report.js` の `renderGateDagHtml`・`renderAgentReviewPanel`）にも描画する。現状は機械可読サーフェス（`pr-prepare.json` / `--summary-json` / `--view blocking-gates` / `--view gate-evidence` / 各lifecycleの `dispatch_decision.decision_evidence.budget`）にしか現れず、JSON/CLIを見ない human reviewer には大きな除外が伝わらない（詳細は「残余リスク」参照）。
+- `vibepro usage report --subagent-roi` の `agent_consumption_elapsed_ms`（上限なし、`ARM-CONTRACT-002` で pin 済み）と、本 story 後の budget の `agent_consumption_ms`（上限あり）は、deadline-bounded な lifecycle を含む story では値が乖離する。`ARM-CONTRACT-002` を知らない読者はこの乖離を欠陥と誤読しうるため、いずれ両レポートが差異に名前を付けるか注記すべきである。
+- **開いたままの問題（本 story の対象外、docsのみで記録）**: deadline bound は「配信されずに終わった lifecycle」の無稼働時間だけを縮める。`close_reason=completed` で正常に配信された lifecycle は本設計の対象外のままであり、配信後に coordinator が `review close` / `review record` を実行するまでのコーディネーター遅延は無制限に計上され続ける。本 story 自身の `gate_evidence` / `release_risk` review lifecycle 2件（2026-08-06T02:02:09.650Z〜02:37:57.270Z の 2,147,620ms、および 02:02:11.062Z〜02:38:37.570Z の 2,186,508ms、合計 4,334,128ms）が実例であり、`max_agent_consumption_ms=1,800,000ms` を超過した。実際の subagent 作業はそれぞれ概ね9分・17分で終わっており、残り約46分はsubagentが verdict を返してから coordinator が `review close`/`review record` を実行するまでの遅延である。両lifecycleとも `close_reason=completed` で閉じているため本 story の deadline bound は適用されず、`deadline_excluded_ms=0` のままである。`review record --agent-closed` は `closed_at` を `result.recorded_at`（coordinator側が記録した時刻）から設定するため、計上は「coordinator がどれだけ迅速に記録したか」に束縛される。真に直すには、coordinator の観測時刻ではなく subagent 自身が報告する delivery timestamp が要る——これは producer 側の変更を要する別問題であり、本 story にそのまま乗せない。
