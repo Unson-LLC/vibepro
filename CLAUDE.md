@@ -1,49 +1,20 @@
 # VibePro Agent Instructions
 
-This file is the thin, always-loaded entrypoint for agents working **on the VibePro repository itself**. Keep it under 150 lines; put detail in `skills/*/SKILL.md`. `AGENTS.md` must stay byte-for-byte identical (`cmp -s CLAUDE.md AGENTS.md`).
+> **🧊 FROZEN (2026-08-06)**: This repository is frozen by owner decision. See `docs/management/FREEZE.md` for the rationale, the disposition of in-flight work, and the reactivation criteria. `AGENTS.md` must stay byte-for-byte identical (`cmp -s CLAUDE.md AGENTS.md`).
 
-## 1. Non-Negotiables
+## 1. Rules while frozen
 
-1. **Self-dogfood**: changes to this repo go through VibePro's own flow — Story → Architecture → Spec → Task → Code → Gate → PR. Do not bypass with raw `gh pr create` or raw GitHub merge; use `vibepro pr create` and `vibepro execute merge`.
-2. **Run the CLI via the `vibepro` binary or `node bin/vibepro.js` from the repo root.** Never `node src/cli.js` from a symlinked path (e.g. `/private/tmp` worktrees): the entrypoint check fails silently and the command becomes a no-op with exit 0.
-3. **Evidence freshness**: finalize the intended review surface before recording. Reviews are content-surface-bound by default, so unrelated commits may preserve them; only configured high-risk roles or a reasoned `--strict-head-binding` override are bound to every HEAD change.
-4. **One intent = one focused commit.** Stage explicitly; never `git add -A` in mixed worktrees. Create branches only from inside the target worktree.
-5. **Evidence over assertion**: when claiming something works, cite the command, artifact, log, or test used to verify it. `pr-prepare.json` gate_status is the readiness source of truth, not the PR body.
-6. **Do not clean dirty worktrees by reflex.** Classify first (status, diffs, reflog); see the Git guardrails in `skills/vibepro-workflow/SKILL.md`.
+1. **Do not start new Stories, gates, reviews, or `vibepro` CLI flows.** The Story → Gate → PR self-dogfood pipeline is retired. All ~240 entries in `.vibepro/config.json` `brainbase.stories[]` are closed en masse by the freeze declaration, regardless of their recorded `status`.
+2. **Changes to this repo (if any) go through plain git**: branch → test → `gh pr create` → review → merge. Do not use `vibepro pr create` / `vibepro execute merge`.
+3. **Do not resume in-flight branches without an explicit owner instruction.** Unmerged work was preserved as-is (branches pushed to origin; uncommitted diffs saved under `.vibepro-store/freeze-rescue-2026-08-06/`).
+4. **Treat `.vibepro/`, `docs/management/`, and `.vibepro-store/` as a read-only archive.** The adjudication records and gap analyses there are design precedents for any successor tooling — salvage ideas, not code.
 
-## 2. Skill Routing
+## 2. Why frozen (short version)
 
-Load only the smallest relevant Skill:
+Measured over the 8 weeks before the freeze: 84% of merged PRs served VibePro itself, 100% of the 240 active Stories were self-referential, and single Stories consumed up to 192 review dispatches / ~165 hours of review lifecycle time. The governance value did not cover the token and wall-clock cost. Key evidence: `docs/management/delivery-efficiency-budget-gap-analysis.md`, `docs/management/issue-423-gap-analysis.md`.
 
-| Work type | Skill |
-|---|---|
-| VibePro flow end-to-end (Story→Gate→PR, uiux, audit) | `skills/vibepro-workflow` |
-| Closing gates: evidence recording, review lifecycle, spec write, gate troubleshooting | `skills/vibepro-gate-evidence` |
-| Refactoring through VibePro | `skills/vibepro-story-refactor` |
-| Interpreting PR artifacts / approve-split-waive-block decisions | `skills/vibepro-human-review` |
-| Purpose-level diagnosis packs (`vibepro check ...`) | `skills/vibepro-diagnosis-packages` |
-| Impact context via codebase-memory-mcp | `skills/vibepro-codebase-memory` |
+## 3. Still true if you touch the code
 
-## 3. Self-Dogfood Quickstart
-
-1. Write the Story by hand at `docs/management/stories/active/story-vibepro-<slug>.md` (frontmatter: `story_id`, `title`, `status: active`; add a `reason:` key covering alternatives/compatibility/rollback/boundary when no separate ADR is needed).
-2. Register it by appending an entry to `.vibepro/config.json` `brainbase.stories[]` (`story derive` will not pick up hand-written Stories).
-3. `vibepro story diagnose . --id <story-id> --run-graphify` (pass `--run-graphify` on the diagnose call itself, every time).
-4. Implement; register the Spec **after or with** implementation (`spec write` validates code_refs/test_refs existence and anchors).
-5. Record evidence and reviews per `skills/vibepro-gate-evidence`, then `vibepro pr prepare . --story-id <id> --summary-json`, resolve blocks, `vibepro pr create`.
-6. After PR: `vibepro verify import-ci`, rerun `pr prepare` / `pr create` for the current head, then `vibepro execute merge . --story-id <id> --strategy merge`.
-
-## 4. Development Commands
-
-```bash
-node --test test/<file>.test.js        # targeted tests first
-node --test --test-concurrency=2       # full suite (avoids OOM kills on a loaded host)
-node bin/vibepro.js skills lint .      # skill frontmatter/structure lint
-cmp -s CLAUDE.md AGENTS.md             # must be identical
-```
-
-Never start a second suite in the same worktree while one is running, and never mutate the tree mid-suite.
-
-## 5. Context Economy
-
-Read `pr prepare --summary-json` or `--view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>` before any full JSON artifact. Full artifacts under `.vibepro/` are the persisted source of truth; drill into them only for flagged gate ids or paths.
+- One intent = one focused commit; stage explicitly, never `git add -A` in mixed worktrees.
+- Do not clean dirty worktrees by reflex; classify first (status, diffs, reflog).
+- Full test suite: `node --test --test-concurrency=2` (higher concurrency is slower; the suite is I/O bound).
