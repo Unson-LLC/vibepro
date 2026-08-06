@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Differential re-review after delta merge of origin/main (PRs 413,415-420): merge auto-resolutions in src/cli.js and src/verification-runner.js are semantically clean unions of unrelated stories with the --no-progress-deadline-ms flag intact; union-resolved .vibepro/config.json and design-ssot.json keep all four stories registrations with no conflict markers; all four re-recorded verification runs are head-bound to 59d172b1 with exit 0, and the unit run is the full npm test form (2460/2460). Targeted reruns of verification-runner (49/49) and the acceptance e2e (5/5) pass at current HEAD. CLI docs regen matches the usage string in src/cli.js verbatim.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed a6585de7..HEAD for src/cli.js, src/verification-runner.js, test/verification-runner.test.js, config/design-ssot registrations; inspected merge commit fd608c84 and commits 0a10f47f, 59d172b1; grepped for leftover conflict markers; read verification-evidence.json and all four verification-runs artifacts for head binding; ran verification-runner and acceptance e2e suites locally; checked pr prepare blocking-gates view.",
+    "evidence": "node --test test/verification-runner.test.js -> 49 pass 0 fail; node --test test/e2e/story-vibepro-progress-heartbeat-policy-kernel-main.test.js -> 5 pass 0 fail",
+    "inputs": [
+      "src/cli.js",
+      "src/verification-runner.js",
+      "test/verification-runner.test.js",
+      "test/e2e/story-vibepro-progress-heartbeat-policy-kernel-main.test.js",
+      "test/support/scratch-tmpdir.js",
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "docs/reference/cli.md",
+      "docs/ja/reference/cli.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern that the delta merge could have dropped either sides registrations or mangled the new CLI flag, that re-recorded evidence might reuse stale pre-merge artifacts, and that the tmpdir fix could regress the e2e fixture -> final pass because direct diffs show additive union resolutions with both sides content coexisting, all four run artifacts carry head_sha 59d172b1 with exit 0 including the full npm test 2460/2460, and the tmpdir fix is a single side-effect import with the e2e suite passing 5/5 locally"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+    "expected_root": null,
+    "expected_head_sha": "59d172b1687df0a691de761d145f89558828e336",
+    "current_head_sha": "59d172b1687df0a691de761d145f89558828e336",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+      "expected_root": null,
+      "expected_head_sha": "59d172b1687df0a691de761d145f89558828e336",
+      "current_head_sha": "59d172b1687df0a691de761d145f89558828e336",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T03:11:58.328Z",
+  "git_context": {
+    "head_sha": "59d172b1687df0a691de761d145f89558828e336",
+    "current_branch": "claude/hopeful-williamson-545788",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T03:11:58.262Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "59d172b1687df0a691de761d145f89558828e336",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "52d7de3c416513c7f2dd521a360bfdcab11746c7b131e8838ee42c77b47ab2d2",
+        "size": 99047
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "d03ca7f10dd49bd65128c19264b16ffb715cbe3ac6d922c54c286d54061a54d3",
+        "size": 267871
+      },
+      {
+        "path": "docs/ja/reference/cli.md",
+        "sha256": "b616163633887e1e21bb0a9d6de2e1c3144d927ccb585a47c2c732efa6b13551",
+        "size": 21392
+      },
+      {
+        "path": "docs/reference/cli.md",
+        "sha256": "014264ec33e250fcc36342bde30cf2755240ff186ba8f459479a3fe9f4bc8db3",
+        "size": 21105
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "3c3f1a392aa7c4edf4b14ced84ef322df7469ed3bb055f85cdd33c07dcac5b19",
+        "size": 260666
+      },
+      {
+        "path": "src/verification-runner.js",
+        "sha256": "cfea9f513852091df980720aeb3347ba749ba9721d0a07cb22001043eb02ad3c",
+        "size": 45398
+      },
+      {
+        "path": "test/e2e/story-vibepro-progress-heartbeat-policy-kernel-main.test.js",
+        "sha256": "2810c4dfdfe9e63428b7b40b40d797f8a3c398b979eae9d3565cb03590592835",
+        "size": 12565
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "88742318bdc4da3a3998e0c6e1d36cec283c4ba9fa35137def016c464f4abf4e",
+        "size": 65469
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fe2fb3e0ced5e525252813ac991d569ff27d94b023e9942712e15fc167466ea1"
+  },
+  "source_fingerprint": "b63f1b958b1f5f46ac72740a7391b5c53f5dc1c0025de4aa0507033ac24a91c3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ace6e704c49f4624a",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": "ace6e704c49f4624a",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-hopeful-williamson-545788/5f44ce9d-51a6-4b34-930f-9e393bf294e5/tasks/ace6e704c49f4624a.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close --close-reason completed recorded in .vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/lifecycle.json; subagent shut down after verdict",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "ace6e704c49f4624a",
+      "implementation_session_id": "5f44ce9d-51a6-4b34-930f-9e393bf294e5",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,238 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-strict-head-binding-origin-guard",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Origin guard architecturally sound: frozen final_review target single-sourced in validation-sequencing.js, agent-review.js consumes it, pr-manager reads recorded freshness_policy.source (reporting-vs-authorizing boundary); docs/spec/code agree. Two low follow-up findings: spec code-ref lists isRecordedStrictHeadStillAuthorized under agent-review.js though defined in pr-manager.js; authorized-origin enum duplicated in two pr-manager functions",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "reviewed gate_orchestration and review_lifecycle boundaries across all planned changed paths; risk_surfaces=gate_orchestration,review_lifecycle. Diffed origin/main...HEAD; read validation-sequencing.js, agent-review.js, pr-manager.js diffs in full plus architecture/spec/story docs, en+ja guide and CLI reference pairs, generator script, design-ssot.json, config.json, and amended test fixtures; ran the story e2e suite 7/7 pass",
+    "evidence": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+    "inputs": [
+      "design-ssot.json",
+      "docs/architecture/vibepro-strict-head-binding-origin-guard.md",
+      "docs/guide/agent-review.md",
+      "docs/ja/guide/agent-review.md",
+      "docs/ja/reference/cli.md",
+      "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md",
+      "docs/reference/cli.md",
+      "docs/specs/story-vibepro-strict-head-binding-origin-guard.md",
+      "scripts/generate-cli-reference.mjs",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/validation-sequencing.js",
+      "test/artifact-routing.test.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+      "test/e2e/story-vibepro-strict-head-binding-origin-guard-main.test.js",
+      "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+      "test/review-inspection-first.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern that pr-manager re-derives authorization creating a second source of truth -> final pass because pr-manager only reads recorded freshness_policy.source and the frozen-target computation stays single-sourced in validation-sequencing.js"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+    "expected_root": null,
+    "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+    "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+      "expected_root": null,
+      "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T13:35:34.072Z",
+  "git_context": {
+    "head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+    "current_branch": "claude/strict-head-binding-origin",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T13:35:34.037Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 20 file(s)",
+    "recorded_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "a33f8843fbaba7ecb0d2159c2a118780eb0fdf2908c89dd1ae2332e3c1815504",
+        "size": 266032
+      },
+      {
+        "path": "docs/architecture/vibepro-strict-head-binding-origin-guard.md",
+        "sha256": "774f9567df207a98b4795d60018064ae630cc2362b99b9996aeb46af595b0a19",
+        "size": 3027
+      },
+      {
+        "path": "docs/guide/agent-review.md",
+        "sha256": "717a0a644081a1eacb23f3dbe3d1991b5d31af8ec5bafb0288a2e68122b1394d",
+        "size": 3264
+      },
+      {
+        "path": "docs/ja/guide/agent-review.md",
+        "sha256": "5bed3193309d0ccb35fe1d092bf76758030037a5988aee8036d53f27224d84d2",
+        "size": 3458
+      },
+      {
+        "path": "docs/ja/reference/cli.md",
+        "sha256": "53bcf8a456c57491ef6bfebdbd27e7c124629e5ddeb1857949e8900a5a25c781",
+        "size": 21359
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md",
+        "sha256": "dbdcacee6afc62310a3d8037f544dec2aa4c8ddf585da69d78fdcbf38b432d9f",
+        "size": 5873
+      },
+      {
+        "path": "docs/reference/cli.md",
+        "sha256": "7a5d0d1588d149c06cebe946c060717003c0b26dbcc044b4a1bd48b2c943d8ac",
+        "size": 21072
+      },
+      {
+        "path": "docs/specs/story-vibepro-strict-head-binding-origin-guard.md",
+        "sha256": "43cbfb38411a884aa3333ef708ecc35acc232c70f2693b0323ba0ec815d68a0f",
+        "size": 3929
+      },
+      {
+        "path": "scripts/generate-cli-reference.mjs",
+        "sha256": "6bb7e5497bed027a7efd9d83dcba4f9b3dbb39289b0732be337a3e720e11c478",
+        "size": 7302
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "f149c45fea6a49ca3046b4d1c19c6a759c765defee48cbaed786adad8296c4c4",
+        "size": 207547
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "c0e0a6d295d4a36ffd3ff6dac56a834ce761dccc56e059a4635c745988331d0b",
+        "size": 707702
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "5ba5784f4cbcbe46e014c9409ef3d79af45f8bae64329a9e608ba0ad70e1be93",
+        "size": 33590
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "5dc480817ec12efb306b90db346c4af1b96f1dd48c1fdfc18cfffcfa86d8a473",
+        "size": 84851
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "bddb9d4e8ce28804ec74da0618d17543bedb55e5ccddf017f2a43ff28a8eb6c9",
+        "size": 47116
+      },
+      {
+        "path": "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+        "sha256": "0b618751d27da294b1eea891e7df3ea56d95f6584e79e0809427efc0088c71de",
+        "size": 1777
+      },
+      {
+        "path": "test/e2e/story-vibepro-strict-head-binding-origin-guard-main.test.js",
+        "sha256": "f08fd558300f2df3c486ee136beab1139ea0f7015c490eae1f8778c444d52ec7",
+        "size": 24873
+      },
+      {
+        "path": "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+        "sha256": "20c06603f5ddb0aab51fa27ec5145786add97cd5a60065e9d9ff4c6567e76d30",
+        "size": 3398
+      },
+      {
+        "path": "test/review-inspection-first.test.js",
+        "sha256": "f0f8e7ddb56f43b9b1eb9d0a2cc6ca19cd734c9dca7bbcfb70eb980e77d0d1a1",
+        "size": 46959
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "4ad1a9980dff6e90c4fe9a0750ab605a771b40cfe3cb3065218368bd6735eb61",
+        "size": 99198
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "6ad3b13d459780556c0c6c9a1ba2a4c917b663694f5d2ca7394b45f44405e481",
+        "size": 1290330
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "74dc3301014147ad16ca041c8b36484646edffbf179bc0952176879b03492c73"
+  },
+  "source_fingerprint": "049e08305327eacb3b04a7cdc53918664e94743fef56ef342b134b7c8a8cc5ff",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a472aeb01e55f37e3",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": "a472aeb01e55f37e3",
+    "session_id": "a472aeb01e55f37e3",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a472aeb01e55f37e3",
+      "implementation_session_id": "b4c23ee1-e617-410c-a01c-d9587136c96d",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

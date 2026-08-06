@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Directory walkers on the diagnosis evidence path (architecture-profiler, network-contract-scanner, database-access-scanner, code-quality-scanner, static-site-scanner, component-style-scanner, flow-design-scanner, gesture-interaction-scanner) must traverse iteratively with an explicit pending queue and a single result accumulator; no walker may recurse per directory or pass an accumulated subtree result as spread call arguments, so the result size never enters a call's argument list.",
+      "rationale": "files.push(...await collectFiles(...)) passes every accumulated entry as call arguments; with ~127k files under one subtree this exceeds V8's stack-proportional argument limit and throws 'Maximum call stack size exceeded', killing story diagnose on large repositories.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "明示キュー＋単一アキュムレータで走査する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-profiler.js",
+            "anchor": "const pending = [root];"
+          },
+          {
+            "file": "src/network-contract-scanner.js",
+            "anchor": "const pending = [root];"
+          },
+          {
+            "file": "src/database-access-scanner.js",
+            "anchor": "const pending = [root];"
+          },
+          {
+            "file": "src/code-quality-scanner.js",
+            "anchor": "const pending = [root];"
+          },
+          {
+            "file": "src/static-site-scanner.js",
+            "anchor": "const pending = [root];"
+          },
+          {
+            "file": "src/component-style-scanner.js",
+            "anchor": "const pending = [root];"
+          },
+          {
+            "file": "src/flow-design-scanner.js",
+            "anchor": "const pending = [startDir];"
+          },
+          {
+            "file": "src/gesture-interaction-scanner.js",
+            "anchor": "const pending = [root];"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-profiler.test.js",
+            "case": "profileArchitecture survives a subtree larger than the spread-argument limit"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-profiler.js",
+            "must_contain": "const pending = [root];"
+          },
+          {
+            "file_glob": "src/network-contract-scanner.js",
+            "must_contain": "const pending = [root];"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-profiler.test.js",
+            "must_cover": "survives a subtree larger than the spread-argument limit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T07:52:33.359Z",
+      "last_revised_at": "2026-08-02T12:03:37.426Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a repository whose one subdirectory holds more files than the V8 spread-argument limit for the running stack size, profileArchitecture completes without RangeError and returns a profile object (verified in a child process at --stack-size=200 with 30000 files, where the previous recursive implementation throws 'Maximum call stack size exceeded').",
+      "rationale": "Pins the regression: the reduced stack size scales the reproduction down from the ~127k-file real-world failure to a suite-friendly fixture while exercising the identical failure mechanism.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "縮小スタックの子プロセスで旧実装がfailし新実装がpassすることを回帰テストで固定する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-profiler.js",
+            "anchor": "async function collectFiles(root)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-profiler.test.js",
+            "case": "profileArchitecture survives a subtree larger than the spread-argument limit"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-profiler.test.js",
+            "must_cover": "--stack-size=200"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T07:52:33.359Z",
+      "last_revised_at": "2026-08-02T12:03:37.426Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "The iterative walker preserves the previous traversal contract: nested directories are walked, ignored directory names (e.g. node_modules) are skipped at any depth, files over 1MB are excluded, and relative paths use forward slashes, so framework/language detection results are unchanged.",
+      "rationale": "The rewrite must be behavior-preserving; detection downstream (frameworks, languages, applicable checks) consumes the same file set as before.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "走査結果（relativePath集合、拡張子/1MB超スキップ、IGNORED_DIRS除外、flow-designのENOENT/ENOTDIR許容）は旧実装と同一"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-profiler.js",
+            "anchor": "PROFILER_IGNORED_DIRS.has(entry.name)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-profiler.test.js",
+            "case": "profileArchitecture walks nested directories and honors ignore/size rules"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-profiler.test.js",
+            "must_cover": "walks nested directories and honors ignore/size rules"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T07:52:33.359Z",
+      "last_revised_at": "2026-08-02T12:03:37.426Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  CLI[story diagnose --run-graphify] --> Import[importGraphifyArtifacts]\n  Import --> Diag[runDiagnosis]\n  Diag --> Evidence[buildEvidence]\n  Evidence --> Walkers[8 scanner walkers: iterative pending queue]\n  Walkers --> Files[file lists per scanner]\n  Files --> Artifacts[diagnostics run artifacts]\n  Walkers -. no spread-argument accumulation .-> Files",
+      "rationale": "Show the diagnosis evidence pipeline where every scanner walker now uses an explicit iterative queue, so subtree size never enters a call's argument list."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Attacker[Hostile or oversized repo tree] --> Walk[Iterative directory walk]\n  Walk --> T1[Threat: resource exhaustion via huge subtree]\n  T1 --> M1[Mitigation: single accumulator, no spread args; 1MB per-file cap; IGNORED_DIRS pruning]\n  Attacker --> T2[Threat: symlink cycle traversal]\n  T2 --> M2[Mitigation: dirent isDirectory excludes symlinks, so cycles are not followed]\n  Walk --> T3[Threat: diagnose crash hides scan coverage]\n  T3 --> M3[Mitigation: walk completes on 134k-file tree; regression test pins reduced-stack behavior]",
+      "rationale": "The walker rewrite is the security-relevant surface: it must stay robust on adversarially large trees without crashing the diagnosis pipeline that other gates depend on."
+    }
+  ],
+  "parent_design": [
+    "story-vibepro-profiler-file-walk-stack-overflow"
+  ],
+  "generated_at": "2026-08-02T12:03:37.424Z",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-08-02T10:49:32.928Z"
+}

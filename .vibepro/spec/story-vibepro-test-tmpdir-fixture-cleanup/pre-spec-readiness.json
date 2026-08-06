@@ -1,0 +1,77 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "created_at": "2026-08-03T01:03:15.750Z",
+  "status": "ready",
+  "git": {
+    "head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3"
+  },
+  "checks": [
+    {
+      "id": "story_selected",
+      "status": "pass",
+      "reason": "Story exists in VibePro workspace artifacts"
+    },
+    {
+      "id": "graphify_context",
+      "status": "pass",
+      "reason": "Graphify graph has 5866 nodes and 13092 edges"
+    },
+    {
+      "id": "story_diagnosis",
+      "status": "pass",
+      "reason": "Story diagnosis run exists: 2026-08-02T151839Z"
+    },
+    {
+      "id": "architecture_check",
+      "status": "pass",
+      "reason": "Architecture check 2026-08-02T145142Z status=needs_review"
+    },
+    {
+      "id": "engineering_judgment",
+      "status": "pass",
+      "reason": "Engineering Judgment route=agent_workflow; dag=agent_workflow_dag"
+    }
+  ],
+  "graphify": {
+    "available": true,
+    "artifact": ".vibepro/graphify/graph.json",
+    "node_count": 5866,
+    "edge_count": 13092,
+    "edge_source_key": "links"
+  },
+  "diagnosis": {
+    "run_id": "2026-08-02T151839Z",
+    "gate_status": "needs_review",
+    "evidence_artifact": ".vibepro/diagnostics/2026-08-02T151839Z/evidence.json"
+  },
+  "architecture_check": {
+    "run_id": "2026-08-02T145142Z",
+    "pack_id": "architecture",
+    "created_at": "2026-08-02T14:51:59.247Z",
+    "status": "needs_review",
+    "artifacts": {
+      "check_json": ".vibepro/checks/architecture/2026-08-02T145142Z/check.json",
+      "check_report": ".vibepro/checks/architecture/2026-08-02T145142Z/check.md"
+    }
+  },
+  "engineering_judgment": {
+    "route_type": "agent_workflow",
+    "route_dag": "agent_workflow_dag",
+    "active_axes": [
+      "public_contract",
+      "rollback_sensitive",
+      "data_state",
+      "ux_surface",
+      "scope_reviewability",
+      "release_ops"
+    ],
+    "active_axis_count": 6
+  },
+  "pr_prepare": {
+    "created_at": "2026-08-03T01:03:15.190Z",
+    "artifact": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/pr-prepare.json",
+    "gate_dag_status": "needs_verification"
+  },
+  "next_actions": []
+}

@@ -1,0 +1,1113 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-04T09:53:03.109Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:3c2d20fa6ecfbd6b859a2506eb9491bd5af8b061cdcaa2e9cc08464c9fcb1dfd",
+    "compressed_hash": "sha256:0ba7f52ed333f133cae422463a883193c897129fcfccd13d7fd6be274f7e94e3",
+    "expanded_bytes": 23039,
+    "compressed_bytes": 4827,
+    "expanded_line_count": 570,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-conformance-delta-ledger",
+    "cost": {
+      "compressed_bytes": 4827,
+      "expanded_bytes": 23039,
+      "expanded_line_count": 570,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/421",
+      "merge_commit_sha": "024737dc4a9560cd0b32da30ae7037fde8dd86e0",
+      "merged_at": "2026-08-04T09:52:52Z"
+    },
+    "reconciliation": {
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-04T09:53:03.045Z",
+      "head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d"
+    },
+    "decision_outcome_binding": {
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+      "expected_entry_count": 38,
+      "promoted_count": 38,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/421",
+    "merge_commit_sha": "024737dc4a9560cd0b32da30ae7037fde8dd86e0",
+    "merged_at": "2026-08-04T09:52:52Z",
+    "current_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...44b712535e9c84553409bb21cb8c06b028dc6d2d"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 69,
+    "copied_reference_count": 53,
+    "unresolved_reference_count": 17,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-conformance-delta-ledger"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:3c2d20fa6ecfbd6b859a2506eb9491bd5af8b061cdcaa2e9cc08464c9fcb1dfd"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:f6444d688310d1c28271fb6d541265c12802f2a3a08bdfe418f25a1406573b0d",
+      "audit_digest": "sha256:f6444d688310d1c28271fb6d541265c12802f2a3a08bdfe418f25a1406573b0d",
+      "line_count": 539,
+      "raw_line_count": 539,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:42aa5a50d41f413de756ae13d993417286ecfcd7c38d8b1f89c7498d6b5be02d",
+      "audit_digest": "sha256:42aa5a50d41f413de756ae13d993417286ecfcd7c38d8b1f89c7498d6b5be02d",
+      "line_count": 468,
+      "raw_line_count": 468,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:d02343d189560b8c0a877b37c80a3d6053d5b954852a138a16d69907826adc11",
+      "audit_digest": "sha256:78157d4928471e98a794f2c49f33ee5c09b46b647696d67ad0d25f2cf0a3af95",
+      "line_count": 6390,
+      "raw_line_count": 42449,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:9f8e9b68c3b6f4f34d4febae1ca21709e1eb5c1e4ab76a0c6b8cf57b0d62869e",
+      "audit_digest": "sha256:55bf420118956c077aa28f5d16a84c794c967d4d52150bb72910d77b25714b3a",
+      "line_count": 2127,
+      "raw_line_count": 4642,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:1c6b797c6a5ce9d34be61282a9c57afbfe63376dcf2c4ef85c01257424d8725c",
+      "audit_digest": "sha256:e53e09e3dae67912fd5f1c1440375a272c9f39df2f963e6fcc17096adc09220e",
+      "line_count": 46,
+      "raw_line_count": 702,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:09b1e94191a790b9bef1bcbcffe0a9227da71331297cca8a504f7b1f307df65a",
+      "audit_digest": "sha256:f531581b097a04bb31b92d2709be968e5b3f61ca849d8f9d24c3f5cf8c2c7d43",
+      "line_count": 2187,
+      "raw_line_count": 4872,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:cb8da433b543f5d8dc0eb87b628c7a85b67d87a34461f7104325ed5107f4201c",
+      "audit_digest": "sha256:cb8da433b543f5d8dc0eb87b628c7a85b67d87a34461f7104325ed5107f4201c",
+      "line_count": 712,
+      "raw_line_count": 712,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:ded31f2d703607b2a458b00bc6886a7f3cf36e5058f0fd97f5c32ba824845b6b",
+      "audit_digest": "sha256:f02d644c01262d27fadb213f70745cf11741f802084da13e7b7630ab76cf6078",
+      "line_count": 216,
+      "raw_line_count": 1395,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:e6b2ab78861190666b48d86d4561c037e2f49c4854ab6bbf1f83d20a1b85ec24",
+      "audit_digest": "sha256:e6b2ab78861190666b48d86d4561c037e2f49c4854ab6bbf1f83d20a1b85ec24",
+      "line_count": 617,
+      "raw_line_count": 617,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:3ce7aa915244a042a4f784b531edf03e691b33f26626f39cea6697926cc1cbdd",
+      "audit_digest": "sha256:3ce7aa915244a042a4f784b531edf03e691b33f26626f39cea6697926cc1cbdd",
+      "line_count": 635,
+      "raw_line_count": 635,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:847c893afff27d53fbc784e79f001674f28561d8f8c94db999c07e724cfa349e",
+      "audit_digest": "sha256:847c893afff27d53fbc784e79f001674f28561d8f8c94db999c07e724cfa349e",
+      "line_count": 207,
+      "raw_line_count": 207,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:db440c82648a555960132f4cbca7ff9b981983e261c0cb373f0d13ae20c92b28",
+      "audit_digest": "sha256:db440c82648a555960132f4cbca7ff9b981983e261c0cb373f0d13ae20c92b28",
+      "line_count": 155,
+      "raw_line_count": 155,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:50617529e74dc65babd1d9ae07dde75bfbe718893e841fca80f55798425d5c94",
+      "audit_digest": "sha256:50617529e74dc65babd1d9ae07dde75bfbe718893e841fca80f55798425d5c94",
+      "line_count": 192,
+      "raw_line_count": 192,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:7abdecc457e06cd39a7deae2d0d3e896497337a39dad25e925c907f8d45bd566",
+      "audit_digest": "sha256:7abdecc457e06cd39a7deae2d0d3e896497337a39dad25e925c907f8d45bd566",
+      "line_count": 588,
+      "raw_line_count": 588,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:3cd93d1deaf21a9569b03fb9e4ccee90995d8298eeba6caa15ae27fa812aaf70",
+      "audit_digest": "sha256:3cd93d1deaf21a9569b03fb9e4ccee90995d8298eeba6caa15ae27fa812aaf70",
+      "line_count": 603,
+      "raw_line_count": 603,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:439e6433a6b04e970eebb37326b73bce4d26a002dbeefd6d6c6fe87aec8935c2",
+      "audit_digest": "sha256:439e6433a6b04e970eebb37326b73bce4d26a002dbeefd6d6c6fe87aec8935c2",
+      "line_count": 142,
+      "raw_line_count": 142,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:bfd6add33c4b4017651bb0fdd1cc8e56b5830dda7362e427bb57390df97fe363",
+      "audit_digest": "sha256:bfd6add33c4b4017651bb0fdd1cc8e56b5830dda7362e427bb57390df97fe363",
+      "line_count": 168,
+      "raw_line_count": 168,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:6f52cc96906ee0ddc84cdd6538619dddfc1893cb970c38218edf15dd84684aed",
+      "audit_digest": "sha256:6f52cc96906ee0ddc84cdd6538619dddfc1893cb970c38218edf15dd84684aed",
+      "line_count": 982,
+      "raw_line_count": 982,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:a348db2989f1a40afb40c823c9990bb4c9dee66ab89d5e956742dd79a45503a8",
+      "audit_digest": "sha256:a348db2989f1a40afb40c823c9990bb4c9dee66ab89d5e956742dd79a45503a8",
+      "line_count": 207,
+      "raw_line_count": 207,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:24a1fc2e5d811097dc103bfb55e5b44ecf417ffea387bc739fe8e1babc2db830",
+      "audit_digest": "sha256:24a1fc2e5d811097dc103bfb55e5b44ecf417ffea387bc739fe8e1babc2db830",
+      "line_count": 155,
+      "raw_line_count": 155,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:cfba54a33f91321e206552b80562b79cc9a46656b7477d05ce3e8c07c6053999",
+      "audit_digest": "sha256:cfba54a33f91321e206552b80562b79cc9a46656b7477d05ce3e8c07c6053999",
+      "line_count": 192,
+      "raw_line_count": 192,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:2c44d502d448d69550f7f0742b1367212304af7f9f099b14ba21dec57f5a23a0",
+      "audit_digest": "sha256:2c44d502d448d69550f7f0742b1367212304af7f9f099b14ba21dec57f5a23a0",
+      "line_count": 586,
+      "raw_line_count": 586,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-conformance-delta-ledger/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/adjudication/story-vibepro-conformance-delta-ledger/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-conformance-delta-ledger/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/adjudication/story-vibepro-conformance-delta-ledger/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-17-48.524Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-17-48.524Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-18-43.551Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-18-43.551Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-20-29.020Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-20-29.020Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-44-39.124Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-44-39.124Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-47-50.517Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-47-50.517Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T08-11-59.288Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T08-11-59.288Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/history/review-result-runtime_contract-2026-08-04T08-26-34.789Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/history/review-result-runtime_contract-2026-08-04T08-26-34.789Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-conformance-delta-ledger/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/spec/story-vibepro-conformance-delta-ledger/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-conformance-delta-ledger/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/validation-sequencing/story-vibepro-conformance-delta-ledger/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-conformance-delta-ledger/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/adjudication/story-vibepro-conformance-delta-ledger/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-conformance-delta-ledger/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/adjudication/story-vibepro-conformance-delta-ledger/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/diagnostics/2026-08-04T020043Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-17-48.524Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-17-48.524Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-18-43.551Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-18-43.551Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-20-29.020Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/history/review-result-architecture_boundary-2026-08-04T08-20-29.020Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-44-39.124Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-44-39.124Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-47-50.517Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T04-47-50.517Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T08-11-59.288Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/history/review-result-gate_evidence-2026-08-04T08-11-59.288Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/history/review-result-runtime_contract-2026-08-04T08-26-34.789Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/history/review-result-runtime_contract-2026-08-04T08-26-34.789Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/reviews/story-vibepro-conformance-delta-ledger/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-conformance-delta-ledger/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/spec/story-vibepro-conformance-delta-ledger/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/stories/story-vibepro-conformance-delta-ledger/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-conformance-delta-ledger/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/references/vibepro/validation-sequencing/story-vibepro-conformance-delta-ledger/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/architecture/conformance",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/architecture/conformance/conformance.json",
+      "reason": "source_too_large",
+      "size_bytes": 16031150
+    },
+    {
+      "source": ".vibepro/architecture/conformance/delta.json",
+      "reason": "source_too_large",
+      "size_bytes": 17021120
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7391806
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-04T020043Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 997638
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7453444
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 638946
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-conformance-delta-ledger/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-conformance-delta-ledger/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

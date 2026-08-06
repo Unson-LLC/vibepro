@@ -1,0 +1,12 @@
+✔ story-vibepro-uiux-intake-gate-pr-summary-surfaces renders gate:uiux_intake_judgment on both human PR summary surfaces (AC-1 through AC-3) (4.839334ms)
+✔ renderPrGateSummary renders gate:uiux_intake_judgment when present in the gate DAG (9.333625ms)
+✔ buildHumanEvidenceDigest includes gate:uiux_intake_judgment status when present (2.112375ms)
+✔ both human summary surfaces are unchanged when the gate node is absent (0.819ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 624.051042

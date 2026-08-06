@@ -1,0 +1,734 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "updated_at": "2026-08-04T08:12:49.724Z",
+  "events": [
+    {
+      "event_id": "a4bca358-05ab-4924-8fcc-2d469e5213c0",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states User Story, Context-Gap, 8 ACs and a full reason block; implementation (stable ids, delta, inconclusive semantics, shadow stage) matches stated intent 1:1 against the diff with no drift.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:29.511Z"
+    },
+    {
+      "event_id": "22b0d7dd-1ee9-474a-a119-eb07fb6a28e0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Shadow-stage tests invoke the real CLI pr prepare against a live git repo and inspect the actual gate DAG output, giving direct runtime evidence of current reality beyond changed-file classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:29.893Z"
+    },
+    {
+      "event_id": "c619cf8d-ec56-4e16-8bc7-defe023b9e94",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Id stability under position perturbation and double-scan reproducibility are directly asserted by CDL-S-1/S-2; the gate-pr-must-not-import-architecture invariant is enforced structurally via dependency injection matching target-model.json rule R-004.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:30.283Z"
+    },
+    {
+      "event_id": "48019662-7459-4777-bf72-4231452e1862",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary is explicit in code comments and the Story reason.boundary field (no ratchet, no target-model revision, no candidate derivation, no post-merge reconciliation, no strict-head evidence); no ratchet or blocking logic exists in the changed files.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:30.676Z"
+    },
+    {
+      "event_id": "93a1cad1-fd71-4c87-bceb-a2131c3598e8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Scanner exceptions, zero-file scope, missing or malformed target model, missing base ref, and git worktree add/remove failures all degrade to inconclusive rather than throwing or silently reporting zero violations, verified by reading scanSafely/scanRefSafely and running CDL-S-5 tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:31.058Z"
+    },
+    {
+      "event_id": "24270431-9cb8-48eb-83a6-92607ff241a8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Adjudicator independently ran both test files (10/10 and 5/5 pass) and confirmed each test asserts real behavioral outcomes tied to a specific AC clause, not string or field existence checks.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:31.442Z"
+    },
+    {
+      "event_id": "96c38b08-a98f-48f1-b723-3a06bf510c34",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI contract change is additive only: architecture conformance gains optional --base/--head flags with existing flags and output schema unchanged; docs/reference/cli.md diff appends flags without removing or renaming any.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:31.837Z"
+    },
+    {
+      "event_id": "15bcd91a-19b8-48a5-8e6a-906c2433bebc",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent feature (id stability, delta computation, inconclusive semantics, shadow-stage wiring) with no unrelated concerns or drive-by refactors bundled in; a single reviewable unit.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:32.232Z"
+    },
+    {
+      "event_id": "2c6dc0c1-8f09-49bc-b934-0cc65b3d55a2",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "loadTargetModel already wraps JSON.parse with a descriptive error which scanSafely converts to inconclusive; pre-existing behavior reused, and CDL-S-5 exercises the same degrade path, so not_required is a defensible classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:32.631Z"
+    },
+    {
+      "event_id": "808c037a-ac9b-483f-98d2-db57f63f1586",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason.boundary commits to derive-only with no recorded evidence, and the CDL-S-8 docs-only commit test directly proves no review or evidence directory is created for this stage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:33.028Z"
+    },
+    {
+      "event_id": "58929fc5-b797-4511-8353-c517bd667a30",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Gate type string verified excluded from collectUnresolvedRequiredGates allowlist and the CDL-S-8 A/B test asserts all other gate statuses and overall_status are byte-identical with vs without the stage; the failure mode was designed against and empirically tested.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a2a93d3025a7555bb",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "be932e57d37baa2a3d8a399cfd98bce2297d22ad",
+      "recorded_at": "2026-08-04T04:42:33.426Z"
+    },
+    {
+      "event_id": "81b0f4be-edeb-4ee4-ae49-71675c9059fc",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states User Story, Context-Gap, 8 ACs and a full reason block; implementation (stable ids, delta, inconclusive semantics, shadow stage) matches stated intent 1:1 against the diff with no drift.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:08.992Z"
+    },
+    {
+      "event_id": "d5115f2f-5137-43e7-a70f-c1db3f8a3837",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Shadow-stage tests invoke the real CLI pr prepare against a live git repo and inspect the actual gate DAG output, giving direct runtime evidence of current reality beyond changed-file classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:09.404Z"
+    },
+    {
+      "event_id": "fa39d38a-f80a-43fd-8741-f46c7d082e1d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Id stability under position perturbation and double-scan reproducibility are directly asserted by CDL-S-1/S-2; the gate-pr-must-not-import-architecture invariant is enforced structurally via dependency injection matching target-model.json rule R-004.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:09.815Z"
+    },
+    {
+      "event_id": "6ed4419f-dbc0-4bd6-b132-79b0bb301142",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary is explicit in code comments and the Story reason.boundary field (no ratchet, no target-model revision, no candidate derivation, no post-merge reconciliation, no strict-head evidence); no ratchet or blocking logic exists in the changed files.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:10.227Z"
+    },
+    {
+      "event_id": "ceb5b630-3bcb-4c71-9f3a-eeb1ef6e2aaf",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Scanner exceptions, zero-file scope, missing or malformed target model, missing base ref, and git worktree add/remove failures all degrade to inconclusive rather than throwing or silently reporting zero violations, verified by reading scanSafely/scanRefSafely and running CDL-S-5 tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:10.640Z"
+    },
+    {
+      "event_id": "70c88128-7088-40ae-8e24-e1d691ab276d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Adjudicator independently ran both test files (10/10 and 5/5 pass) and confirmed each test asserts real behavioral outcomes tied to a specific AC clause, not string or field existence checks.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:11.106Z"
+    },
+    {
+      "event_id": "9f7091a8-356f-44e3-b9b7-c076e57655e4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI contract change is additive only: architecture conformance gains optional --base/--head flags with existing flags and output schema unchanged; docs/reference/cli.md diff appends flags without removing or renaming any.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:11.518Z"
+    },
+    {
+      "event_id": "a3fc593a-d0a1-4f3b-b8b3-7b344b79a742",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent feature (id stability, delta computation, inconclusive semantics, shadow-stage wiring) with no unrelated concerns or drive-by refactors bundled in; a single reviewable unit.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:11.937Z"
+    },
+    {
+      "event_id": "7df5712c-7363-47c2-b6d6-14d360a08466",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "loadTargetModel already wraps JSON.parse with a descriptive error which scanSafely converts to inconclusive; pre-existing behavior reused, and CDL-S-5 exercises the same degrade path, so not_required is a defensible classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:12.352Z"
+    },
+    {
+      "event_id": "d9ab3670-c104-4749-98b1-00b2f34fb862",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason.boundary commits to derive-only with no recorded evidence, and the CDL-S-8 docs-only commit test directly proves no review or evidence directory is created for this stage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:12.757Z"
+    },
+    {
+      "event_id": "37cd49cf-b73d-4de9-b418-9932e0a1ad18",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Gate type string verified excluded from collectUnresolvedRequiredGates allowlist and the CDL-S-8 A/B test asserts all other gate statuses and overall_status are byte-identical with vs without the stage; the failure mode was designed against and empirically tested.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a944d0d2325e124e3",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "recorded_at": "2026-08-04T04:49:13.151Z"
+    },
+    {
+      "event_id": "eb57d436-c55c-48ec-8c2f-856ad53c284b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states User Story, Context-Gap, 8 ACs and a full reason block; implementation (stable ids, delta, inconclusive semantics, shadow stage) matches stated intent 1:1 against the diff with no drift.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:45.009Z"
+    },
+    {
+      "event_id": "3c173089-f313-4576-bd1b-e97da81a67fe",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Shadow-stage tests invoke the real CLI pr prepare against a live git repo and inspect the actual gate DAG output, giving direct runtime evidence of current reality beyond changed-file classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:45.449Z"
+    },
+    {
+      "event_id": "73095b53-67a2-43a1-87a2-b1b54713243f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Id stability under position perturbation and double-scan reproducibility are directly asserted by CDL-S-1/S-2; the gate-pr-must-not-import-architecture invariant is enforced structurally via dependency injection matching target-model.json rule R-004.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:45.937Z"
+    },
+    {
+      "event_id": "f5d6c2aa-7a2e-46ba-ac4a-4ff32d977d10",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary is explicit in code comments and the Story reason.boundary field (no ratchet, no target-model revision, no candidate derivation, no post-merge reconciliation, no strict-head evidence); no ratchet or blocking logic exists in the changed files.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:46.398Z"
+    },
+    {
+      "event_id": "51a6c741-0667-4593-8eec-968b481c2032",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Scanner exceptions, zero-file scope, missing or malformed target model, missing base ref, and git worktree add/remove failures all degrade to inconclusive rather than throwing or silently reporting zero violations, verified by reading scanSafely/scanRefSafely and running CDL-S-5 tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:46.881Z"
+    },
+    {
+      "event_id": "c7b4fc26-5b15-48b6-96fd-70866ed7db64",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Adjudicator independently ran both test files (10/10 and 5/5 pass) and confirmed each test asserts real behavioral outcomes tied to a specific AC clause, not string or field existence checks.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:47.323Z"
+    },
+    {
+      "event_id": "7ba96e9a-ca68-4ad4-9aec-d1f90802513b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI contract change is additive only: architecture conformance gains optional --base/--head flags with existing flags and output schema unchanged; docs/reference/cli.md diff appends flags without removing or renaming any.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:47.756Z"
+    },
+    {
+      "event_id": "89f280b0-ae11-41f6-a634-0635647ab120",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent feature (id stability, delta computation, inconclusive semantics, shadow-stage wiring) with no unrelated concerns or drive-by refactors bundled in; a single reviewable unit.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:48.237Z"
+    },
+    {
+      "event_id": "6ebc786e-1f73-458e-90c2-5b6e5fea95bf",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "loadTargetModel already wraps JSON.parse with a descriptive error which scanSafely converts to inconclusive; pre-existing behavior reused, and CDL-S-5 exercises the same degrade path, so not_required is a defensible classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:48.742Z"
+    },
+    {
+      "event_id": "a1f5f7e5-e0f9-4334-bc35-d969acc8c0aa",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason.boundary commits to derive-only with no recorded evidence, and the CDL-S-8 docs-only commit test directly proves no review or evidence directory is created for this stage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:49.234Z"
+    },
+    {
+      "event_id": "5d25fd80-b452-4ebf-8fa2-9e759f915ba2",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Gate type string verified excluded from collectUnresolvedRequiredGates allowlist and the CDL-S-8 A/B test asserts all other gate statuses and overall_status are byte-identical with vs without the stage; the failure mode was designed against and empirically tested.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-conformance-delta-ledger; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "recorded_at": "2026-08-04T08:12:49.722Z"
+    }
+  ]
+}

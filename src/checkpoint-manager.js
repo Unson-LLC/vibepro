@@ -33,6 +33,7 @@ const CHECKPOINTS = {
     description: 'Blocks PR handoff until verification, gate review, and current-head evidence are complete.',
     gate_ids: [
       'gate:pr_route_classification',
+      'gate:uiux_intake_judgment',
       'gate:pr_body_contract',
       'gate:mirror_source_traceability',
       'gate:ci_status_or_waiver',

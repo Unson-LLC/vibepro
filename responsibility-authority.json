@@ -609,6 +609,39 @@
         "current_head_verification"
       ],
       "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.diagnostics.scanner_file_walk",
+      "primary_authority": {
+        "kind": "story",
+        "ref": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md"
+      },
+      "supporting_authority": [
+        "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/architecture-profiler.js",
+          "src/code-quality-scanner.js",
+          "src/component-style-scanner.js",
+          "src/database-access-scanner.js",
+          "src/gesture-interaction-scanner.js",
+          "src/static-site-scanner.js",
+          "test/architecture-profiler.test.js"
+        ],
+        "symbols": [
+          "collectFiles",
+          "pending",
+          "PROFILER_IGNORED_DIRS"
+        ],
+        "risk_surfaces": []
+      },
+      "required_evidence": [
+        "unit_regression",
+        "typecheck",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
     }
   ]
 }

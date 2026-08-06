@@ -1,15 +1,9 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-const IGNORED_DIRS = new Set([
-  '.git',
-  '.next',
-  '.turbo',
-  '.vibepro',
-  'coverage',
-  'node_modules',
-  'graphify-out'
-]);
+import { SCAN_IGNORED_DIRS } from './scan-ignored-dirs.js';
+
+const IGNORED_DIRS = SCAN_IGNORED_DIRS;
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
 const GATE_EFFECTS = ['block', 'review', 'info'];
 
@@ -32,25 +26,31 @@ export async function scanDatabaseAccess(repoRoot) {
   return result;
 }
 
-async function collectFiles(root, current = root) {
-  const entries = await readdir(current, { withFileTypes: true });
+async function collectFiles(root) {
+  // Iterative walk with a single accumulator: recursion + spread-push overflows
+  // the call stack once a subtree holds more entries than V8 accepts as arguments.
   const files = [];
+  const pending = [root];
 
-  for (const entry of entries) {
-    if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
-    const absolutePath = path.join(current, entry.name);
-    const relativePath = path.relative(root, absolutePath).split(path.sep).join('/');
+  for (let index = 0; index < pending.length; index += 1) {
+    const entries = await readdir(pending[index], { withFileTypes: true });
 
-    if (entry.isDirectory()) {
-      files.push(...await collectFiles(root, absolutePath));
-      continue;
+    for (const entry of entries) {
+      if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
+      const absolutePath = path.join(pending[index], entry.name);
+
+      if (entry.isDirectory()) {
+        pending.push(absolutePath);
+        continue;
+      }
+
+      if (!entry.isFile()) continue;
+      if (!SOURCE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
+      const fileStat = await stat(absolutePath);
+      if (fileStat.size > 1024 * 1024) continue;
+      const relativePath = path.relative(root, absolutePath).split(path.sep).join('/');
+      files.push({ absolutePath, relativePath });
     }
-
-    if (!entry.isFile()) continue;
-    if (!SOURCE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
-    const fileStat = await stat(absolutePath);
-    if (fileStat.size > 1024 * 1024) continue;
-    files.push({ absolutePath, relativePath });
   }
 
   return files;

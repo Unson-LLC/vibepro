@@ -1,0 +1,416 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "updated_at": "2026-08-02T14:04:46.435Z",
+  "events": [
+    {
+      "event_id": "fd4095dd-2560-46f0-a232-e61bb9038188",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story has explicit AC1-3 and a background documenting the measured incident (134431 files, spread overflow); intent genuinely captured",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:17.111Z"
+    },
+    {
+      "event_id": "6e16ce18-f0c7-4cad-8670-7bb303925bd9",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story documents the specific pre-fix measurement (file count, depth, root cause); the e2e test reproduces the crash mechanism at reduced scale",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:18.290Z"
+    },
+    {
+      "event_id": "68ad9407-0e06-47f9-a810-d210a3330da9",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-001 matches what the judge verified in code: all 8 walkers use queue+accumulator, no recursion/spread; test checks the invariant directly",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:19.285Z"
+    },
+    {
+      "event_id": "bf57ade6-b17b-4c1f-aa33-622ccb65462c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason scopes the boundary to walker functions only; confirmed by diff reading — no diagnostic-engine or persistence changes",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:20.278Z"
+    },
+    {
+      "event_id": "8cb185f5-5d49-465b-bc9e-a6133dc30a48",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e test encodes the historical failure mode (stack overflow under spread-push) and demonstrates it no longer occurs at the scaled fixture",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:21.810Z"
+    },
+    {
+      "event_id": "7ce8ee0d-0a1a-44d0-af79-6fea55ed6324",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e asserts concrete completion markers (all-walkers-completed, javascript detection) mapping directly to the Story done condition",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:22.998Z"
+    },
+    {
+      "event_id": "6ea39950-2667-4fac-b16f-65abc257bea0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Code reading confirms every walker preserves return shape and filter semantics; unit test re-checks detection output unchanged",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:24.234Z"
+    },
+    {
+      "event_id": "306b8e0e-13e7-4168-ba30-a49184cebaa8",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only in-function traversal mechanics changed; no stored objects, feature gates, or version-skew surface; rollback is a function-body revert",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:25.600Z"
+    },
+    {
+      "event_id": "17aebe09-fbbc-4757-b472-380e2a2b4047",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Walkers only read the filesystem into memory; no migration, cache, query, or persisted-state code touched",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:27.312Z"
+    },
+    {
+      "event_id": "dd1c2fba-9849-4cda-a5da-ff17a74ec942",
+      "type": "verdict",
+      "item_id": "axis:ux_surface",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Backend diagnostic internals only; diff contains no UI code",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:28.786Z"
+    },
+    {
+      "event_id": "893082b6-1c89-491b-81d5-c9e888bf2de9",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Identical mechanical pattern across all 8 files, reviewable as one coherent transformation",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:29.814Z"
+    },
+    {
+      "event_id": "581fd69f-729e-4b9a-a89f-5ab21fecf9ef",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Integration test asserts the previously-crashing pipeline now reaches and completes the persistence step (diagnosis created)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:30.676Z"
+    },
+    {
+      "event_id": "50c2cc8d-ac94-4a87-aa7c-28a3faad2b0b",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Diff changes only local filesystem walking with zero network or provider calls; the covered match is a mismatch to an inapplicable failure mode",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:48.276Z"
+    },
+    {
+      "event_id": "6c359cd8-e4bf-49ab-8804-c3723b3a6ea4",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The pending array is a synchronous local traversal worklist, not a retry/queue/worker mechanism; match is a keyword collision on queue",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:49.261Z"
+    },
+    {
+      "event_id": "a0c4f4b7-988e-4e8f-8449-a3b69b71ac97",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "No gate/review/evidence-lifecycle machinery is touched by this diff; generic template match unconnected to the change",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:50.566Z"
+    },
+    {
+      "event_id": "290cb863-5b8e-495d-ad9a-980c98bb7dee",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "No workflow state-machine code touched; the match stems from the new local variable named pending colliding with the pending-gate-state vocabulary",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:01:51.726Z"
+    },
+    {
+      "event_id": "56a59411-efc3-48c0-8985-ee97b2ef5c38",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "50c2cc8d-ac94-4a87-aa7c-28a3faad2b0b",
+      "wrong_premise": "the change depends on an external provider/API whose failure must be covered",
+      "corrected_premise": "the change is local filesystem traversal with zero network or provider calls; no provider failure path exists in the changed code",
+      "reason": "Keyword-derived failure-mode candidate does not apply to a diff that only rewrites local filesystem walkers; see scope proof",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/correction-evidence-failure-modes.md",
+          "sha256": "e989234b530ecf2c595dba2b24ff44f7ccc5faeec4e5b95af9320e3e5909b273"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": null
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:02:38.751Z"
+    },
+    {
+      "event_id": "23d4a04e-b182-419a-9386-5b682e6cf2c5",
+      "type": "premise_correction",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "corrects_verdict_id": "6c359cd8-e4bf-49ab-8804-c3723b3a6ea4",
+      "wrong_premise": "the change introduces a retry/queue/worker mechanism whose async failure must be covered",
+      "corrected_premise": "the pending array is a synchronous in-function BFS worklist, not a retry or job queue; no async retry mechanism exists in the changed code",
+      "reason": "Keyword-derived failure-mode candidate does not apply to a diff that only rewrites local filesystem walkers; see scope proof",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/correction-evidence-failure-modes.md",
+          "sha256": "e989234b530ecf2c595dba2b24ff44f7ccc5faeec4e5b95af9320e3e5909b273"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": null
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:02:40.039Z"
+    },
+    {
+      "event_id": "215160d8-b4df-4bd2-b546-d40b9afbfd00",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "a0c4f4b7-988e-4e8f-8449-a3b69b71ac97",
+      "wrong_premise": "the change touches evidence/review/gate lifecycle machinery whose regression must be covered",
+      "corrected_premise": "no evidence, review, or gate machinery file is in the diff; only scanner walk helpers changed",
+      "reason": "Keyword-derived failure-mode candidate does not apply to a diff that only rewrites local filesystem walkers; see scope proof",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/correction-evidence-failure-modes.md",
+          "sha256": "e989234b530ecf2c595dba2b24ff44f7ccc5faeec4e5b95af9320e3e5909b273"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": null
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:02:41.226Z"
+    },
+    {
+      "event_id": "d3e59347-3cc9-4fcb-8b59-b45f5a3bf903",
+      "type": "premise_correction",
+      "item_id": "failure_mode:workflow_state_regression",
+      "corrects_verdict_id": "290cb863-5b8e-495d-ad9a-980c98bb7dee",
+      "wrong_premise": "the change affects workflow/gate state machines (stale, pending, over-green states)",
+      "corrected_premise": "no workflow state-machine code is in the diff; the candidate fired on the local variable name pending introduced by the traversal rewrite",
+      "reason": "Keyword-derived failure-mode candidate does not apply to a diff that only rewrites local filesystem walkers; see scope proof",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/correction-evidence-failure-modes.md",
+          "sha256": "e989234b530ecf2c595dba2b24ff44f7ccc5faeec4e5b95af9320e3e5909b273"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": null
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:02:42.156Z"
+    },
+    {
+      "event_id": "ca08fb10-f1a5-4a6d-a7f6-9a694b1c0bed",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "56a59411-efc3-48c0-8985-ee97b2ef5c38",
+      "reason": "Second independent judge verified via grep over the src diff: zero network/provider calls in changed lines; provider_failure is correctly inapplicable to this pure filesystem-walk refactor",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a51d9b246e00e3e3d",
+        "session_ref": "tasks/a51d9b246e00e3e3d"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:04:44.391Z"
+    },
+    {
+      "event_id": "915e80f1-5f9d-4f52-ade3-53950c8bafa3",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "23d4a04e-b182-419a-9386-5b682e6cf2c5",
+      "reason": "Second judge confirmed pending is a plain array in a single sequential-await for-loop; grep for queue/worker/retry/poll over the src diff returned zero hits",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a51d9b246e00e3e3d",
+        "session_ref": "tasks/a51d9b246e00e3e3d"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:04:45.249Z"
+    },
+    {
+      "event_id": "cbdb1e06-b940-48e0-8194-a0940b132755",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "215160d8-b4df-4bd2-b546-d40b9afbfd00",
+      "reason": "Second judge confirmed the diff name-list contains no gate/review/evidence machinery files; premise does not apply",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a51d9b246e00e3e3d",
+        "session_ref": "tasks/a51d9b246e00e3e3d"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:04:45.908Z"
+    },
+    {
+      "event_id": "e5a20dbf-cb4e-4bb9-b3fa-9eafae2783bd",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "d3e59347-3cc9-4fcb-8b59-b45f5a3bf903",
+      "reason": "Second judge confirmed zero workflow-state tokens in the src diff; the classifier fired on the local BFS variable named pending",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a51d9b246e00e3e3d",
+        "session_ref": "tasks/a51d9b246e00e3e3d"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "recorded_at": "2026-08-02T14:04:46.433Z"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+(node:31580) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed correction, and requires linked independent re-adjudication (25361.667167ms)
+✔ CSA-E2E-001 story-vibepro-cross-system-adjudication ac:1 [S-001] adjudicate provenance records implementation-provenance.json with recorded_at and head commit, rejecting unknown agent systems before any write (2848.866875ms)
+✔ CSA-E2E-002 story-vibepro-cross-system-adjudication ac:2 [S-002] evidence-adjudication record with the same --agent-system as implementation provenance carries a same_system warning and is not blocked (2397.049208ms)
+✔ CSA-E2E-003 story-vibepro-cross-system-adjudication ac:3 [S-003] judgment-DAG record/correct reject a same-system agent-system before persistence unless --allow-same-system is provided, and the override reason is appended to the append-only log and stored on the event (2841.971958ms)
+✔ CSA-E2E-004 story-vibepro-cross-system-adjudication ac:4 [S-004] an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment (non-empty reason and artifact) downgrades judgment-DAG same-system rejection to a warning (1480.131ms)
+✔ CSA-E2E-005 story-vibepro-cross-system-adjudication ac:5 [S-005] no recorded implementation provenance emits a provenance_missing warning and otherwise behaves exactly as before this story; a cross-system adjudicator with provenance recorded produces no same-system warning and no override requirement (2319.022834ms)
+✔ CSA-E2E-006 story-vibepro-cross-system-adjudication ac:6 [S-006] the existing same-judge-identity rejection for premise-correction re-adjudication is preserved unchanged alongside the new system-level check (2601.452583ms)
+✔ JDA-E2E-001 story-vibepro-judgment-dag-adjudication ac:1 prepare --judgment collects the three item families with questions, discharge state, evidence, and changed files (1012.642584ms)
+✔ JDA-E2E-002 story-vibepro-judgment-dag-adjudication ac:2 prepare --judgment without a pr prepare artifact fails explicitly and writes nothing (565.03525ms)
+✔ JDA-E2E-003 story-vibepro-judgment-dag-adjudication ac:3 the request instructs a fresh-context judge, defines the three verdicts, and forbids token-match-only soundness (703.946167ms)
+✔ JDA-E2E-004 story-vibepro-judgment-dag-adjudication ac:4 record --judgment validates verdict, reason, provenance, and binds to the current HEAD via the real CLI (3034.391208ms)
+✔ JDA-E2E-005 story-vibepro-judgment-dag-adjudication ac:5 the gate reports needs_evidence with missing item ids for absent or stale adjudications (6.4675ms)
+✔ JDA-E2E-006 story-vibepro-judgment-dag-adjudication ac:6 any judged_unsound item fails the gate with the judge reasoning in the reason (3.312958ms)
+✔ JDA-E2E-007 story-vibepro-judgment-dag-adjudication ac:7 needs_human_judgment items resolve only through an accepted decision record with reason and artifact (3.947792ms)
+✔ JDA-E2E-008 story-vibepro-judgment-dag-adjudication ac:8 all items resolved passes the gate and zero active items is an explicit not_applicable (0.951917ms)
+✔ JDA-E2E-009 story-vibepro-judgment-dag-adjudication ac:9 pr prepare treats the unresolved gate as required and critical so ready_for_pr_create stays false (7072.437583ms)
+✔ JDA-E2E-010 story-vibepro-judgment-dag-adjudication ac:10 config opt-out suppresses the gate and artifact-free repos do not crash (5663.716875ms)
+✔ JDA-E2E-011 story-vibepro-judgment-dag-adjudication ac:11 route scope: non-judgment routes collect zero items and workflow_heavy activates regardless of route (1.723791ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26878.740125

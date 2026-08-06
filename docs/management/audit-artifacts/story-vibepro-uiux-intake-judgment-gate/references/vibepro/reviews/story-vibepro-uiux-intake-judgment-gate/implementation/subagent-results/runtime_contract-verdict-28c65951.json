@@ -1,0 +1,1 @@
+{"status":"pass","summary":"Runtime contract holds at 28c65951: core functions and enforcement byte-identical modulo line shifts; #416/#418 additive, #419 removed only the dead display chain; targeted suites 9/9 and 4/4 reproduced.","agent_id":"af75184c19253eec9","agent_system":"claude_code","model":"claude-sonnet-5","head":"28c65951"}

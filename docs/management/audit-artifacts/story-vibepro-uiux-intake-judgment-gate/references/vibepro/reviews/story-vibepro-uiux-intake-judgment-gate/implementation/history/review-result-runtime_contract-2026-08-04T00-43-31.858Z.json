@@ -1,0 +1,160 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Runtime contract holds after the delta merge: readUiuxIntakeJudgmentContext/buildUiuxIntakeJudgmentGate, DAG edges, allowlist entry, and critical-unresolved check are unchanged modulo line shifts; #416/#418 are additive display/checkpoint entries and #419 removed only the caller-less dead renderer chain; targeted suites reproduced 9/9 and 4/4 at this head.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed bfc3ee2e..78f40d93 across the four owned surfaces (zero uiux/intake references in decision-records/cli deltas), traced every pr-manager diff hit to the dead-chain removal, grepped the enforcement anchors at current HEAD, verified checkpoint-manager.js:36 carries the additive gate id, and re-ran both targeted suites; risk_surfaces=gate_orchestration",
+    "evidence": null,
+    "inputs": [
+      "src/pr-manager.js",
+      "src/decision-records.js",
+      "src/cli.js",
+      "src/checkpoint-manager.js",
+      "skills/vibepro-workflow/SKILL.md",
+      "test/uiux-intake-judgment-gate.test.js",
+      "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Merge-staleness concern resolved: no enforcement-path change; the only uiux-adjacent delta was removal of a display-only chain with no callers since PR #228."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "expected_root": null,
+    "expected_head_sha": "28c65951f79063c9353a60732f6422870a3a996b",
+    "current_head_sha": "28c65951f79063c9353a60732f6422870a3a996b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "28c65951f79063c9353a60732f6422870a3a996b",
+      "current_head_sha": "28c65951f79063c9353a60732f6422870a3a996b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T00:43:31.858Z",
+  "git_context": {
+    "head_sha": "28c65951f79063c9353a60732f6422870a3a996b",
+    "current_branch": "claude/sweet-chatelet-c1b354",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T00:43:31.814Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "28c65951f79063c9353a60732f6422870a3a996b",
+    "surface_files": [
+      {
+        "path": "skills/vibepro-workflow/SKILL.md",
+        "sha256": "cb5bd86ddbb5f5975fe64a1515b2c71032b0809fb727dc57a40117ca1636f0b3",
+        "size": 24565
+      },
+      {
+        "path": "src/checkpoint-manager.js",
+        "sha256": "075cd9e93fb393328096d2349badbdc52a10ebc2636a5bb91d6e9a85b7483d43",
+        "size": 9935
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "09b43e92558b4aee4d20c671492dbdd7e289fe32601c6054b7931cd78d5daf54",
+        "size": 260560
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "89c87ef161d725e719982e045e05ea28a1619584722b65891b16a8ed03fe2bae",
+        "size": 19450
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "fe75862e9229d04a4218800f7e6382faefaf7136118e1efa9b4b4008e0daedbe",
+        "size": 712029
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js",
+        "sha256": "e986901d85e7f64a8ee5f5803204ada1f095483ffa5a1a038217017c399b4d3f",
+        "size": 6221
+      },
+      {
+        "path": "test/uiux-intake-judgment-gate.test.js",
+        "sha256": "ae98701515a2142b4d241bddb8d7ac4ffa0305669017e5f45212305e550bcba9",
+        "size": 8371
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8fa15c9be99accafc21b97494f7454303e9d3cb5ac80bab7d81e473a3377e2d7"
+  },
+  "source_fingerprint": "8dc76b1ede86e539c411ded5f6202269fb9fca266a7f952761ee2917985d6e5b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "af75184c19253eec9",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "af75184c19253eec9",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/implementation/subagent-results/runtime_contract-transcript.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "af75184c19253eec9",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

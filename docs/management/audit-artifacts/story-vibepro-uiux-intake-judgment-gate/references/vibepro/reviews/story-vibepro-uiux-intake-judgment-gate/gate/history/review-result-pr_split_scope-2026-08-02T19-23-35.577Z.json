@@ -1,0 +1,154 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Bundled scope (11 commits / 19 files) is one reviewable lane; no src change ever warranted a split; the three scope decisions are re-recorded at 6a61cf4f with accurate counts and full per-commit accounting.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified the newest three scope decisions carry head_sha=6a61cf4f and 11/19 counts consistent with independent git log/diff inspection; per-commit accounting matches git show on each commit; risk_surfaces=gate_orchestration",
+    "evidence": null,
+    "inputs": [
+      "src/pr-manager.js",
+      "src/decision-records.js",
+      "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "docs/management/decisions/2026-08-02-budget-override-story-vibepro-uiux-intake-judgment-gate-52b02edf.md",
+      "test/vibepro-gate-check.test.js",
+      "test/e2e/story-vibepro-uiux-intake-judgment-gate-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Two staleness rounds closed by re-recording; residual low finding: four unconsolidated budget-grant commits (process noise, future improvement)."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "expected_root": null,
+    "expected_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+    "current_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "current_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T19:23:35.577Z",
+  "git_context": {
+    "head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+    "current_branch": "claude/sweet-chatelet-c1b354",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T19:23:35.545Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 6 file(s)",
+    "recorded_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+        "sha256": "e99019f5d28aa84cbd3eed05bb80e6d0052df5af43e265e2db995c9767b9b6bc",
+        "size": 3115
+      },
+      {
+        "path": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-uiux-intake-judgment-gate-52b02edf.md",
+        "sha256": "717e420adce2a4491154ab6e1208c5c8f2cdbcf3eb78d82178eb768ebeea42ad",
+        "size": 1425
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "89c87ef161d725e719982e045e05ea28a1619584722b65891b16a8ed03fe2bae",
+        "size": 19450
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "94ac5447114a4ad2a6889bb8ec3b04b767afd7ecf512ed5dc050ca9323899f76",
+        "size": 733807
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-judgment-gate-acceptance.spec.ts",
+        "sha256": "bbe26ed72efcac75bb1ebb62d212b0303aeae6a1836c6ae70c529103571aa84d",
+        "size": 7749
+      },
+      {
+        "path": "test/vibepro-gate-check.test.js",
+        "sha256": "40d3c214254faedf5ed21f77a533d20872e44b373d72c890cb1b6566731fb449",
+        "size": 12771
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "dbc32a5641048701e72b0fee4e259b66893cea588d2b9607c2a9dd6c995e36c0"
+  },
+  "source_fingerprint": "9c4e1767e2d6ffe3043316295424a5719851ff277008888530c9bde8227ee3fe",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "abc9f73e6fd2a2357",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "abc9f73e6fd2a2357",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/gate/subagent-results/pr_split_scope-transcript.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "abc9f73e6fd2a2357",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

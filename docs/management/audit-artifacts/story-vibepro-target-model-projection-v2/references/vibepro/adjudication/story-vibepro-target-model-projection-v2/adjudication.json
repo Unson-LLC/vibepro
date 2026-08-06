@@ -1,0 +1,240 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "updated_at": "2026-08-04T16:43:03.109Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Adjudicator re-ran architecture conformance in a fresh detached origin/main worktree (orphan=23, undeclared=41) and on HEAD (orphan=1, undeclared=22), matching the claimed reduction exactly; the 22 undeclared are exactly the 19 resolve pairs plus the 3 induced pairs, none in allowed_dependencies. model_version_changed non-reproducibility today is the documented stateful-artifact behavior (TMG-S-3), not a false claim.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:43:03.107Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Cards file read in full: frontmatter status adjudicated, answered_at 2026-08-04, adjudicator sato_keigo, answer_channel coordinator session AskUserQuestion; exactly 5 provenance-stamped answers matching the recommended options.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:43:02.565Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "rules[]/scope_roots/budgets programmatically diffed between origin/main and HEAD: byte-identical; only modules, allowed_dependencies, model_version, and governance.adjudicated_at changed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:43:01.964Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "model_version is literally 2 and governance.adjudicated_at is literally 2026-08-04 in the on-disk JSON.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:43:01.420Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "All 22 declared pairs enumerated via git diff against origin/main and independently re-derived; the 19 resolve pairs cross-checked against a fresh conformance run's undeclared list: all 19 still undeclared, none absorbed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:43:00.895Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "allowed_dependencies['agent-runtime'] deepEquals ['workspace-infra'] and allowed_dependencies['run-session'] includes 'agent-runtime', confirmed directly from the JSON.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:43:00.341Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Each of the 14 Q2/Q3/Q5 files verified independently against modules[].paths: 4 Q2 files in workspace-infra, 7 Q3 files in gate-pr, 3 Q5 files in review, exactly as adjudicated.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:42:59.819Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "target-model.json contains the new agent-runtime module with matching responsibility text and paths deepEqual to exactly the 8 named files; verified by loading the JSON directly, not only via test pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMP-S-1: `target-model.json` は新モジュール `agent-runtime` を持ち、その `responsibility` は外部agentプロセスの起動・出力契約・完了通知・進捗期限を表す。`paths` には Q1 の対象8ファイル（`codex-subagent-host.js`, `codex-subagent-host-worker.js`, `codex-subagent-runtime-adapter.js`, `codex-runtime-bridge.js`, `codex-runtime-output-contract.js`, `agent-completion-inbox.js`, `progress-deadline.js`, `verification-runner.js`）がすべて含まれる。",
+          "TMP-S-2: Q2/Q3/Q5 の割当が `modules[].paths` に反映される。`atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` は `workspace-infra`、`decision-outcome-ledger.js`・`outcome-manager.js`・`merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js`・`budget-override-authority.js` は `gate-pr`、`review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` は `review` に属する。",
+          "TMP-S-3: `allowed_dependencies` に `agent-runtime: [\"workspace-infra\"]` が追加され、`run-session` の許可先に `agent-runtime` が含まれる（Q1 で承認された2宣言）。",
+          "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて `allowed_dependencies` で許可されている。resolve 対象19ペアは宣言されない（負債として残る）。",
+          "TMP-S-5: `model_version` が 2 であり、`governance.adjudicated_at` が `2026-08-04` である。",
+          "TMP-S-6: `rules[]`・`scope_roots`・`budgets` は前段 story（governance rebaseline 時点、`origin/main`）の内容と完全一致する（投影が規範本文を書き換えていない）。",
+          "TMP-S-7: 裁定カード `docs/architecture/adjudication/target-model-rebaseline-cards.md` は `status: adjudicated` / `answered_at: 2026-08-04` を持ち、5問すべてについて採択された選択肢と回答 provenance（adjudicator: sato_keigo、経路: coordinator session AskUserQuestion）が記録される。",
+          "TMP-S-8: 投影後に `architecture conformance . --base origin/main` を再実行した実測で、孤児件数と未宣言依存件数の減少、および `model_version_changed: true` が確認できる。新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "a6552344f458420ef0c231946b822988520960231c60b5ae15f9c6ccfa2a18e9",
+      "recorded_at": "2026-08-04T16:42:59.252Z"
+    }
+  ]
+}

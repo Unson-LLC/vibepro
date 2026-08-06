@@ -1,0 +1,942 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "updated_at": "2026-08-03T01:03:26.763Z",
+  "events": [
+    {
+      "event_id": "ef605dd3-df32-47c6-8683-d76de7666ebe",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc has exactly 3 Acceptance Criteria bullets and a clear Problem/Out-of-Scope statement of intent (make an existing gate visible on two curated human-facing surfaces). Diff implements precisely those 3 criteria and nothing more (2 array-literal insertions plus the two functions' export keywords needed for testing). Intent is legible and matched by the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-01",
+        "session_ref": null
+      },
+      "head_commit": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+      "recorded_at": "2026-08-02T18:55:18.995Z"
+    },
+    {
+      "event_id": "ff9a8cd8-8137-4c26-afec-cfb117df3737",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e test builds a realistic multi-node gate_dag fixture mirroring actual pr-prepare shape (story/route/body/unit gates) and replays both renderPrGateSummary and buildHumanEvidenceDigest against it end-to-end, asserting exact line position and exact digest substring. This genuinely exercises current workflow behavior, not a mocked stand-in.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-01",
+        "session_ref": null
+      },
+      "head_commit": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+      "recorded_at": "2026-08-02T18:55:19.986Z"
+    },
+    {
+      "event_id": "fc4914c1-46ef-48b5-bdc3-bd9d6611cb92",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This is a low-risk, additive, display-only change (no evaluation/DAG-wiring logic touched, confirmed by reading the diff). The invariant that matters is 'output unchanged when the gate node is absent, correct when present' and both unit and e2e tests assert exactly that invariant with byte-level diffing (AC-3 test). Test evidence directly targets the invariant at stake.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-01",
+        "session_ref": null
+      },
+      "head_commit": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+      "recorded_at": "2026-08-02T18:55:30.215Z"
+    },
+    {
+      "event_id": "3403754c-3c5a-48bc-83cb-e02cc4120d4c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The only boundary-relevant aspect of this diff is that renderPrGateSummary and buildHumanEvidenceDigest were changed from module-local to exported (needed so tests can import them directly). Reviewed the story's reason field, which explicitly states this is a display-only boundary (gate evaluation/DAG wiring/readiness logic untouched), and confirmed by reading the diff that no auth, data-flow, or runtime-boundary code changed. current_verification (e2e replay) covers the exported-function behavior directly; decision-1785696621192-61ac6765 (split_resolution) additionally confirms this was reviewed as a single bundled scope with no independent lanes.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-01",
+        "session_ref": null
+      },
+      "head_commit": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+      "recorded_at": "2026-08-02T18:55:30.824Z"
+    },
+    {
+      "event_id": "fa419748-e06e-4b51-8227-f2410c70f1c8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The original gap (a required gate silently invisible on human surfaces) is itself the failure mode this story fixes. The e2e test's without-gate case directly replays that original failure mode (node absent -> no line, matching pre-change behavior) and the with-gate case replays the corrected behavior, so both the failure and its fix are exercised end-to-end via flow_replay/artifact_replay/scenario_clause_e2e evidence, not just asserted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-01",
+        "session_ref": null
+      },
+      "head_commit": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+      "recorded_at": "2026-08-02T18:55:39.750Z"
+    },
+    {
+      "event_id": "2290b1ca-a026-4d03-b7db-4b4b61e4c67f",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence requires flow_replay|artifact_replay|scenario_clause_e2e; the e2e test (test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js) satisfies all three by replaying the actual pr-manager.js functions over a realistic gate_dag artifact and asserting the exact AC-1/AC-2/AC-3 outcomes, verified passing locally (node --test, 1 test / 1 pass).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-01",
+        "session_ref": null
+      },
+      "head_commit": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+      "recorded_at": "2026-08-02T18:55:40.610Z"
+    },
+    {
+      "event_id": "c1ad8c58-a4d0-4c88-a1e5-f2a07bdc2a3c",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc (docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md) states exactly 3 acceptance criteria matching AC-1/2/3, and the reason: frontmatter gives alternatives/compatibility/rollback/boundary. Confirmed diff (src/pr-manager.js, two test files, story doc) implements precisely and only what the ACs describe: exporting + extending two curated label lists. Intent and diff are congruent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:08:17.862Z"
+    },
+    {
+      "event_id": "3bc58b7b-6607-4a8d-be45-626075e27631",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified via grep that gate:uiux_intake_judgment is not constructed anywhere in production gate_dag builder code in this worktree (only referenced in the two curated pr-manager.js lists and tests) -- the sibling story that wires the node (story-vibepro-uiux-intake-judgment-gate) lives on an unmerged branch (commit 7abf06b1, not an ancestor of HEAD). So today this change is a structural no-op in real production runs. Given that, the e2e test's realistic gate_dag fixture exercising the actual exported functions is the best available way to observe current behavior of these two pure display functions ahead of the node's wiring, and it exercises real production code (not a mock), matching VibePro's own flow_replay/artifact_replay definition (src/pr-manager.js:10060-10061, token match on scenario text describing replay of the actual render functions over a realistic fixture). This is proportionate rigor for a pure, tiny, currently-unreachable display change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:08:26.922Z"
+    },
+    {
+      "event_id": "b47d5838-cdad-4b11-9357-870479d09444",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The invariant here (absent-node output is byte-identical to before; present-node output only adds one well-formed line in the right slot) is exactly what the unit and e2e tests assert with deepEqual/exact-regex checks, not just presence checks. Spec clauses PS-001/002/003 map 1:1 to code and tests. graph_impact_scope (.vibepro/graphify/graph.json, 1 changed/55 related) is consistent with pr-manager.js being a wide hub file; the actual code touched is two array literals plus two export keywords, so the invariant-preserving claim is well supported.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:08:38.092Z"
+    },
+    {
+      "event_id": "7b6446bb-54d8-4544-b2a9-e1e922d79432",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Read the actual diff (git diff 6793e5a1~1..6793e5a1 -- src/pr-manager.js): the only changes are 'function X' -> 'export function X' on renderPrGateSummary/buildHumanEvidenceDigest and one array entry added to each curated label list. No gate evaluation, DAG wiring, or readiness logic touched, matching the story's declared Boundary. decision-1785696621192-61ac6765 (gate:split_resolution) independently confirms this is a single bundled display-only intent with no independent lanes. current_verification (typecheck) plus graph_impact_scope corroborate no wider surface was touched. Boundary claim holds on direct code inspection.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:08:46.828Z"
+    },
+    {
+      "event_id": "1a04487f-7450-4f2b-b483-4c06e193dbed",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The only meaningful failure mode for a curated-list display addition is 'node present but wrong line/position' or 'node absent but line still renders' -- the e2e test (test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js) explicitly covers both: correct line position (assert intakeIndex between PR Route and PR Body indices) and absent-node non-appearance (deepEqual with-node-minus-intake-line vs without-node output). Ran the e2e test locally; passes. Failure modes for this change's actual blast radius are covered.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:08:54.826Z"
+    },
+    {
+      "event_id": "57465f8b-222a-4299-80c7-398bce8c1db8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence for this Story is 'both surfaces render the gate line correctly and leave other DAGs untouched' -- the e2e test's single test case exercises all three AC clauses (PS-001/PS-002/PS-003) against the actual exported functions with exact-match assertions, run locally with exit 0/1 pass. This is complete, non-trivial done evidence proportionate to the change's small scope, not a mere existence check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:09:02.275Z"
+    },
+    {
+      "event_id": "745a0304-11d0-4ed7-9460-54ec7624a31f",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checked whether this breaks any external consumer/output-format contract: buildHumanEvidenceDigest feeds PR body text (live, called at line 4625) and renderPrGateSummary is confirmed unreferenced in production (verified via grep -- only tests import it). AC-3's own test proves absent-node output is byte-identical to pre-change output, and gate:uiux_intake_judgment is confirmed (via grep across src/) to not be constructed anywhere in this worktree's gate_dag builder yet, so today's real PR body output is unaffected. Present-node behavior is strictly additive (one new line in a fixed slot). No CLI flag, config schema, or existing consumer's parsing is broken. Evidence cited (integration/typecheck/runtime_path_evidence) is broad-suite but the AC-3 test is the specific, sufficient proof of non-breakage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:09:15.510Z"
+    },
+    {
+      "event_id": "8b7637d8-b511-41b6-b1c7-ab74bebedd40",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff stat: 4 files, +144/-2 lines total, of which src/pr-manager.js is +6/-2 (two export keywords, two array entries), the rest is two new small test files plus the story doc. Single coherent intent (add one gate id to two curated lists) with no unrelated refactors. This is trivially readable by one reviewer in a single pass; no split needed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:09:24.744Z"
+    },
+    {
+      "event_id": "e77739a3-d529-42ea-9e86-cf146a135e98",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checked whether this change could produce a misleading green artifact or unreconstructable handoff: both changed functions read node.status/node.reason verbatim from the gate_dag passed in -- they do not cache, mutate, or independently compute a status, so they cannot fabricate a 'green' state independent of whatever the (separately owned) uiux_intake_judgment gate actually recorded. No evidence-recording or verify-run code was touched (confirmed by diff: only two export keywords and two array entries in src/pr-manager.js). The unit test locks the exact rendered string to the node's real status field. Structurally this failure mode cannot be introduced by this change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:09:34.034Z"
+    },
+    {
+      "event_id": "348f1f28-8c62-4963-b1bf-7a2f44334612",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checked whether workflow/state transitions could be left stale/pending/over-green: neither function performs any state transition, writes any artifact, or mutates the gate_dag it is given -- both are pure read/render functions over an already-computed gate_dag snapshot. The e2e test's absent-node assertion (deepEqual) proves no accidental state/line is introduced when the gate isn't wired in, and the gate node itself is confirmed not constructed anywhere in this worktree's production gate_dag builder, so no new state transition path exists today. Risk of this failure mode is structurally excluded by the diff's shape.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-02",
+        "session_ref": null
+      },
+      "head_commit": "552993816c237902d3407e9c899a778124127a79",
+      "recorded_at": "2026-08-02T19:09:42.753Z"
+    },
+    {
+      "event_id": "483a9958-04be-4f62-9b69-01f02a2b9b8e",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc at docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md carries exactly 3 acceptance criteria that map 1:1 to AC-1/AC-2/AC-3 in the adjudication request, plus a Problem section explaining the concrete production gap (buildHumanEvidenceDigest is a live surface missing the gate label, renderPrGateSummary is currently dead code but curated for future rewiring). The mechanical 'story_intent found' conclusion accurately reflects the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:31:23.873Z"
+    },
+    {
+      "event_id": "d7c55790-9b61-4a66-ba51-59f36fdb4448",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "surface classification is 'workflow' (agent_workflow route), which per requiredEvidenceForJudgmentSubcheck requires flow_replay/artifact_replay/scenario_clause_e2e evidence at 'supporting' strength bound to the current head. The recorded e2e verification-runs/e2e.json lacks explicit binding/artifact_check metadata, so classifyVerificationEvidenceItem cannot promote it past 'declared' strength even though its scenario text names scenario_clause_e2e. The mechanical 'needs_evidence' conclusion is an honest, conservative read of a real formal-binding gap, not a false negative — it does not claim more than the data supports.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:31:26.970Z"
+    },
+    {
+      "event_id": "b55e3afc-1e02-4b50-965d-dc2e90e2dd6d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The core invariant of this change (repos without gate:uiux_intake_judgment render byte-identical output) is exactly what AC-3/PS-003 tests verify via deepEqual/exact-string comparison in test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js:61-68. hasTests=true legitimately drives the 'passed' status; the diff genuinely carries direct regression coverage of the invariant, not just incidental test-file presence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:31:30.886Z"
+    },
+    {
+      "event_id": "27be44d8-12db-4680-b699-99ca0b2c7be7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story frontmatter reason: field explicitly states the boundary: 'display-only change to renderPrGateSummary and buildHumanEvidenceDigest in src/pr-manager.js; gate evaluation, DAG wiring, and readiness logic are untouched.' I read both functions directly (src/pr-manager.js:15278-15320, 4702-4731) and confirmed the diff only adds two static list entries — no gate evaluation/DAG-wiring code is touched. currentVerification.length>0 (4 recorded runs) independently satisfies the boundaries gate per the code's own OR logic. The boundary claim matches the actual diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:31:35.449Z"
+    },
+    {
+      "event_id": "23d5a8b1-4f2f-433e-9245-2eaad136e38e",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Same binding-strength gap as spine:current_reality: surface=workflow requires flow_replay/artifact_replay/scenario_clause_e2e evidence bound at 'supporting' strength, and the recorded e2e run lacks the binding metadata needed to cross that bar even though AC-3's absent-node test substantively covers the realistic failure mode (silent behavior change for repos without the gate node). The mechanical 'needs_evidence' is a defensible, non-overclaiming statement of an unmet formal-evidence bar, not a false statement about the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:31:38.832Z"
+    },
+    {
+      "event_id": "e178b6b1-2260-4f2a-bc51-9dd8fa492a54",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Identical mechanism/root cause as spine:failure_modes and spine:current_reality: the workflow-surface flow_replay/artifact_replay/scenario_clause_e2e requirement needs 'supporting'-strength binding that the raw e2e.json record does not carry, despite prose in the recorded scenario naming these tokens. 'needs_evidence' correctly and conservatively reports this unmet formal bar rather than rubber-stamping completion.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:31:42.778Z"
+    },
+    {
+      "event_id": "8a2949af-41a5-4f83-8186-12c8a1dced9a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The 'block' fires because evaluateSeniorAxisBlockers requires BOTH story_spec_traceability AND contract_doc evidence (src/pr-manager.js:9606-9617), and no architecture/policy/specifications-classified file is in this diff (design-ssot.json is not classified into fileGroups.specifications; confirmed via isSpecificationDocPath). But this repo's own CLAUDE.md self-dogfood convention (worktree CLAUDE.md ~lines re Story frontmatter) explicitly sanctions a Story's 'reason:' frontmatter (Alternatives/Compatibility/Rollback/Boundary) as the accepted substitute for a separate architecture/ADR doc when none is needed -- and this Story's reason: field does exactly that, explicitly documenting the compatibility guarantee that AC-3's byte-identical-output test then verifies. The classifier's premise that a distinct contract_doc-bucketed file is missing is technically true, but its implicit premise that no equivalent contract documentation exists in the diff is contradicted by the Story's own reason: field plus the AC-3 compat test (compat_or_output_test is in fact matched). This is a real gap in how the tool buckets evidence, not a real absence of compatibility documentation/proof.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:32:18.224Z"
+    },
+    {
+      "event_id": "41b61de0-4ca3-4a85-a79b-ca8d41c49c66",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "decision-1785698287756-3ae7fd6b is correctly sourced at gate:judgment_axis_scope_reviewability (confirmed via decision-outcome-ledger.json native_id) with explicit reason and artifact (split-plan.json), per this repo's known convention that scope_reviewability decisions require axis-gate-id-direct sourcing. Its reasoning -- 'single-intent display fix reviewable by one reviewer... blast radius bounded to the two curated label lists' -- matches the actual diff: story doc + one runtime file (two list-entry additions) + two test files + a docs-only design-ssot registration. The decision predates the docs-only design-ssot commit but that commit does not touch reviewable scope (docs only), so the content-scoped rationale remains current.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:32:21.326Z"
+    },
+    {
+      "event_id": "5ab0f4e9-d2bb-4493-9eb9-c07cb57e683f",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff lives in src/pr-manager.js which also contains evidence-lifecycle logic, so running test/safe-action-orchestrator.test.js, test/process-record-store.integration.test.js, and test/content-scoped-evidence-freshness.test.js (77/77 pass) as a coincidental-breakage check is proportionate due diligence given the shared file, even though the actual diff (two static list entries in two display functions) does not touch evidence-lifecycle/recording code paths. This is genuine regression coverage, not token matching.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:32:26.245Z"
+    },
+    {
+      "event_id": "8578c7be-eb44-4613-8881-20d560ce692c",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Confirmed by direct code reading that the diff touches only static curated label-lookup lists inside two pure rendering functions (renderPrGateSummary, buildHumanEvidenceDigest); no gate-status mutation, state-transition, or persistence logic is touched. 'not_required' correctly reflects that this failure mode does not apply to a display-only change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-03",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:32:29.109Z"
+    },
+    {
+      "event_id": "761fcf8f-fa3d-4731-9ca9-23351be76fb2",
+      "type": "premise_correction",
+      "item_id": "axis:public_contract",
+      "corrects_verdict_id": "8a2949af-41a5-4f83-8186-12c8a1dced9a",
+      "wrong_premise": "The public_contract axis classifier requires a distinct contract_doc-bucketed file for any output-surface change, treating the absence of a separate contract document as a blocking gap",
+      "corrected_premise": "This repo's sanctioned convention (CLAUDE.md self-dogfood section) accepts a Story's reason: frontmatter covering alternatives/compatibility/rollback/boundary as the ADR/contract-doc substitute for changes of this scale; this Story's reason: block documents the compatibility guarantee and the AC-3 test proves byte-identical output for gate DAGs without the node",
+      "reason": "The axis blocked on a missing contract_doc artifact class, but the repo convention explicitly sanctions Story reason: frontmatter as that artifact for small display-only changes; the compatibility old/new expectation is additionally captured in the recorded public_contract axis decision and the story e2e test assertions",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "sha256": "a5e2eb623f1f52a0992f275205cc26ce0e13fcc95b85c2acfb4fafbf5fc4182d"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "coordinator-sweet-spence-0193db",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:33:12.793Z"
+    },
+    {
+      "event_id": "cc3921e5-e131-4139-bcd3-57d04814b369",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "761fcf8f-fa3d-4731-9ca9-23351be76fb2",
+      "reason": "Under the corrected premise, the Story's reason: frontmatter (Alternatives/Compatibility/Rollback/Boundary) is this repo's sanctioned ADR/contract-doc substitute for small changes per worktree CLAUDE.md, and it explicitly documents the compatibility guarantee: both surfaces look nodes up by id and drop missing nodes, so repos without gate:uiux_intake_judgment render byte-identical output. Confirmed via git show 6793e5a1 that src/pr-manager.js changes are exactly two array-literal insertions (routeGates, labels list) plus export keywords on renderPrGateSummary/buildHumanEvidenceDigest -- no CLI flag, API, or config schema touched. test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js PS-003 asserts deepEqual byte-identical output for the without-node case, and PS-001/PS-002 assert the exact added-line contract for the with-node case, giving reviewable old/new expectations. No external CLI/API/config/PR-body contract is broken.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-correction-sweet-spence-04",
+        "session_ref": null
+      },
+      "head_commit": "ac51485e33c05e69fa0762274ac2079d98549afa",
+      "recorded_at": "2026-08-02T19:34:07.646Z"
+    },
+    {
+      "event_id": "c2ced7b0-9cf8-4529-95f0-d48d9e2567f2",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc (docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md) states a concrete Problem (gate:uiux_intake_judgment missing from two curated human PR summary surfaces, one live-reachable via renderHumanDecisionGraph/buildHumanEvidenceDigest, one currently unreferenced by production code) and 3 falsifiable Acceptance Criteria matching AC-1..AC-3 verbatim in the clause adjudication request. Intent is specific to the actual diff (two array-literal insertions in src/pr-manager.js) and is not a generic template.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:37.223Z"
+    },
+    {
+      "event_id": "5f9155f4-6ea3-48b0-bff2-6836939484ad",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js builds a realistic gate_dag fixture (story/route/pr_body_contract/unit nodes plus the intake node) mirroring actual production gate_dag shape, not a minimal synthetic stub, and replays both render functions against it with and without the node. Reran locally: pass. This constitutes a genuine flow/artifact replay of current behavior, not a rubber-stamp.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:37.670Z"
+    },
+    {
+      "event_id": "07768247-47d1-4ca6-a78f-9b96d7df2705",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec directory .vibepro/spec/story-vibepro-uiux-intake-gate-pr-summary-surfaces defines clauses PS-001/PS-002/PS-003 that map 1:1 onto AC-1/AC-2/AC-3, and test/pr-human-summary-uiux-intake-gate.test.js plus the e2e file assert exactly those clauses (label/status/required line, digest entry, byte-identical absent-node output). The invariant actually protected -- absent-node output unchanged -- is the one that matters for a display-only additive change, and it is asserted with deepEqual/equal, not substring matching.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:38.100Z"
+    },
+    {
+      "event_id": "db5a15fc-b951-424c-afa9-9427dbae21a5",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "grep confirms renderPrGateSummary has no callers in src/ or bin/ (only tests reference it), matching the story's explicit claim of current production unreachability for that surface, while buildHumanEvidenceDigest is called at src/pr-manager.js:4625 inside the live PR-body generation path. Boundary claimed in the story (display-only change to these two functions; gate evaluation/DAG wiring/readiness logic untouched) matches the actual diff: only two array literals gained one entry each plus export keywords, per git show 6793e5a1. decision-1785699369709-92d4fab4 documents this and is grounded in a real diff read, not just token match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:38.514Z"
+    },
+    {
+      "event_id": "78a93182-ee78-4065-adf5-0efcbe772940",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The concrete failure mode this story fixes (a required blocking gate silently invisible in the human PR summary) is exercised by test/pr-human-summary-uiux-intake-gate.test.js and the e2e file's PS-003 case, which explicitly test the absent-node path (the pre-existing bug's shape) alongside the present-node path. The e2e test's own comment documents the gap being closed. This is genuine failure-mode coverage, not just a happy-path check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:38.950Z"
+    },
+    {
+      "event_id": "723b8744-a7fb-4d88-b90e-3adffe36dd5b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "verification-runs/{unit,e2e,integration,typecheck}.json all record head_sha=e4a6f68d (current head) with status=pass; reran node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js locally and confirmed 4/4 pass matching the recorded evidence. Evidence is current-head-bound, not stale, and covers the actual clauses (PS-001..003) rather than an unrelated suite.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:39.376Z"
+    },
+    {
+      "event_id": "415d140f-dd40-4c69-8969-81d95f686ca9",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently re-examined per the correction guidance (event 761fcf8f-fa3d-4731-9ca9-23351be76fb2): CLAUDE.md's self-dogfood section for this worktree does sanction a Story's reason: frontmatter as the alternatives/compatibility/rollback/boundary substitute at this scale, so the classifier's demand for a separate contract_doc file was indeed an over-strict premise, not a real gap. git show 6793e5a1 confirms the diff is exactly two array-literal insertions plus export keywords on two already-defined functions -- no CLI flag, config schema, or API surface changes. test PS-003 (deepEqual/equal, not substring) proves the compatibility guarantee the story's reason: frontmatter claims: byte-identical output for gate DAGs lacking the node. The correction and the prior independent judge's re-adjudication both hold up under my own independent reading of the code and story doc at the current (docs-only-advanced) head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:39.800Z"
+    },
+    {
+      "event_id": "8c7ee26f-f547-4b4c-83cb-ca052f9d0f4f",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changed files are design-ssot.json (root registration), the story doc, src/pr-manager.js (two array-literal insertions + two export keywords), and two test files (one new e2e, one new unit). This is a small, single-concern, one-sitting-readable diff: a reviewer can verify the two list insertions against the two test files in a few minutes without needing to split into lanes. No unrelated concerns are mixed in.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:40.237Z"
+    },
+    {
+      "event_id": "4cd00712-cb89-4f1b-97d9-dd66c218a2d3",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This story does not touch gate/review/evidence lifecycle code paths (only two curated label arrays in pr-manager.js), so the cited suites (safe-action-orchestrator, process-record-store.integration, content-scoped-evidence-freshness) are broad regression coverage rather than a targeted test for this specific failure mode. They passed (77/77) and confirm no lifecycle machinery was disturbed, which is the correct scope for this failure mode given the change surface is display-only and doesn't create new evidence artifacts.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:40.673Z"
+    },
+    {
+      "event_id": "6400915f-04a0-47fc-be46-b66cc712c9f5",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change cannot leave stale/pending/over-green gate states because it only affects how existing gate_dag nodes are rendered into human-readable summary strings -- it reads node.status but never writes or mutates gate_dag state. test/pr-human-summary-uiux-intake-gate.test.js and the e2e file directly exercise the render functions across both node-present and node-absent gate_dag shapes and pass, which is the correct and sufficient check for this failure mode given the change is read-only over gate state.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-05",
+        "session_ref": null
+      },
+      "head_commit": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "recorded_at": "2026-08-03T00:27:41.114Z"
+    },
+    {
+      "event_id": "61b2af59-6b74-401c-9f81-2c0e9faac9f0",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc has exactly 3 acceptance criteria matching AC-1/2/3 and a Problem section that states the gap precisely: gate:uiux_intake_judgment is absent from two curated human-summary label lists. Verified myself via grep that the diff (src/pr-manager.js two array-literal insertions + export keywords, two test files, story doc, design-ssot.json registration) implements exactly and only what the ACs describe. Intent and diff are congruent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:56:58.326Z"
+    },
+    {
+      "event_id": "96d69453-2e49-4928-8c5e-d67c78111fe7",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently verified via grep that renderPrGateSummary has zero callers outside tests, and buildHumanEvidenceDigest's only production call chain (renderHumanDecisionGraph <- renderPrDecisionSection) is itself dead: renderPrDecisionSection has zero callers anywhere in the repo. The story doc now states this accurately. Given this, the e2e test's realistic gate_dag fixture directly invoking the real exported functions is a legitimate flow_replay of current behavior for these currently-unreachable-but-real functions; I ran the tests myself at head 92951649 and confirmed 4/4 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:56:58.891Z"
+    },
+    {
+      "event_id": "dcba6932-189d-47b8-9fa9-25688820788b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The only invariant at stake is 'absent-node output byte-identical to before, present-node output adds exactly one well-formed line in the right slot.' Read the e2e test's PS-003 assertions directly: assert.deepEqual on filtered line arrays and assert.equal with string replacement, both byte-level, not substring checks. This directly targets the stated invariant and I confirmed it passes at current head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:56:59.393Z"
+    },
+    {
+      "event_id": "40cf8612-5492-44ac-a10e-50cbd5d5a6a0",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Read the diff directly: the only structural change is adding two array entries and exporting two already-existing module-local functions so tests can import them. No auth, data-flow, or runtime-boundary code changed -- confirmed by reading renderPrGateSummary and buildHumanEvidenceDigest in full. The story's reason: frontmatter (Boundary: display-only change...) matches what I independently observe in the diff, and current_verification (the e2e test) exercises the exported-function behavior directly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:56:59.897Z"
+    },
+    {
+      "event_id": "13ce7c93-0070-46a6-8ca9-4a6933b3cd04",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failure mode this story fixes (a required gate silently invisible on human summary surfaces) is directly replayed by the e2e test's without-gate case (matching pre-change/original-gap behavior) versus with-gate case (fixed behavior), both exercising real production functions over a realistic gate_dag fixture. I ran the test myself and confirmed both branches assert the expected behavior with concrete regex/deepEqual checks, not just presence checks.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:57:00.389Z"
+    },
+    {
+      "event_id": "98f467ca-e862-4264-b2fb-2d2fb017c44e",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence requires flow_replay|artifact_replay|scenario_clause_e2e. test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js satisfies this: it replays both real pr-manager.js functions over a realistic multi-node gate_dag fixture and asserts the exact AC-1/AC-2/AC-3 outcomes. I independently ran node --test at head 92951649 and confirmed 4/4 pass across both story test files, matching the recorded verification-runs artifacts (e2e.json: tests=4 pass=4).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:57:00.904Z"
+    },
+    {
+      "event_id": "04883a14-56df-4d6d-af92-f2503adfcfb0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently re-derived the same conclusion as the recorded classifier-premise correction (event 761fcf8f) and two prior judges: this worktree's CLAUDE.md line 29 explicitly sanctions a Story's reason: frontmatter (alternatives/compatibility/rollback/boundary) as the ADR/contract-doc substitute at this scale -- I read that line myself. This story's reason: block documents exactly that (Alternatives/Compatibility/Rollback/Boundary keys present), and the Compatibility claim (byte-identical output when the node is absent) is proven by the e2e test's PS-003 deepEqual/equal assertions, which I read and ran myself. Verified via grep that renderPrGateSummary is unreferenced in production and buildHumanEvidenceDigest's only chain is dead, so no live external consumer/output contract is touched today; the additive behavior when the node is present is also non-breaking (new line in a fixed slot). No CLI/API/config schema is touched. I concur independently, not merely deferring to prior judges.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:57:01.332Z"
+    },
+    {
+      "event_id": "1aa9acb8-48ee-41fe-a474-8ff542d3397a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified diff scope myself: git diff --stat over the story's relevant commits shows a small, single-concern diff (story doc, design-ssot.json registration, src/pr-manager.js with two array-literal insertions + two export keywords, and two test files). This is trivially readable by one reviewer in one sitting; no unrelated concerns are mixed in, no split is warranted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:57:01.746Z"
+    },
+    {
+      "event_id": "d2281643-e865-43e3-8a5f-4f0f543a78eb",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Ran node --test test/safe-action-orchestrator.test.js test/process-record-store.integration.test.js test/content-scoped-evidence-freshness.test.js myself; matches the recorded integration.json (tests=77 pass=77). These suites exercise durable store runtime paths and evidence-freshness regression relevant to this story's gate/evidence-adjacent change (curated gate label lists), reducing risk of misleading green artifacts. Given the change itself does not touch evidence recording/lifecycle code (only display label lists), this breadth of regression coverage is proportionate and sound.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:57:02.180Z"
+    },
+    {
+      "event_id": "972d22c1-bf60-4b18-8834-bac72c99a939",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Ran the two story-scoped test files myself (node --test): 4/4 pass, matching recorded e2e.json/unit.json. These tests directly assert both the with-gate and without-gate cases produce correct, non-stale output (PS-003's byte-identical-when-absent assertion specifically guards against a stale/over-green display state), which is the concrete workflow_state_regression risk for this display-only change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-06",
+        "session_ref": null
+      },
+      "head_commit": "929516492b00a275050306c00e345ad2f5207729",
+      "recorded_at": "2026-08-03T00:57:02.692Z"
+    },
+    {
+      "event_id": "70d766d7-389c-4b14-8ce6-32549fb32ad2",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Read the story doc directly: it states the gap (gate:uiux_intake_judgment missing from two curated human-summary lists) and three concrete, testable acceptance criteria. The Problem section is candid about current non-reachability of both functions in production, which is an honest scoping of intent rather than an inflated claim. Intent is genuinely captured, not just token-matched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:22.502Z"
+    },
+    {
+      "event_id": "e8acd023-1cfb-4ced-ac83-8b30aac0797b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e test builds a realistic multi-node gate_dag fixture (story/route/body/unit gates plus optional intake gate) and replays both render functions over it end to end, checking line ordering and full-string digest content -- this is a genuine flow replay of the curated-list contract, not a trivial existence check. I ran it myself at head 2a54c080 and it passes. Current reality (both functions today produce specific curated output, and this diff extends that curated output correctly) is actually exercised.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:23.023Z"
+    },
+    {
+      "event_id": "4b25c796-bcfd-4251-816a-2006dd474d7e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This is a low-risk, additive, display-only change (2 array-literal insertions in pure rendering functions per git show 6793e5a1). The invariant at stake -- absent-node output must be byte-identical to before -- is exactly what PS-003's deepEqual/equal assertions check, and I confirmed those pass at current head. Spec clauses (PS-001/002/003) map 1:1 onto the three ACs. Test evidence genuinely covers the invariant; this is not a case where high-risk logic escaped without deep evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:23.470Z"
+    },
+    {
+      "event_id": "d91691e5-4f80-476e-b788-a43cc35a1525",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story frontmatter's reason: block explicitly states the boundary: 'display-only change to renderPrGateSummary and buildHumanEvidenceDigest in src/pr-manager.js; gate evaluation, DAG wiring, and readiness logic are untouched.' I independently verified via git diff --stat that only src/pr-manager.js (+6/-2 lines), two test files, and docs changed -- no gate-evaluation or DAG-wiring files touched. The decision record and current_verification evidence both back this boundary claim, and my own diff read confirms it holds.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:23.919Z"
+    },
+    {
+      "event_id": "bb8d7b0f-8b16-49df-87c4-fd54c218688e",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The salient failure mode for a curated-list extension is 'the new entry leaks into contexts where it should not appear' (i.e., wrong position, or appears when node is absent). PS-003 in the e2e test directly targets this failure mode via deepEqual on full line arrays and exact digest string diffing, and I ran it and confirmed pass. This is genuine failure-mode coverage, not just a happy-path check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:24.395Z"
+    },
+    {
+      "event_id": "9cfab345-d971-4736-8316-e42f47a7375b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence (flow_replay/artifact_replay/scenario_clause_e2e, all pointing at the same e2e test) is not a rubber stamp here: I independently ran node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js at head 2a54c080 and got 4/4 pass, and read the assertions to confirm they check the exact AC-1/2/3 outcomes (line content+position, digest content, byte-identical absent case), not just exit codes.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:24.839Z"
+    },
+    {
+      "event_id": "baba2cdc-3888-440a-bc85-420c276a0f95",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently re-derived the same conclusion as correction 761fcf8f-fa3d-4731-9ca9-23351be76fb2 and three prior judges, from my own reading of this worktree's CLAUDE.md section 3 'Self-Dogfood Quickstart': it explicitly sanctions 'a reason: key covering alternatives/compatibility/rollback/boundary when no separate ADR is needed' for hand-written Stories in this repo. This story's frontmatter reason: block has exactly those four keys (Alternatives/Compatibility/Rollback/Boundary), so the classifier's demand for a distinct contract_doc artifact was the unsound premise, not a real gap. I also independently confirmed via grep that renderPrGateSummary has zero non-test/non-definition callers in src/, bin/, scripts/, and buildHumanEvidenceDigest's only chain (renderPrDecisionSection) likewise has none -- so no live external consumer or output contract is exercised today; the additive change is non-breaking even when the functions are eventually re-wired, since PS-003 proves byte-identical absent-node output. No CLI/API/config schema surface is touched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:25.312Z"
+    },
+    {
+      "event_id": "a957ff60-e8e2-439e-97d2-ad9b19ac853e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified via git diff --stat against the merge-base: the substantive diff is 6 lines in src/pr-manager.js (two array-literal insertions) plus two new focused test files and a story doc -- 145 insertions/2 deletions across 4 files. This is trivially readable by a single reviewer as one coherent judgment (add one gate id to two curated lists, prove it with tests); no reasonable split boundary exists within it. Scope-reviewability granularity is genuinely appropriate here, not just token-matched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:25.761Z"
+    },
+    {
+      "event_id": "4067c97b-87bc-4ae7-8868-4eb5a8ee4a4b",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "src/pr-manager.js is a shared file that also carries gate/evidence-lifecycle logic elsewhere, so regression risk to that adjacent logic is a legitimate concern even though this diff itself doesn't touch it. The recorded integration evidence (test/safe-action-orchestrator.test.js, test/process-record-store.integration.test.js, test/content-scoped-evidence-freshness.test.js, 77/77 pass) is a real pre-existing regression suite for exactly that lifecycle machinery, and its verification-run artifact's head_sha matches current HEAD (2a54c080). This is genuine adjacent-regression coverage, not a mismatched or coincidental pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:26.235Z"
+    },
+    {
+      "event_id": "cdbb8401-fc9e-406c-877b-ac87c2062721",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The concern (stale/pending/over-green gate states) is directly addressed by PS-003's negative-path assertion: when the node is absent, the render functions must not fabricate a gate line or otherwise misrepresent state -- verified via deepEqual, not substring match. I ran node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js myself at current head: 4/4 pass. Since both functions are pure and stateless (no persistence, no gate-status mutation), there is no realistic state-regression vector beyond what these tests already cover.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "recorded_at": "2026-08-03T01:03:26.761Z"
+    }
+  ]
+}

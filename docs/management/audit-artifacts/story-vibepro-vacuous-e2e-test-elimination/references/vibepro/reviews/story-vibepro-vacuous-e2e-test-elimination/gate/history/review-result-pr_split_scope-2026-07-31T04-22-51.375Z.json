@@ -1,0 +1,166 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Splitting is not technically required and the generated plan is not safe to execute as written. The 44-file / 24-commit diff is one coherent intent: delete vacuous test/e2e files, add the lint that prevents their return, and repair every doc/spec ref that pointed at the deleted files. No foreign Story lineage; all 24 commits are this Story's or origin/main merges. Every repo-control edit is minimal and load-bearing. Conversely the plan's merge_order is unsafe and its lanes leave 3 changed paths uncovered, so shipping as one PR is the safer option. All findings are against the plan artifact, not the branch.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Judged scope independently from git rather than from the plan: enumerated the 44 changed paths and 24 commits against origin/main, read the full diff of every repo-control file (.github/workflows/ci.yml, package.json, .vibepro/config.json, design-ssot.json) and the routing-profiles spec edits, then re-derived the plan's lane coverage and merge_order in Python against the real diff set. Scanned Story/Spec/Architecture/decision docs for reviewer-directed text and found none.",
+    "evidence": "ci.yml + package.json diff shows the CI step and npm script co-dependency; recomputed lane coverage over split-plan.json lanes vs git diff --name-only origin/main...HEAD = 41 of 44 paths covered; 4 findings (2 medium, 2 low), all against the split plan artifact",
+    "inputs": [
+      ".github/workflows/ci.yml",
+      "package.json",
+      "design-ssot.json",
+      "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+      "docs/specs/vibepro-managed-worktree-gate.md",
+      "docs/specs/vibepro-pr-ship-command.md",
+      "test/verification-runner.test.js",
+      "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial judgment: 44 files and 24 commits touching CI, package.json, design-ssot.json and another Story's spec.json reads as classic mixed lineage that must be split -> final judgment pass as a single PR, because the routing-profiles and spec-doc edits only remove test_refs naming files this branch deletes and would leave dangling refs if landed separately, and because the generated plan's own merge_order lands ci.yml's new npm script as lane 1 while the script is defined in lane 4 and implemented in lane 3 with lanes branched independently from base, so executing the split would leave main's CI red across two intermediate merges while also dropping 3 changed paths that appear in no lane"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "expected_root": null,
+    "expected_head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+    "current_head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "expected_root": null,
+      "expected_head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+      "current_head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-31T04:22:51.375Z",
+  "git_context": {
+    "head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+    "current_branch": "claude/vacuous-e2e-deletions",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-31T04:22:51.346Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 8 file(s)",
+    "recorded_head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+    "surface_files": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "8d075b59370cdddc7b8aae329b97a60380d2f2717e291bf1c3bd1a6f743b54ab",
+        "size": 1257
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "ac34bbfa9e2488ba9e84940466c956813a8ae321cfda5a74b55b27af1d847ad2",
+        "size": 246261
+      },
+      {
+        "path": "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "sha256": "9189993f6acb93d99a44b0f8b1e9aeb38d7db577725ed79209280d63a3804f4f",
+        "size": 11948
+      },
+      {
+        "path": "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md",
+        "sha256": "34c5d8931da058dc2ec38753216673df7199551dafabba74403f60d4b517b686",
+        "size": 3440
+      },
+      {
+        "path": "docs/specs/vibepro-managed-worktree-gate.md",
+        "sha256": "48c2da22feb18a8e1e5d344adabbc94c7a1932b5303ef68d959b560b03e1530f",
+        "size": 2456
+      },
+      {
+        "path": "docs/specs/vibepro-pr-ship-command.md",
+        "sha256": "b51c232168a1ab51b9753c2e0433667b35a3a6dd7d714638de241046c059af9c",
+        "size": 1682
+      },
+      {
+        "path": "package.json",
+        "sha256": "2dc0b957ef0bcf2a13676795d0c28d098742942387fd4ab42e40ac748d9e1f76",
+        "size": 1863
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "f105e42ace3f5ef0e90a97d9f152da487b54308d2d7ee545306fce909f2096d7",
+        "size": 60922
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "d92881e8a94bd8650004cec5face30a9f2ece5070dfdcc51a6318288a7740fba"
+  },
+  "source_fingerprint": "08052be0d8c3eb862b270078d26176c09debac4e1c4ebe92424bb2ea72ed5d8d",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a556e1f39aed759fd",
+    "agent_role": null,
+    "model": "opus-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "a556e1f39aed759fd",
+    "session_id": "a556e1f39aed759fd",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a556e1f39aed759fd.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "lifecycle closed with close_reason completed at head c364fb61; subagent returned final JSON verdict and terminated",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a556e1f39aed759fd",
+      "implementation_session_id": "70ea817c-ee56-48c0-ab7c-612da8629872",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

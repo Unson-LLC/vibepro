@@ -1,0 +1,160 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cross-system-adjudication",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Implementation sound and 55 targeted tests pass, but recorded evidence is narrower than the shared adjudication.js consumer surface, and new warning states (provenance_missing / same_system override) are silent in judgment-DAG gate and PR summary surfaces.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read src/adjudication.js in full and src/cli.js adjudicate dispatch diff; read diffs of all three story test files; independently reran judgment-dag-adjudication (11/11) and classifier-premise-recovery (1/1) e2e suites; traced buildJudgmentDagAdjudicationGate and summarizeJudgmentAdjudicationForPr warning propagation; inspected verification-evidence.json, evidence-reuse.json, pr-prepare.json.",
+    "evidence": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round1.json",
+    "inputs": [
+      "src/adjudication.js",
+      "src/cli.js",
+      "test/adjudication.test.js",
+      "test/judgment-adjudication.test.js",
+      "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+      "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
+      "docs/specs/story-vibepro-cross-system-adjudication.md"
+    ]
+  },
+  "judgment_delta": [
+    "pass expectation -> needs_changes because recorded verification evidence omits other consumers of the shared module and judgment-DAG gate/summary surfaces silently hide provenance_missing and same_system override states"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+    "expected_root": null,
+    "expected_head_sha": "63305cd2adda6df163426c1e5b02ecc1dec0dc1e",
+    "current_head_sha": "63305cd2adda6df163426c1e5b02ecc1dec0dc1e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+      "expected_root": null,
+      "expected_head_sha": "63305cd2adda6df163426c1e5b02ecc1dec0dc1e",
+      "current_head_sha": "63305cd2adda6df163426c1e5b02ecc1dec0dc1e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T18:25:42.919Z",
+  "git_context": {
+    "head_sha": "63305cd2adda6df163426c1e5b02ecc1dec0dc1e",
+    "current_branch": "claude/cross-system-adjudication",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T18:25:42.771Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "63305cd2adda6df163426c1e5b02ecc1dec0dc1e",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
+        "sha256": "1f7acc2880b8117ff6e79685b2bca607346131588374119be28da03d7d428ca3",
+        "size": 4228
+      },
+      {
+        "path": "docs/specs/story-vibepro-cross-system-adjudication.md",
+        "sha256": "8431c19885ba2d1bf6ada4c0e3abdc238da3080e302f501537df9f18f7a75fe2",
+        "size": 2637
+      },
+      {
+        "path": "src/adjudication.js",
+        "sha256": "c95e3b03c370d181d5e404a226fc8bae41681c7736b6b19dce8fae3683823b63",
+        "size": 78310
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "1515e0490e6280c7308388c0de0b42320028fc4eadbf01f64775fd6c360bb822",
+        "size": 260516
+      },
+      {
+        "path": "test/adjudication.test.js",
+        "sha256": "62ce13a414a79d5d3e7a3c77c7b4c444571b9277b8a44017da8561fe226574f5",
+        "size": 36359
+      },
+      {
+        "path": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+        "sha256": "f83af0dab75fe1f829dea510a1e846492aeabad7273c3f9c26cfff8069ac43d0",
+        "size": 13457
+      },
+      {
+        "path": "test/judgment-adjudication.test.js",
+        "sha256": "def4f0a75ec9713f7174230b8ce1a20e9da522fafe9093238b2b192986f2f1af",
+        "size": 48726
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b79d73cb84e097ddb59f8cb3acadd0e379879a3dbf6747a78ad9bb54c9334936"
+  },
+  "source_fingerprint": "a6d0a7795dfb49ddf14b03c9d7295ba133e8bfc296286028295a067a07277462",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a18b1230d90868365",
+    "agent_role": null,
+    "model": "sonnet",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a18b1230d90868365",
+    "session_id": "a18b1230d90868365",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round1.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a18b1230d90868365",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

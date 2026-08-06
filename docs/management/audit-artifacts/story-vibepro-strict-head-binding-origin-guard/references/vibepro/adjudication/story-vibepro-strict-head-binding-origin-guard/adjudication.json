@@ -1,0 +1,239 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-strict-head-binding-origin-guard",
+  "updated_at": "2026-08-03T14:12:48.333Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "e2e S-007 exercises all three transitions (content_surface current on unrelated HEAD move, stale on own surface change, frozen final_review stale on any HEAD change) via real git commits and review-status JSON assertions.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:48.330Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "e2e S-006 simulates a legacy on-disk artifact (content_surface configured, source=cli_override) and asserts strict_head_origin=cli_override plus the specific warning text from buildStrictHeadOriginWarnings, artifact unrewritten.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:47.778Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "e2e S-005 asserts gate:pr_freshness binding.strict_head_origin=validation_sequence; resolveStrictHeadOrigin implements the validation_sequence/role_policy/cli_override classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:47.161Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "e2e S-004 asserts parallel_dispatch.record_commands and both on-disk markdown files never contain --strict-head-binding even for an authorized role; remediation surface is gated by isStrictHeadBindingAuthorizedNow per spec C-002.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:46.522Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "e2e S-003 configures a role_policy strict_head, shows rejection without freshness_reason and acceptance with it, asserting source=role_policy and the persisted reason text.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:45.942Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "e2e S-002 writes a real frozen validation-sequence state, records implementation:runtime_contract with --strict-head-binding, and asserts freshness_policy.effective_mode=strict_head source=validation_sequence via isFrozenFinalReviewTarget.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:45.429Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "e2e S-001 (7/7 pass) drives the real CLI and asserts exitCode=1 with exact stderr for both missing-reason and unauthorized-role cases, matching the fail-closed guard in src/agent-review.js, and confirms no review-status artifact is left behind.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "same_system",
+          "reason": "adjudicator agent_system claude_code matches implementation agent_system claude_code; weight-correlated verdict (evidence path is warning-only)."
+        }
+      ],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "SHBO-S-1: `content_surface`設定の通常role（例: preview:human_usability）への`--strict-head-binding`は無条件のCLI overrideとして受理されず、拒否されるか明示的なpolicy violationとしてgateを通過できない。",
+          "SHBO-S-2: activeなfrozen validation sequenceが要求する`implementation:runtime_contract`の`final_review`は引き続きstrict HEADで記録できる。",
+          "SHBO-S-3: role policyで`strict_head`と具体的な`freshness_reason`を明示した独自高リスクroleはstrict bindingを維持できる。",
+          "SHBO-S-4: `review prepare`と`parallel-dispatch.md`とremediation commandは、通常roleへ`--strict-head-binding`を伝播させない。",
+          "SHBO-S-5: `pr prepare`はstrict bindingの由来を`validation_sequence` / `role_policy` / rejected `cli_override`として説明する。",
+          "SHBO-S-6: 既存artifactに「content_surface設定だがsource=cli_overrideでstrict」のreviewがある場合、移行診断または明示warningを出す。",
+          "SHBO-S-7: 回帰テストで、unrelated HEAD change後もsurface不変の`human_usability`はcurrent、reviewed surface変更後はstale、frozen final reviewの`runtime_contract`はHEAD変更後にstaleであることを証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "65709234bd0eedcc30992fe45cd0444435ed2c942f5266a2e09721343d4d6447",
+      "recorded_at": "2026-08-03T14:12:44.871Z"
+    }
+  ]
+}

@@ -32,6 +32,6 @@ test('story-vibepro-content-scoped-evidence-freshness executes AC-1 through AC-9
   assert.match(stdout, /global strict HEAD default is rejected/);
   assert.match(stdout, /without inspection flags rejects gate_evidence pass/);
   assert.match(stdout, /rejects generated workspace artifacts as the only inspection input/);
-  assert.match(stdout, /review strict HEAD CLI override requires and records an explicit reason/);
+  assert.match(stdout, /review strict HEAD CLI override requires an explicit reason before authorization is even checked/);
   assert.match(stdout, /fail 0/);
 });

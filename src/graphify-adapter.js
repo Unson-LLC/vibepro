@@ -6,8 +6,19 @@ import path from 'node:path';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute } from './artifact-routing.js';
+import { classifyTermination, createProgressDeadline } from './progress-deadline.js';
 
 const GRAPHIFY_FILES = ['graph.json', 'GRAPH_REPORT.md', 'graph.html'];
+
+// `graphify update` has no built-in bound: without these, a hung or looping subprocess can
+// hang story diagnose forever. Named constants so a caller can override any of them (e.g. in
+// tests) without touching the enforcement logic below.
+export const GRAPHIFY_MAX_WALL_CLOCK_MS = 10 * 60 * 1000;
+export const GRAPHIFY_NO_PROGRESS_DEADLINE_MS = 2 * 60 * 1000;
+export const GRAPHIFY_TERMINATION_GRACE_MS = 5 * 1000;
+export const GRAPHIFY_MAX_OUTPUT_BYTES = 4 * 1024 * 1024;
+const GRAPHIFY_POLL_INTERVAL_MS = 250;
+const TRUNCATION_MARKER = '\n...[truncated: output cap reached]';
 
 export async function importGraphifyArtifacts(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
@@ -19,7 +30,7 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
   const cleanupGeneratedGraphifyOutput = Boolean(options.runGraphify);
   try {
     if (options.runGraphify) {
-      execution = await runGraphify(root, sourceArg, options.env);
+      execution = await runGraphify(root, sourceArg, options.env, options.graphifyProcessOptions);
     }
 
     const graphifyRoute = await resolveArtifactRoute(root, 'graphify', { storyId: options.storyId ?? 'story-default' });
@@ -85,14 +96,15 @@ async function resolveGraphifySourceDir(repoRoot, sourceArg, runGraphifyRequeste
   }
 }
 
-async function runGraphify(repoRoot, outputArg, env) {
+async function runGraphify(repoRoot, outputArg, env, processOptions) {
   const args = ['update', '.'];
   const command = `graphify ${args.join(' ')}`;
   const startedAt = new Date().toISOString();
 
   const result = await runProcess('graphify', args, {
     cwd: repoRoot,
-    env: env ?? process.env
+    env: env ?? process.env,
+    ...processOptions
   }).catch(async (error) => {
     if (error.code === 'ENOENT') {
       throw new Error(await buildGraphifyNotFoundMessage(env ?? process.env));
@@ -100,8 +112,27 @@ async function runGraphify(repoRoot, outputArg, env) {
     throw error;
   });
 
+  if (result.stopReason) {
+    const error = new Error(
+      `graphify update was killed by policy after ${result.stopReason.code}: `
+      + `${JSON.stringify(result.stopReason.details)}`
+    );
+    error.stop_reason = result.stopReason;
+    error.termination = result.termination;
+    throw error;
+  }
   if (result.exitCode !== 0) {
-    throw new Error(`graphify failed with exit code ${result.exitCode}: ${result.stderr.trim()}`);
+    const externalSignal = result.termination?.kind === 'external_signal';
+    const error = new Error(
+      `graphify failed with exit code ${result.exitCode}`
+      + `${externalSignal ? ` (terminated by external signal ${result.termination.signal})` : ''}`
+      + `: ${result.stderr.trim()}`
+    );
+    if (externalSignal) {
+      error.stop_reason = { code: 'external_signal', message: 'external_signal', details: { signal: result.termination.signal } };
+    }
+    error.termination = result.termination;
+    throw error;
   }
   if (outputArg !== 'graphify-out') {
     await mirrorGraphifyOutput(repoRoot, outputArg);
@@ -111,7 +142,8 @@ async function runGraphify(repoRoot, outputArg, env) {
     command,
     started_at: startedAt,
     finished_at: new Date().toISOString(),
-    exit_code: result.exitCode
+    exit_code: result.exitCode,
+    ...(result.stdoutTruncated || result.stderrTruncated ? { output_truncated: true } : {})
   };
 }
 
@@ -184,22 +216,133 @@ async function cleanupDefaultGraphifyOutput(repoRoot) {
   });
 }
 
-function runProcess(command, args, options) {
+// Bounds an otherwise-naive spawn with the shared progress-deadline kernel: cumulative bytes
+// received across stdout+stderr is the monotonic progress token (a subprocess that is still
+// producing output is making progress even without an application-level checkpoint), and the
+// wall-clock cap is an independent hard ceiling progress can never extend. On a policy kill
+// this sends SIGTERM to the process group, waits `terminationGraceMs`, then escalates to
+// SIGKILL — the same "own process group, detached, SIGTERM then SIGKILL" contract used in
+// src/managed-command-executor.js, reused here rather than reinvented.
+// Exported for direct unit testing of the bounding behavior (progress extension, hard caps,
+// output truncation, SIGTERM->grace->SIGKILL, external-kill attribution) without spawning the
+// real `graphify` binary. importGraphifyArtifacts()/runGraphify() remain the public contract.
+export function runProcess(command, args, options = {}) {
+  const {
+    maxWallClockMs = GRAPHIFY_MAX_WALL_CLOCK_MS,
+    noProgressDeadlineMs = GRAPHIFY_NO_PROGRESS_DEADLINE_MS,
+    terminationGraceMs = GRAPHIFY_TERMINATION_GRACE_MS,
+    maxOutputBytes = GRAPHIFY_MAX_OUTPUT_BYTES,
+    pollIntervalMs = GRAPHIFY_POLL_INTERVAL_MS,
+    ...spawnOptions
+  } = options;
+
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, options);
+    const kernel = createProgressDeadline({
+      no_progress_deadline_ms: noProgressDeadlineMs,
+      max_wall_clock_ms: maxWallClockMs,
+      started_at: Date.now(),
+      now: () => Date.now()
+    });
+
     let stdout = '';
     let stderr = '';
+    let stdoutTruncated = false;
+    let stderrTruncated = false;
+    let totalBytes = 0;
+    let settled = false;
+    let policyKillReason = null;
+    const sentSignals = [];
+    let pollTimer;
+    let escalationTimer;
+    let child;
 
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk.toString();
+    try {
+      child = spawn(command, args, { ...spawnOptions, detached: process.platform !== 'win32' });
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    child.stdout?.on('data', (chunk) => appendChunk(chunk, 'stdout'));
+    child.stderr?.on('data', (chunk) => appendChunk(chunk, 'stderr'));
+
+    function appendChunk(chunk, stream) {
+      totalBytes += chunk.length;
+      // Any output growth is progress, whether or not the deadline check runs before this
+      // process ends — observing here (not only in the poll loop) means a burst of output
+      // right before close() still counts.
+      kernel.observe(totalBytes);
+      if (stream === 'stdout') {
+        if (stdoutTruncated) return;
+        if (Buffer.byteLength(stdout) + chunk.length > maxOutputBytes) {
+          stdout += `${chunk.toString()}${TRUNCATION_MARKER}`;
+          stdoutTruncated = true;
+        } else {
+          stdout += chunk.toString();
+        }
+      } else {
+        if (stderrTruncated) return;
+        if (Buffer.byteLength(stderr) + chunk.length > maxOutputBytes) {
+          stderr += `${chunk.toString()}${TRUNCATION_MARKER}`;
+          stderrTruncated = true;
+        } else {
+          stderr += chunk.toString();
+        }
+      }
+    }
+
+    child.on('error', (error) => {
+      if (settled) return;
+      settled = true;
+      clearInterval(pollTimer);
+      clearTimeout(escalationTimer);
+      reject(error);
     });
-    child.stderr.on('data', (chunk) => {
-      stderr += chunk.toString();
+
+    child.on('close', (exitCode, signal) => {
+      if (settled) return;
+      settled = true;
+      clearInterval(pollTimer);
+      clearTimeout(escalationTimer);
+      const termination = classifyTermination({ signal, sentSignals });
+      resolve({
+        exitCode,
+        stdout,
+        stderr,
+        stdoutTruncated,
+        stderrTruncated,
+        stopReason: policyKillReason,
+        termination
+      });
     });
-    child.on('error', reject);
-    child.on('close', (exitCode) => {
-      resolve({ exitCode, stdout, stderr });
-    });
+
+    pollTimer = setInterval(() => {
+      if (settled || policyKillReason) return;
+      const verdict = kernel.check();
+      if (!verdict.ok) {
+        policyKillReason = verdict.kill;
+        killWithGrace();
+      }
+    }, pollIntervalMs);
+    pollTimer.unref?.();
+
+    function killWithGrace() {
+      clearInterval(pollTimer);
+      sendSignal('SIGTERM');
+      escalationTimer = setTimeout(() => sendSignal('SIGKILL'), terminationGraceMs);
+      escalationTimer.unref?.();
+    }
+
+    function sendSignal(signal) {
+      if (!child.pid) return;
+      sentSignals.push(signal);
+      try {
+        if (process.platform !== 'win32') process.kill(-child.pid, signal);
+        else child.kill(signal);
+      } catch {
+        // ESRCH: the process already exited; nothing left to signal.
+      }
+    }
   });
 }
 

@@ -1,0 +1,3377 @@
+TAP version 13
+# Subtest: LINT-1 VET-S-5 a test file that executes no product behaviour fails the lint and is named
+ok 1 - LINT-1 VET-S-5 a test file that executes no product behaviour fails the lint and is named
+  ---
+  duration_ms: 7.855916
+  type: 'test'
+  ...
+# Subtest: LINT-2 VET-S-5 the lint fails closed when it cannot scan the e2e directory
+ok 2 - LINT-2 VET-S-5 the lint fails closed when it cannot scan the e2e directory
+  ---
+  duration_ms: 2.330208
+  type: 'test'
+  ...
+# Subtest: LINT-3 VET-S-5 an unreadable file fails the lint instead of being skipped
+ok 3 - LINT-3 VET-S-5 an unreadable file fails the lint instead of being skipped
+  ---
+  duration_ms: 1.612375
+  type: 'test'
+  ...
+# Subtest: LINT-4 VET-S-5 an empty e2e directory fails rather than reporting a silent clean run
+ok 4 - LINT-4 VET-S-5 an empty e2e directory fails rather than reporting a silent clean run
+  ---
+  duration_ms: 1.013
+  type: 'test'
+  ...
+# Subtest: LINT-5 each product-execution signal independently clears a file
+ok 5 - LINT-5 each product-execution signal independently clears a file
+  ---
+  duration_ms: 10.326958
+  type: 'test'
+  ...
+# Subtest: LINT-10 a nested directory under test/e2e is scanned, not silently skipped
+ok 6 - LINT-10 a nested directory under test/e2e is scanned, not silently skipped
+  ---
+  duration_ms: 3.405875
+  type: 'test'
+  ...
+# Subtest: LINT-11 product code reached through a helper, a subpath import or an alias clears the lint
+ok 7 - LINT-11 product code reached through a helper, a subpath import or an alias clears the lint
+  ---
+  duration_ms: 19.558625
+  type: 'test'
+  ...
+# Subtest: LINT-6 the lint only inspects test files and sorts its inspection deterministically
+ok 8 - LINT-6 the lint only inspects test files and sorts its inspection deterministically
+  ---
+  duration_ms: 17.921708
+  type: 'test'
+  ...
+# Subtest: LINT-7 VET-S-1 the repository test/e2e directory contains no file that executes no product behaviour
+ok 9 - LINT-7 VET-S-1 the repository test/e2e directory contains no file that executes no product behaviour
+  ---
+  duration_ms: 35.293625
+  type: 'test'
+  ...
+# Subtest: LINT-9 the lint ships with an operator-facing release note, observability and rollback path
+ok 10 - LINT-9 the lint ships with an operator-facing release note, observability and rollback path
+  ---
+  duration_ms: 28.570833
+  type: 'test'
+  ...
+# Subtest: LINT-8 the lint is runnable as a standalone command and reports through its exit code
+ok 11 - LINT-8 the lint is runnable as a standalone command and reports through its exit code
+  ---
+  duration_ms: 290.741292
+  type: 'test'
+  ...
+# Subtest: runner-direct evidence is consumed by the usage report, traceability clause map, and execution state without loss
+ok 12 - runner-direct evidence is consumed by the usage report, traceability clause map, and execution state without loss
+  ---
+  duration_ms: 2595.714791
+  type: 'test'
+  ...
+# Subtest: a failing runner-direct run is recorded as failing and is not reported as a passing claim
+ok 13 - a failing runner-direct run is recorded as failing and is not reported as a passing claim
+  ---
+  duration_ms: 1915.269083
+  type: 'test'
+  ...
+# Subtest: pr autopilot records its own executed outcome as a computed source, not as self-reported
+ok 14 - pr autopilot records its own executed outcome as a computed source, not as self-reported
+  ---
+  duration_ms: 4608.786917
+  type: 'test'
+  ...
+# Subtest: VRNH-AC-001/002/004 release index separates published versions from the PR snapshot
+ok 15 - VRNH-AC-001/002/004 release index separates published versions from the PR snapshot
+  ---
+  duration_ms: 34.264708
+  type: 'test'
+  ...
+# Subtest: VRNH-AC-003/007 monthly notes preserve language parity and PR evidence
+ok 16 - VRNH-AC-003/007 monthly notes preserve language parity and PR evidence
+  ---
+  duration_ms: 32.93425
+  type: 'test'
+  ...
+# Subtest: VRNH-AC-005/006 public navigation and build contract require release notes
+ok 17 - VRNH-AC-005/006 public navigation and build contract require release notes
+  ---
+  duration_ms: 3.606084
+  type: 'test'
+  ...
+# Subtest: PR release-note prose has an explicit Story source for every stable section
+ok 18 - PR release-note prose has an explicit Story source for every stable section
+  ---
+  duration_ms: 8.839333
+  type: 'test'
+  ...
+# Subtest: spec without diagrams remains backward compatible
+ok 19 - spec without diagrams remains backward compatible
+  ---
+  duration_ms: 13.344208
+  type: 'test'
+  ...
+# Subtest: spec with valid er diagram passes
+ok 20 - spec with valid er diagram passes
+  ---
+  duration_ms: 16.005167
+  type: 'test'
+  ...
+# Subtest: diagram with unknown kind is rejected
+ok 21 - diagram with unknown kind is rejected
+  ---
+  duration_ms: 8.177833
+  type: 'test'
+  ...
+# Subtest: diagram with empty mermaid is rejected
+ok 22 - diagram with empty mermaid is rejected
+  ---
+  duration_ms: 3.816417
+  type: 'test'
+  ...
+# Subtest: mermaid prefix mismatch is rejected
+ok 23 - mermaid prefix mismatch is rejected
+  ---
+  duration_ms: 3.126125
+  type: 'test'
+  ...
+# Subtest: entities required for er kind
+ok 24 - entities required for er kind
+  ---
+  duration_ms: 0.972792
+  type: 'test'
+  ...
+# Subtest: entity-clause cross-check produces warning when entity not in any clause
+ok 25 - entity-clause cross-check produces warning when entity not in any clause
+  ---
+  duration_ms: 4.720459
+  type: 'test'
+  ...
+# Subtest: flow diagram accepts flowchart prefix
+ok 26 - flow diagram accepts flowchart prefix
+  ---
+  duration_ms: 3.266708
+  type: 'test'
+  ...
+# Subtest: threat_model accepts flowchart prefix
+ok 27 - threat_model accepts flowchart prefix
+  ---
+  duration_ms: 2.432292
+  type: 'test'
+  ...
+# Subtest: c4_context requires entities and accepts C4Context prefix
+ok 28 - c4_context requires entities and accepts C4Context prefix
+  ---
+  duration_ms: 2.739208
+  type: 'test'
+  ...
+# Subtest: evaluateDesignDiagramsGate returns not_applicable when no triggers
+ok 29 - evaluateDesignDiagramsGate returns not_applicable when no triggers
+  ---
+  duration_ms: 0.828416
+  type: 'test'
+  ...
+# Subtest: evaluateDesignDiagramsGate blocks when required diagrams missing
+ok 30 - evaluateDesignDiagramsGate blocks when required diagrams missing
+  ---
+  duration_ms: 0.328459
+  type: 'test'
+  ...
+# Subtest: evaluateDesignDiagramsGate passes when all required diagrams provided
+ok 31 - evaluateDesignDiagramsGate passes when all required diagrams provided
+  ---
+  duration_ms: 0.062458
+  type: 'test'
+  ...
+# Subtest: spec fingerprint emits story, code, test, schema, and digests
+ok 32 - spec fingerprint emits story, code, test, schema, and digests
+  ---
+  duration_ms: 375.121083
+  type: 'test'
+  ...
+# Subtest: spec fingerprint includes architecture IA and flow evidence for scenario synthesis
+ok 33 - spec fingerprint includes architecture IA and flow evidence for scenario synthesis
+  ---
+  duration_ms: 277.080583
+  type: 'test'
+  ...
+# Subtest: spec write accepts scenario clauses derived from architecture refs
+ok 34 - spec write accepts scenario clauses derived from architecture refs
+  ---
+  duration_ms: 306.341583
+  type: 'test'
+  ...
+# Subtest: spec write final blocks when pre-spec readiness is missing
+ok 35 - spec write final blocks when pre-spec readiness is missing
+  ---
+  duration_ms: 263.131667
+  type: 'test'
+  ...
+# Subtest: spec write final blocks when pre-spec readiness is blocked, while draft remains writable
+ok 36 - spec write final blocks when pre-spec readiness is blocked, while draft remains writable
+  ---
+  duration_ms: 346.548917
+  type: 'test'
+  ...
+# Subtest: spec write final blocks stale pre-spec readiness recorded for another HEAD
+ok 37 - spec write final blocks stale pre-spec readiness recorded for another HEAD
+  ---
+  duration_ms: 535.80525
+  type: 'test'
+  ...
+# Subtest: spec readiness records required pre-spec evidence surfaces
+ok 38 - spec readiness records required pre-spec evidence surfaces
+  ---
+  duration_ms: 2677.839083
+  type: 'test'
+  ...
+# Subtest: spec readiness missing diagnosis action uses design-input phase
+ok 39 - spec readiness missing diagnosis action uses design-input phase
+  ---
+  duration_ms: 2186.833791
+  type: 'test'
+  ...
+# Subtest: spec fingerprint resolves the explicit story id instead of falling back to existing STR-001
+ok 40 - spec fingerprint resolves the explicit story id instead of falling back to existing STR-001
+  ---
+  duration_ms: 12.548042
+  type: 'test'
+  ...
+# Subtest: spec write rejects clauses whose code_refs do not exist
+ok 41 - spec write rejects clauses whose code_refs do not exist
+  ---
+  duration_ms: 236.175292
+  type: 'test'
+  ...
+# Subtest: spec write accepts valid clause and assigns stable id; spec show reads it back
+ok 42 - spec write accepts valid clause and assigns stable id; spec show reads it back
+  ---
+  duration_ms: 424.287583
+  type: 'test'
+  ...
+# Subtest: spec drift surfaces missing must_contain as high severity
+ok 43 - spec drift surfaces missing must_contain as high severity
+  ---
+  duration_ms: 344.284541
+  type: 'test'
+  ...
+# Subtest: stabilizeClauseIds preserves id for similar statement
+ok 44 - stabilizeClauseIds preserves id for similar statement
+  ---
+  duration_ms: 1.778583
+  type: 'test'
+  ...
+# Subtest: similarity returns 1 for identical and >0.7 for paraphrase
+ok 45 - similarity returns 1 for identical and >0.7 for paraphrase
+  ---
+  duration_ms: 0.514083
+  type: 'test'
+  ...
+# Subtest: globToRegExp + matchGlob match nested directories
+ok 46 - globToRegExp + matchGlob match nested directories
+  ---
+  duration_ms: 1.873417
+  type: 'test'
+  ...
+# Subtest: validateSpec accepts well-formed spec built from real repo
+ok 47 - validateSpec accepts well-formed spec built from real repo
+  ---
+  duration_ms: 234.644416
+  type: 'test'
+  ...
+# Subtest: buildSpecDrift returns inconclusive when no spec exists
+ok 48 - buildSpecDrift returns inconclusive when no spec exists
+  ---
+  duration_ms: 260.418834
+  type: 'test'
+  ...
+# Subtest: skeleton alone does not clear the gap
+ok 49 - skeleton alone does not clear the gap
+  ---
+  duration_ms: 269.760084
+  type: 'test'
+  ...
+# Subtest: story without any artifact keeps the gap (existing behavior)
+ok 50 - story without any artifact keeps the gap (existing behavior)
+  ---
+  duration_ms: 96.9755
+  type: 'test'
+  ...
+# Subtest: declared and merged_outside states surface as separate signals
+ok 51 - declared and merged_outside states surface as separate signals
+  ---
+  duration_ms: 229.581334
+  type: 'test'
+  ...
+# Subtest: prepared story is unaffected by traceability accounting
+ok 52 - prepared story is unaffected by traceability accounting
+  ---
+  duration_ms: 32.947584
+  type: 'test'
+  ...
+# Subtest: traceability clause coverage gaps surface in usage report
+ok 53 - traceability clause coverage gaps surface in usage report
+  ---
+  duration_ms: 25.674334
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts
+ok 54 - CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts
+  ---
+  duration_ms: 31.532959
+  type: 'test'
+  ...
+# Subtest: compact canonical audit index resolves merged story and renders evidence cost
+ok 55 - compact canonical audit index resolves merged story and renders evidence cost
+  ---
+  duration_ms: 48.87125
+  type: 'test'
+  ...
+# Subtest: blocked canonical handoff replay is surfaced as a fake-value signal
+ok 56 - blocked canonical handoff replay is surfaced as a fake-value signal
+  ---
+  duration_ms: 38.988
+  type: 'test'
+  ...
+# Subtest: manifest merge record resolves traceability when pr artifacts are absent
+ok 57 - manifest merge record resolves traceability when pr artifacts are absent
+  ---
+  duration_ms: 32.515041
+  type: 'test'
+  ...
+# Subtest: local pr-merge wins over manifest merge record without double counting
+ok 58 - local pr-merge wins over manifest merge record without double counting
+  ---
+  duration_ms: 17.87775
+  type: 'test'
+  ...
+# Subtest: usage report projects untrusted merge diagnostics through the public boundary
+ok 59 - usage report projects untrusted merge diagnostics through the public boundary
+  ---
+  duration_ms: 23.51975
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 canonical recovery equivalence keeps execution-state sync recovery authoritative
+ok 60 - DRS-S-5 canonical recovery equivalence keeps execution-state sync recovery authoritative
+  ---
+  duration_ms: 52.301375
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 execution-state sync failure without a recovery command fails closed
+ok 61 - DRS-S-5 execution-state sync failure without a recovery command fails closed
+  ---
+  duration_ms: 49.610333
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 local fail-closed merge authority outranks a coexisting compact canonical fallback
+ok 62 - DRS-S-5 local fail-closed merge authority outranks a coexisting compact canonical fallback
+  ---
+  duration_ms: 19.955
+  type: 'test'
+  ...
+# Subtest: DRS-S-2 contradictory unverified delivery and reconciled state fails closed
+ok 63 - DRS-S-2 contradictory unverified delivery and reconciled state fails closed
+  ---
+  duration_ms: 30.829
+  type: 'test'
+  ...
+# Subtest: merged_externally delivery resolves traceability for active and completed stories
+ok 64 - merged_externally delivery resolves traceability for active and completed stories
+  ---
+  duration_ms: 35.167833
+  type: 'test'
+  ...
+# Subtest: DRS-S-2 manifest-only fallback preserves explicitly unverified delivery
+ok 65 - DRS-S-2 manifest-only fallback preserves explicitly unverified delivery
+  ---
+  duration_ms: 30.618625
+  type: 'test'
+  ...
+# Subtest: manifest dry-run merge record does not resolve traceability
+ok 66 - manifest dry-run merge record does not resolve traceability
+  ---
+  duration_ms: 57.719875
+  type: 'test'
+  ...
+# Subtest: malformed manifest does not resolve traceability or crash usage report
+ok 67 - malformed manifest does not resolve traceability or crash usage report
+  ---
+  duration_ms: 54.043833
+  type: 'test'
+  ...
+# Subtest: subagent ROI separates wall-clock time from concurrent agent consumption and agent system metrics
+ok 68 - subagent ROI separates wall-clock time from concurrent agent consumption and agent system metrics
+  ---
+  duration_ms: 20.975375
+  type: 'test'
+  ...
+# Subtest: configured routes discover route-only PR authority and resolve gate and review artifacts
+ok 69 - configured routes discover route-only PR authority and resolve gate and review artifacts
+  ---
+  duration_ms: 16.469334
+  type: 'test'
+  ...
+# Subtest: verify run records the executed outcome without accepting agent status input
+ok 70 - verify run records the executed outcome without accepting agent status input
+  ---
+  duration_ms: 1816.747417
+  type: 'test'
+  ...
+# Subtest: verify run rejects an agent-supplied --status
+ok 71 - verify run rejects an agent-supplied --status
+  ---
+  duration_ms: 646.65275
+  type: 'test'
+  ...
+# Subtest: verify run overwrites agent-supplied computed observations and keeps the discarded diff
+ok 72 - verify run overwrites agent-supplied computed observations and keeps the discarded diff
+  ---
+  duration_ms: 1807.914625
+  type: 'test'
+  ...
+# Subtest: verify run records a tree mutated during the run as an append-visible warning
+ok 73 - verify run records a tree mutated during the run as an append-visible warning
+  ---
+  duration_ms: 1744.020375
+  type: 'test'
+  ...
+# Subtest: verify run rerun leaves a real diff in the run artifact
+ok 74 - verify run rerun leaves a real diff in the run artifact
+  ---
+  duration_ms: 2849.052333
+  type: 'test'
+  ...
+# Subtest: verify record stays self-reported and cannot claim a computed evidence source
+ok 75 - verify record stays self-reported and cannot claim a computed evidence source
+  ---
+  duration_ms: 1047.318333
+  type: 'test'
+  ...
+# Subtest: verify run strips harness env markers that would make a nested runner exit green silently
+ok 76 - verify run strips harness env markers that would make a nested runner exit green silently
+  ---
+  duration_ms: 1401.021292
+  type: 'test'
+  ...
+# Subtest: verify run warns when a passing command produced no output at all
+ok 77 - verify run warns when a passing command produced no output at all
+  ---
+  duration_ms: 1206.377458
+  type: 'test'
+  ...
+# Subtest: verify run records a worktree change during the run even when HEAD does not move
+ok 78 - verify run records a worktree change during the run even when HEAD does not move
+  ---
+  duration_ms: 1713.585375
+  type: 'test'
+  ...
+# Subtest: verify run hashes the exact stream the retained log is written from
+ok 79 - verify run hashes the exact stream the retained log is written from
+  ---
+  duration_ms: 1327.041333
+  type: 'test'
+  ...
+# Subtest: verify run warns when a passing run reports a count that cannot distinguish a real check from an empty file
+ok 80 - verify run warns when a passing run reports a count that cannot distinguish a real check from an empty file
+  ---
+  duration_ms: 1540.626625
+  type: 'test'
+  ...
+# Subtest: verify run records a parse failure as an unparsed count rather than inventing one
+ok 81 - verify run records a parse failure as an unparsed count rather than inventing one
+  ---
+  duration_ms: 1308.256458
+  type: 'test'
+  ...
+# Subtest: verify run records a timeout kill as a failing run and names the timeout as its cause
+ok 82 - verify run records a timeout kill as a failing run and names the timeout as its cause
+  ---
+  duration_ms: 1884.095958
+  type: 'test'
+  ...
+# Subtest: verify run keeps its computed summary sentence when the agent supplies one
+ok 83 - verify run keeps its computed summary sentence when the agent supplies one
+  ---
+  duration_ms: 1564.188667
+  type: 'test'
+  ...
+# Subtest: every value the runner computes is protected from agent input
+ok 84 - every value the runner computes is protected from agent input
+  ---
+  duration_ms: 2350.706625
+  type: 'test'
+  ...
+# Subtest: verify run rejects a kind-mismatched command before executing it, leaving the previous run artifact intact
+ok 85 - verify run rejects a kind-mismatched command before executing it, leaving the previous run artifact intact
+  ---
+  duration_ms: 1563.779708
+  type: 'test'
+  ...
+# Subtest: verify run surfaces the warnings it computed on its human summary
+ok 86 - verify run surfaces the warnings it computed on its human summary
+  ---
+  duration_ms: 1911.076958
+  type: 'test'
+  ...
+# Subtest: verify run rejects a bare runner invocation up front instead of after overwriting the previous run
+ok 87 - verify run rejects a bare runner invocation up front instead of after overwriting the previous run
+  ---
+  duration_ms: 1475.135125
+  type: 'test'
+  ...
+# Subtest: verify run restores the previous run artifact when the record does not commit
+ok 88 - verify run restores the previous run artifact when the record does not commit
+  ---
+  duration_ms: 12166.0245
+  type: 'test'
+  ...
+# Subtest: verify run reports an output-buffer kill as its own cause, not as a timeout
+ok 89 - verify run reports an output-buffer kill as its own cause, not as a timeout
+  ---
+  duration_ms: 1486.689833
+  type: 'test'
+  ...
+# Subtest: a partially sampled worktree does not report a change that did not happen, and says so
+ok 90 - a partially sampled worktree does not report a change that did not happen, and says so
+  ---
+  duration_ms: 0.272791
+  type: 'test'
+  ...
+# Subtest: a fully sampled run records completeness and carries no sampling caveat
+ok 91 - a fully sampled run records completeness and carries no sampling caveat
+  ---
+  duration_ms: 1392.973666
+  type: 'test'
+  ...
+# Subtest: verify run records the declared limits whether or not they were hit
+ok 92 - verify run records the declared limits whether or not they were hit
+  ---
+  duration_ms: 1406.636292
+  type: 'test'
+  ...
+# Subtest: an agent cannot shadow a computed run fact that lives outside the observation payload
+ok 93 - an agent cannot shadow a computed run fact that lives outside the observation payload
+  ---
+  duration_ms: 1841.108833
+  type: 'test'
+  ...
+# Subtest: a partial worktree sample emits its caveat even when a change was detected
+ok 94 - a partial worktree sample emits its caveat even when a change was detected
+  ---
+  duration_ms: 0.404208
+  type: 'test'
+  ...
+# Subtest: verify run restores the previous run log when the artifact write fails
+ok 95 - verify run restores the previous run log when the artifact write fails
+  ---
+  duration_ms: 2032.247625
+  type: 'test'
+  ...
+# Subtest: a restore that cannot put every file back reports it instead of failing silently
+ok 96 - a restore that cannot put every file back reports it instead of failing silently
+  ---
+  duration_ms: 1973.367708
+  type: 'test'
+  ...
+# Subtest: the reproduced round-5 attack stays closed: a computed verdict cannot be shadowed
+ok 97 - the reproduced round-5 attack stays closed: a computed verdict cannot be shadowed
+  ---
+  duration_ms: 1537.931542
+  type: 'test'
+  ...
+# Subtest: verify run requires an executable command after the separator
+ok 98 - verify run requires an executable command after the separator
+  ---
+  duration_ms: 562.765875
+  type: 'test'
+  ...
+# Subtest: verify run rejects a command that does not match the declared kind
+ok 99 - verify run rejects a command that does not match the declared kind
+  ---
+  duration_ms: 530.959417
+  type: 'test'
+  ...
+# Subtest: the artifact-derived observation keys are all inside the protected key set
+ok 100 - the artifact-derived observation keys are all inside the protected key set
+  ---
+  duration_ms: 0.465208
+  type: 'test'
+  ...
+# Subtest: the derivation follows the real artifact shape, so a format reroute changes what it reports
+ok 101 - the derivation follows the real artifact shape, so a format reroute changes what it reports
+  ---
+  duration_ms: 0.197667
+  type: 'test'
+  ...
+# Subtest: artifact_derived_keys describes the artifact this run wrote, not the empty probe
+ok 102 - artifact_derived_keys describes the artifact this run wrote, not the empty probe
+  ---
+  duration_ms: 1459.288375
+  type: 'test'
+  ...
+# Subtest: every computed observation key is classified as provenance or hand-suppliable
+ok 103 - every computed observation key is classified as provenance or hand-suppliable
+  ---
+  duration_ms: 0.21625
+  type: 'test'
+  ...
+# Subtest: the merged-observation sink rejects a producer that skipped the forbidden-key filter
+ok 104 - the merged-observation sink rejects a producer that skipped the forbidden-key filter
+  ---
+  duration_ms: 0.138083
+  type: 'test'
+  ...
+# Subtest: a caller-written artifact cannot put the runner trust marker on a self-reported record
+ok 105 - a caller-written artifact cannot put the runner trust marker on a self-reported record
+  ---
+  duration_ms: 939.551125
+  type: 'test'
+  ...
+# Subtest: the runner keeps lifting its own computed evidence_source through the same extractor
+ok 106 - the runner keeps lifting its own computed evidence_source through the same extractor
+  ---
+  duration_ms: 1481.1155
+  type: 'test'
+  ...
+# Subtest: the emitted stale-evidence remediation command is runnable against a runner-produced record
+ok 107 - the emitted stale-evidence remediation command is runnable against a runner-produced record
+  ---
+  duration_ms: 2482.15875
+  type: 'test'
+  ...
+# Subtest: the evidence classification corpus excludes the provenance keys the runner writes
+ok 108 - the evidence classification corpus excludes the provenance keys the runner writes
+  ---
+  duration_ms: 1460.435542
+  type: 'test'
+  ...
+# Subtest: status and evidence_source are computed facts, not hand-listed exceptions
+ok 109 - status and evidence_source are computed facts, not hand-listed exceptions
+  ---
+  duration_ms: 1496.993417
+  type: 'test'
+  ...
+# Subtest: a discarded agent status carries the real computed value, not null
+ok 110 - a discarded agent status carries the real computed value, not null
+  ---
+  duration_ms: 1557.667042
+  type: 'test'
+  ...
+# Subtest: verify record refuses to let a caller write the evidence_source trust marker
+ok 111 - verify record refuses to let a caller write the evidence_source trust marker
+  ---
+  duration_ms: 746.380333
+  type: 'test'
+  ...
+# Subtest: node --check ignores every file after the first, so a glob form checks only one
+ok 112 - node --check ignores every file after the first, so a glob form checks only one
+  ---
+  duration_ms: 289.723791
+  type: 'test'
+  ...
+# Subtest: the typecheck script checks every file rather than only the glob head
+ok 113 - the typecheck script checks every file rather than only the glob head
+  ---
+  duration_ms: 1178.563167
+  type: 'test'
+  ...
+# Subtest: init creates a repo-local VibePro workspace and updates gitignore only
+ok 114 - init creates a repo-local VibePro workspace and updates gitignore only
+  ---
+  duration_ms: 453.838708
+  type: 'test'
+  ...
+# Subtest: init help aliases print help without creating a flag-named workspace
+ok 115 - init help aliases print help without creating a flag-named workspace
+  ---
+  duration_ms: 1437.013042
+  type: 'test'
+  ...
+# Subtest: artifacts resolve and migrate use tracked custom routing without editing files
+ok 116 - artifacts resolve and migrate use tracked custom routing without editing files
+  ---
+  duration_ms: 267.53125
+  type: 'test'
+  ...
+# Subtest: pr prepare reports preferred managed worktree gate without blocking
+ok 117 - pr prepare reports preferred managed worktree gate without blocking
+  ---
+  duration_ms: 2921.707792
+  type: 'test'
+  ...
+# Subtest: managed worktree gate is not applicable when disabled
+ok 118 - managed worktree gate is not applicable when disabled
+  ---
+  duration_ms: 2822.220708
+  type: 'test'
+  ...
+# Subtest: pr prepare refreshes routed Gate canonical and removes stale skipped full artifacts for summary evidence depth
+ok 119 - pr prepare refreshes routed Gate canonical and removes stale skipped full artifacts for summary evidence depth
+  ---
+  duration_ms: 2319.0635
+  type: 'test'
+  ...
+# Subtest: required managed worktree gate blocks evidence commands outside managed worktree
+ok 120 - required managed worktree gate blocks evidence commands outside managed worktree
+  ---
+  duration_ms: 818.644458
+  type: 'test'
+  ...
+# Subtest: required managed worktree gate accepts local execution state or accepted waiver
+ok 121 - required managed worktree gate accepts local execution state or accepted waiver
+  ---
+  duration_ms: 4818.233542
+  type: 'test'
+  ...
+# Subtest: decision record captures noise waiver and secret exposure in auditable artifacts
+ok 122 - decision record captures noise waiver and secret exposure in auditable artifacts
+  ---
+  duration_ms: 3576.764917
+  type: 'test'
+  ...
+# Subtest: open decision records remain blocking until classified
+ok 123 - open decision records remain blocking until classified
+  ---
+  duration_ms: 2583.394708
+  type: 'test'
+  ...
+# Subtest: uiux intake template and validate writes story-scoped coverage
+ok 124 - uiux intake template and validate writes story-scoped coverage
+  ---
+  duration_ms: 6.466875
+  type: 'test'
+  ...
+# Subtest: UIST-S-1 UIST-S-4 UI/UX intake and modernize plan record bounded style preset selection
+ok 125 - UIST-S-1 UIST-S-4 UI/UX intake and modernize plan record bounded style preset selection
+  ---
+  duration_ms: 57.742625
+  type: 'test'
+  ...
+# Subtest: design-modernize plan writes UI/UX intake coverage and flags vague-only briefs
+ok 126 - design-modernize plan writes UI/UX intake coverage and flags vague-only briefs
+  ---
+  duration_ms: 100.048958
+  type: 'test'
+  ...
+# Subtest: UIFM-S-1 UIFM-S-2 UIFM-S-5 uiux map writes IA flow map and keeps target-only claims proposed
+ok 127 - UIFM-S-1 UIFM-S-2 UIFM-S-5 uiux map writes IA flow map and keeps target-only claims proposed
+  ---
+  duration_ms: 70.927208
+  type: 'test'
+  ...
+# Subtest: UIFM-S-3 design-modernize plan references IA flow map before screen briefs
+ok 128 - UIFM-S-3 design-modernize plan references IA flow map before screen briefs
+  ---
+  duration_ms: 44.12175
+  type: 'test'
+  ...
+# Subtest: UIFM-S-4 pr prepare surfaces IA flow map evidence path for UI-heavy stories
+ok 129 - UIFM-S-4 pr prepare surfaces IA flow map evidence path for UI-heavy stories
+  ---
+  duration_ms: 4130.0395
+  type: 'test'
+  ...
+# Subtest: UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibility matrix from recorded artifacts
+ok 130 - UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibility matrix from recorded artifacts
+  ---
+  duration_ms: 576.137584
+  type: 'test'
+  ...
+# Subtest: UIEA-S-3 uiux evidence does not accept screenshot-only rows without required metadata
+ok 131 - UIEA-S-3 uiux evidence does not accept screenshot-only rows without required metadata
+  ---
+  duration_ms: 579.683417
+  type: 'test'
+  ...
+# Subtest: UIEA-S-2 pr prepare summarizes missing responsive and accessibility matrix rows
+ok 132 - UIEA-S-2 pr prepare summarizes missing responsive and accessibility matrix rows
+  ---
+  duration_ms: 4142.784208
+  type: 'test'
+  ...
+# Subtest: UIFM-S-4 design quality gate accepts screen capture needs_setup evidence record
+ok 133 - UIFM-S-4 design quality gate accepts screen capture needs_setup evidence record
+  ---
+  duration_ms: 2126.989125
+  type: 'test'
+  ...
+# Subtest: UIOC-S-1 UIOC-S-2 UIOC-S-3 UIOC-S-5 uiux prepare writes readiness cockpit and reruns on dirty worktrees
+ok 134 - UIOC-S-1 UIOC-S-2 UIOC-S-3 UIOC-S-5 uiux prepare writes readiness cockpit and reruns on dirty worktrees
+  ---
+  duration_ms: 598.16275
+  type: 'test'
+  ...
+# Subtest: UIOC-S-4 design-ssot view points reviewers to UI/UX cockpit artifacts
+ok 135 - UIOC-S-4 design-ssot view points reviewers to UI/UX cockpit artifacts
+  ---
+  duration_ms: 0.80975
+  type: 'test'
+  ...
+# Subtest: INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks
+ok 136 - INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks
+  ---
+  duration_ms: 182.049667
+  type: 'test'
+  ...
+# Subtest: UIST-S-2 UIST-S-3 UIST-S-5 design-system validate reports style token drift from changed UI files
+ok 137 - UIST-S-2 UIST-S-3 UIST-S-5 design-system validate reports style token drift from changed UI files
+  ---
+  duration_ms: 786.375083
+  type: 'test'
+  ...
+# Subtest: init fails explicitly instead of masking corrupt VibePro config
+ok 138 - init fails explicitly instead of masking corrupt VibePro config
+  ---
+  duration_ms: 1.644667
+  type: 'test'
+  ...
+# Subtest: design-system init and export cover scaffold lifecycle
+ok 139 - design-system init and export cover scaffold lifecycle
+  ---
+  duration_ms: 13.541458
+  type: 'test'
+  ...
+# Subtest: design-system DESIGN.md ingest, lint, export, and diff are reference-gated
+ok 140 - design-system DESIGN.md ingest, lint, export, and diff are reference-gated
+  ---
+  duration_ms: 344.182417
+  type: 'test'
+  ...
+# Subtest: status reports corrupt VibePro config as needs_repair
+ok 141 - status reports corrupt VibePro config as needs_repair
+  ---
+  duration_ms: 223.941125
+  type: 'test'
+  ...
+# Subtest: init tracks repository config and ignores generated VibePro workspace artifacts
+ok 142 - init tracks repository config and ignores generated VibePro workspace artifacts
+  ---
+  duration_ms: 331.6425
+  type: 'test'
+  ...
+# Subtest: help command prints discoverable usage
+ok 143 - help command prints discoverable usage
+  ---
+  duration_ms: 4.596791
+  type: 'test'
+  ...
+# Subtest: check list prints available diagnosis packs
+ok 144 - check list prints available diagnosis packs
+  ---
+  duration_ms: 0.545458
+  type: 'test'
+  ...
+# Subtest: help documents check fail-on-findings enforcement mode
+ok 145 - help documents check fail-on-findings enforcement mode
+  ---
+  duration_ms: 0.08875
+  type: 'test'
+  ...
+# Subtest: check self-dogfood detects verify evidence without final gate artifacts
+ok 146 - check self-dogfood detects verify evidence without final gate artifacts
+  ---
+  duration_ms: 420.484917
+  type: 'test'
+  ...
+# Subtest: check self-dogfood accepts summary-depth decision index as final gate contract
+ok 147 - check self-dogfood accepts summary-depth decision index as final gate contract
+  ---
+  duration_ms: 337.213417
+  type: 'test'
+  ...
+# Subtest: check self-dogfood detects fixed English text in ja human artifacts
+ok 148 - check self-dogfood detects fixed English text in ja human artifacts
+  ---
+  duration_ms: 309.433417
+  type: 'test'
+  ...
+# Subtest: check self-dogfood surfaces PR create bypass and finding details in markdown
+ok 149 - check self-dogfood surfaces PR create bypass and finding details in markdown
+  ---
+  duration_ms: 436.57225
+  type: 'test'
+  ...
+# Subtest: check self-dogfood blocks GitHub PRs that bypass VibePro PR evidence
+ok 150 - check self-dogfood blocks GitHub PRs that bypass VibePro PR evidence
+  ---
+  duration_ms: 457.753333
+  type: 'test'
+  ...
+# Subtest: check self-dogfood accepts GitHub PRs with VibePro body and matching pr-create evidence
+ok 151 - check self-dogfood accepts GitHub PRs with VibePro body and matching pr-create evidence
+  ---
+  duration_ms: 413.295083
+  type: 'test'
+  ...
+# Subtest: check self-dogfood rejects failed pr-create evidence for visible GitHub PRs
+ok 152 - check self-dogfood rejects failed pr-create evidence for visible GitHub PRs
+  ---
+  duration_ms: 412.614917
+  type: 'test'
+  ...
+# Subtest: check self-dogfood rejects dry-run pr-create evidence for visible GitHub PRs
+ok 153 - check self-dogfood rejects dry-run pr-create evidence for visible GitHub PRs
+  ---
+  duration_ms: 407.200833
+  type: 'test'
+  ...
+# Subtest: check self-dogfood rejects stale pr-create evidence for visible GitHub PRs
+ok 154 - check self-dogfood rejects stale pr-create evidence for visible GitHub PRs
+  ---
+  duration_ms: 409.848459
+  type: 'test'
+  ...
+# Subtest: check --fail-on-findings exits non-zero for non-pass check packs
+ok 155 - check --fail-on-findings exits non-zero for non-pass check packs
+  ---
+  duration_ms: 401.813834
+  type: 'test'
+  ...
+# Subtest: check oss-readiness records missing external tools as setup evidence
+ok 156 - check oss-readiness records missing external tools as setup evidence
+  ---
+  duration_ms: 336.939666
+  type: 'test'
+  ...
+# Subtest: check oss-readiness records unusable external tool output as setup evidence
+ok 157 - check oss-readiness records unusable external tool output as setup evidence
+  ---
+  duration_ms: 1731.467083
+  type: 'test'
+  ...
+# Subtest: check oss-readiness treats empty successful gitleaks output as pass
+ok 158 - check oss-readiness treats empty successful gitleaks output as pass
+  ---
+  duration_ms: 2620.866667
+  type: 'test'
+  ...
+# Subtest: check oss-readiness normalizes Core 5 tool findings without leaking secret values
+ok 159 - check oss-readiness normalizes Core 5 tool findings without leaking secret values
+  ---
+  duration_ms: 2676.078541
+  type: 'test'
+  ...
+# Subtest: check self-dogfood accepts auditable gate_override and scans docs guidance
+ok 160 - check self-dogfood accepts auditable gate_override and scans docs guidance
+  ---
+  duration_ms: 355.132583
+  type: 'test'
+  ...
+# Subtest: check self-dogfood detects unresolved gate DAG and bypass-oriented instructions
+ok 161 - check self-dogfood detects unresolved gate DAG and bypass-oriented instructions
+  ---
+  duration_ms: 344.945041
+  type: 'test'
+  ...
+# Subtest: check self-dogfood blocks malformed gate DAG and scopes instruction findings by story id
+ok 162 - check self-dogfood blocks malformed gate DAG and scopes instruction findings by story id
+  ---
+  duration_ms: 426.131917
+  type: 'test'
+  ...
+# Subtest: pr prepare resolves explicit story id from local Story docs even when config catalog is stale
+ok 163 - pr prepare resolves explicit story id from local Story docs even when config catalog is stale
+  ---
+  duration_ms: 2237.386042
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks mismatched changed Story docs before building trusted PR evidence
+ok 164 - pr prepare blocks mismatched changed Story docs before building trusted PR evidence
+  ---
+  duration_ms: 2333.555667
+  type: 'test'
+  ...
+# Subtest: pr prepare accepts changed Story docs that explicitly relate to the selected Story
+ok 165 - pr prepare accepts changed Story docs that explicitly relate to the selected Story
+  ---
+  duration_ms: 2315.817041
+  type: 'test'
+  ...
+# Subtest: pr prepare ignores canonical audit snapshot Story copies for source integrity
+ok 166 - pr prepare ignores canonical audit snapshot Story copies for source integrity
+  ---
+  duration_ms: 2360.385458
+  type: 'test'
+  ...
+# Subtest: pr prepare never selects a same-id canonical audit snapshot as the primary Story
+ok 167 - pr prepare never selects a same-id canonical audit snapshot as the primary Story
+  ---
+  duration_ms: 2312.919708
+  type: 'test'
+  ...
+# Subtest: pr prepare accepts path surface matrix decision records
+ok 168 - pr prepare accepts path surface matrix decision records
+  ---
+  duration_ms: 4509.112583
+  type: 'test'
+  ...
+# Subtest: pr prepare resolves path surface matrix from structured observation with bland summary
+ok 169 - pr prepare resolves path surface matrix from structured observation with bland summary
+  ---
+  duration_ms: 4798.308458
+  type: 'test'
+  ...
+# Subtest: pr prepare does not let structured path surface evidence cover an unrelated changed target
+ok 170 - pr prepare does not let structured path surface evidence cover an unrelated changed target
+  ---
+  duration_ms: 2768.34725
+  type: 'test'
+  ...
+# Subtest: pr prepare preserves legacy surface-signal coverage for Stories without atomic metadata
+ok 171 - pr prepare preserves legacy surface-signal coverage for Stories without atomic metadata
+  ---
+  duration_ms: 2752.025875
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps a reviewable small PR on the legacy single-PR readiness path
+ok 172 - pr prepare keeps a reviewable small PR on the legacy single-PR readiness path
+  ---
+  duration_ms: 2283.551709
+  type: 'test'
+  ...
+# Subtest: pr prepare requires structured evidence to cover every changed path in one surface row
+ok 173 - pr prepare requires structured evidence to cover every changed path in one surface row
+  ---
+  duration_ms: 6947.580458
+  type: 'test'
+  ...
+# Subtest: pr prepare requires structured evidence for CLI state persistence and managed-process surfaces
+ok 174 - pr prepare requires structured evidence for CLI state persistence and managed-process surfaces
+  ---
+  duration_ms: 4879.3395
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects partial structured observation for path surface matrix coverage
+ok 175 - pr prepare rejects partial structured observation for path surface matrix coverage
+  ---
+  duration_ms: 2731.249084
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps path surface legacy keyword compatibility with deprecation notice
+ok 176 - pr prepare keeps path surface legacy keyword compatibility with deprecation notice
+  ---
+  duration_ms: 2714.408542
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects legacy keyword evidence for atomic changed-path coverage
+ok 177 - pr prepare rejects legacy keyword evidence for atomic changed-path coverage
+  ---
+  duration_ms: 2625.781375
+  type: 'test'
+  ...
+# Subtest: pr prepare does not cover persistence surface from hash substrings
+ok 178 - pr prepare does not cover persistence surface from hash substrings
+  ---
+  duration_ms: 2584.495458
+  type: 'test'
+  ...
+# Subtest: pr prepare does not infer persistence surface from story spec migration slugs
+ok 179 - pr prepare does not infer persistence surface from story spec migration slugs
+  ---
+  duration_ms: 2140.612041
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks PR freshness when base advanced after branch creation
+ok 180 - pr prepare blocks PR freshness when base advanced after branch creation
+  ---
+  duration_ms: 4015.502791
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps a current generated projection out of artifact consistency but stales a hand edit
+ok 181 - pr prepare keeps a current generated projection out of artifact consistency but stales a hand edit
+  ---
+  duration_ms: 7700.717709
+  type: 'test'
+  ...
+# Subtest: pr prepare exposes stale verification evidence through artifact consistency gate
+ok 182 - pr prepare exposes stale verification evidence through artifact consistency gate
+  ---
+  duration_ms: 9440.373417
+  type: 'test'
+  ...
+# Subtest: pr prepare annotates stale PR lifecycle artifacts with current HEAD mismatch
+ok 183 - pr prepare annotates stale PR lifecycle artifacts with current HEAD mismatch
+  ---
+  duration_ms: 2287.670708
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps verification evidence current when only tracked VibePro manifest changes
+ok 184 - pr prepare keeps verification evidence current when only tracked VibePro manifest changes
+  ---
+  duration_ms: 2864.98725
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes
+ok 185 - pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes
+  ---
+  duration_ms: 2771.726292
+  type: 'test'
+  ...
+# Subtest: check all leaves optional agent harness and public discovery checks out unless explicitly included
+ok 186 - check all leaves optional agent harness and public discovery checks out unless explicitly included
+  ---
+  duration_ms: 540.470083
+  type: 'test'
+  ...
+# Subtest: check public-discovery reports LLMO and public page readiness findings
+ok 187 - check public-discovery reports LLMO and public page readiness findings
+  ---
+  duration_ms: 11.89925
+  type: 'test'
+  ...
+# Subtest: public-discovery classifies private routes and inherits App Router metadata
+ok 188 - public-discovery classifies private routes and inherits App Router metadata
+  ---
+  duration_ms: 6.9415
+  type: 'test'
+  ...
+# Subtest: public-discovery applies documented suppressions and reports warnings
+ok 189 - public-discovery applies documented suppressions and reports warnings
+  ---
+  duration_ms: 7.653833
+  type: 'test'
+  ...
+# Subtest: check agent-harness diagnoses codex claude skills hooks and ignore noise
+ok 190 - check agent-harness diagnoses codex claude skills hooks and ignore noise
+  ---
+  duration_ms: 287.938458
+  type: 'test'
+  ...
+# Subtest: harness status summarizes installed missing outdated and invalid areas
+ok 191 - harness status summarizes installed missing outdated and invalid areas
+  ---
+  duration_ms: 13.804334
+  type: 'test'
+  ...
+# Subtest: harness map writes codebase entrypoints and test command map
+ok 192 - harness map writes codebase entrypoints and test command map
+  ---
+  duration_ms: 4.050667
+  type: 'test'
+  ...
+# Subtest: harness learn records session learning candidates for human skill review
+ok 193 - harness learn records session learning candidates for human skill review
+  ---
+  duration_ms: 2.568
+  type: 'test'
+  ...
+# Subtest: check security runs a purpose-level diagnosis pack and writes evidence
+ok 194 - check security runs a purpose-level diagnosis pack and writes evidence
+  ---
+  duration_ms: 361.042709
+  type: 'test'
+  ...
+# Subtest: init can bootstrap and select a local story
+ok 195 - init can bootstrap and select a local story
+  ---
+  duration_ms: 269.786334
+  type: 'test'
+  ...
+# Subtest: init and config language manage human output language
+ok 196 - init and config language manage human output language
+  ---
+  duration_ms: 480.536833
+  type: 'test'
+  ...
+# Subtest: skills commands list install and verify bundled VibePro skills
+ok 197 - skills commands list install and verify bundled VibePro skills
+  ---
+  duration_ms: 44.836167
+  type: 'test'
+  ...
+# Subtest: codex commands install and verify VibePro AGENTS instructions
+ok 198 - codex commands install and verify VibePro AGENTS instructions
+  ---
+  duration_ms: 8.882791
+  type: 'test'
+  ...
+# Subtest: init fails when bootstrapped story already exists
+ok 199 - init fails when bootstrapped story already exists
+  ---
+  duration_ms: 448.748958
+  type: 'test'
+  ...
+# Subtest: doctor reports uninitialized repositories without creating a workspace
+ok 200 - doctor reports uninitialized repositories without creating a workspace
+  ---
+  duration_ms: 408.948583
+  type: 'test'
+  ...
+# Subtest: verify record requires an initialized workspace
+ok 201 - verify record requires an initialized workspace
+  ---
+  duration_ms: 79.511542
+  type: 'test'
+  ...
+# Subtest: doctor detects and fixes missing diagnosis evidence references
+ok 202 - doctor detects and fixes missing diagnosis evidence references
+  ---
+  duration_ms: 1039.854875
+  type: 'test'
+  ...
+# Subtest: doctor fixes stale story, run, catalog, and graphify references
+ok 203 - doctor fixes stale story, run, catalog, and graphify references
+  ---
+  duration_ms: 1068.561458
+  type: 'test'
+  ...
+# Subtest: doctor reports missing task workflow references without modifying them
+ok 204 - doctor reports missing task workflow references without modifying them
+  ---
+  duration_ms: 643.805958
+  type: 'test'
+  ...
+# Subtest: graph imports existing graphify artifacts into the workspace
+ok 205 - graph imports existing graphify artifacts into the workspace
+  ---
+  duration_ms: 243.120041
+  type: 'test'
+  ...
+# Subtest: graph uses graphify-out by default
+ok 206 - graph uses graphify-out by default
+  ---
+  duration_ms: 3.703875
+  type: 'test'
+  ...
+# Subtest: graph can run graphify before importing artifacts
+ok 207 - graph can run graphify before importing artifacts
+  ---
+  duration_ms: 427.636833
+  type: 'test'
+  ...
+# Subtest: graph reports install guidance when graphify is missing (INV-GPD-3)
+ok 208 - graph reports install guidance when graphify is missing (INV-GPD-3)
+  ---
+  duration_ms: 3.533
+  type: 'test'
+  ...
+# Subtest: graph reports PATH guidance when graphify exists outside PATH (INV-GPD-1, INV-GPD-2)
+ok 209 - graph reports PATH guidance when graphify exists outside PATH (INV-GPD-1, INV-GPD-2)
+  ---
+  duration_ms: 3.688834
+  type: 'test'
+  ...
+# Subtest: component style scanner inventories UI components and flags legacy tokens
+ok 210 - component style scanner inventories UI components and flags legacy tokens
+  ---
+  duration_ms: 7.893375
+  type: 'test'
+  ...
+# Subtest: flow design scanner flags unsafe UI journey contracts
+ok 211 - flow design scanner flags unsafe UI journey contracts
+  ---
+  duration_ms: 32.156542
+  type: 'test'
+  ...
+# Subtest: flow design scanner limits silent noop to event paths and ignores test mock buttons
+ok 212 - flow design scanner limits silent noop to event paths and ignores test mock buttons
+  ---
+  duration_ms: 8.981583
+  type: 'test'
+  ...
+# Subtest: flow design scanner detects async function handlers after event-path gating
+ok 213 - flow design scanner detects async function handlers after event-path gating
+  ---
+  duration_ms: 2.926
+  type: 'test'
+  ...
+# Subtest: flow design scanner does not downgrade partially mitigated early returns
+ok 214 - flow design scanner does not downgrade partially mitigated early returns
+  ---
+  duration_ms: 2.202
+  type: 'test'
+  ...
+# Subtest: flow design scanner does not use unrelated element disabled state as mitigation
+ok 215 - flow design scanner does not use unrelated element disabled state as mitigation
+  ---
+  duration_ms: 1.810792
+  type: 'test'
+  ...
+# Subtest: flow design scanner preserves unmitigated duplicate event paths for the same handler
+ok 216 - flow design scanner preserves unmitigated duplicate event paths for the same handler
+  ---
+  duration_ms: 2.274958
+  type: 'test'
+  ...
+# Subtest: flow design scanner does not treat loading state variable as visible mitigation
+ok 217 - flow design scanner does not treat loading state variable as visible mitigation
+  ---
+  duration_ms: 2.032625
+  type: 'test'
+  ...
+# Subtest: flow design scanner follows direct calls from inline event handlers
+ok 218 - flow design scanner follows direct calls from inline event handlers
+  ---
+  duration_ms: 2.150125
+  type: 'test'
+  ...
+# Subtest: flow design scanner reads disabled mitigation from inline arrow event elements
+ok 219 - flow design scanner reads disabled mitigation from inline arrow event elements
+  ---
+  duration_ms: 1.545833
+  type: 'test'
+  ...
+# Subtest: flow design scanner preserves unmitigated one-hop helper paths
+ok 220 - flow design scanner preserves unmitigated one-hop helper paths
+  ---
+  duration_ms: 3.438208
+  type: 'test'
+  ...
+# Subtest: check ui gates interactive element contract violations
+ok 221 - check ui gates interactive element contract violations
+  ---
+  duration_ms: 44.57425
+  type: 'test'
+  ...
+# Subtest: gesture interaction scanner flags touch, overlay, drag, carousel, and map marker risks
+ok 222 - gesture interaction scanner flags touch, overlay, drag, carousel, and map marker risks
+  ---
+  duration_ms: 4.4225
+  type: 'test'
+  ...
+# Subtest: check ui includes gesture interaction as a review gate
+ok 223 - check ui includes gesture interaction as a review gate
+  ---
+  duration_ms: 45.601
+  type: 'test'
+  ...
+# Subtest: terminal link scanner flags dot directory HTML preview gaps
+ok 224 - terminal link scanner flags dot directory HTML preview gaps
+  ---
+  duration_ms: 8.146417
+  type: 'test'
+  ...
+# Subtest: terminal link scanner accepts image preview extensions via IMAGE_EXTENSIONS spread
+ok 225 - terminal link scanner accepts image preview extensions via IMAGE_EXTENSIONS spread
+  ---
+  duration_ms: 2.372583
+  type: 'test'
+  ...
+# Subtest: diagnose writes flow design evidence, report, findings, and story tasks
+ok 226 - diagnose writes flow design evidence, report, findings, and story tasks
+  ---
+  duration_ms: 770.16425
+  type: 'test'
+  ...
+# Subtest: diagnose does not gate mitigated info-level silent noop findings
+ok 227 - diagnose does not gate mitigated info-level silent noop findings
+  ---
+  duration_ms: 695.466542
+  type: 'test'
+  ...
+# Subtest: diagnose emits critical network contract finding for missing Next.js API route
+ok 228 - diagnose emits critical network contract finding for missing Next.js API route
+  ---
+  duration_ms: 742.000166
+  type: 'test'
+  ...
+# Subtest: network contract scanner resolves query strings and Next.js dynamic route segments
+ok 229 - network contract scanner resolves query strings and Next.js dynamic route segments
+  ---
+  duration_ms: 47.570084
+  type: 'test'
+  ...
+# Subtest: verify flow writes Playwright evidence and skips mutating probes by default
+ok 230 - verify flow writes Playwright evidence and skips mutating probes by default
+  ---
+  duration_ms: 1206.467083
+  type: 'test'
+  ...
+# Subtest: verify flow does not pass when no runtime probes are configured
+ok 231 - verify flow does not pass when no runtime probes are configured
+  ---
+  duration_ms: 608.283541
+  type: 'test'
+  ...
+# Subtest: verify flow fails on runtime network contract errors from Playwright output
+ok 232 - verify flow fails on runtime network contract errors from Playwright output
+  ---
+  duration_ms: 929.039667
+  type: 'test'
+  ...
+# Subtest: verify flow records needs_setup when Playwright is unavailable
+ok 233 - verify flow records needs_setup when Playwright is unavailable
+  ---
+  duration_ms: 592.80525
+  type: 'test'
+  ...
+# Subtest: verify flow records browser install guidance when Playwright browser is missing
+ok 234 - verify flow records browser install guidance when Playwright browser is missing
+  ---
+  duration_ms: 887.320208
+  type: 'test'
+  ...
+# Subtest: verify flow supports basic auth from env without persisting the password
+ok 235 - verify flow supports basic auth from env without persisting the password
+  ---
+  duration_ms: 973.760417
+  type: 'test'
+  ...
+# Subtest: verify flow can fill a value captured from visible page text
+ok 236 - verify flow can fill a value captured from visible page text
+  ---
+  duration_ms: 957.059
+  type: 'test'
+  ...
+# Subtest: pr prepare attaches latest flow verification evidence to the E2E gate
+ok 237 - pr prepare attaches latest flow verification evidence to the E2E gate
+  ---
+  duration_ms: 3899.013958
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps flow verification current when only tracked VibePro manifest changes
+ok 238 - pr prepare keeps flow verification current when only tracked VibePro manifest changes
+  ---
+  duration_ms: 2625.71175
+  type: 'test'
+  ...
+# Subtest: measure records command, HTTP, startup, and Prisma log metrics
+ok 239 - measure records command, HTTP, startup, and Prisma log metrics
+  ---
+  duration_ms: 670.905417
+  type: 'test'
+  ...
+# Subtest: measure compare reports before and after deltas
+ok 240 - measure compare reports before and after deltas
+  ---
+  duration_ms: 268.241333
+  type: 'test'
+  ...
+# Subtest: performance evidence defines story metrics, records runs, and compares p50 p90 max
+ok 241 - performance evidence defines story metrics, records runs, and compares p50 p90 max
+  ---
+  duration_ms: 246.990583
+  type: 'test'
+  ...
+# Subtest: performance evidence refuses to compare user perceived metrics from server logs only
+ok 242 - performance evidence refuses to compare user perceived metrics from server logs only
+  ---
+  duration_ms: 226.278
+  type: 'test'
+  ...
+# Subtest: pr prepare includes performance evidence summary for the story
+ok 243 - pr prepare includes performance evidence summary for the story
+  ---
+  duration_ms: 2022.109792
+  type: 'test'
+  ...
+# Subtest: graph cleans generated graphify-out when graphify fails
+ok 244 - graph cleans generated graphify-out when graphify fails
+  ---
+  duration_ms: 380.038208
+  type: 'test'
+  ...
+# Subtest: story derive can run graphify before generating the story catalog
+ok 245 - story derive can run graphify before generating the story catalog
+  ---
+  duration_ms: 614.551
+  type: 'test'
+  ...
+# Subtest: story derive handles medium cyclic graphify graphs without stack overflow
+ok 246 - story derive handles medium cyclic graphify graphs without stack overflow
+  ---
+  duration_ms: 263.185542
+  type: 'test'
+  ...
+# Subtest: story derive writes failure evidence when graph processing fails
+ok 247 - story derive writes failure evidence when graph processing fails
+  ---
+  duration_ms: 250.85575
+  type: 'test'
+  ...
+# Subtest: story add list select and archive manage local stories without NocoDB
+ok 248 - story add list select and archive manage local stories without NocoDB
+  ---
+  duration_ms: 226.572667
+  type: 'test'
+  ...
+# Subtest: story derive creates a repo-wide story catalog and local stories
+ok 249 - story derive creates a repo-wide story catalog and local stories
+  ---
+  duration_ms: 242.358417
+  type: 'test'
+  ...
+# Subtest: story derive continues when manifest evidence artifact is missing
+ok 250 - story derive continues when manifest evidence artifact is missing
+  ---
+  duration_ms: 258.031042
+  type: 'test'
+  ...
+# Subtest: story map renders the generated catalog as markdown and json
+ok 251 - story map renders the generated catalog as markdown and json
+  ---
+  duration_ms: 272.606042
+  type: 'test'
+  ...
+# Subtest: story plan creates execution priorities from the generated story map
+ok 252 - story plan creates execution priorities from the generated story map
+  ---
+  duration_ms: 270.153792
+  type: 'test'
+  ...
+# Subtest: story plan creates task candidates from explicit story task sections
+ok 253 - story plan creates task candidates from explicit story task sections
+  ---
+  duration_ms: 257.485666
+  type: 'test'
+  ...
+# Subtest: story plan requires architecture and spec tasks for design-first stories
+ok 254 - story plan requires architecture and spec tasks for design-first stories
+  ---
+  duration_ms: 234.705334
+  type: 'test'
+  ...
+# Subtest: story plan treats linked architecture and spec as source consistency for design-first stories
+ok 255 - story plan treats linked architecture and spec as source consistency for design-first stories
+  ---
+  duration_ms: 228.727292
+  type: 'test'
+  ...
+# Subtest: story plan creates architecture recovery tasks for boundary code without ADR
+ok 256 - story plan creates architecture recovery tasks for boundary code without ADR
+  ---
+  duration_ms: 251.343709
+  type: 'test'
+  ...
+# Subtest: story derive creates stories for code surfaces that have no spec documents
+ok 257 - story derive creates stories for code surfaces that have no spec documents
+  ---
+  duration_ms: 241.472667
+  type: 'test'
+  ...
+# Subtest: story derive links local management story docs to code surface stories
+ok 258 - story derive links local management story docs to code surface stories
+  ---
+  duration_ms: 239.289209
+  type: 'test'
+  ...
+# Subtest: story derive links story_id frontmatter specs and architecture docs to stories
+ok 259 - story derive links story_id frontmatter specs and architecture docs to stories
+  ---
+  duration_ms: 239.905084
+  type: 'test'
+  ...
+# Subtest: story derive does not emit domain-specific next-app stories from generic auth code
+ok 260 - story derive does not emit domain-specific next-app stories from generic auth code
+  ---
+  duration_ms: 230.959791
+  type: 'test'
+  ...
+# Subtest: story coverage keeps all uncovered graph files in the catalog
+ok 261 - story coverage keeps all uncovered graph files in the catalog
+  ---
+  duration_ms: 247.404709
+  type: 'test'
+  ...
+# Subtest: story derive does not overwrite existing story ids
+ok 262 - story derive does not overwrite existing story ids
+  ---
+  duration_ms: 235.723042
+  type: 'test'
+  ...
+# Subtest: story derive archives obsolete document-index stories from previous derive runs
+ok 263 - story derive archives obsolete document-index stories from previous derive runs
+  ---
+  duration_ms: 234.476208
+  type: 'test'
+  ...
+# Subtest: brainbase import uses selected local story and excludes archived stories
+ok 264 - brainbase import uses selected local story and excludes archived stories
+  ---
+  duration_ms: 801.215709
+  type: 'test'
+  ...
+# Subtest: pr prepare writes PR artifacts for the selected story
+ok 265 - pr prepare writes PR artifacts for the selected story
+  ---
+  duration_ms: 57164.408667
+  type: 'test'
+  ...
+# Subtest: pr ship dry-run reruns prepare and stops with Agent Review commands instead of raw gh create
+ok 266 - pr ship dry-run reruns prepare and stops with Agent Review commands instead of raw gh create
+  ---
+  duration_ms: 2165.246292
+  type: 'test'
+  ...
+# Subtest: pr ship dry-run restores Agent Review commands from explicitly strict stale role gates
+ok 267 - pr ship dry-run restores Agent Review commands from explicitly strict stale role gates
+  ---
+  duration_ms: 3247.621542
+  type: 'test'
+  ...
+# Subtest: pr prepare uses story source title and intro when explicit background heading is absent
+ok 268 - pr prepare uses story source title and intro when explicit background heading is absent
+  ---
+  duration_ms: 2055.062958
+  type: 'test'
+  ...
+# Subtest: pr prepare carries configured output language into human artifacts
+ok 269 - pr prepare carries configured output language into human artifacts
+  ---
+  duration_ms: 2081.888458
+  type: 'test'
+  ...
+# Subtest: pr prepare json emits progress on stderr and records stage diagnostics
+ok 270 - pr prepare json emits progress on stderr and records stage diagnostics
+  ---
+  duration_ms: 2118.503833
+  type: 'test'
+  ...
+# Subtest: pr prepare summary-json emits bounded LLM projection instead of full diagnostics
+ok 271 - pr prepare summary-json emits bounded LLM projection instead of full diagnostics
+  ---
+  duration_ms: 2239.424167
+  type: 'test'
+  ...
+# Subtest: pr prepare view emits focused bounded projection for blocking gates
+ok 272 - pr prepare view emits focused bounded projection for blocking gates
+  ---
+  duration_ms: 2066.951208
+  type: 'test'
+  ...
+# Subtest: pr prepare gate-evidence view binds refs and excludes informational nodes from blockers
+ok 273 - pr prepare gate-evidence view binds refs and excludes informational nodes from blockers
+  ---
+  duration_ms: 2038.365625
+  type: 'test'
+  ...
+# Subtest: pr prepare fails clearly when a stage exceeds the configured timeout
+ok 274 - pr prepare fails clearly when a stage exceeds the configured timeout
+  ---
+  duration_ms: 7.419125
+  type: 'test'
+  ...
+# Subtest: pr autopilot records passing verification evidence from a defined command
+ok 275 - pr autopilot records passing verification evidence from a defined command
+  ---
+  duration_ms: 7277.12425
+  type: 'test'
+  ...
+# Subtest: pr autopilot records failed verification as fail and stops
+ok 276 - pr autopilot records failed verification as fail and stops
+  ---
+  duration_ms: 5903.086458
+  type: 'test'
+  ...
+# Subtest: pr autopilot dry-run plans verification without recording evidence
+ok 277 - pr autopilot dry-run plans verification without recording evidence
+  ---
+  duration_ms: 2422.498041
+  type: 'test'
+  ...
+# Subtest: pr autopilot stops at unresolved human judgment points without recording a waiver
+ok 278 - pr autopilot stops at unresolved human judgment points without recording a waiver
+  ---
+  duration_ms: 2097.082208
+  type: 'test'
+  ...
+# Subtest: pr autopilot skips existing passing records instead of overwriting them
+ok 279 - pr autopilot skips existing passing records instead of overwriting them
+  ---
+  duration_ms: 9433.620084
+  type: 'test'
+  ...
+# Subtest: pr autopilot reruns stale passing records instead of skipping by kind only
+ok 280 - pr autopilot reruns stale passing records instead of skipping by kind only
+  ---
+  duration_ms: 12875.538416
+  type: 'test'
+  ...
+# Subtest: pr prepare flags empty commit messages in the PR range
+ok 281 - pr prepare flags empty commit messages in the PR range
+  ---
+  duration_ms: 2058.558417
+  type: 'test'
+  ...
+# Subtest: pr prepare does not require Playwright E2E for CLI-only source changes
+ok 282 - pr prepare does not require Playwright E2E for CLI-only source changes
+  ---
+  duration_ms: 2158.905584
+  type: 'test'
+  ...
+# Subtest: pr prepare ignores package E2E script for unit-layer contract-only acceptance coverage
+ok 283 - pr prepare ignores package E2E script for unit-layer contract-only acceptance coverage
+  ---
+  duration_ms: 2543.067375
+  type: 'test'
+  ...
+# Subtest: pr prepare does not require E2E when moving source contract coverage from E2E to unit
+ok 284 - pr prepare does not require E2E when moving source contract coverage from E2E to unit
+  ---
+  duration_ms: 2675.8865
+  type: 'test'
+  ...
+# Subtest: pr prepare uses node --test targeted command for node test runner
+ok 285 - pr prepare uses node --test targeted command for node test runner
+  ---
+  duration_ms: 2047.235459
+  type: 'test'
+  ...
+# Subtest: review prepare generates stage role requests
+ok 286 - review prepare generates stage role requests
+  ---
+  duration_ms: 2585.719916
+  type: 'test'
+  ...
+# Subtest: review and explore human dispatch artifacts follow ja output language
+ok 287 - review and explore human dispatch artifacts follow ja output language
+  ---
+  duration_ms: 1297.626417
+  type: 'test'
+  ...
+# Subtest: review lifecycle tracks timed out subagents and replacement closure
+ok 288 - review lifecycle tracks timed out subagents and replacement closure
+  ---
+  duration_ms: 4115.859958
+  type: 'test'
+  ...
+# Subtest: artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership
+ok 289 - artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership
+  ---
+  duration_ms: 4590.077208
+  type: 'test'
+  ...
+# Subtest: review replacement lifecycle enforces same-role lineage and prior closure evidence
+ok 290 - review replacement lifecycle enforces same-role lineage and prior closure evidence
+  ---
+  duration_ms: 3376.630541
+  type: 'test'
+  ...
+# Subtest: user git fingerprint includes dirty VibePro config but ignores generated artifacts
+ok 291 - user git fingerprint includes dirty VibePro config but ignores generated artifacts
+  ---
+  duration_ms: 874.483042
+  type: 'test'
+  ...
+# Subtest: review status and summary tell operators to close running subagents before recording
+ok 292 - review status and summary tell operators to close running subagents before recording
+  ---
+  duration_ms: 1730.450333
+  type: 'test'
+  ...
+# Subtest: review lifecycle preserves concurrent stage starts
+ok 293 - review lifecycle preserves concurrent stage starts
+  ---
+  duration_ms: 1546.39975
+  type: 'test'
+  ...
+# Subtest: review status orders running close commands before stale record commands
+ok 294 - review status orders running close commands before stale record commands
+  ---
+  duration_ms: 3498.425958
+  type: 'test'
+  ...
+# Subtest: review policy config customizes stage roles and role timeout
+ok 295 - review policy config customizes stage roles and role timeout
+  ---
+  duration_ms: 1426.447875
+  type: 'test'
+  ...
+# Subtest: review policy config publishes role model policy and records actual model provenance
+ok 296 - review policy config publishes role model policy and records actual model provenance
+  ---
+  duration_ms: 1857.944833
+  type: 'test'
+  ...
+# Subtest: SRA-CON-1 review record captures finding disposition and agent usage for subagent ROI audit
+ok 297 - SRA-CON-1 review record captures finding disposition and agent usage for subagent ROI audit
+  ---
+  duration_ms: 1300.231792
+  type: 'test'
+  ...
+# Subtest: subagent ROI report classifies decision signal, waste signal, and missing usage evidence
+ok 298 - subagent ROI report classifies decision signal, waste signal, and missing usage evidence
+  ---
+  duration_ms: 1396.577208
+  type: 'test'
+  ...
+# Subtest: review start rejects model policy mismatch before lifecycle start unless override is justified
+ok 299 - review start rejects model policy mismatch before lifecycle start unless override is justified
+  ---
+  duration_ms: 1066.521458
+  type: 'test'
+  ...
+# Subtest: agent review PR policy honors role mode and changed-file activation
+ok 300 - agent review PR policy honors role mode and changed-file activation
+  ---
+  duration_ms: 2208.085541
+  type: 'test'
+  ...
+# Subtest: review status focuses required current blockers and moves optional history behind flags
+ok 301 - review status focuses required current blockers and moves optional history behind flags
+  ---
+  duration_ms: 3574.181916
+  type: 'test'
+  ...
+# Subtest: review status ignores stale pr prepare required reviews from an older HEAD
+ok 302 - review status ignores stale pr prepare required reviews from an older HEAD
+  ---
+  duration_ms: 2570.324792
+  type: 'test'
+  ...
+# Subtest: review status marks pr prepare stale when newer review dispatch artifacts exist
+ok 303 - review status marks pr prepare stale when newer review dispatch artifacts exist
+  ---
+  duration_ms: 2863.622833
+  type: 'test'
+  ...
+# Subtest: review status keeps pr prepare current when dispatch artifact predates pr prepare
+ok 304 - review status keeps pr prepare current when dispatch artifact predates pr prepare
+  ---
+  duration_ms: 2729.301583
+  type: 'test'
+  ...
+# Subtest: explore prepare record status and pr prepare surface read-only exploration evidence
+ok 305 - explore prepare record status and pr prepare surface read-only exploration evidence
+  ---
+  duration_ms: 2260.653459
+  type: 'test'
+  ...
+# Subtest: review record updates status summary and marks stale after source change
+ok 306 - review record updates status summary and marks stale after source change
+  ---
+  duration_ms: 1784.594917
+  type: 'test'
+  ...
+# Subtest: review status keeps content-bound review current after merge delta outside inspected inputs
+ok 307 - review status keeps content-bound review current after merge delta outside inspected inputs
+  ---
+  duration_ms: 3567.078666
+  type: 'test'
+  ...
+# Subtest: review status keeps strict-head review stale after docs-only commit
+ok 308 - review status keeps strict-head review stale after docs-only commit
+  ---
+  duration_ms: 1915.666708
+  type: 'test'
+  ...
+# Subtest: review status keeps stale review after merge delta touches inspected inputs
+ok 309 - review status keeps stale review after merge delta touches inspected inputs
+  ---
+  duration_ms: 1770.50125
+  type: 'test'
+  ...
+# Subtest: review record rejects pass without inspected file inputs
+ok 310 - review record rejects pass without inspected file inputs
+  ---
+  duration_ms: 1238.1845
+  type: 'test'
+  ...
+# Subtest: review status keeps stale review when merge delta diff cannot be resolved
+ok 311 - review status keeps stale review when merge delta diff cannot be resolved
+  ---
+  duration_ms: 1885.989291
+  type: 'test'
+  ...
+# Subtest: agent review PR section shows merge delta binding reasons
+ok 312 - agent review PR section shows merge delta binding reasons
+  ---
+  duration_ms: 0.804542
+  type: 'test'
+  ...
+# Subtest: review status keeps current review when only tracked VibePro manifest changes
+ok 313 - review status keeps current review when only tracked VibePro manifest changes
+  ---
+  duration_ms: 1709.626666
+  type: 'test'
+  ...
+# Subtest: review status keeps legacy full-fingerprint review stale when tracked VibePro manifest changes
+ok 314 - review status keeps legacy full-fingerprint review stale when tracked VibePro manifest changes
+  ---
+  duration_ms: 1703.477333
+  type: 'test'
+  ...
+# Subtest: review status keeps unchanged legacy source fingerprint current with tracked VibePro manifest dirt
+ok 315 - review status keeps unchanged legacy source fingerprint current with tracked VibePro manifest dirt
+  ---
+  duration_ms: 2094.7355
+  type: 'test'
+  ...
+# Subtest: review record keeps append-only history for replaced review findings
+ok 316 - review record keeps append-only history for replaced review findings
+  ---
+  duration_ms: 4250.189792
+  type: 'test'
+  ...
+# Subtest: review summary lists next actions for missing prepared roles
+ok 317 - review summary lists next actions for missing prepared roles
+  ---
+  duration_ms: 1123.588542
+  type: 'test'
+  ...
+# Subtest: review pass requires verified subagent or explicit manual review provenance
+ok 318 - review pass requires verified subagent or explicit manual review provenance
+  ---
+  duration_ms: 9415.975167
+  type: 'test'
+  ...
+# Subtest: checkpoint lists available phase gates
+ok 319 - checkpoint lists available phase gates
+  ---
+  duration_ms: 1.639125
+  type: 'test'
+  ...
+# Subtest: checkpoint blocks implementation start before design gates and staged reviews pass
+ok 320 - checkpoint blocks implementation start before design gates and staged reviews pass
+  ---
+  duration_ms: 2639.459375
+  type: 'test'
+  ...
+# Subtest: verification checkpoint includes PR route and split resolution gates
+ok 321 - verification checkpoint includes PR route and split resolution gates
+  ---
+  duration_ms: 2650.539583
+  type: 'test'
+  ...
+# Subtest: execute state tracks next action before and after pr prepare
+ok 322 - execute state tracks next action before and after pr prepare
+  ---
+  duration_ms: 19618.425417
+  type: 'test'
+  ...
+# Subtest: execute start does not initialize or dirty an uninitialized repository
+ok 323 - execute start does not initialize or dirty an uninitialized repository
+  ---
+  duration_ms: 59.492917
+  type: 'test'
+  ...
+# Subtest: execute state blocks ready_for_pr_create when Gate DAG overall status is not ready
+ok 324 - execute state blocks ready_for_pr_create when Gate DAG overall status is not ready
+  ---
+  duration_ms: 2045.878792
+  type: 'test'
+  ...
+# Subtest: execute next guides fresh managed-worktree stories through execute start before PR preparation
+ok 325 - execute next guides fresh managed-worktree stories through execute start before PR preparation
+  ---
+  duration_ms: 1756.156666
+  type: 'test'
+  ...
+# Subtest: execute next keeps disabled managed-worktree fresh stories on direct PR preparation
+ok 326 - execute next keeps disabled managed-worktree fresh stories on direct PR preparation
+  ---
+  duration_ms: 1045.945625
+  type: 'test'
+  ...
+# Subtest: execute start keeps fresh-init managed worktrees clean when generated ignore rules are uncommitted
+ok 327 - execute start keeps fresh-init managed worktrees clean when generated ignore rules are uncommitted
+  ---
+  duration_ms: 1875.035709
+  type: 'test'
+  ...
+# Subtest: execute status keeps managed worktree raw diagnostics when VibePro manifest is tracked
+ok 328 - execute status keeps managed worktree raw diagnostics when VibePro manifest is tracked
+  ---
+  duration_ms: 7721.198125
+  type: 'test'
+  ...
+# Subtest: execute start records preferred managed worktree creation failures without blocking the checkout
+ok 329 - execute start records preferred managed worktree creation failures without blocking the checkout
+  ---
+  duration_ms: 1049.008625
+  type: 'test'
+  ...
+# Subtest: execute start records required managed worktree creation failures as a blocked execution DAG
+ok 330 - execute start records required managed worktree creation failures as a blocked execution DAG
+  ---
+  duration_ms: 1118.596458
+  type: 'test'
+  ...
+# Subtest: execute start refuses to reuse an existing worktree on a foreign branch
+ok 331 - execute start refuses to reuse an existing worktree on a foreign branch
+  ---
+  duration_ms: 848.077667
+  type: 'test'
+  ...
+# Subtest: execute start recognizes an existing managed worktree through a symlinked path
+ok 332 - execute start recognizes an existing managed worktree through a symlinked path
+  ---
+  duration_ms: 3480.620167
+  type: 'test'
+  ...
+# Subtest: execute next blocks required managed worktree branch drift
+ok 333 - execute next blocks required managed worktree branch drift
+  ---
+  duration_ms: 2760.426042
+  type: 'test'
+  ...
+# Subtest: execute next does not route PR commands into a stale managed worktree head
+ok 334 - execute next does not route PR commands into a stale managed worktree head
+  ---
+  duration_ms: 2996.11225
+  type: 'test'
+  ...
+# Subtest: execute status treats a normally advanced managed worktree as the current execution head
+ok 335 - execute status treats a normally advanced managed worktree as the current execution head
+  ---
+  duration_ms: 2870.471542
+  type: 'test'
+  ...
+# Subtest: execute status keeps merged delivery without inferring incomplete review evidence
+ok 336 - execute status keeps merged delivery without inferring incomplete review evidence
+  ---
+  duration_ms: 843.719542
+  type: 'test'
+  ...
+# Subtest: execute status does not advance from stale pr lifecycle artifacts
+ok 337 - execute status does not advance from stale pr lifecycle artifacts
+  ---
+  duration_ms: 1101.176875
+  type: 'test'
+  ...
+# Subtest: execute start keeps legacy and disabled worktree modes compatible
+ok 338 - execute start keeps legacy and disabled worktree modes compatible
+  ---
+  duration_ms: 1729.256167
+  type: 'test'
+  ...
+# Subtest: verify record rejects required managed worktree commands from the original checkout
+ok 339 - verify record rejects required managed worktree commands from the original checkout
+  ---
+  duration_ms: 2517.414916
+  type: 'test'
+  ...
+# Subtest: required managed worktree guard blocks protected commands before execute start
+ok 340 - required managed worktree guard blocks protected commands before execute start
+  ---
+  duration_ms: 1061.911625
+  type: 'test'
+  ...
+# Subtest: required managed worktree guard covers review lifecycle, review record, task execute, and pr create
+ok 341 - required managed worktree guard covers review lifecycle, review record, task execute, and pr create
+  ---
+  duration_ms: 6599.640833
+  type: 'test'
+  ...
+# Subtest: required managed worktree copies VibePro control files and allows record commands inside the managed worktree
+ok 342 - required managed worktree copies VibePro control files and allows record commands inside the managed worktree
+  ---
+  duration_ms: 11329.178542
+  type: 'test'
+  ...
+# Subtest: required managed worktree backfills VibePro control files when reusing an existing worktree
+ok 343 - required managed worktree backfills VibePro control files when reusing an existing worktree
+  ---
+  duration_ms: 6773.143792
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them
+ok 344 - story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them
+  ---
+  duration_ms: 1212.906541
+  type: 'test'
+  ...
+# Subtest: GDL-CONTRACT-009 execute merge fails closed when remote origin authority is unavailable
+ok 345 - GDL-CONTRACT-009 execute merge fails closed when remote origin authority is unavailable
+  ---
+  duration_ms: 1061.524667
+  type: 'test'
+  ...
+# Subtest: execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros
+ok 346 - execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros
+  ---
+  duration_ms: 2692.486541
+  type: 'test'
+  ...
+# Subtest: execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros
+ok 347 - execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros
+  ---
+  duration_ms: 1731.358208
+  type: 'test'
+  ...
+# Subtest: AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance
+ok 348 - AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance
+  ---
+  duration_ms: 3439.797833
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector
+ok 349 - story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector
+  ---
+  duration_ms: 1736.614541
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations
+ok 350 - story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations
+  ---
+  duration_ms: 13764.445667
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge
+ok 351 - story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge
+  ---
+  duration_ms: 759.364583
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge
+ok 352 - story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge
+  ---
+  duration_ms: 1000.304334
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge
+ok 353 - story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge
+  ---
+  duration_ms: 6791.891916
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-001 execute merge fails closed before canonical audit when merge commit evidence is missing
+ok 354 - CAA-VERIFY-001 execute merge fails closed before canonical audit when merge commit evidence is missing
+  ---
+  duration_ms: 3771.671667
+  type: 'test'
+  ...
+# Subtest: DRS-SCENARIO-007 provider command and JSON failures persist blocked delivery evidence
+    # Subtest: nonzero provider command remains unverified
+    ok 1 - nonzero provider command remains unverified
+      ---
+      duration_ms: 3360.762791
+      type: 'test'
+      ...
+    # Subtest: malformed provider JSON fails closed with explicit classification
+    ok 2 - malformed provider JSON fails closed with explicit classification
+      ---
+      duration_ms: 4380.965416
+      type: 'test'
+      ...
+    # Subtest: provider command failure preserves a previously observed delivery
+    ok 3 - provider command failure preserves a previously observed delivery
+      ---
+      duration_ms: 3305.181708
+      type: 'test'
+      ...
+    # Subtest: provider JSON failure preserves a previously observed delivery
+    ok 4 - provider JSON failure preserves a previously observed delivery
+      ---
+      duration_ms: 3226.209459
+      type: 'test'
+      ...
+    # Subtest: base fetch failure preserves a previously observed delivery
+    ok 5 - base fetch failure preserves a previously observed delivery
+      ---
+      duration_ms: 2757.315209
+      type: 'test'
+      ...
+    # Subtest: legacy merged artifact is normalized before provider failure preservation
+    ok 6 - legacy merged artifact is normalized before provider failure preservation
+      ---
+      duration_ms: 3400.62775
+      type: 'test'
+      ...
+    # Subtest: initial managed merge post-processing command failure exits one and remains unverified
+    ok 7 - initial managed merge post-processing command failure exits one and remains unverified
+      ---
+      duration_ms: 3647.52375
+      type: 'test'
+      ...
+    # Subtest: post-merge provider command failure preserves identity-bound prior delivery
+    ok 8 - post-merge provider command failure preserves identity-bound prior delivery
+      ---
+      duration_ms: 3467.499333
+      type: 'test'
+      ...
+    # Subtest: post-merge malformed JSON preserves identity-bound prior delivery
+    ok 9 - post-merge malformed JSON preserves identity-bound prior delivery
+      ---
+      duration_ms: 5628.891625
+      type: 'test'
+      ...
+    # Subtest: post-merge base fetch failure preserves identity-bound prior delivery
+    ok 10 - post-merge base fetch failure preserves identity-bound prior delivery
+      ---
+      duration_ms: 4191.752041
+      type: 'test'
+      ...
+    # Subtest: post-merge failure does not preserve a prior delivery with a different selector
+    ok 11 - post-merge failure does not preserve a prior delivery with a different selector
+      ---
+      duration_ms: 4683.2975
+      type: 'test'
+      ...
+    1..11
+ok 355 - DRS-SCENARIO-007 provider command and JSON failures persist blocked delivery evidence
+  ---
+  duration_ms: 42062.663083
+  type: 'test'
+  ...
+# Subtest: DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base before bypassing a stale local gate
+ok 356 - DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base before bypassing a stale local gate
+  ---
+  duration_ms: 7065.441291
+  type: 'test'
+  ...
+# Subtest: DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary
+ok 357 - DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary
+  ---
+  duration_ms: 5449.406083
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute merge preserves observed delivery across execution-state synchronization failure
+ok 358 - DRS-CONTRACT-007 execute merge preserves observed delivery across execution-state synchronization failure
+  ---
+  duration_ms: 4560.076166
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute merge preserves the primary sync failure when follow-up persistence also fails
+ok 359 - DRS-CONTRACT-007 execute merge preserves the primary sync failure when follow-up persistence also fails
+  ---
+  duration_ms: 771.560334
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)
+ok 360 - CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)
+  ---
+  duration_ms: 5974.597291
+  type: 'test'
+  ...
+# Subtest: execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out
+ok 361 - execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out
+  ---
+  duration_ms: 4860.867542
+  type: 'test'
+  ...
+# Subtest: preferred managed worktree warning is recorded on non-PR evidence surfaces
+ok 362 - preferred managed worktree warning is recorded on non-PR evidence surfaces
+  ---
+  duration_ms: 7306.129667
+  type: 'test'
+  ...
+# Subtest: pr prepare surfaces preferred managed worktree warning when run outside the managed worktree
+ok 363 - pr prepare surfaces preferred managed worktree warning when run outside the managed worktree
+  ---
+  duration_ms: 5370.806458
+  type: 'test'
+  ...
+# Subtest: managed worktree gate keeps generated gate DAG acyclic around PR body contract
+ok 364 - managed worktree gate keeps generated gate DAG acyclic around PR body contract
+  ---
+  duration_ms: 4716.238625
+  type: 'test'
+  ...
+# Subtest: managed worktree command context uses current config mode after execution state exists
+ok 365 - managed worktree command context uses current config mode after execution state exists
+  ---
+  duration_ms: 4460.22775
+  type: 'test'
+  ...
+# Subtest: managed worktree command context uses source repo config from an existing managed worktree
+ok 366 - managed worktree command context uses source repo config from an existing managed worktree
+  ---
+  duration_ms: 6719.29675
+  type: 'test'
+  ...
+# Subtest: generated managed worktree pr prepare path keeps execution binding
+ok 367 - generated managed worktree pr prepare path keeps execution binding
+  ---
+  duration_ms: 4763.646666
+  type: 'test'
+  ...
+# Subtest: managed worktree pr prepare does not overwrite a divergent local execution binding
+ok 368 - managed worktree pr prepare does not overwrite a divergent local execution binding
+  ---
+  duration_ms: 4429.903292
+  type: 'test'
+  ...
+# Subtest: execute start quarantines corrupt existing execution state before writing
+ok 369 - execute start quarantines corrupt existing execution state before writing
+  ---
+  duration_ms: 540.545958
+  type: 'test'
+  ...
+# Subtest: execute state reads standalone gate dag with pr gate semantics
+ok 370 - execute state reads standalone gate dag with pr gate semantics
+  ---
+  duration_ms: 3161.817208
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 execute reconcile returns nonzero for canonical persistence failure
+ok 371 - DRS-S-5 execute reconcile returns nonzero for canonical persistence failure
+  ---
+  duration_ms: 737.308833
+  type: 'test'
+  ...
+# Subtest: execute state treats route contract gates as PR blockers
+ok 372 - execute state treats route contract gates as PR blockers
+  ---
+  duration_ms: 2952.774291
+  type: 'test'
+  ...
+# Subtest: execute state preserves waiver-required semantics for noncritical unresolved gates
+ok 373 - execute state preserves waiver-required semantics for noncritical unresolved gates
+  ---
+  duration_ms: 2481.867333
+  type: 'test'
+  ...
+# Subtest: execute reconcile --all-merged recalculates merged story state from artifacts
+ok 374 - execute reconcile --all-merged recalculates merged story state from artifacts
+  ---
+  duration_ms: 857.435666
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 execute reconcile --all-merged discovers only the configured PR route
+ok 375 - DRS-CONTRACT-009 execute reconcile --all-merged discovers only the configured PR route
+  ---
+  duration_ms: 850.575292
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 execute reconcile --all-merged discovers schema 0.2 named PR routes
+ok 376 - DRS-CONTRACT-009 execute reconcile --all-merged discovers schema 0.2 named PR routes
+  ---
+  duration_ms: 852.879958
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute reconcile --all-merged exits non-zero for legacy delivery without reconciliation
+ok 377 - DRS-CONTRACT-007 execute reconcile --all-merged exits non-zero for legacy delivery without reconciliation
+  ---
+  duration_ms: 860.07525
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute reconcile --all-merged uses current local delivery over stale canonical conflict
+ok 378 - DRS-CONTRACT-007 execute reconcile --all-merged uses current local delivery over stale canonical conflict
+  ---
+  duration_ms: 902.345167
+  type: 'test'
+  ...
+# Subtest: execute state treats workflow-heavy gates as critical blockers
+ok 379 - execute state treats workflow-heavy gates as critical blockers
+  ---
+  duration_ms: 2443.846542
+  type: 'test'
+  ...
+# Subtest: execute state treats design quality gates as critical blockers
+ok 380 - execute state treats design quality gates as critical blockers
+  ---
+  duration_ms: 2491.557875
+  type: 'test'
+  ...
+# Subtest: pr prepare requires only final agent review gates; phase reviews are checkpoint-gated
+ok 381 - pr prepare requires only final agent review gates; phase reviews are checkpoint-gated
+  ---
+  duration_ms: 17934.196792
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks timed out required review lifecycle even when review result passed
+ok 382 - pr prepare blocks timed out required review lifecycle even when review result passed
+  ---
+  duration_ms: 5482.856542
+  type: 'test'
+  ...
+# Subtest: pr prepare marks dispatch preflight for running manual shutdown and unverified review evidence
+ok 383 - pr prepare marks dispatch preflight for running manual shutdown and unverified review evidence
+  ---
+  duration_ms: 16110.40075
+  type: 'test'
+  ...
+# Subtest: pr prepare routes every already-closed terminal lifecycle through replacement recovery
+ok 384 - pr prepare routes every already-closed terminal lifecycle through replacement recovery
+  ---
+  duration_ms: 15107.110875
+  type: 'test'
+  ...
+# Subtest: pr prepare marks recorded blocker dispatch preflight and pr ship excludes internal review gates from human judgments
+ok 385 - pr prepare marks recorded blocker dispatch preflight and pr ship excludes internal review gates from human judgments
+  ---
+  duration_ms: 10871.060666
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks timed out workflow checkpoint review lifecycle even when checkpoint result passed
+ok 386 - pr prepare blocks timed out workflow checkpoint review lifecycle even when checkpoint result passed
+  ---
+  duration_ms: 11277.057208
+  type: 'test'
+  ...
+# Subtest: pr prepare advances current review stage after required roles pass despite default missing roles
+ok 387 - pr prepare advances current review stage after required roles pass despite default missing roles
+  ---
+  duration_ms: 3745.876125
+  type: 'test'
+  ...
+# Subtest: verify record promotes gate evidence into the next pr prepare
+ok 388 - verify record promotes gate evidence into the next pr prepare
+  ---
+  duration_ms: 3786.180333
+  type: 'test'
+  ...
+# Subtest: pr body verification checklist checks exact current evidence even when the integration gate uses another command
+ok 389 - pr body verification checklist checks exact current evidence even when the integration gate uses another command
+  ---
+  duration_ms: 3187.943208
+  type: 'test'
+  ...
+# Subtest: pr body final E2E prefers exact e2e evidence over unit workflow summaries
+ok 390 - pr body final E2E prefers exact e2e evidence over unit workflow summaries
+  ---
+  duration_ms: 3357.277292
+  type: 'test'
+  ...
+# Subtest: pr body final E2E prefers current passing e2e-surface evidence over stale or failing evidence
+ok 391 - pr body final E2E prefers current passing e2e-surface evidence over stale or failing evidence
+  ---
+  duration_ms: 3903.011666
+  type: 'test'
+  ...
+# Subtest: pr body final E2E keeps current failing e2e evidence visible over stale pass
+ok 392 - pr body final E2E keeps current failing e2e evidence visible over stale pass
+  ---
+  duration_ms: 3376.370459
+  type: 'test'
+  ...
+# Subtest: pr body renders repo file paths as clickable markdown links
+ok 393 - pr body renders repo file paths as clickable markdown links
+  ---
+  duration_ms: 3001.632041
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects stale verification evidence recorded before a dirty UI change
+ok 394 - pr prepare rejects stale verification evidence recorded before a dirty UI change
+  ---
+  duration_ms: 3313.199875
+  type: 'test'
+  ...
+# Subtest: pr prepare requires story acceptance criteria coverage in E2E specs
+ok 395 - pr prepare requires story acceptance criteria coverage in E2E specs
+  ---
+  duration_ms: 5777.076958
+  type: 'test'
+  ...
+# Subtest: pr prepare reports AC coverage diagnostics and accepts multiline local binding assertions
+ok 396 - pr prepare reports AC coverage diagnostics and accepts multiline local binding assertions
+  ---
+  duration_ms: 5538.967458
+  type: 'test'
+  ...
+# Subtest: pr prepare requires scenario clause coverage in E2E specs
+ok 397 - pr prepare requires scenario clause coverage in E2E specs
+  ---
+  duration_ms: 5957.211292
+  type: 'test'
+  ...
+# Subtest: pr prepare requires Visual QA evidence when UI source changes
+ok 398 - pr prepare requires Visual QA evidence when UI source changes
+  ---
+  duration_ms: 2400.951667
+  type: 'test'
+  ...
+# Subtest: VQG-S-2 pr prepare accepts current visual verification evidence when residual run is absent
+ok 399 - VQG-S-2 pr prepare accepts current visual verification evidence when residual run is absent
+  ---
+  duration_ms: 3205.177291
+  type: 'test'
+  ...
+# Subtest: verify flow requires residual Visual QA evidence for screenshot probes
+ok 400 - verify flow requires residual Visual QA evidence for screenshot probes
+  ---
+  duration_ms: 3414.305
+  type: 'test'
+  ...
+# Subtest: verify flow reports not_recorded reason when screenshots are missing
+ok 401 - verify flow reports not_recorded reason when screenshots are missing
+  ---
+  duration_ms: 1300.081458
+  type: 'test'
+  ...
+# Subtest: verify visual writes residual artifacts accepted by Visual QA Gate
+ok 402 - verify visual writes residual artifacts accepted by Visual QA Gate
+  ---
+  duration_ms: 3137.0875
+  type: 'test'
+  ...
+# Subtest: verify visual custom threshold is honored by Visual QA Gate
+ok 403 - verify visual custom threshold is honored by Visual QA Gate
+  ---
+  duration_ms: 2891.017834
+  type: 'test'
+  ...
+# Subtest: verify visual over-threshold residual yields needs_review and lists exceeding probes
+ok 404 - verify visual over-threshold residual yields needs_review and lists exceeding probes
+  ---
+  duration_ms: 2948.343625
+  type: 'test'
+  ...
+# Subtest: verify visual update-baseline writes a baseline and unchanged rerun converges
+ok 405 - verify visual update-baseline writes a baseline and unchanged rerun converges
+  ---
+  duration_ms: 5163.533667
+  type: 'test'
+  ...
+# Subtest: verify visual reports baseline_missing and does not pass the Visual QA Gate
+ok 406 - verify visual reports baseline_missing and does not pass the Visual QA Gate
+  ---
+  duration_ms: 2978.569084
+  type: 'test'
+  ...
+# Subtest: Visual QA Gate consumes explicit baseline_missing residual status before numeric residuals
+ok 407 - Visual QA Gate consumes explicit baseline_missing residual status before numeric residuals
+  ---
+  duration_ms: 2458.131
+  type: 'test'
+  ...
+# Subtest: Visual QA Gate rejects stale passing residual artifacts from previous heads
+ok 408 - Visual QA Gate rejects stale passing residual artifacts from previous heads
+  ---
+  duration_ms: 2583.483375
+  type: 'test'
+  ...
+# Subtest: VQG-S-3 generic verification does not satisfy Visual QA Gate without explicit markers
+ok 409 - VQG-S-3 generic verification does not satisfy Visual QA Gate without explicit markers
+  ---
+  duration_ms: 3065.060625
+  type: 'test'
+  ...
+# Subtest: VQG-S-6 prose-only Story wrapper evidence does not satisfy Visual QA Gate
+ok 410 - VQG-S-6 prose-only Story wrapper evidence does not satisfy Visual QA Gate
+  ---
+  duration_ms: 2905.490333
+  type: 'test'
+  ...
+# Subtest: VQG-S-4 residual Visual QA evidence remains authoritative over verification fallback
+ok 411 - VQG-S-4 residual Visual QA evidence remains authoritative over verification fallback
+  ---
+  duration_ms: 2902.482333
+  type: 'test'
+  ...
+# Subtest: VQG-S-5 Visual QA critical gate guidance points to residual artifacts
+ok 412 - VQG-S-5 Visual QA critical gate guidance points to residual artifacts
+  ---
+  duration_ms: 2376.132333
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks new API client calls until network-aware evidence exists even when route exists
+ok 413 - pr prepare blocks new API client calls until network-aware evidence exists even when route exists
+  ---
+  duration_ms: 11212.2665
+  type: 'test'
+  ...
+# Subtest: verify record keeps verification evidence valid under concurrent writes
+ok 414 - verify record keeps verification evidence valid under concurrent writes
+  ---
+  duration_ms: 1172.792667
+  type: 'test'
+  ...
+# Subtest: verify record quarantines corrupt verification evidence instead of overwriting it
+ok 415 - verify record quarantines corrupt verification evidence instead of overwriting it
+  ---
+  duration_ms: 510.190792
+  type: 'test'
+  ...
+# Subtest: pr prepare flags requirement contradictions from story invariants and code states
+ok 416 - pr prepare flags requirement contradictions from story invariants and code states
+  ---
+  duration_ms: 2662.698667
+  type: 'test'
+  ...
+# Subtest: pr prepare extracts invariants from story_id matched Spec and ADR sources
+ok 417 - pr prepare extracts invariants from story_id matched Spec and ADR sources
+  ---
+  duration_ms: 2563.717166
+  type: 'test'
+  ...
+# Subtest: pr prepare prefers explicit Spec docs over inferred spec clauses for Spec Gate binding
+ok 418 - pr prepare prefers explicit Spec docs over inferred spec clauses for Spec Gate binding
+  ---
+  duration_ms: 2469.700292
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks unresolved story-relative Spec docs in Spec Gate binding
+ok 419 - pr prepare blocks unresolved story-relative Spec docs in Spec Gate binding
+  ---
+  duration_ms: 2455.196667
+  type: 'test'
+  ...
+# Subtest: pr prepare treats internal spec clauses as coverage for changed source scenario gaps
+ok 420 - pr prepare treats internal spec clauses as coverage for changed source scenario gaps
+  ---
+  duration_ms: 2382.26975
+  type: 'test'
+  ...
+# Subtest: pr prepare classifies implementation guards and documented inherited behavior without product-specific rules
+ok 421 - pr prepare classifies implementation guards and documented inherited behavior without product-specific rules
+  ---
+  duration_ms: 2562.000333
+  type: 'test'
+  ...
+# Subtest: pr prepare resolves requirement REQ-GAP from structured inherited behavior declaration
+ok 422 - pr prepare resolves requirement REQ-GAP from structured inherited behavior declaration
+  ---
+  duration_ms: 2426.592375
+  type: 'test'
+  ...
+# Subtest: pr prepare still flags uncovered product domain branches after generic scope classification
+ok 423 - pr prepare still flags uncovered product domain branches after generic scope classification
+  ---
+  duration_ms: 2737.075541
+  type: 'test'
+  ...
+# Subtest: pr prepare does not initialize or dirty an uninitialized PR branch
+ok 424 - pr prepare does not initialize or dirty an uninitialized PR branch
+  ---
+  duration_ms: 1945.700709
+  type: 'test'
+  ...
+# Subtest: pr prepare help does not run diagnostics or initialize the repository
+ok 425 - pr prepare help does not run diagnostics or initialize the repository
+  ---
+  duration_ms: 0.930625
+  type: 'test'
+  ...
+# Subtest: pr prepare with explicit head excludes unrelated dirty files from changed files and scope
+ok 426 - pr prepare with explicit head excludes unrelated dirty files from changed files and scope
+  ---
+  duration_ms: 2368.45275
+  type: 'test'
+  ...
+# Subtest: pr prepare recommends a clean branch for broad session diffs
+ok 427 - pr prepare recommends a clean branch for broad session diffs
+  ---
+  duration_ms: 2604.408208
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps automatic split advice until a typed atomic scope has current-head reviewer ownership evidence
+ok 428 - pr prepare keeps automatic split advice until a typed atomic scope has current-head reviewer ownership evidence
+  ---
+  duration_ms: 5616.076583
+  type: 'test'
+  ...
+# Subtest: atomic owner map ignores optional roles for both blocking and ownership
+ok 429 - atomic owner map ignores optional roles for both blocking and ownership
+  ---
+  duration_ms: 1.177125
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps every required verification command after current-head reviewers accept an atomic scope
+ok 430 - pr prepare keeps every required verification command after current-head reviewers accept an atomic scope
+  ---
+  duration_ms: 24583.082417
+  type: 'test'
+  ...
+# Subtest: pr prepare materializes a passed split resolution gate when atomic scope accepts reviewable automatic lane advice
+ok 431 - pr prepare materializes a passed split resolution gate when atomic scope accepts reviewable automatic lane advice
+  ---
+  duration_ms: 8818.059333
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps explicit foreign work-item lineage unsafe for atomic scope
+ok 432 - pr prepare keeps explicit foreign work-item lineage unsafe for atomic scope
+  ---
+  duration_ms: 2539.563584
+  type: 'test'
+  ...
+# Subtest: pr prepare accepts a versioned branch merge only when canonical remote topology resolves to a merge parent
+ok 433 - pr prepare accepts a versioned branch merge only when canonical remote topology resolves to a merge parent
+  ---
+  duration_ms: 4985.240875
+  type: 'test'
+  ...
+# Subtest: pr prepare does not trust a spoofed two-parent versioned Story merge
+ok 434 - pr prepare does not trust a spoofed two-parent versioned Story merge
+  ---
+  duration_ms: 2969.575041
+  type: 'test'
+  ...
+# Subtest: pr prepare does not trust a merge-like versioned Story title on a single-parent commit
+ok 435 - pr prepare does not trust a merge-like versioned Story title on a single-parent commit
+  ---
+  duration_ms: 2506.50075
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still blocks missing atomic authority
+ok 436 - TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still blocks missing atomic authority
+  ---
+  duration_ms: 4125.812542
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-002 malformed typed Task state is rejected with repair guidance
+ok 437 - TAR-CLI-002 malformed typed Task state is rejected with repair guidance
+  ---
+  duration_ms: 1562.8235
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-003 disconnected declared repo-control group remains unsafe through the public CLI
+ok 438 - TAR-CLI-003 disconnected declared repo-control group remains unsafe through the public CLI
+  ---
+  duration_ms: 2394.642042
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-004 legacy untyped Task groups remain loadable but cannot authorize repo-control scope
+ok 439 - TAR-CLI-004 legacy untyped Task groups remain loadable but cannot authorize repo-control scope
+  ---
+  duration_ms: 2495.373375
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-005 strict target validation still rejects non-test files outside the selected Task
+ok 440 - TAR-CLI-005 strict target validation still rejects non-test files outside the selected Task
+  ---
+  duration_ms: 1675.943708
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-006 config-only registration exception remains compatible through task-scoped pr prepare
+ok 441 - TAR-CLI-006 config-only registration exception remains compatible through task-scoped pr prepare
+  ---
+  duration_ms: 2367.068584
+  type: 'test'
+  ...
+# Subtest: TAR-INV-004 no-Task independent repo-control remains unsafe for atomic scope
+ok 442 - TAR-INV-004 no-Task independent repo-control remains unsafe for atomic scope
+  ---
+  duration_ms: 2314.466958
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects an incomplete typed atomic scope declaration and preserves split recommendation
+ok 443 - pr prepare rejects an incomplete typed atomic scope declaration and preserves split recommendation
+  ---
+  duration_ms: 4858.748792
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects a long prose-only atomic scope reason without typed dependency boundaries
+ok 444 - pr prepare rejects a long prose-only atomic scope reason without typed dependency boundaries
+  ---
+  duration_ms: 2457.722125
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects malformed or disconnected typed atomic scope dependencies
+ok 445 - pr prepare rejects malformed or disconnected typed atomic scope dependencies
+  ---
+  duration_ms: 2541.572833
+  type: 'test'
+  ...
+# Subtest: pr prepare classifies docs-only PR route and renders the route contract
+ok 446 - pr prepare classifies docs-only PR route and renders the route contract
+  ---
+  duration_ms: 2280.5055
+  type: 'test'
+  ...
+# Subtest: pr prepare emits Definition of Done gate for source changes
+ok 447 - pr prepare emits Definition of Done gate for source changes
+  ---
+  duration_ms: 2374.293417
+  type: 'test'
+  ...
+# Subtest: pr prepare emits Engineering Judgment route, route-specific gates, and DAG connectivity
+ok 448 - pr prepare emits Engineering Judgment route, route-specific gates, and DAG connectivity
+  ---
+  duration_ms: 2223.326458
+  type: 'test'
+  ...
+# Subtest: common judgment spine requires surface-specific evidence instead of generic tests
+ok 449 - common judgment spine requires surface-specific evidence instead of generic tests
+  ---
+  duration_ms: 15059.020459
+  type: 'test'
+  ...
+# Subtest: usage-report metrics changes stay reporting-scoped instead of workflow-gated
+ok 450 - usage-report metrics changes stay reporting-scoped instead of workflow-gated
+  ---
+  duration_ms: 3020.414583
+  type: 'test'
+  ...
+# Subtest: evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts
+ok 451 - evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts
+  ---
+  duration_ms: 14899.286041
+  type: 'test'
+  ...
+# Subtest: explicit verification evidence tokens satisfy judgment axis requirements
+ok 452 - explicit verification evidence tokens satisfy judgment axis requirements
+  ---
+  duration_ms: 8948.068833
+  type: 'test'
+  ...
+# Subtest: structured contract_doc evidence satisfies public contract judgment axis
+ok 453 - structured contract_doc evidence satisfies public contract judgment axis
+  ---
+  duration_ms: 8271.725333
+  type: 'test'
+  ...
+# Subtest: common judgment spine uses optional Graphify impact evidence when available
+ok 454 - common judgment spine uses optional Graphify impact evidence when available
+  ---
+  duration_ms: 7694.572417
+  type: 'test'
+  ...
+# Subtest: CTJ-S-1 pr prepare exposes unavailable code topology context without blocking
+ok 455 - CTJ-S-1 pr prepare exposes unavailable code topology context without blocking
+  ---
+  duration_ms: 5181.964417
+  type: 'test'
+  ...
+# Subtest: CTJ-S-2 code topology evidence activates DAG axes and stays optional in the spine
+ok 456 - CTJ-S-2 code topology evidence activates DAG axes and stays optional in the spine
+  ---
+  duration_ms: 6641.638083
+  type: 'test'
+  ...
+# Subtest: pr prepare emits Senior first scan multi-axis DAG with optional Graphify scope
+ok 457 - pr prepare emits Senior first scan multi-axis DAG with optional Graphify scope
+  ---
+  duration_ms: 15265.817291
+  type: 'test'
+  ...
+# Subtest: judgment axis uses accepted followup instead of passed when evidence is still missing
+ok 458 - judgment axis uses accepted followup instead of passed when evidence is still missing
+  ---
+  duration_ms: 9866.549625
+  type: 'test'
+  ...
+# Subtest: execution topology judgment axis consumes current passed agent review evidence
+ok 459 - execution topology judgment axis consumes current passed agent review evidence
+  ---
+  duration_ms: 39342.756458
+  type: 'test'
+  ...
+# Subtest: judgment axis accepted decision without artifact remains needs evidence
+ok 460 - judgment axis accepted decision without artifact remains needs evidence
+  ---
+  duration_ms: 12357.677
+  type: 'test'
+  ...
+# Subtest: public contract judgment axis blocks generic verification without reviewable expectation evidence
+ok 461 - public contract judgment axis blocks generic verification without reviewable expectation evidence
+  ---
+  duration_ms: 9951.175791
+  type: 'test'
+  ...
+# Subtest: security boundary judgment axis blocks auth changes without negative path evidence
+ok 462 - security boundary judgment axis blocks auth changes without negative path evidence
+  ---
+  duration_ms: 10306.702292
+  type: 'test'
+  ...
+# Subtest: gate evidence classifier normalizes canonical token variants across observation fields
+ok 463 - gate evidence classifier normalizes canonical token variants across observation fields
+  ---
+  duration_ms: 89864.237875
+  type: 'test'
+  ...
+# Subtest: release ops judgment axis blocks operator-facing release changes without owner-visible evidence
+ok 464 - release ops judgment axis blocks operator-facing release changes without owner-visible evidence
+  ---
+  duration_ms: 12449.8495
+  type: 'test'
+  ...
+# Subtest: blocker waiver keeps axis blocked but downgrades the gate from block to accepted followup
+ok 465 - blocker waiver keeps axis blocked but downgrades the gate from block to accepted followup
+  ---
+  duration_ms: 10812.945292
+  type: 'test'
+  ...
+# Subtest: blocker waiver without decision id does not downgrade a blocking judgment axis
+ok 466 - blocker waiver without decision id does not downgrade a blocking judgment axis
+  ---
+  duration_ms: 13108.094
+  type: 'test'
+  ...
+# Subtest: blocker waiver without accepted status does not downgrade a blocking judgment axis
+ok 467 - blocker waiver without accepted status does not downgrade a blocking judgment axis
+  ---
+  duration_ms: 11540.839625
+  type: 'test'
+  ...
+# Subtest: pr prepare treats missing required design diagrams as critical unresolved readiness gates
+ok 468 - pr prepare treats missing required design diagrams as critical unresolved readiness gates
+  ---
+  duration_ms: 9487.270208
+  type: 'test'
+  ...
+# Subtest: pr prepare accepts required design diagrams from tracked story spec json
+ok 469 - pr prepare accepts required design diagrams from tracked story spec json
+  ---
+  duration_ms: 8697.830958
+  type: 'test'
+  ...
+# Subtest: pr prepare accepts required design diagrams from tracked markdown diagrams section
+ok 470 - pr prepare accepts required design diagrams from tracked markdown diagrams section
+  ---
+  duration_ms: 10366.181208
+  type: 'test'
+  ...
+# Subtest: DDP-S-001 DDP-S-002 DDP-S-003: pr prepare surfaces downstream threat_model requirements for authority and contract artifacts
+ok 471 - DDP-S-001 DDP-S-002 DDP-S-003: pr prepare surfaces downstream threat_model requirements for authority and contract artifacts
+  ---
+  duration_ms: 7252.217875
+  type: 'test'
+  ...
+# Subtest: security_trust route enforces the security regression judgment gate with evidence or waiver
+ok 472 - security_trust route enforces the security regression judgment gate with evidence or waiver
+  ---
+  duration_ms: 17801.400625
+  type: 'test'
+  ...
+# Subtest: high-risk review pass requires inspection evidence in PR gate
+ok 473 - high-risk review pass requires inspection evidence in PR gate
+  ---
+  duration_ms: 17330.492583
+  type: 'test'
+  ...
+# Subtest: agent_workflow route enforces the evidence lifecycle judgment gate with evidence or waiver
+ok 474 - agent_workflow route enforces the evidence lifecycle judgment gate with evidence or waiver
+  ---
+  duration_ms: 19668.466458
+  type: 'test'
+  ...
+# Subtest: secret/credential surface change enforces the safety gate with a decision or waiver
+ok 475 - secret/credential surface change enforces the safety gate with a decision or waiver
+  ---
+  duration_ms: 16323.796459
+  type: 'test'
+  ...
+# Subtest: safety gate stays absent for non-secret changes and env templates
+ok 476 - safety gate stays absent for non-secret changes and env templates
+  ---
+  duration_ms: 10344.617875
+  type: 'test'
+  ...
+# Subtest: deploy verification gate fires for risk-bearing changes with deploy targets and is waivable
+ok 477 - deploy verification gate fires for risk-bearing changes with deploy targets and is waivable
+  ---
+  duration_ms: 21789.61075
+  type: 'test'
+  ...
+# Subtest: deploy verification gate is absent without deploy targets or for low-risk changes
+ok 478 - deploy verification gate is absent without deploy targets or for low-risk changes
+  ---
+  duration_ms: 21467.728625
+  type: 'test'
+  ...
+# Subtest: architecture blueprint gate blocks scheduler stories missing scheduling/infra dimensions (issue \#128)
+ok 479 - architecture blueprint gate blocks scheduler stories missing scheduling/infra dimensions (issue \#128)
+  ---
+  duration_ms: 12745.972209
+  type: 'test'
+  ...
+# Subtest: architecture blueprint gate is satisfied when the architecture doc covers the dimensions, and absent for non-scheduler stories
+ok 480 - architecture blueprint gate is satisfied when the architecture doc covers the dimensions, and absent for non-scheduler stories
+  ---
+  duration_ms: 10932.464708
+  type: 'test'
+  ...
+# Subtest: pr prepare adds mirror route traceability and CI gates before PR creation
+ok 481 - pr prepare adds mirror route traceability and CI gates before PR creation
+  ---
+  duration_ms: 13593.745959
+  type: 'test'
+  ...
+# Subtest: pr prepare resolves committed VibePro artifact policy through decision records
+ok 482 - pr prepare resolves committed VibePro artifact policy through decision records
+  ---
+  duration_ms: 6655.173
+  type: 'test'
+  ...
+# Subtest: pr create blocks non-workspace dirty files before creating push-only PR evidence
+ok 483 - pr create blocks non-workspace dirty files before creating push-only PR evidence
+  ---
+  duration_ms: 3008.1465
+  type: 'test'
+  ...
+# Subtest: pr prepare treats split repo-control and e2e gate lanes as reviewable
+ok 484 - pr prepare treats split repo-control and e2e gate lanes as reviewable
+  ---
+  duration_ms: 6652.563042
+  type: 'test'
+  ...
+# Subtest: pr prepare avoids masked E2E scripts and detects type-check script names
+ok 485 - pr prepare avoids masked E2E scripts and detects type-check script names
+  ---
+  duration_ms: 3965.227584
+  type: 'test'
+  ...
+# Subtest: story task generator groups admin API routes by domain
+ok 486 - story task generator groups admin API routes by domain
+  ---
+  duration_ms: 1.6755
+  type: 'test'
+  ...
+# Subtest: local dev scanner detects heavy dev scripts and task generator taskifies performance findings
+ok 487 - local dev scanner detects heavy dev scripts and task generator taskifies performance findings
+  ---
+  duration_ms: 7.077042
+  type: 'test'
+  ...
+# Subtest: diagnose emits local dev performance findings and tasks
+ok 488 - diagnose emits local dev performance findings and tasks
+  ---
+  duration_ms: 1068.091542
+  type: 'test'
+  ...
+# Subtest: story task generator keeps resolved finding tasks as done after re-diagnosis
+ok 489 - story task generator keeps resolved finding tasks as done after re-diagnosis
+  ---
+  duration_ms: 0.583291
+  type: 'test'
+  ...
+# Subtest: story task generator splits DB findings by route and service domain
+ok 490 - story task generator splits DB findings by route and service domain
+  ---
+  duration_ms: 1.282667
+  type: 'test'
+  ...
+# Subtest: api boundary treats authorization header with environment secret as route protection
+ok 491 - api boundary treats authorization header with environment secret as route protection
+  ---
+  duration_ms: 3.802333
+  type: 'test'
+  ...
+# Subtest: api boundary follows imported auth helper references for route protection
+ok 492 - api boundary follows imported auth helper references for route protection
+  ---
+  duration_ms: 8.105792
+  type: 'test'
+  ...
+# Subtest: api boundary follows nested imported auth helper references for route protection
+ok 493 - api boundary follows nested imported auth helper references for route protection
+  ---
+  duration_ms: 4.861
+  type: 'test'
+  ...
+# Subtest: api boundary follows imported debug access gate helpers for route protection
+ok 494 - api boundary follows imported debug access gate helpers for route protection
+  ---
+  duration_ms: 6.833292
+  type: 'test'
+  ...
+# Subtest: api boundary detects webhook signature checks for Svix and token based routes
+ok 495 - api boundary detects webhook signature checks for Svix and token based routes
+  ---
+  duration_ms: 8.472417
+  type: 'test'
+  ...
+# Subtest: api boundary follows imported provider webhook signature helpers
+ok 496 - api boundary follows imported provider webhook signature helpers
+  ---
+  duration_ms: 7.941375
+  type: 'test'
+  ...
+# Subtest: network contract scanner detects ExampleTravel-style API route regression and clears after route exists
+ok 497 - network contract scanner detects ExampleTravel-style API route regression and clears after route exists
+  ---
+  duration_ms: 1521.64875
+  type: 'test'
+  ...
+# Subtest: network contract scanner ignores external absolute URLs that contain /api/
+ok 498 - network contract scanner ignores external absolute URLs that contain /api/
+  ---
+  duration_ms: 822.253084
+  type: 'test'
+  ...
+# Subtest: pr prepare blocks missing route for newly introduced API client call
+ok 499 - pr prepare blocks missing route for newly introduced API client call
+  ---
+  duration_ms: 4449.526
+  type: 'test'
+  ...
+# Subtest: task commands list show and create a pre-fix briefing without mutating repository code
+ok 500 - task commands list show and create a pre-fix briefing without mutating repository code
+  ---
+  duration_ms: 1181.189666
+  type: 'test'
+  ...
+# Subtest: diagnose binds runs to selected story and brainbase prefers the selected story run
+ok 501 - diagnose binds runs to selected story and brainbase prefers the selected story run
+  ---
+  duration_ms: 1823.138583
+  type: 'test'
+  ...
+# Subtest: story runs and status show selected story diagnosis history
+ok 502 - story runs and status show selected story diagnosis history
+  ---
+  duration_ms: 1834.873334
+  type: 'test'
+  ...
+# Subtest: story report creates a Story diagnosis report artifact
+ok 503 - story report creates a Story diagnosis report artifact
+  ---
+  duration_ms: 1094.986458
+  type: 'test'
+  ...
+# Subtest: story diagnose runs the local story workflow in one command
+ok 504 - story diagnose runs the local story workflow in one command
+  ---
+  duration_ms: 1018.22
+  type: 'test'
+  ...
+# Subtest: story diagnose surfaces missing Journey context for UI stories (INV-SJD-1, INV-SJD-2)
+ok 505 - story diagnose surfaces missing Journey context for UI stories (INV-SJD-1, INV-SJD-2)
+  ---
+  duration_ms: 1250.964167
+  type: 'test'
+  ...
+# Subtest: story diagnose distinguishes machine-derived and curated Journey artifacts (INV-SJD-3)
+ok 506 - story diagnose distinguishes machine-derived and curated Journey artifacts (INV-SJD-3)
+  ---
+  duration_ms: 1747.334625
+  type: 'test'
+  ...
+# Subtest: story diagnose does not add Journey friction for backend stories (INV-SJD-4)
+ok 507 - story diagnose does not add Journey friction for backend stories (INV-SJD-4)
+  ---
+  duration_ms: 1270.894542
+  type: 'test'
+  ...
+# Subtest: diagnose preserves plan-derived story tasks and writes run tasks separately
+ok 508 - diagnose preserves plan-derived story tasks and writes run tasks separately
+  ---
+  duration_ms: 1488.220042
+  type: 'test'
+  ...
+# Subtest: status reports an uninitialized repository without creating a workspace
+ok 509 - status reports an uninitialized repository without creating a workspace
+  ---
+  duration_ms: 1.649375
+  type: 'test'
+  ...
+# Subtest: status reports initialized repositories with no active stories
+ok 510 - status reports initialized repositories with no active stories
+  ---
+  duration_ms: 1018.196083
+  type: 'test'
+  ...
+# Subtest: status surfaces doctor maintenance before the next workflow command
+ok 511 - status surfaces doctor maintenance before the next workflow command
+  ---
+  duration_ms: 1017.555958
+  type: 'test'
+  ...
+# Subtest: status reports repository diagnosis state as text and json
+ok 512 - status reports repository diagnosis state as text and json
+  ---
+  duration_ms: 2467.209125
+  type: 'test'
+  ...
+# Subtest: SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage report aggregates subagent ROI with VibePro artifacts, optional logs, and localized text
+ok 513 - SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage report aggregates subagent ROI with VibePro artifacts, optional logs, and localized text
+  ---
+  duration_ms: 1014.737167
+  type: 'test'
+  ...
+# Subtest: usage report warns when an empty linked worktree may hide artifacts in another checkout
+ok 514 - usage report warns when an empty linked worktree may hide artifacts in another checkout
+  ---
+  duration_ms: 1397.1285
+  type: 'test'
+  ...
+# Subtest: diagnose creates a run, evidence, reports, and updates the manifest
+ok 515 - diagnose creates a run, evidence, reports, and updates the manifest
+  ---
+  duration_ms: 1714.918084
+  type: 'test'
+  ...
+# Subtest: diagnose scopes requirement consistency to inferred spec code refs for selected story
+ok 516 - diagnose scopes requirement consistency to inferred spec code refs for selected story
+  ---
+  duration_ms: 1541.102959
+  type: 'test'
+  ...
+# Subtest: diagnose creates static site evidence and a static site report under the run directory
+ok 517 - diagnose creates static site evidence and a static site report under the run directory
+  ---
+  duration_ms: 1953.612083
+  type: 'test'
+  ...
+# Subtest: diagnose ignores gitignored env files and downgrades variable secret references
+ok 518 - diagnose ignores gitignored env files and downgrades variable secret references
+  ---
+  duration_ms: 3036.755917
+  type: 'test'
+  ...
+# Subtest: diagnose profiles a Next.js repository and selects applicable checks without static site entry findings
+ok 519 - diagnose profiles a Next.js repository and selects applicable checks without static site entry findings
+  ---
+  duration_ms: 4038.994375
+  type: 'test'
+  ...
+# Subtest: diagnose records refactoring delta against the previous story run
+ok 520 - diagnose records refactoring delta against the previous story run
+  ---
+  duration_ms: 2445.381
+  type: 'test'
+  ...
+# Subtest: brainbase creates an import state from the latest VibePro manifest run
+ok 521 - brainbase creates an import state from the latest VibePro manifest run
+  ---
+  duration_ms: 1342.408458
+  type: 'test'
+  ...
+# Subtest: brainbase import state supports multiple stories with NocoDB horizon, view, period, and dates
+ok 522 - brainbase import state supports multiple stories with NocoDB horizon, view, period, and dates
+  ---
+  duration_ms: 1568.583833
+  type: 'test'
+  ...
+# Subtest: brainbase sync-stories updates config stories from NocoDB Story records before import
+ok 523 - brainbase sync-stories updates config stories from NocoDB Story records before import
+  ---
+  duration_ms: 1749.595834
+  type: 'test'
+  ...
+# Subtest: brainbase publish-status replaces the VibePro diagnosis section in the NocoDB Story description
+ok 524 - brainbase publish-status replaces the VibePro diagnosis section in the NocoDB Story description
+  ---
+  duration_ms: 1451.764667
+  type: 'test'
+  ...
+# Subtest: brainbase publish-status writes backup and result artifacts after verified NocoDB update
+ok 525 - brainbase publish-status writes backup and result artifacts after verified NocoDB update
+  ---
+  duration_ms: 1234.653125
+  type: 'test'
+  ...
+# Subtest: brainbase publish-status dry-run writes preview artifacts without patching NocoDB
+ok 526 - brainbase publish-status dry-run writes preview artifacts without patching NocoDB
+  ---
+  duration_ms: 1246.133542
+  type: 'test'
+  ...
+# Subtest: brainbase publish-status dry-run can target an explicit story id
+ok 527 - brainbase publish-status dry-run can target an explicit story id
+  ---
+  duration_ms: 1530.637875
+  type: 'test'
+  ...
+# Subtest: brainbase publish-status fails when explicit story id is not in import state
+ok 528 - brainbase publish-status fails when explicit story id is not in import state
+  ---
+  duration_ms: 1242.176042
+  type: 'test'
+  ...
+# Subtest: story derive supports modular-web preset for non Next.js layouts
+ok 529 - story derive supports modular-web preset for non Next.js layouts
+  ---
+  duration_ms: 402.491458
+  type: 'test'
+  ...
+# Subtest: story derive does not leak next-app product stories into modular-web preset
+ok 530 - story derive does not leak next-app product stories into modular-web preset
+  ---
+  duration_ms: 388.423666
+  type: 'test'
+  ...
+# Subtest: story derive uses salestailor preset without next-app product story leakage
+ok 531 - story derive uses salestailor preset without next-app product story leakage
+  ---
+  duration_ms: 385.99225
+  type: 'test'
+  ...
+# Subtest: story derive emits story_candidates clustering uncovered files
+ok 532 - story derive emits story_candidates clustering uncovered files
+  ---
+  duration_ms: 289.627583
+  type: 'test'
+  ...
+# Subtest: modular-web preset coveragePatterns absorb broader paths into active stories
+ok 533 - modular-web preset coveragePatterns absorb broader paths into active stories
+  ---
+  duration_ms: 346.001666
+  type: 'test'
+  ...
+# Subtest: brainbase preset emits semantically separated active stories
+ok 534 - brainbase preset emits semantically separated active stories
+  ---
+  duration_ms: 264.587292
+  type: 'test'
+  ...
+# Subtest: story derive surfaces domain subdirectories as separate candidates
+ok 535 - story derive surfaces domain subdirectories as separate candidates
+  ---
+  duration_ms: 253.895875
+  type: 'test'
+  ...
+# Subtest: story derive omits singletons from story_candidates
+ok 536 - story derive omits singletons from story_candidates
+  ---
+  duration_ms: 281.882833
+  type: 'test'
+  ...
+# Subtest: story derive suppresses next-app product stories for non-web repositories by default
+ok 537 - story derive suppresses next-app product stories for non-web repositories by default
+  ---
+  duration_ms: 311.288625
+  type: 'test'
+  ...
+# Subtest: story derive keeps next-app preset behavior when preset is unset
+ok 538 - story derive keeps next-app preset behavior when preset is unset
+  ---
+  duration_ms: 300.0075
+  type: 'test'
+  ...
+# Subtest: story derive uses document evidence without weak non-web code paths
+ok 539 - story derive uses document evidence without weak non-web code paths
+  ---
+  duration_ms: 260.231458
+  type: 'test'
+  ...
+# Subtest: story contract flags ambiguous internal authorization documents before product auth implementation
+ok 540 - story contract flags ambiguous internal authorization documents before product auth implementation
+  ---
+  duration_ms: 313.559167
+  type: 'test'
+  ...
+# Subtest: pr prepare --strict requires --task option
+ok 541 - pr prepare --strict requires --task option
+  ---
+  duration_ms: 1921.654292
+  type: 'test'
+  ...
+# Subtest: pr prepare --strict rejects when task artifacts are missing
+ok 542 - pr prepare --strict rejects when task artifacts are missing
+  ---
+  duration_ms: 1842.67075
+  type: 'test'
+  ...
+# Subtest: --version prints the package version
+ok 543 - --version prints the package version
+  ---
+  duration_ms: 4.064292
+  type: 'test'
+  ...
+# Subtest: package metadata and README are ready for Apache-2.0 OSS publication
+ok 544 - package metadata and README are ready for Apache-2.0 OSS publication
+  ---
+  duration_ms: 4.860334
+  type: 'test'
+  ...
+# Subtest: npm dry-run package excludes VibePro workspace and internal artifacts
+ok 545 - npm dry-run package excludes VibePro workspace and internal artifacts
+  ---
+  duration_ms: 2255.847791
+  type: 'test'
+  ...
+# Subtest: doctor detects missing .vibepro/ entry in .gitignore and fixes it
+ok 546 - doctor detects missing .vibepro/ entry in .gitignore and fixes it
+  ---
+  duration_ms: 2277.316
+  type: 'test'
+  ...
+# Subtest: doctor --fix creates .gitignore when it is absent
+ok 547 - doctor --fix creates .gitignore when it is absent
+  ---
+  duration_ms: 1465.628
+  type: 'test'
+  ...
+# Subtest: story report writes index.html and links resolve to latest run artifacts
+ok 548 - story report writes index.html and links resolve to latest run artifacts
+  ---
+  duration_ms: 1594.307709
+  type: 'test'
+  ...
+# Subtest: vibepro commands only write files under .vibepro/ in the target repo
+ok 549 - vibepro commands only write files under .vibepro/ in the target repo
+  ---
+  duration_ms: 1378.894667
+  type: 'test'
+  ...
+# Subtest: env graph command runs end-to-end and derives an environment graph
+ok 550 - env graph command runs end-to-end and derives an environment graph
+  ---
+  duration_ms: 808.10925
+  type: 'test'
+  ...
+1..550
+# tests 561
+# suites 0
+# pass 561
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1506194.510666

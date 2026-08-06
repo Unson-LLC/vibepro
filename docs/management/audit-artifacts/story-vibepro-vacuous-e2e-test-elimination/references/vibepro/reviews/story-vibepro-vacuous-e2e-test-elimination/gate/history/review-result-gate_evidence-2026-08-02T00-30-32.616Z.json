@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Independent fresh-context re-review confirming both medium findings from the previous round are substantively closed, not relabelled. The reviewer recomputed all four content_binding.surface_hash values and every per-file sha256 and size, all matching byte-for-byte. For AC-3 and AC-4 it read and executed the newly bound files (7/7 pass), proved with a scratch fixture that node --test genuinely discovers test/e2e/**/*.test.js so the unit lane really runs them, and confirmed the branches exist at src/execution-state.js:780 and src/managed-worktree-gate.js:32,56. It located a pre-re-record snapshot the previous round had reported as nonexistent, embedded in pr-prepare.json at .pr_context.verification_evidence.commands[], which enabled a byte-level drop-detection diff: no true load-bearing claim was dropped. It also demonstrated that stripping the AC-N prefixes is harmless to acceptance-criterion coverage because buildVerificationE2eAcceptanceCoverage does not read targets. Five low findings remain, none blocking, all accepted without fix. The reviewer explicitly noted that nothing in the Story, decision records or review request attempted to steer its verdict.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "phantom-missing-files-from-prose-targets",
+      "detail": "content_binding.missing_files still records non-paths derived from the first whitespace token of prose targets: e2e has AC-1, and unit has AC-3 and AC-4. Inert for freshness because evaluateContentBinding re-snapshots only binding.surface_files and never re-evaluates recorded missing_files, but it persists a reader-facing claim that files are missing when none are."
+    },
+    {
+      "severity": "low",
+      "id": "e2e-binding-omits-files-its-own-assertions-depend-on",
+      "detail": "The e2e lane binds the three files it directly runs or imports, but its assertions also depend on the two test files it spawns as children, the six replacement suites named in REPLACEMENT_COVERAGE for ac:2, and the Story markdown that the final test parses and requires to yield exactly six VET criteria. The unit lane independently binds the two spawned files, so docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md is the only load-bearing dependency no lane binds: an edit to its Acceptance Criteria section could invalidate a passing assertion while every record still evaluates as current."
+    },
+    {
+      "severity": "low",
+      "id": "unit-scenario-carries-uncited-adjudication-claim",
+      "detail": "The unit boundary_condition scenario states a mutation result that npm test did not produce, namely that an independent adjudicator mutation-proved AC-3 and AC-4. The reviewer verified the claim is accurate and traceable to the adjudication artifact at head 55131e55, but the record cites no artifact path for it, so a reader cannot trace it from the record alone."
+    },
+    {
+      "severity": "low",
+      "id": "unit-log-truncation-hides-ac3-ac4-evidence",
+      "detail": "Carried over and still true. unit.log kept the last 262144 of 559233 bytes, honestly disclosed as log_truncated true; the retained portion starts at ok 1208 and contains neither AC-3 nor AC-4 test name. The substance is confirmable from e2e.log lines 147-153 and by rerunning the two files directly, which the reviewer did (7/7 pass)."
+    },
+    {
+      "severity": "low",
+      "id": "pr-prepare-artifact-predates-the-re-records",
+      "detail": "pr-prepare.json was created 2026-08-01T16:58:04Z, before both the unit re-record and the e2e re-record, so its gate_status and acceptance_e2e_coverage describe the superseded records. vibepro pr prepare must be rerun before gate readiness can be read as reflecting the corrected evidence."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "e2e-content-binding-omits-its-own-acceptance-spec",
+      "disposition": "accepted",
+      "resolved_by": [
+        "the e2e lane now binds test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts and scripts/run-e2e-ts-specs.mjs as bare paths"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "no-durable-pre-re-record-snapshot-for-drop-detection",
+      "disposition": "accepted",
+      "resolved_by": [
+        "superseded, the pre-re-record targets and scenarios are durably embedded in pr-prepare.json at .pr_context.verification_evidence.commands[], which made a byte-level drop-detection diff possible"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "unit-ac3-ac4-bound-to-non-covering-test-file",
+      "disposition": "accepted",
+      "resolved_by": [
+        "the unit lane now binds test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js and test/e2e/story-vibepro-managed-worktree-gate-main.test.js, both verified to execute the AC-3 and AC-4 branches"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Recomputed all four content_binding surface_hash values plus every per-file sha256 and size and confirmed byte-for-byte match; read and executed the two newly bound AC-3/AC-4 test files (7/7 pass); built a scratch node --test discovery fixture outside the repo to prove test/e2e/**/*.test.js is discovered by the unit lane; confirmed the product branches at src/execution-state.js:780 and src/managed-worktree-gate.js:32,56; read src/content-binding.js in full and src/pr-manager.js lines 6880-7160 to establish that missing_files is inert for freshness and that acceptance-criterion coverage does not read targets; and diffed the recorded targets and scenarios against the pre-re-record snapshot embedded in pr-prepare.json to test for dropped claims. Also ran the lint (70/70, exit 0) and npm run typecheck (exit 0).",
+    "evidence": null,
+    "inputs": [
+      "src/content-binding.js",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts",
+      "scripts/run-e2e-ts-specs.mjs",
+      "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md"
+    ]
+  },
+  "judgment_delta": [
+    "Moved the two medium content-binding defects from open to closed on independently recomputed hashes and executed proof that each newly bound file participates in the claim attributed to it, and converted the previous round's undecidable drop-detection question into a byte-level negative result by locating a durable pre-re-record snapshot."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "expected_root": null,
+    "expected_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "current_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "expected_root": null,
+      "expected_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "current_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T00:30:32.616Z",
+  "git_context": {
+    "head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "current_branch": "claude/vacuous-e2e-deletions",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T00:30:32.589Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+        "sha256": "06cf11c93bae0c86476a8fcec56e87113b0c8a4cc1eb9fbe05e29659aca75dbe",
+        "size": 17293
+      },
+      {
+        "path": "scripts/run-e2e-ts-specs.mjs",
+        "sha256": "8844dbc5ddc1c91628a262de2b0e0a3bd28f41075adc2f512ea6e0b90b6087ec",
+        "size": 2954
+      },
+      {
+        "path": "src/content-binding.js",
+        "sha256": "795232311861842f9663b4b4d902d30edeab4ac7ff05759b9dfff626736b5d10",
+        "size": 8208
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "65960f6c327e68b9d5496283081444b16fddde35548be3a037280478db4dc6a1",
+        "size": 729480
+      },
+      {
+        "path": "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts",
+        "sha256": "e6fce06cfdf064d4109aea3348aa44bcb43592187c95bfc2df5d6ef9bc10ebcc",
+        "size": 18117
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "7d30603ffb7444cb17dbb260f96781129c1819b1e8cbc7d735aab3fc5ddacf2d"
+  },
+  "source_fingerprint": "74cba7333e18f649aeb48bed916e94aac7b5646d8a6541a1ede22f11e1a09934",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aea4e8286a10b782e",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "aea4e8286a10b782e",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent returned its final report and terminated; verdict pass with 5 low findings",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "aea4e8286a10b782e",
+      "implementation_session_id": "70ea817c-ee56-48c0-ab7c-612da8629872",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

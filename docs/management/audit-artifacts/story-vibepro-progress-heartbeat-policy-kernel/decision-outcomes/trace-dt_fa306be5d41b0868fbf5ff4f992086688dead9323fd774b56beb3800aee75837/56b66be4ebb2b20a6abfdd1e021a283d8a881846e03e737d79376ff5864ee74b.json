@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "ledger_path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_fa306be5d41b0868fbf5ff4f992086688dead9323fd774b56beb3800aee75837"
+  },
+  "parent_revision_fingerprint": "ded2db4f2132bd88aa028b78c604f40c5dec852d0fddd56b4a294419a5dea1b6",
+  "revision_fingerprint": "56b66be4ebb2b20a6abfdd1e021a283d8a881846e03e737d79376ff5864ee74b",
+  "trace": {
+    "decision_trace_id": "dt_fa306be5d41b0868fbf5ff4f992086688dead9323fd774b56beb3800aee75837",
+    "collision_group": null,
+    "trace_source_ref": "tsr_938b7729956c6a8f36b634a3be99ca13fbfb6341513efb2ac8b6c4f5c54d5e4c",
+    "normalized_subject_key": "gate:vibepro_artifact_policy",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.json",
+      "native_id": "decision-1785671249743-fb4b39f9",
+      "digest": "ebea9ff5e8fd6079e4c01d1d5e9fbee2e8e9949062bbf38ee84544f25c148ed6",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+    "parent_revision_fingerprint": "ded2db4f2132bd88aa028b78c604f40c5dec852d0fddd56b4a294419a5dea1b6",
+    "revision_fingerprint": "56b66be4ebb2b20a6abfdd1e021a283d8a881846e03e737d79376ff5864ee74b",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_fa306be5d41b0868fbf5ff4f992086688dead9323fd774b56beb3800aee75837"
+        },
+        "parent_revision_fingerprint": "bd90a4eca5ff443df81c3c7056fa9ae71ae2ccbd59db443719ae5dbe1f0c82ef"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 408,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/408",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "bc722efef60c61c4ff4c58a93321e294a92c571d",
+        "status": "merged",
+        "merged_at": "2026-08-04T04:40:27Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

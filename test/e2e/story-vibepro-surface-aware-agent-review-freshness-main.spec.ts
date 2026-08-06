@@ -56,7 +56,7 @@ test('story-vibepro-surface-aware-agent-review-freshness AC-6 dirty inspection p
 
 test('story-vibepro-surface-aware-agent-review-freshness AC-7 S-003 explicit strict HEAD compatibility remains enforced', async () => {
   const { stdout } = await contractRun;
-  assert.match(stdout, /review strict HEAD CLI override requires and records an explicit reason/);
+  assert.match(stdout, /review strict HEAD CLI override requires an explicit reason before authorization is even checked/);
 });
 
 test('story-vibepro-surface-aware-agent-review-freshness AC-8 contract integration and E2E matrix completes without failures', async () => {

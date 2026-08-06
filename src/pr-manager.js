@@ -546,6 +546,25 @@ export async function preparePullRequest(repoRoot, options = {}) {
   reconcileGateDagOutcomeSummary(prContext.gate_dag);
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  // Shadow stage (CDL-S-7/S-8, story-vibepro-conformance-delta-ledger): derive-only, info-only
+  // base/head architecture conformance delta. Must run before load_target_architecture_context so
+  // .vibepro/architecture/conformance/conformance.json exists for that stage to read. See the
+  // runArchitectureConformanceDeltaStage doc comment for why this calls an injected function
+  // instead of importing src/architecture-conformance-delta.js.
+  const architectureConformanceDelta = await progress.stage(
+    'architecture_conformance_delta',
+    () => runArchitectureConformanceDeltaStage(root, {
+      baseRef: reviewGit.base_ref,
+      headRef: reviewGit.head_sha,
+      runner: options.conformanceDelta ?? null,
+      persist: workspace.initialized
+    })
+  );
+  prContext.gate_dag.nodes.push(buildArchitectureConformanceDeltaGate(architectureConformanceDelta));
+  prContext.gate_dag.summary.architecture_conformance_delta = {
+    status: architectureConformanceDelta.status,
+    reason: architectureConformanceDelta.reason ?? null
+  };
   const targetArchitecture = await progress.stage(
     'load_target_architecture_context',
     () => loadTargetArchitectureContext(root)
@@ -2401,7 +2420,18 @@ function buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg) {
   return `vibepro review authorize . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --review-kind preflight --closes-risk ${shellQuote(`complete ${stage}:${roleArg} independent review`)} --expected-judgment-delta ${shellQuote(`resolve ${stage}:${roleArg} review state from current evidence`)} --json`;
 }
 
-export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent', agentSystem = 'codex' } = {}) {
+// A recorded review's strict_head content_binding is not, by itself, proof
+// that re-recording with --strict-head-binding would still be authorized:
+// the binding may be a legacy unauthorized cli_override from before this
+// guard existed. The recorded freshness_policy.source is the durable signal
+// of *why* it was strict, so remediation commands trust that instead of the
+// content_binding mode. See story-vibepro-strict-head-binding-origin-guard.
+export function isRecordedStrictHeadStillAuthorized(freshnessPolicy) {
+  return freshnessPolicy?.effective_mode === 'strict_head'
+    && ['role_policy', 'validation_sequence'].includes(freshnessPolicy?.source);
+}
+
+export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { strictHeadAuthorized = false, identity = 'agent', agentSystem = 'codex' } = {}) {
   const command = [
     'vibepro review record .',
     '--id',
@@ -2427,7 +2457,7 @@ export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { cont
     '--agent-closed',
     `--agent-close-evidence ${shellQuote(`<${identity}-close-evidence>`)}`
   ].join(' ');
-  if (contentBinding?.mode !== 'strict_head') return command;
+  if (!strictHeadAuthorized) return command;
   return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
 
@@ -2961,6 +2991,9 @@ function formatExecutionGateAction(gate) {
   }
   if (gate.id === 'gate:safety_secret_surface') {
     return `Record a secret_exposure decision (\`vibepro decision record --type secret_exposure --secret-location <ref> --secret-action redacted|rotated|revoked|false_positive\`) or a waiver against gate:safety_secret_surface: ${gate.reason ?? gate.status}`;
+  }
+  if (gate.id === 'gate:uiux_intake_judgment') {
+    return `Record the intake applicability judgment: run \`vibepro uiux intake validate . --id <story-id>\` for UI/UX intents, or \`vibepro decision record . --id <story-id> --type intake_not_applicable --summary <text> --reason <why intake does not apply>\` when the story has no UI/UX intent: ${gate.reason ?? gate.status}`;
   }
   if (gate.id === 'gate:deploy_verification') {
     return `Record current-bound deploy/smoke/health evidence (\`vibepro verify record ...\`) or a waiver against gate:deploy_verification (\`vibepro decision record --source gate:deploy_verification --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
@@ -4193,49 +4226,6 @@ function renderConciseVerificationChecklist(commands, gateDag, verificationEvide
     .join('\n') || '- [ ] 手動確認または対象テストを追記する';
 }
 
-function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan }) {
-  const executionGate = prContext.execution_gate;
-  const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
-  const warnings = collectReleaseDecisionWarningGates(prContext.gate_dag);
-  const decision = buildHumanMergeDecision({ executionGate, unresolved, scope });
-  const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
-  const storyLabel = formatPrStoryLabel(story, prContext.story_source);
-  const reviewQuestion = buildHumanReviewQuestion({ source: prContext.story_source, fileGroups });
-  const decisionGraph = renderHumanDecisionGraph({
-    source: prContext.story_source,
-    fileGroups,
-    gateDag: prContext.gate_dag,
-    splitPlan,
-    git
-  });
-  const engineeringReasoning = renderEngineeringJudgmentReasoning({
-    source: prContext.story_source,
-    fileGroups,
-    gateDag: prContext.gate_dag,
-    prContext,
-    git
-  });
-  const gateNote = buildHumanGateNote(unresolved, warnings);
-  const scopeNote = buildScopeDecisionNote(scope, splitPlan);
-  const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
-  return `## このPRで決めたいこと
-- このPRで閉じる問い: ${reviewQuestion}
-- Story: ${storyLabel}
-- Engineering Judgment: ${formatEngineeringJudgmentForHuman(prContext.engineering_judgment)}
-- PR Route: ${formatPrRouteForHuman(prContext.pr_route)}
-- 判断: ${decision}
-- レビュー入口: ${primaryReviewAreas}
-- Gate状況: ${gateNote}
-- 管理worktree: ${managedWorktreeStatus}
-- Scope判断: ${scopeNote}
-- 変更規模: ${git.changed_files.length} files
-
-${engineeringReasoning}
-
-### 判断グラフ
-${decisionGraph}`;
-}
-
 function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificationEvidence, currentHeadSha = null }) {
   const verificationEvidencePath = path.join(path.dirname(bodyPath), 'verification-evidence.json');
   const evidence = [
@@ -4354,133 +4344,6 @@ function isPassingVerificationStatus(status) {
   return ['pass', 'passed', 'success', 'ok'].includes(String(status ?? '').toLowerCase());
 }
 
-function buildHumanReviewQuestion({ source = {}, fileGroups }) {
-  const title = source.requirement_title ?? source.title ?? source.story_id ?? 'このStory';
-  const areas = buildPrimaryReviewAreas(fileGroups);
-  return `${title} を満たす変更として、${areas} の差分をこのPRで受け入れてよいか。`;
-}
-
-function formatPrRouteForHuman(prRoute) {
-  if (!prRoute) return '未分類';
-  const confidence = typeof prRoute.confidence === 'number'
-    ? `${Math.round(prRoute.confidence * 100)}%`
-    : '-';
-  const sections = buildRouteBodyRequiredSections(prRoute.route_type).join(', ');
-  return `${prRoute.route_type} / body=${prRoute.body_template} / confidence=${confidence} / required=${sections}`;
-}
-
-function formatEngineeringJudgmentForHuman(engineeringJudgment) {
-  if (!engineeringJudgment) return '未分類';
-  const confidence = typeof engineeringJudgment.confidence === 'number'
-    ? `${Math.round(engineeringJudgment.confidence * 100)}%`
-    : '-';
-  const activeAxes = (engineeringJudgment.judgment_axes ?? [])
-    .filter((axis) => axis.status !== 'inactive')
-    .map((axis) => axis.axis);
-  const suppressedAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
-  const axisText = activeAxes.length > 0 ? ` / axes=${activeAxes.join(',')}` : '';
-  const suppressedText = suppressedAxes.length > 0
-    ? ` / suppressed=${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]`).join(',')}`
-    : '';
-  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}${axisText}${suppressedText}`;
-}
-
-function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, prContext = {}, git = {} }) {
-  const judgment = prContext.engineering_judgment;
-  if (!judgment) {
-    return `### Engineering Judgment の判断過程
-- 状態: Engineering Judgmentを分類できませんでした。Story、差分、Gate DAGを確認してください。`;
-  }
-  const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
-  const sourcePath = source.path ?? 'Story未検出';
-  const prRoute = prContext.pr_route;
-  const routeGates = collectEngineeringJudgmentRouteGates(gateDag, judgment.route_type);
-  const routeGateSummary = routeGates.length > 0
-    ? routeGates.slice(0, 5).map(formatEngineeringJudgmentGateForHuman).join('\n')
-    : '- route-specific judgment gateはありません。';
-  const extraRouteGateCount = Math.max(0, routeGates.length - 5);
-  const routeGateTail = extraRouteGateCount > 0 ? `\n- ほか${extraRouteGateCount}件はGate DAG監査ログを参照。` : '';
-  const commonSpine = buildCommonSpineReasoning(gateDag);
-  const axisReasoning = buildJudgmentAxisReasoning(judgment);
-  const signals = buildEngineeringSignalDigest(judgment.signals);
-  const evidence = buildEngineeringEvidenceReasoningDigest(gateDag);
-  const mergeBoundary = buildEngineeringMergeBoundary(gateDag);
-
-  return `### Engineering Judgment の判断過程
-このPRは、単なる差分量ではなく「何を壊してはいけない変更か」で読みます。入力と差分シグナルから \`${judgment.route_type}\` として読み、Senior first scanで必要な判断axisを複数active化しました。
-
-#### 判断した入力
-- 目的: ${title}
-- 正本: ${formatGithubFileLink(sourcePath, git)}
-- 差分面: ${buildHumanChangeIntent(fileGroups)}
-- PR Route: ${formatPrRouteForHuman(prRoute)}
-
-#### 判断シグナル
-${signals}
-
-#### 共通spineの確認
-${commonSpine}
-
-#### Senior first scan axes
-${axisReasoning}
-
-#### 選んだDAGが要求した確認
-${routeGateSummary}${routeGateTail}
-
-#### 証跡とマージ境界
-- 要求証跡: ${evidence}
-- 判断境界: ${mergeBoundary}`;
-}
-
-function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
-  const nodes = gateDag?.nodes ?? [];
-  return nodes.filter((node) => node.id?.startsWith('gate:judgment_')
-    && (!routeType || node.route_type === routeType));
-}
-
-function buildJudgmentAxisReasoning(engineeringJudgment) {
-  const axes = engineeringJudgment?.judgment_axes ?? [];
-  const activeAxes = axes.filter((axis) => axis.status !== 'inactive');
-  const suppressedAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
-  if (activeAxes.length === 0 && suppressedAxes.length === 0) {
-    return '- active axisなし。general engineeringとして既存Gateを確認します。';
-  }
-  const activeLines = activeAxes
-    .map((axis) => {
-      const required = axis.required_evidence?.join('|') ?? '-';
-      const candidates = axis.activation_candidates?.length > 0
-        ? ` / candidates=${axis.activation_candidates.join(', ')}`
-        : '';
-      const activationSignals = axis.activation_signals?.length > 0
-        ? ` / active_signals=${axis.activation_signals.join(', ')}`
-        : '';
-      const precision = axis.activation_precision?.status
-        ? ` / precision=${axis.activation_precision.status}:${axis.activation_precision.reason ?? ''}`
-        : '';
-      const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
-      const matched = axis.matched_evidence?.length > 0
-        ? ` / matched=${axis.matched_evidence.length}${formatEvidenceArtifactSuffix(axis.matched_evidence)}`
-        : '';
-      const optional = axis.optional_evidence?.length > 0
-        ? ` / optional=${axis.optional_evidence.length}${formatEvidenceArtifactSuffix(axis.optional_evidence)}`
-        : '';
-      const blockers = axis.matched_blockers?.length > 0
-        ? ` / blockers=${axis.matched_blockers.map((item) => `${item.id}:${item.criterion}`).join(', ')}`
-        : '';
-      const waiver = axis.blocker_waiver
-        ? (axis.blocker_waiver.decision_id
-          ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
-          : ` / ignored_blocker_waiver_missing=${summarizeBlockerWaiverMissingFields(axis.blocker_waiver).join('|') || 'required_metadata'}`)
-        : '';
-      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${candidates}${activationSignals}${precision}${matched}${optional}${missing}${blockers}${waiver}`;
-    })
-    .join('\n');
-  const suppressedLines = suppressedAxes.length > 0
-    ? `\n- suppressed_candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]:${axis.reason}`).join(' ; ')}`
-    : '';
-  return `${activeLines}${suppressedLines}`;
-}
-
 function collectSuppressedJudgmentAxes(engineeringJudgment) {
   return (engineeringJudgment?.judgment_axes ?? [])
     .filter((axis) => axis.status === 'inactive' && (axis.activation_candidates?.length ?? 0) > 0)
@@ -4492,241 +4355,12 @@ function collectSuppressedJudgmentAxes(engineeringJudgment) {
     }));
 }
 
-function buildCommonSpineReasoning(gateDag) {
-  const spineGate = gateDag?.nodes?.find((node) => node.id === 'gate:common_judgment_spine');
-  if (!spineGate || !Array.isArray(spineGate.subchecks) || spineGate.subchecks.length === 0) {
-    return '- 共通spineの監査情報はありません。';
-  }
-  return spineGate.subchecks
-    .map((check) => {
-      const evidence = check.evidence ? 'recorded' : 'none';
-      const reason = check.reason ?? '理由なし';
-      const surface = check.surface ? ` / surface=${check.surface}` : '';
-      const required = Array.isArray(check.required_evidence_kind) && check.required_evidence_kind.length > 0
-        ? ` / required=${check.required_evidence_kind.join('|')}`
-        : '';
-      const matched = Array.isArray(check.matched_evidence) && check.matched_evidence.length > 0
-        ? ` / matched=${check.matched_evidence.length}${formatEvidenceArtifactSuffix(check.matched_evidence)}`
-        : '';
-      const missing = Array.isArray(check.missing_evidence) && check.missing_evidence.length > 0
-        ? ` / missing=${check.missing_evidence.join('|')}`
-        : '';
-      return `- ${check.id}: ${check.status}${surface}${required} / evidence=${evidence}${matched}${missing} / ${summarizePrGateReason(reason) ?? reason}`;
-    })
-    .join('\n');
-}
-
-function formatEvidenceArtifactSuffix(items = []) {
-  const artifacts = [...new Set(items.map((item) => item.artifact).filter(Boolean))];
-  return artifacts.length > 0 ? ` / artifacts=${artifacts.slice(0, 3).join(',')}${artifacts.length > 3 ? `(+${artifacts.length - 3})` : ''}` : '';
-}
-
 function formatEvidenceReferenceForHuman(item) {
   const base = `${item.kind}:${item.ref}`;
   const strength = item.strength ? ` / ${item.strength}` : '';
   const reason = item.strength_reason ? ` / ${item.strength_reason}` : '';
   const artifact = item.artifact ? ` / artifact=${item.artifact}` : '';
   return `${base}${strength}${reason}${artifact}`;
-}
-
-function formatEngineeringJudgmentGateForHuman(gate) {
-  return `- ${gate.label ?? gate.id}: ${describeEngineeringJudgmentGate(gate)}`;
-}
-
-function describeEngineeringJudgmentGate(gate) {
-  if (gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle') {
-    return 'agent/gate/DAG変更では、レビュー証跡が現在の差分に結びつき、missing/stale/timed-out/blockが残っていないことを確認する。';
-  }
-  if (gate.id === 'gate:judgment_security_trust_security_regression') {
-    return 'trust boundaryに触れる変更では、権限・secret・監査の回帰をテストまたは明示waiverで閉じる。';
-  }
-  return gate.reason ?? 'このDAGで必要なレビュー観点を確認する。';
-}
-
-function buildEngineeringSignalDigest(signals = []) {
-  if (!Array.isArray(signals) || signals.length === 0) {
-    return '- 明示シグナルなし。Story、差分、PR routeからgeneral engineeringとして扱います。';
-  }
-  return signals.slice(0, 6).map((signal) => `- \`${signal}\`: ${describeEngineeringSignal(signal)}`).join('\n');
-}
-
-function describeEngineeringSignal(signal) {
-  if (signal === 'route:release_or_mirror') return 'release/mirror経路に触れるため、成果物、CI、rollback、source traceabilityを先に見る。';
-  if (signal === 'surface:agent_or_gate_workflow') return 'agent/gate/review/DAGの判断面に触れるため、tool boundaryと証跡ライフサイクルを確認する。';
-  if (signal === 'surface:auth_or_security') return '認証・権限・secret・監査境界に触れるため、trust boundaryと回帰証跡を優先する。';
-  if (signal === 'surface:data_or_migration') return 'データ正本、migration、retry、rollbackで破壊的影響が出る面を優先する。';
-  if (signal === 'domain:business_workflow') return '顧客、契約、承認、請求などの業務状態と例外運用を壊さないかを見る。';
-  if (signal === 'surface:ui_ux') return 'ユーザーが依存する導線、状態、視覚回帰、アクセシビリティを優先する。';
-  if (signal === 'surface:developer_tool') return 'CLI/API契約、exit code、設定優先順位、短い検証ループを優先する。';
-  if (signal === 'surface:api_contract') return 'API route/client/schema/error shapeの互換性を優先する。';
-  if (signal === 'surface:repo_control') return 'CI、repo設定、実行環境のblast radiusとrollbackを優先する。';
-  if (signal === 'surface:docs_only') return '読者が判断・実行できる状態と現行仕様との整合を優先する。';
-  if (String(signal).startsWith('risk_profile:')) return `risk profileは ${String(signal).slice('risk_profile:'.length)}。証跡量とAgent Review要求の強さを決める入力にする。`;
-  return 'Story、差分、分類器が検出した判断入力。';
-}
-
-function buildEngineeringEvidenceReasoningDigest(gateDag) {
-  const nodes = gateDag?.nodes ?? [];
-  const importantIds = [
-    'gate:engineering_judgment_route',
-    'gate:common_judgment_spine',
-    'gate:managed_worktree',
-    'gate:requirement',
-    'gate:unit',
-    'gate:integration',
-    'gate:e2e',
-    'gate:agent_review',
-    'gate:network_contract',
-    'gate:dag_connectivity'
-  ];
-  const evidenceNodes = importantIds
-    .map((id) => nodes.find((node) => node.id === id))
-    .filter(Boolean);
-  const enforcedJudgmentNodes = nodes.filter((node) => node.required === true
-    && node.id?.startsWith('gate:judgment_')
-    && !['route_specific_judgment_gate'].includes(node.type));
-  const axisNodes = nodes.filter((node) => node.type === 'judgment_axis_gate');
-  const rows = [...evidenceNodes, ...enforcedJudgmentNodes]
-    .concat(axisNodes)
-    .filter((node, index, list) => list.findIndex((item) => item.id === node.id) === index)
-    .map((node) => {
-      if (node.id === 'gate:common_judgment_spine' && Array.isArray(node.subchecks)) {
-        const missing = node.subchecks
-          .filter((check) => isUnresolvedGateStatus(check.status))
-          .map((check) => `${check.id}:${check.status}`);
-        const suffix = missing.length > 0 ? ` (${missing.join(', ')})` : '';
-        return `${node.label ?? node.id}=${node.status}${suffix}`;
-      }
-      return `${node.label ?? node.id}=${node.status}`;
-    });
-  return rows.length > 0 ? rows.join(' / ') : 'Gate DAG証跡なし';
-}
-
-function buildEngineeringMergeBoundary(gateDag) {
-  const unresolved = collectUnresolvedRequiredGates(gateDag);
-  const warnings = collectReleaseDecisionWarningGates(gateDag);
-  if (unresolved.length === 0 && warnings.length === 0) {
-    return '必須Gateは閉じています。レビューでは、選ばれたDAGの前提と実差分が一致しているかを最終確認します。';
-  }
-  if (unresolved.length === 0) {
-    return `必須Gateは閉じています。ただしリリース判断Warningがあります（${formatHumanGateSummary(warnings)}）。Gate DAG / Gate Enforcementで理由と対応を確認します。`;
-  }
-  const warningNote = warnings.length > 0
-    ? ` Warning: ${formatHumanGateSummary(warnings)}。`
-    : '';
-  return `未解決Gateがあります（${formatHumanGateSummary(unresolved)}）。マージ判断は、証跡追加または理由付きwaiver後に行います。${warningNote}`;
-}
-
-function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan, git = {} }) {
-  const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
-  const sourcePath = source.path ?? 'Story未検出';
-  const changeIntent = buildHumanChangeIntent(fileGroups);
-  const changeLinks = buildHumanDecisionFileLinks(fileGroups, git);
-  const evidence = buildHumanEvidenceDigest(gateDag);
-  const split = buildHumanSplitDigest(splitPlan);
-  const route = gateDag?.summary?.pr_route
-    ? `${gateDag.summary.pr_route} / body=${gateDag.summary.pr_body_template ?? '-'}`
-    : '未分類';
-  const engineering = gateDag?.summary?.engineering_judgment_route
-    ? `${gateDag.summary.engineering_judgment_route} / dag=${gateDag.summary.engineering_judgment_dag ?? '-'}`
-    : '未分類';
-  const suppressedAxes = Array.isArray(gateDag?.summary?.suppressed_judgment_axes)
-    ? gateDag.summary.suppressed_judgment_axes
-    : [];
-  return [
-    `- 目的: ${title}`,
-    `- Engineering Judgment: ${engineering}`,
-    suppressedAxes.length > 0
-      ? `- Suppressed Axis Candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]`).join(', ')}`
-      : null,
-    `- PR Route: ${route}`,
-    `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
-    `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
-    `- 証跡: ${evidence}`,
-    `- 分割判断: ${split}`
-  ].join('\n');
-}
-
-function buildHumanDecisionFileLinks(fileGroups, git) {
-  const rows = [
-    ['Runtime', fileGroups.source?.files ?? []],
-    ['Contract Docs', collectContractDocFiles(fileGroups)],
-    ['Capability Map', collectCapabilityFiles(fileGroups)],
-    ['Tests', fileGroups.tests?.files ?? []],
-    ['Repo Control', fileGroups.repo_control?.files ?? []]
-  ];
-  const links = rows
-    .filter(([, files]) => files.length > 0)
-    .map(([label, files]) => `${label}: ${files.slice(0, 3).map((file) => formatGithubFileLink(file, git)).join(', ')}${files.length > 3 ? ` ほか${files.length - 3}件` : ''}`);
-  return links.join(' / ');
-}
-
-function formatGithubFileLink(filePath, git = {}) {
-  if (!filePath || filePath === 'Story未検出') return filePath || 'unknown';
-  const baseUrl = githubRepositoryUrl(git.origin_url);
-  const ref = git.current_branch || git.head_sha || git.head_ref || 'HEAD';
-  if (!baseUrl) return filePath;
-  return `[${filePath}](${baseUrl}/blob/${ref}/${encodePathForGithub(filePath)})`;
-}
-
-function githubRepositoryUrl(originUrl) {
-  if (!originUrl) return null;
-  const trimmed = String(originUrl).trim().replace(/\.git$/, '');
-  const httpsMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)$/);
-  if (httpsMatch) return `https://github.com/${httpsMatch[1]}`;
-  const sshMatch = trimmed.match(/^git@github\.com:([^/]+\/[^/]+)$/);
-  if (sshMatch) return `https://github.com/${sshMatch[1]}`;
-  return null;
-}
-
-function encodePathForGithub(filePath) {
-  return String(filePath)
-    .split('/')
-    .map((segment) => encodeURIComponent(segment))
-    .join('/');
-}
-
-function buildHumanChangeIntent(fileGroups) {
-  const parts = [];
-  if (fileGroups.source?.count > 0) parts.push(`runtime ${fileGroups.source.count}件`);
-  const contractDocs = collectContractDocFiles(fileGroups);
-  if (contractDocs.length > 0) parts.push(`contract docs ${contractDocs.length}件`);
-  const capabilityFiles = collectCapabilityFiles(fileGroups);
-  if (capabilityFiles.length > 0) parts.push(`capability map ${capabilityFiles.length}件`);
-  if (fileGroups.tests?.count > 0) parts.push(`tests ${fileGroups.tests.count}件`);
-  if (fileGroups.repo_control?.count > 0) parts.push(`repo control ${fileGroups.repo_control.count}件`);
-  if (parts.length === 0) return '差分なし';
-  return `${parts.join(' / ')}を変更`;
-}
-
-function buildHumanEvidenceDigest(gateDag) {
-  const nodes = gateDag?.nodes ?? [];
-  const labels = [
-    ['gate:engineering_judgment_route', 'Engineering Judgment'],
-    ['gate:story_source_integrity', 'Story Source'],
-    ['gate:common_judgment_spine', 'Judgment Spine'],
-    ['gate:pr_route_classification', 'PR Route'],
-    ['gate:pr_body_contract', 'PR Body'],
-    ['gate:managed_worktree', 'Managed Worktree'],
-    ['gate:mirror_source_traceability', 'Source Trace'],
-    ['gate:ci_status_or_waiver', 'CI/Waiver'],
-    ['gate:vibepro_artifact_policy', 'Artifact Policy'],
-    ['gate:split_resolution', 'Split'],
-    ['gate:requirement', 'Requirement'],
-    ['gate:unit', 'Unit'],
-    ['gate:integration', 'Integration'],
-    ['gate:e2e', 'E2E'],
-    ['gate:agent_review', 'Agent Review'],
-    ['gate:network_contract', 'Network Contract'],
-    ['gate:dag_connectivity', 'DAG Connectivity']
-  ].map(([id, label]) => {
-    const node = nodes.find((item) => item.id === id);
-    if (!node) return null;
-    if (['passed', 'pass'].includes(node.status)) return `${label} passed`;
-    if (node.status === 'not_required') return `${label} not required`;
-    return `${label} ${node.status}`;
-  }).filter(Boolean);
-  return labels.length > 0 ? labels.join(' / ') : 'Gate証跡なし';
 }
 
 function buildHumanSplitDigest(splitPlan) {
@@ -4761,20 +4395,6 @@ function formatPrStoryLabel(story, source = {}) {
   const title = source?.requirement_title ?? source?.title ?? story?.title ?? null;
   if (!title || title === storyId) return storyId;
   return `${storyId} - ${title}`;
-}
-
-function buildHumanMergeDecision({ executionGate, unresolved, scope }) {
-  if (executionGate?.pr_create_allowed === true && unresolved.length === 0) {
-    return 'VibePro Gate上はPR作成可能。人間レビューでは設計判断・スコープ・運用影響を確認する。';
-  }
-  const blocking = executionGate?.blocking_gate_count ?? unresolved.length;
-  if (blocking > 0) {
-    return `まだマージ判断前。${blocking}件のcritical/blocking Gateを解消するか、非criticalのみ理由付きwaiverを記録する。`;
-  }
-  if (scope.status === 'needs_clean_branch') {
-    return '差分範囲の説明が必要。PRを分割するか、同一PRに含める理由を本文で確認する。';
-  }
-  return '実装差分とStory/Spec/Architectureの対応を確認し、残る注意事項が許容できるか判断する。';
 }
 
 function buildScopeDecisionNote(scope, splitPlan) {
@@ -6177,6 +5797,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storySource: primaryStory,
     fileGroups
   });
+  const uiuxIntakeJudgment = await readUiuxIntakeJudgmentContext(repoRoot, story.story_id);
   const environmentGraph = await readEnvironmentGraphIfExists(repoRoot);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
     storyId: story.story_id,
@@ -6317,6 +5938,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     architectureSources,
     bugPhysicsTriage,
     architectureBlueprint,
+    uiuxIntakeJudgment,
     environmentGraph,
     git,
     scope,
@@ -6365,6 +5987,68 @@ async function readJsonIfExists(filePath) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+// Runs the architecture_conformance_delta shadow stage via dependency injection instead of a
+// static import. target-model.json's allowed_dependencies has no gate-pr -> architecture entry
+// (see docs/architecture/vibepro-conformance-delta-ledger.md "Authority Boundary"; the
+// loadTargetArchitectureContext comment above documents the same rule for its own read), so this
+// file never imports src/architecture-conformance-delta.js. Only src/cli.js -- whose module is
+// allowed_dependencies: "*" -- imports that module and passes its exported
+// runArchitectureConformanceDelta function through options.conformanceDelta. Any other caller of
+// preparePullRequest that does not pass this option (e.g. the lighter internal gate-status check
+// path) gets the documented fallback: an inconclusive info node, never a thrown error and never a
+// blocking gate.
+async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {
+  if (typeof runner !== 'function') {
+    return {
+      status: 'inconclusive',
+      reason: 'architecture conformance delta runner was not injected into preparePullRequest options.conformanceDelta for this call path',
+      base_ref: baseRef ?? null,
+      head_ref: headRef ?? null
+    };
+  }
+  try {
+    // persist=false keeps the uninitialized-workspace contract: pr prepare against a repo without
+    // a VibePro workspace must not create .vibepro/ (artifact_location: temporary).
+    const output = await runner(root, { baseRef, headRef, write: persist !== false });
+    return { status: output?.delta?.status ?? 'ok', output, base_ref: baseRef ?? null, head_ref: headRef ?? null };
+  } catch (error) {
+    return {
+      status: 'inconclusive',
+      reason: `architecture conformance delta runner threw: ${error instanceof Error ? error.message : String(error)}`,
+      base_ref: baseRef ?? null,
+      head_ref: headRef ?? null
+    };
+  }
+}
+
+// Info-only gate node (CDL-S-7): its `type` is intentionally absent from
+// collectUnresolvedRequiredGates' allowlist below, so it can never contribute to
+// needs_verification / block regardless of status -- ratcheting new violations into a blocking
+// gate is explicitly out of scope for this story (architecture-ratchet-gate, a later story, owns
+// that). `required: false` documents the same intent locally for readers of this node alone.
+function buildArchitectureConformanceDeltaGate(stageResult) {
+  const inconclusive = stageResult.status !== 'ok';
+  return {
+    id: 'gate:architecture_delta',
+    type: 'architecture_conformance_delta_gate',
+    label: 'Architecture Conformance Delta (info)',
+    status: inconclusive ? 'info' : 'passed',
+    required: false,
+    info_only: true,
+    inconclusive,
+    reason: inconclusive
+      ? (stageResult.reason
+        ?? stageResult.output?.delta?.head_reason
+        ?? stageResult.output?.delta?.base_reason
+        ?? 'architecture conformance delta is inconclusive')
+      : 'base/head architecture conformance delta computed (see .vibepro/architecture/conformance/delta.json)',
+    base_ref: stageResult.output?.base_ref ?? stageResult.base_ref ?? null,
+    head_ref: stageResult.output?.head_ref ?? stageResult.head_ref ?? null,
+    summary: stageResult.output?.delta?.summary ?? null,
+    artifacts: stageResult.output?.artifacts ?? null
+  };
 }
 
 const TARGET_ARCHITECTURE_MODEL_PATH = path.join('docs', 'architecture', 'target-model.json');
@@ -7535,23 +7219,37 @@ async function readVisualQaRun(repoRoot, qaDir, qaId, git = null) {
   };
 }
 
-async function walkFiles(dir) {
-  let entries = [];
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch (error) {
-    if (error.code === 'ENOENT') return [];
-    throw error;
-  }
+// Exported (in addition to its internal callers below) only so tests can drive
+// the spread-argument-limit regression and the ENOENT/flat-path contract directly;
+// the exported entrypoints that reach it (buildStoryE2eCoverage, readVisualQaRun)
+// require full story/git/repo fixtures that would make that setup disproportionate.
+export async function walkFiles(dir) {
+  // Iterative walk with a single accumulator: recursion + spread-push overflows
+  // the call stack once a subtree holds more entries than V8 accepts as arguments.
+  // ENOENT is tolerated per pending directory (not just at the root) so a
+  // subdirectory that vanishes mid-walk is skipped rather than failing the walk.
   const files = [];
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await walkFiles(fullPath));
-    } else if (entry.isFile()) {
-      files.push(fullPath);
+  const pending = [dir];
+
+  for (let index = 0; index < pending.length; index += 1) {
+    let entries;
+    try {
+      entries = await readdir(pending[index], { withFileTypes: true });
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
+
+    for (const entry of entries) {
+      const fullPath = path.join(pending[index], entry.name);
+      if (entry.isDirectory()) {
+        pending.push(fullPath);
+      } else if (entry.isFile()) {
+        files.push(fullPath);
+      }
     }
   }
+
   return files;
 }
 
@@ -10873,6 +10571,73 @@ function buildArchitectureBlueprintGate(blueprintCoverage, decisionRecords = nul
   };
 }
 
+// The uiux intake machinery (src/uiux-intake.js) only runs when an operator
+// explicitly invokes it, so the standard flow can ship a UI/UX story without
+// the intake questions ever being asked. This gate does not force the intake
+// itself -- auto-firing it off change detection would reproduce the
+// false-block -> gate-erosion cycle -- it forbids silence: every story must
+// either carry an intake coverage artifact or an explicit, reasoned
+// intake_not_applicable decision. The applicability judgment belongs to the
+// Skill/operator; the harness only verifies the judgment was recorded.
+const UIUX_INTAKE_COVERAGE_DIRS = ['uiux', 'design-modernize'];
+
+async function readUiuxIntakeJudgmentContext(repoRoot, storyId) {
+  if (!storyId) return null;
+  for (const dir of UIUX_INTAKE_COVERAGE_DIRS) {
+    const relPath = ['.vibepro', dir, storyId, 'uiux-intake-coverage.json'].join('/');
+    try {
+      const coverage = JSON.parse(await readFile(path.join(repoRoot, relPath), 'utf8'));
+      if (!coverage || typeof coverage !== 'object') continue;
+      return {
+        artifact: relPath,
+        status: coverage.status ?? null,
+        missing_required_fields: Array.isArray(coverage.missing_required_fields)
+          ? coverage.missing_required_fields.length
+          : null
+      };
+    } catch {
+      // Unreadable/corrupt artifacts prove no judgment; keep the gate closed
+      // instead of crashing pr prepare or passing on garbage.
+    }
+  }
+  return null;
+}
+
+function buildUiuxIntakeJudgmentGate({ uiuxIntakeJudgment = null, decisionRecords = null } = {}) {
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  const notApplicableDecision = decisions.find((decision) => (
+    decision.type === 'intake_not_applicable' && decision.status === 'accepted'
+  )) ?? null;
+  const waiver = findAcceptedDecisionForSource(decisionRecords, 'gate:uiux_intake_judgment');
+  const resolvedBy = uiuxIntakeJudgment
+    ? 'intake_coverage_artifact'
+    : notApplicableDecision
+      ? 'intake_not_applicable_decision'
+      : waiver ? 'waiver_decision' : null;
+  const decision = notApplicableDecision ?? waiver;
+  return {
+    id: 'gate:uiux_intake_judgment',
+    type: 'uiux_intake_judgment_gate',
+    label: 'UI/UX Intake Judgment Gate',
+    status: resolvedBy ? 'passed' : 'needs_evidence',
+    required: true,
+    resolved_by: resolvedBy,
+    intake_coverage: uiuxIntakeJudgment,
+    decision: decision ? {
+      decision_id: decision.decision_id,
+      type: decision.type,
+      reason: decision.reason ?? null
+    } : null,
+    reason: resolvedBy === 'intake_coverage_artifact'
+      ? `UI/UX intake coverage artifact is recorded (${uiuxIntakeJudgment.artifact}, status: ${uiuxIntakeJudgment.status ?? 'unknown'})`
+      : resolvedBy === 'intake_not_applicable_decision'
+        ? `intake_not_applicable decision is recorded: ${notApplicableDecision.reason ?? notApplicableDecision.summary ?? 'reason recorded'}`
+        : resolvedBy === 'waiver_decision'
+          ? `UI/UX intake judgment waived: ${waiver.summary ?? 'waiver recorded'}`
+          : 'No intake applicability judgment is recorded for this story. For UI/UX intents run `vibepro uiux intake validate . --id <story-id>`; otherwise record `vibepro decision record . --id <story-id> --type intake_not_applicable --summary <text> --reason <why intake does not apply>`'
+  };
+}
+
 function buildSafetySecretSurfaceGate(fileGroups, decisionRecords = null) {
   const files = detectSafetySurfaceFiles(fileGroups);
   if (files.length === 0) return null;
@@ -11343,6 +11108,7 @@ function buildGateDag({
   architectureSources = [],
   bugPhysicsTriage = null,
   architectureBlueprint = null,
+  uiuxIntakeJudgment = null,
   environmentGraph = null,
   git = null,
   scope = null,
@@ -11463,6 +11229,7 @@ function buildGateDag({
   const effectiveManagedWorktreeGate = managedWorktreeGate ?? buildManagedWorktreeGate(managedWorktreeContext);
   const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
   const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
+  const uiuxIntakeJudgmentGate = buildUiuxIntakeJudgmentGate({ uiuxIntakeJudgment, decisionRecords });
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec: designDiagramSpec ?? inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git, { verificationEvidence, agentReviews });
@@ -11611,6 +11378,7 @@ function buildGateDag({
     ...(effectiveManagedWorktreeGate ? [effectiveManagedWorktreeGate] : []),
     ...(safetySecretSurfaceGate ? [safetySecretSurfaceGate] : []),
     ...(deployVerificationGate ? [deployVerificationGate] : []),
+    uiuxIntakeJudgmentGate,
     changeClassificationGate,
     prFreshnessGate,
     architectureGate,
@@ -11719,6 +11487,8 @@ function buildGateDag({
       { from: 'gate:pr_route_classification', to: 'gate:deploy_verification' },
       { from: 'gate:deploy_verification', to: 'gate:pr_body_contract' }
     ] : []),
+    { from: 'gate:pr_route_classification', to: 'gate:uiux_intake_judgment' },
+    { from: 'gate:uiux_intake_judgment', to: 'gate:pr_body_contract' },
     ...(effectiveManagedWorktreeGate ? [
       { from: 'gate:pr_body_contract', to: 'gate:managed_worktree' },
       { from: 'gate:managed_worktree', to: 'gate:change_classification' }
@@ -12287,10 +12057,11 @@ function buildChangeClassificationGate(changeClassification) {
   };
 }
 
-function buildPrFreshnessGate(git, options = {}) {
+export function buildPrFreshnessGate(git, options = {}) {
   const freshness = git?.pr_freshness ?? null;
   const status = freshness?.status === 'passed' ? 'passed' : freshness?.status ?? 'needs_evidence';
   const evidenceBindings = collectPrFreshnessEvidenceBindings(options);
+  const strictHeadOriginWarnings = buildStrictHeadOriginWarnings(evidenceBindings);
   return {
     id: 'gate:pr_freshness',
     type: 'pr_freshness_gate',
@@ -12316,8 +12087,32 @@ function buildPrFreshnessGate(git, options = {}) {
       stale_evidence_count: evidenceBindings.filter((binding) => binding.status === 'stale').length,
       bindings: evidenceBindings
     },
+    warnings: strictHeadOriginWarnings,
     reason: freshness?.reason ?? 'PR freshness could not be proven'
   };
+}
+
+// Every strict_head agent_review binding this gate reports carries the
+// origin it was authorized under. A binding whose origin is 'cli_override'
+// predates story-vibepro-strict-head-binding-origin-guard (or bypassed it)
+// and is not re-authorizable by re-running the same command; surface it as
+// an explicit migration diagnostic instead of silently trusting it forever.
+const STRICT_HEAD_ORIGIN_WARNING_PREFIX = 'VibePro strict HEAD binding origin:';
+
+function resolveStrictHeadOrigin(freshnessPolicy, bindingMode) {
+  if (bindingMode !== 'strict_head') return null;
+  if (!freshnessPolicy || freshnessPolicy.effective_mode !== 'strict_head') return 'unknown';
+  return ['validation_sequence', 'role_policy'].includes(freshnessPolicy.source)
+    ? freshnessPolicy.source
+    : 'cli_override';
+}
+
+function buildStrictHeadOriginWarnings(evidenceBindings) {
+  return evidenceBindings
+    .filter((binding) => binding.artifact_type === 'agent_review_result' && binding.strict_head_origin === 'cli_override')
+    .map((binding) => (
+      `${STRICT_HEAD_ORIGIN_WARNING_PREFIX} ${binding.stage}:${binding.role} is recorded strict_head with an unauthorized cli_override origin (content_surface is configured for this role). Re-record this review so it either follows content_surface freshness or is authorized by a role policy / frozen validation-sequence final_review; the existing artifact is not rewritten automatically.`
+    ));
 }
 
 function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agentReviews = null } = {}) {
@@ -12351,6 +12146,7 @@ function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agent
         status: role.binding_status ?? null,
         reason: role.stale_reason ?? null,
         binding_mode: contentBinding.mode ?? null,
+        strict_head_origin: resolveStrictHeadOrigin(role.freshness_policy, contentBinding.mode ?? null),
         surface_files: contentBinding.surface_files ?? [],
         changed_files: contentBinding.changed_files ?? [],
         missing_files: contentBinding.missing_files ?? [],
@@ -12515,7 +12311,7 @@ export function buildArtifactRemediationCommands(artifact, storyId = null) {
       artifact.stage ?? '<stage>',
       artifact.role ?? '<role>'
     );
-    const strictFreshnessArgs = artifact.content_binding?.mode === 'strict_head'
+    const strictFreshnessArgs = isRecordedStrictHeadStillAuthorized(artifact.freshness_policy)
       ? ' --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"'
       : '';
     return [
@@ -12679,6 +12475,7 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         status,
         required_current: !historicalNonblocking,
         content_binding: role.content_binding ?? null,
+        freshness_policy: role.freshness_policy ?? null,
         reuse_policy: mergeDeltaReused ? role.merge_delta_reuse ?? { mode: 'merge_delta_reuse' } : reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
         reason: historicalNonblocking
           ? 'review result is retained as audit history but is not part of the current PR-final or checkpoint-required review set'
@@ -14074,7 +13871,7 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
       role: item.role,
       recoveryKind,
       lifecycleRecovery,
-      contentBinding: role?.content_binding ?? null
+      freshnessPolicy: role?.freshness_policy ?? null
     })
   };
 }
@@ -14136,7 +13933,7 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
   };
 }
 
-export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
+export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, freshnessPolicy = null }) {
   const prepareCommand = `vibepro review prepare . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
   const authorizeCommand = buildReviewAuthorizeCommandTemplate(storyId, stage, role);
   const rawStartCommand = lifecycleRecovery?.replacement_command
@@ -14146,7 +13943,7 @@ export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recover
     : `${rawStartCommand} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')}`;
   const closeNewCommand = `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-id ${shellQuote('<replacement-agent-id>')} --close-reason completed --close-evidence ${shellQuote('<replacement-agent-close-evidence>')}`;
   const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, {
-    contentBinding,
+    strictHeadAuthorized: isRecordedStrictHeadStillAuthorized(freshnessPolicy),
     identity: 'replacement-agent',
     agentSystem: lifecycleRecovery?.agent_system ?? '<codex|claude_code>'
   });
@@ -15274,62 +15071,6 @@ function summarizePrGateReason(reason) {
     .trim();
 }
 
-function renderPrGateSummary(gateDag) {
-  const gates = gateDag.nodes.filter((node) => node.type === 'verification_gate');
-  const storyGate = gateDag.nodes.find((node) => node.id === 'story');
-  const architectureGate = gateDag.nodes.find((node) => node.id === 'architecture');
-  const specGate = gateDag.nodes.find((node) => node.id === 'spec');
-  const routeGates = [
-    'gate:pr_route_classification',
-    'gate:pr_body_contract',
-    'gate:mirror_source_traceability',
-    'gate:ci_status_or_waiver',
-    'gate:vibepro_artifact_policy',
-    'gate:split_resolution'
-  ].map((id) => gateDag.nodes.find((node) => node.id === id)).filter(Boolean);
-  const responsibilityAuthorityGate = gateDag.nodes.find((node) => node.id === 'gate:responsibility_authority');
-  const requirementGate = gateDag.nodes.find((node) => node.id === 'gate:requirement');
-  const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
-  const lines = [
-    `- overall: ${gateDag.overall_status}`,
-    `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
-    Array.isArray(gateDag.summary.suppressed_judgment_axes) && gateDag.summary.suppressed_judgment_axes.length > 0
-      ? `- suppressed axis candidates: ${gateDag.summary.suppressed_judgment_axes.map((axis) => `${axis.axis}[${axis.precision_status}]:${axis.reason}`).join(' ; ')}`
-      : null,
-    storyGate
-      ? `- ${storyGate.label}: ${storyGate.status} (${storyGate.required ? 'required' : 'optional'}) - ${storyGate.reason ?? storyGate.artifact ?? '-'}`
-      : null,
-    architectureGate
-      ? `- ${architectureGate.label}: ${architectureGate.status} (${architectureGate.required ? 'required' : 'optional'}) - ${architectureGate.reason ?? '-'}`
-      : null,
-    specGate
-      ? `- ${specGate.label}: ${specGate.status} (${specGate.required ? 'required' : 'optional'}) - ${specGate.reason ?? '-'}`
-      : null,
-    ...routeGates.map((gate) => {
-      const required = gate.required ? 'required' : 'optional';
-      const sections = Array.isArray(gate.required_sections) ? ` sections=${gate.required_sections.join(',')}` : '';
-      return `- ${gate.label}: ${gate.status} (${required}) - ${gate.reason ?? '-'}${sections}`;
-    }),
-    responsibilityAuthorityGate
-      ? `- ${responsibilityAuthorityGate.label}: ${responsibilityAuthorityGate.status} (${responsibilityAuthorityGate.required ? 'required' : 'optional'}) - ${responsibilityAuthorityGate.reason}`
-      : null,
-    requirementGate
-      ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
-      : null,
-    agentReviewGate
-      ? `- ${agentReviewGate.label}: ${agentReviewGate.status} (${agentReviewGate.required ? 'required' : 'optional'}) - required review role status is incomplete`
-      : null,
-    ...gates.map((gate) => {
-      const required = gate.required ? 'required' : 'optional';
-      const detail = gate.evidence?.artifact
-        ? `evidence: ${gate.evidence.artifact}`
-        : (summarizePrGateReason(gate.reason) ?? '-');
-      return `- ${gate.label}: ${gate.status} (${required}) - ${detail}`;
-    })
-  ].filter(Boolean);
-  return lines.join('\n');
-}
-
 function renderRequirementPrSection(requirement, language = 'ja') {
   if (!requirement) {
     return localizedText(language, {
@@ -15485,6 +15226,7 @@ export function collectUnresolvedRequiredGates(gateDag) {
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
       'deploy_verification_gate',
+      'uiux_intake_judgment_gate',
       'bug_physics_triage_gate',
       'bug_physics_profile_gate',
       'bug_physics_feedback_gate',
@@ -15698,6 +15440,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:uiux_intake_judgment' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:managed_worktree' && gate.required && !['passed', 'bypassed', 'not_applicable', 'satisfied'].includes(gate.status)) return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;

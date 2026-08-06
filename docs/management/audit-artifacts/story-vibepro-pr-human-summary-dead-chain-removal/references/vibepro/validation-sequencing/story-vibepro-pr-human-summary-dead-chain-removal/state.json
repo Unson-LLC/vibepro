@@ -1,0 +1,179 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+  "created_at": "2026-08-03T07:57:48.545Z",
+  "updated_at": "2026-08-03T08:07:46.402Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+    "required": true,
+    "risk_profile": "light",
+    "risk_surfaces": [
+      "gate_orchestration",
+      "regression_blast_radius",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "gate_orchestration"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "gate_orchestration"
+    ],
+    "preflight_required_inspection_inputs": [
+      "design-ssot.json",
+      "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js",
+      "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "test/pr-human-summary-uiux-intake-gate.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+    "verification_command": "npm test"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-08-03T07:59:03.110Z",
+      "binding": {
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+        "verification_command": "npm test"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-pr-human-summary-dead-chain-removal/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-08-03T08:03:22.429Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "Inspection coverage: risk_surfaces=gate_orchestration. Read the full src/pr-manager.js diff at f44165f2 including the deleted test files test/pr-human-summary-uiux-intake-gate.test.js and test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js; grepped repo-wide for every deleted symbol and kept helper to confirm no dangling references and live callers; inspected the e2e assertions and ran the file live (4/4 pass); verified design-ssot.json child_links/parent_design and docs/specs pointer consistency.",
+        "inspection_inputs": [
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js",
+          "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "design-ssot.json"
+        ]
+      },
+      "binding": {
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+        "verification_command": "npm test"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-08-03T08:03:33.883Z",
+      "binding": {
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+        "verification_command": "npm test"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-08-03T08:03:58.934Z",
+      "binding": {
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+        "verification_command": "node --test test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-pr-human-summary-dead-chain-removal/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-08-03T08:07:46.402Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "risk_surfaces=src/pr-manager.js export surface, pr-body.md rendering path, gate-dag.html/review-cockpit.html rendering paths, CLI pr-prepare end-to-end, test suite for removed exports; inspected via git show/diff of HEAD f44165f2, repo-wide grep for removed symbols, node --check plus module import smoke of src/pr-manager.js, and node --test execution of the story e2e file.",
+        "inspection_inputs": [
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js",
+          "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "design-ssot.json"
+        ]
+      },
+      "binding": {
+        "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+        "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+        "verification_command": "npm test"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "test_fingerprint": "d52e5242f0a3340746a3a4837ec62d3890604fbdd4e4a3208a7cd2f18f20cb60",
+    "verification_command": "npm test"
+  },
+  "invalidations": []
+}

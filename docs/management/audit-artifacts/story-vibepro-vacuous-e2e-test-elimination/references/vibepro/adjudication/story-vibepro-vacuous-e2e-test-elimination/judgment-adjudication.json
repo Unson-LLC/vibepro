@@ -1,0 +1,1170 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "updated_at": "2026-08-01T17:11:23.400Z",
+  "events": [
+    {
+      "event_id": "0c34a4c7-42a1-4d2d-ad98-7c438f11902d",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story states a falsifiable intent with 6 concrete ACs, and the premise was independently confirmed: git show origin/main of three deleted files shows literals asserted against regexes built from those same literals. Intent matches the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:46.349Z"
+    },
+    {
+      "event_id": "b4efaa5e-3852-4a78-a3e8-88a720568f6b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was needs_evidence, but current reality is established by reproduced runtime/path evidence: the lint run enumerates the actual 64-file directory, and the deleted originals at origin/main are verifiably vacuous. The Story cites the exact baseline sha eae6373e rather than asserting generically.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:46.848Z"
+    },
+    {
+      "event_id": "a514202e-c709-4812-a255-77203a737f58",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The operative invariant (never report clean on a subject it could not observe) is stated in the architecture doc lines 40-48 and enforced on all three paths with LINT-2/3/4/10. Flagged: docs/specs/story-vibepro-vacuous-e2e-test-elimination.md:29-38 still describes the superseded criterion and claims comment stripping the implementation does not do - a documentation defect, not an invariant failure.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:47.339Z"
+    },
+    {
+      "event_id": "16afaca6-a765-456b-bbfb-d0ba17df5180",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary is explicitly drawn and honest: architecture doc 35-38 states the lint is a structural tripwire, not coverage proof, and that an unused import clears it. Tier B is excluded in Non Goals. No src/ file appears in git diff --name-status, matching the declared boundary.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:47.800Z"
+    },
+    {
+      "event_id": "c0095922-fd3b-4a9d-b4fc-ac756ab560bb",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanically needs_evidence, but failure modes are enumerated and executed: unscannable dir, unreadable file, empty set (LINT-2/3/4), nested-dir blind spot (LINT-10), and the cross-story effect that 7 Story slugs lose e2e candidate files - CHANGELOG names them and all 7 were verified absent from .vibepro/config.json.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:48.289Z"
+    },
+    {
+      "event_id": "d1a8e5d8-331e-44cd-96d1-796a2d567a66",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Four verification-runs artifacts (unit/e2e/integration/typecheck) all read status=pass, exit_code=0, evidence_source=runner_direct, head_sha=a76fcc43 equal to HEAD, timed_out=false, tree and head not mutated during the run, plus a replay spec with ac:1..ac:6 markers bound to real child runs; the two heaviest dependencies were re-run live (18/18 pass).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:48.759Z"
+    },
+    {
+      "event_id": "0b74af2e-a6c2-4541-b849-3fdb5e284131",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No src/ change, no CLI surface, artifact schema or output format change. package.json adds one npm script and widens the typecheck glob to scripts/*.mjs, a broadening that cannot break consumers and whose typecheck run passed at HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:49.201Z"
+    },
+    {
+      "event_id": "e054c3fd-ea93-45cb-9682-19643fc2fd0f",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback analysis matches the diff: one standalone script, one CI step, one npm script, no persisted state, schema or migration; disabling without revert means dropping the ci.yml step. The deletions do not depend on the lint, so partial rollback is coherent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:49.700Z"
+    },
+    {
+      "event_id": "de672204-14ef-4890-a656-995a64d2ba36",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No migration or persisted-state change. The one stored-object edit retargets a test_ref and test_pattern in the routing-profiles spec.json from a deleted file to a case confirmed to exist in test/vibepro-cli.test.js. Frozen audit artifacts and the roi-ledger are deliberately untouched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:50.175Z"
+    },
+    {
+      "event_id": "419360d8-c2c5-435e-a442-a8a97bbd8dc2",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "40 files but one coherent intent: 17 deletions, 2 rewrites, lint, lint test, CI step and docs. The three derivative changes are each enumerated with a reason tying them to closing this Story's own gates, and the supersede record honestly retracts the earlier unverified split rationale rather than hiding it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:50.635Z"
+    },
+    {
+      "event_id": "0b2a5662-28f4-45ed-b8be-c0889af8caa1",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanically block, but the substance is present and specific: CHANGELOG carries operator action (none for existing consumers), observability (exit code, ::error:: annotation naming files, inspected count reflecting the real directory) and rollback. LINT-9 enforces that these exist and passed on re-run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:51.081Z"
+    },
+    {
+      "event_id": "55281534-a0f9-4ff0-b443-dd51fd09e8f7",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The lint parses nothing structured - it regex-tests raw file text, so malformed input cannot throw a parse error. The only failure surfaces are readdir/readFile, both fail-closed with exit 1 and a named path (code lines 68-76 and 121-125, plus LINT-2/LINT-3).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:51.551Z"
+    },
+    {
+      "event_id": "0111e1a0-4d8b-4fe4-a3b2-51cb0b2b77b3",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The genuine risk (deleting files other Stories cite as evidence) is handled rather than hidden: the live spec.json test_ref was retargeted to an existing case, frozen audit artifacts were left alone, and CHANGELOG names all 7 slugs whose replayed audits will now report uncovered ACs. All 7 verified absent from .vibepro/config.json, so no active Story's gate silently turns green.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:52.114Z"
+    },
+    {
+      "event_id": "70451ca4-21a5-49e0-a159-c9e7ad5d2794",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No workflow or state-transition code is in the diff - git diff --name-status shows zero src/ files. The only state-adjacent edit is .vibepro/config.json registering this Story and setting current_story_id; the previously registered durability Story is reordered, not removed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab67e8b97639bd506",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab67e8b97639bd506.output"
+      },
+      "head_commit": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "recorded_at": "2026-07-30T16:37:52.560Z"
+    },
+    {
+      "event_id": "7b11b18f-f101-4f17-94f0-f559c45dc339",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story states a falsifiable intent (e2e pass counts must denote verified behaviour) and the diff matches it: 17 vacuous files removed, 2 rewritten into real branch tests, one lint added. The adjudicator verified the deleted files were genuinely vacuous by reading them at origin/main.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:32.840Z"
+    },
+    {
+      "event_id": "705a9865-7853-4004-8ca6-b316cba781fa",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is stated with a checkable anchor (19 files at eae6373e, the 9-line example quoted) and all 17 deleted files were confirmed to import only node:test and node:assert and to assert literals against regexes built from those same literals. Not a changed-file classification claim.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:33.261Z"
+    },
+    {
+      "event_id": "067a41f0-c504-48a6-8cb0-34341af8f1c2",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-001 and INV-002 are stated in spec.json and each element is present in scripts/lint-e2e-product-execution.mjs and exercised by named tests rather than asserted in prose.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:33.685Z"
+    },
+    {
+      "event_id": "705eeb0e-9b0d-4042-8ad9-73aa60c054da",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary is drawn and honoured in the diff: Tier A only, Tier B explicitly deferred, no src/ file changed, frozen audit artifacts and roi-ledger untouched while live spec test_refs were repointed to files that exist. Derived fixes are enumerated with reasons.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:34.127Z"
+    },
+    {
+      "event_id": "d9f8a0b6-ab72-42af-98da-0767125dfb70",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure modes are analysed against implementation: the spec now discloses that no comment stripping happens so a commented-out import clears the gate, names the false-positive direction as loud, and every fail-closed path has a test. Caveat: no evidence record is bound as flow_replay/artifact_replay/scenario_clause_e2e, so the mechanical gate legitimately remains needs_evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:34.554Z"
+    },
+    {
+      "event_id": "262b1710-c566-4b5b-a893-0e3848632f8b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Four runner_direct records all bind head_sha_before=head_sha_after=5f0bc6c3 with timed_out=false and tree_mutated_during_run=false: unit 2282/2282, e2e 89/89, integration 92/92, typecheck exit 0. Noted honestly: npm run typecheck is node --check, so it proves parsing, not types.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:35.010Z"
+    },
+    {
+      "event_id": "100d9d8f-4098-46ee-a13c-2aae22afe6b8",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No src/ or bin/ change; the only surface additions are an npm script, a widened typecheck glob and one CI step. Deleting tests changes no published CLI output or artifact schema, which the diff supports.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:35.431Z"
+    },
+    {
+      "event_id": "163d555a-051a-40f5-a4a5-016617e1a957",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback is a plain revert: deletions and lint land in the same range, the lint is a standalone script plus one CI step, nothing consumes its output as data, and there is no stored object or feature gate. CHANGELOG also documents the disable-without-revert path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:35.840Z"
+    },
+    {
+      "event_id": "0a0cb1b7-e810-4957-bb57-2ffe593645e9",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No migration, schema or persisted runtime state touched. The only data-ish edits are spec test_refs repointed to existing files, validated by validateSpecs with green suites at HEAD, while frozen audit artifacts and roi-ledger are deliberately left alone.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:36.260Z"
+    },
+    {
+      "event_id": "9c50b41c-fb90-4f52-9168-fa93a1164815",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "43 files, +1810/-868, mixing deletions, a new lint, CI and package.json repo-control surface, three derived fixes and a large doc surface. The single-PR argument is reasoned (VET-S-1 only holds when deletion and enforcement land at the same HEAD) and the mechanical signal is mixed_repo_control_surface, but whether one reviewer can hold this as one judgment is a human call.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:36.704Z"
+    },
+    {
+      "event_id": "af22b45a-65bb-4979-82d4-b9320fbd4d4c",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CHANGELOG carries explicit operator action, observability (exit code, ::error:: naming every file, inspected count reflecting the real directory), rollback, and an honest cross-story note that 7 Story slugs will replay as uncovered. The block state reflects an unclosed gate, not missing analysis.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:37.181Z"
+    },
+    {
+      "event_id": "dea875c1-afdc-4bbe-983a-10b47b90ecf6",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "not_required holds: the lint does regex matching over raw text and never parses JSON or an AST, and no parser or extraction product code is in the diff. Its only malformed-input surface, an unreadable file, is handled fail-closed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:37.645Z"
+    },
+    {
+      "event_id": "89ce057d-5240-4d50-8702-74f2a61bc93a",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No gate/review/evidence lifecycle code is changed, and the change moves in the anti-misleading-green direction by removing tests that produced green with zero product execution. The one real lifecycle consequence, replayed audits of 7 Story slugs reporting uncovered ACs, is disclosed rather than hidden, and none of the 7 is registered in .vibepro/config.json.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:38.094Z"
+    },
+    {
+      "event_id": "2a821801-ff23-43ec-8cd1-107b7ec96b7b",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No workflow or state-transition product code is in the diff; execution-state.js and managed-worktree-gate.js are newly covered by tests, not modified. Both new tests include the negative branch (explicit delivery stays pending, open waiver stays blocked), which is exactly the over-green failure this item guards.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "recorded_at": "2026-07-30T19:14:38.527Z"
+    },
+    {
+      "event_id": "7086974f-c6c7-44ee-8237-bc8aa0f0e1ef",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story states a falsifiable problem, verified real rather than narrative: every one of the 17 deleted files matched none of the four product-execution signals against the merge-base blob. Intent, Scope, Non Goals and a reason field covering alternatives, compatibility, rollback and boundary are present and specific. The 6 ACs map 1:1 to concrete deliverables the adjudicator could execute.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:28.665Z"
+    },
+    {
+      "event_id": "970af4ad-e3e0-4669-953d-b06894f9c729",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stated current reality (vacuous test/e2e files inflating the e2e pass count) independently confirmed by reading the deleted blobs; story-vibepro-usage-report-main.spec.ts asserts six AC strings against substrings of themselves. The flow_replay evidence cited is the integration lane bound to 06450d62, whose only delta to HEAD is .vibepro/config.json, so for this item the evidence is effectively head-bound.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:29.098Z"
+    },
+    {
+      "event_id": "90752a98-a8c6-46f2-a1ed-0500cf64e358",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Invariant stated as INV-002 and implemented as PRODUCT_EXECUTION_SIGNALS, with limits stated rather than overstated. Enforced not merely documented: it is a CI step in .github/workflows/ci.yml and is fail-closed on all three blind-spot paths, proven by running LINT-2/3/4. An invariant reporting clean on an unreadable directory would be unsound; this one returns 1.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:29.538Z"
+    },
+    {
+      "event_id": "f8d1c362-5a94-4a0e-affa-f5ec5516d8ea",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story draws an explicit boundary and the diff honours it: git diff --name-only merge-base..HEAD -- src/ bin/ returns EMPTY, run rather than read. The three derived changes admitted into scope are each enumerated with a reason why the Story's own evidence would otherwise be vacuous, which is a boundary argument rather than scope creep. The cited waiver decision has stated limits rather than being a rubber stamp.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:29.978Z"
+    },
+    {
+      "event_id": "3d85a45f-1d16-4f7b-8213-fec9f042c605",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The dominant failure mode of such a lint is silently reporting clean. All four such paths are enumerated in the script header and each has a test the adjudicator executed: unscannable directory (LINT-2), unreadable file (LINT-3), empty file set (LINT-4), nested directory blind spot (LINT-10). The nested-walk case is the one an author would most plausibly miss, and it is covered. Failure-mode reasoning discharged by execution, not tokens.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:30.431Z"
+    },
+    {
+      "event_id": "32882dda-66de-4a2a-b367-1bef26eba375",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Sound on the merits with a verified caveat. Integration (561/561) and typecheck are bound to 06450d62 whose only delta to HEAD is .vibepro/config.json, so effectively head-bound. Unit (2294) and e2e (91) sit at 3be3ed55. The waiver claim that the intervening delta is empty is TRUE for branch-own product code and the src changes come solely from 31d84833, confirmed already on main. It is NOT strictly true that re-running would execute byte-identical code: 31d84833 also added a 28th spec and 185 lines of unit tests, so the lane counts do not describe HEAD's population. The adjudicator closed that gap directly: lint over all 66 files, 28 specs counted, typecheck exit 0, and the four small suites carrying AC-1/3/4/5/6 all green at HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:30.879Z"
+    },
+    {
+      "event_id": "21dc0a0a-4d01-46a5-8598-fed9b643607a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No published surface can break because no product code changed on this branch: src/ and bin/ diff vs merge-base is empty, run rather than read. package.json adds one script; ci.yml adds one step; the rest is tests and docs. The one SSOT-pair edit removes a dangling reference rather than creating one, and no .vibepro/spec file still points at any deleted path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:31.332Z"
+    },
+    {
+      "event_id": "ab460066-a84f-4f7e-80c0-dfd71fef1cd6",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was needs_evidence; answerable from the diff and answered concretely. CHANGELOG.md contains an explicit Rollback paragraph giving two paths (revert the commit, or remove the single CI step) and correctly notes the deletions stand independently of the lint. No stored object, feature gate or version-skew surface exists because nothing reads the lint output as data; its sole consumer is the CI exit code, verified: the script writes no files and returns 0/1 only.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:31.779Z"
+    },
+    {
+      "event_id": "79c85174-f8ab-4064-b245-bcfadd3499a9",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was needs_evidence; on the substance there is no data-state surface. The change deletes test files, adds a script and a test, and edits docs/config. No migration, schema, query, cache or persisted object is touched, confirmed by the empty src/bin delta and a changed-file list containing no schema or migration path. The only persisted artifacts edited are .vibepro/spec and design-ssot.json entries, changed to REMOVE references to files that no longer exist, i.e. made consistent rather than migrated.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:32.229Z"
+    },
+    {
+      "event_id": "e835b77a-f92b-4c91-b71c-f0972f660358",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "43 changed files is large but reads as one judgment because the scope argument is explicit and self-critical. The Story retracts its earlier 2-PR plan and states one of the three original reasons was an UNVERIFIED observation that must not be used as grounds, keeping only the two it verified. It identifies that VET-S-1 is an invariant only satisfiable when deletions and enforcement land in the same HEAD. The mixed_repo_control_surface signal driving needs_split is disclosed rather than hidden.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:32.688Z"
+    },
+    {
+      "event_id": "663f8b99-0c4d-4f43-8287-0a2aaf41c565",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was block; answered on the merits in CHANGELOG.md with three named sections: Operator action (none for existing consumers), Observability (exit code plus the exact success line and error annotation, and specifically that the reported count is the directory actually inspected so a moved directory is visible rather than silently clean), and Rollback. The cross-story effect is disclosed rather than buried: the seven slugs losing test/e2e coverage are named, along with the isStoryE2eCandidate nuance.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:33.141Z"
+    },
+    {
+      "event_id": "a780f9c0-bb02-4b89-a5bc-dffbbf31d84b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The item's mechanical status of not_required is factually WRONG for this diff and this is recorded explicitly: a real parse failure occurred in this Story when extractAcceptanceCriteria read indented slug bullets at 36e09524 as criteria and made gate:e2e demand ac:7..ac:13. Judged sound because the substantive question is answered better than the classifier asked: the acceptance spec replicates the parser rule against the real Story file and pins the count at exactly 6 with per-index VET-S-N matching, and it genuinely discriminates - replaying the extraction over the 36e09524 blob yields 13 criteria, over HEAD yields 6.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:33.586Z"
+    },
+    {
+      "event_id": "7cb83e82-ad3e-4179-98fc-f2ab592d158b",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This is the failure mode the Story exists to reduce, and more telling is how it handled the same mode in its OWN evidence. Two tracked decision records disclose discarded flaky runs (e2e 88/89 at 36e09524, unit 2293/2294 at c364fb61), each naming the failing case, giving specific grounds, and explicitly stating the limit that flakiness was not proven and, for the unit record, that the first run raw log is unrecoverable because the runner overwrites the artifact path. The unit record self-reports the asymmetry that its e2e twin was tracked while it was gitignored, and promotes itself to tracked docs. It correctly declines to fix the underlying runner defect and routes it to follow-up.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:34.037Z"
+    },
+    {
+      "event_id": "70e50da9-4c00-4666-83db-60c1a310f069",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The risk is that deleting 17 spec/test files leaves the .spec.ts gate stale or over-green. The gate was checked directly rather than via the cited record: listE2eTsSpecs resolves 28 specs at HEAD, node20-e2e-ts-ci-visibility passes 7/7, and the acceptance spec includes a mutation check pointing runE2eTsSpecs at an empty directory with a throwing spawn stub, requiring status 1 plus a silent no-op message, so the gate is proven to fail closed rather than merely non-empty. The added CI lint step means the deleted shape cannot silently return.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "abed78aade0fb209d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/abed78aade0fb209d.output"
+      },
+      "head_commit": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "recorded_at": "2026-07-31T19:37:34.475Z"
+    },
+    {
+      "event_id": "1fb87ad7-a2ab-422e-a4ac-822b3eebce1f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Not accepted on the '6 acceptance criteria found' token. The parse itself is what previously broke: extractAcceptanceCriteria once read 13 criteria because unrelated bullets sat under the Acceptance Criteria heading, and gate:e2e then demanded ac:7..ac:13 for criteria that do not exist. At HEAD the section is pinned by an executable test that was run and passed, replicating the parser rule and asserting six criteria in order each matching VET-S-n. The intent surface is protected against the exact drift that previously corrupted it, and the six clauses map 1:1 onto six AC verdicts all demonstrated by execution.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:27.820Z"
+    },
+    {
+      "event_id": "2c5c464d-de53-4257-9497-9f1c0b1bd6c3",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The invariant is that removing 17 test files removes no real coverage, discharged structurally rather than by assertion. The mapping table binds each removed file to a named surviving case and the test spawns and name-checks each one. The invariant that the .spec.ts gate cannot degrade into a no-op is protected by a mutation test rather than a count. Architecture and Spec docs were both added and the test_contract token corresponds to real added test files that were executed, not merely to test files appearing in the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:28.305Z"
+    },
+    {
+      "event_id": "0265335c-57b5-49d5-8851-29c487590f2d",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary-relevant diffs were read rather than accepting 'architecture docs in diff'. The real boundary question is which suite owns a Story's acceptance coverage after deleting its e2e file, and that is answered concretely in two touched spec docs: vibepro-managed-worktree-gate.md now states the .test.js file executes the accepted-waiver case and the no-waiver negative through runCli and names this Story as the reason the word-matching .spec.ts was deleted; vibepro-pr-ship-command.md reassigns ownership outright because both e2e files were removed. These are ownership transfers written where a future reader will look. The CHANGELOG also states the honest downstream consequence that several Stories will now report uncovered acceptance criteria in a replayed audit.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:28.737Z"
+    },
+    {
+      "event_id": "cfdcd9d7-f120-4eb1-b9d1-4b985b1678f3",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failure mode that matters is a lint or gate reporting clean without having checked anything, covered by executed negative paths rather than by tokens: LINT-2 cannot scan the directory so fails, LINT-3 unreadable file fails rather than skipping, LINT-4 empty directory fails rather than reporting silent clean, and the AC-6 empty-spec-set mutation asserts exit 1 plus a spawn stub that throws if a child is ever started. Each is the fail-closed twin of a way this change could have gone vacuous. The integration negative_path scenario was verified literally true against LINT-1 and LINT-2.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:29.179Z"
+    },
+    {
+      "event_id": "42b98b81-25da-4a1e-bfcd-a450524724f0",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Judged by re-executing rather than reading the records, the only defensible route given the head-binding gap. Every clause-carrying suite passed at HEAD 2f200bf2 under the adjudicator's own invocation: the lint script exit 0, the lint test file 11/11, the acceptance spec 7/7 including all six ac cases, the execution-state and managed-worktree-gate suites 7/7 combined, and npm run typecheck exit 0 over the widened glob. Done evidence therefore exists at the current head independently of the four head-unbound records, a stronger position than the records themselves establish.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:29.606Z"
+    },
+    {
+      "event_id": "d20e0017-62eb-4dd7-9512-b764b6817073",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The two load-bearing facts were verified directly rather than accepting the corrected waiver wording. git diff --name-only merge-base..HEAD -- src/ bin/ returns EMPTY, so this branch changes no product code and no CLI/API/output-format contract can break. git merge-base --is-ancestor 31d84833 origin/main returns TRUE, so the upstream commit accounting for the src delta inside the evidence gap is already merged and CI-validated on main. The only non-test non-doc edits are additive: package.json adds a lint script and widens the typecheck glob to include scripts (strictly more checking), and ci.yml adds one step. Nothing removes or narrows a public surface.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:30.034Z"
+    },
+    {
+      "event_id": "c8d6d5dc-0c24-4a95-815e-ecd20ce3e99e",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was needs_evidence but the question has a checkable answer. With src and bin diff empty there is no rollout, version skew, stored object or feature gate to strand. The change is test deletions plus one standalone script plus one CI step, so revert is total and leaves no residue, and the CHANGELOG says exactly that in owner-visible terms including how to disable without a revert. The one irreversible-in-practice element is the deletion of 17 files, reversible by revert and explicitly reasoned about in the mapping table.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:30.510Z"
+    },
+    {
+      "event_id": "19679d44-6505-4e8d-82b6-d6456ac13a60",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical needs_evidence, but the premise is directly falsifiable and was falsified. No persistent state, migration, query/cache or idempotency surface is touched: the src and bin diff is empty and the full non-deletion changed set is CI config, package.json scripts, CHANGELOG, design-ssot.json, docs, .vibepro artifacts and test files. The CHANGELOG statement of no persisted state, no schema and no migration was checked against the diff rather than accepted. No reader of stored data changed, so there is no replay-compatibility concern.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:31.082Z"
+    },
+    {
+      "event_id": "bf40d5aa-8cc8-4224-9140-d89b8529e9c1",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status is not_required with no matched evidence, which would normally be reason to withhold, but the substantive answer is stronger. The mode is not hypothetical on this branch: commit 36e09524 put seven Story slugs as bullets under the Acceptance Criteria heading, the extractor counted every bullet, pr prepare parsed thirteen criteria, and gate:e2e demanded ac:7..ac:13 for criteria that do not exist. The prose fix pinned nothing; a later commit added a regression test replicating the parser rule against the real Story file and asserting exactly six criteria in order by name, failing on any extra bullet at any indentation. Run at HEAD and passed. The commit message is candid that the parser is not exported and the rule is replicated rather than imported, a real disclosed limitation: a change to the parser itself would not be caught. Bounded and stated, not hidden.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:31.526Z"
+    },
+    {
+      "event_id": "ed0985c9-e3ae-4988-8fe6-7d163de286f2",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Judged against the real tests and against this branch's own evidence handling. Product side: verification-runner-evidence-consumers.test.js contains exactly the needed cases including 'a failing runner-direct run is recorded as failing and is not reported as a passing claim', which is the misleading-green case directly. Process side, weighed as a possible unsound finding: verification-evidence.json was hand-edited to withdraw false claims and per-record surface_hash fields were NOT recomputed, so the tamper-detection field is stale on exactly the touched records. Judged sound for three verified reasons: the omission is disclosed verbatim and unprompted in the decision record; recomputing would have been worse, manufacturing integrity for a record no longer matching any run; and the machinery did not go green over it, since gate:artifact_consistency reports stale_evidence. Recorded as a standing weakness: any further hand edit to those blocks is now hash-undetectable, so these records should be regenerated by a real run before being relied on again.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:31.962Z"
+    },
+    {
+      "event_id": "efd17292-0ec0-4464-bf91-968124b27495",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The gate table's own behaviour at HEAD was enumerated programmatically rather than read from a summary, and it is conspicuously not over-green: artifact_consistency stale_evidence, senior_gap_judgment block, judgment_axis_release_ops block, agent_review needs_review, both adjudication gates needs_evidence, three judgment axes needs_evidence. A system prone to this failure mode would have reported these satisfied after a hand-edit of the evidence file; instead the hand-edit is precisely what artifact_consistency flags. Separately confirmed the withdrawal did not silently reopen anything: gate:common_judgment_spine and gate:responsibility_authority are both passed at 2f200bf2, independently proving the two false claims were never load-bearing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:32.395Z"
+    },
+    {
+      "event_id": "8eaa0b0f-3aef-4953-9831-dbaadf65333d",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Sound on substance with a residual accuracy defect recorded that the retraction did not reach. Substance: the workflow's current reality is established by real execution, re-run by the adjudicator; the e2e lane's flow_replay is genuine because replay() spawns actual child node --test processes against real suites, and four of those suites were reproduced with realistic multi-hundred-ms durations. Defect: two integration-lane scenario strings misdescribe the files they name. The artifact_replay string claims verification-runner-evidence-consumers replays recorded pr-prepare / gate-dag artifacts but grep for those names in that file returns 0; it replays runner-direct evidence into the usage report, traceability clause map and execution state. The flow_replay string claims spec-pipeline replays a Story -> Spec -> traceability flow but grep for traceability in test/spec-pipeline.test.js returns 0. Same defect class as the two withdrawn claims but milder: the scenario type really is exercised by the lane and only the artifact attribution is wrong. Verdict unchanged because current reality was re-derived by direct execution rather than from these strings.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:32.864Z"
+    },
+    {
+      "event_id": "b63e60c9-f589-455e-ac93-98d77b2a6c30",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Unsound in the classifier's favour, not the author's: the mechanical status is block and its stated premise is factually wrong, so the gate blocks on something that is present. The gate reason cites release_ops_operator_path_missing with unresolved release_note and rollback_instruction, and release_ops_owner_visible_evidence_missing with unresolved observability_evidence and rollback_instruction. All four named artefacts exist in the CHANGELOG diff and were grepped out verbatim: an Operator action paragraph stating none for existing consumers and that contributors adding a test/e2e file must assert on real runtime behaviour, an Observability paragraph stating the lint reports through its exit code and prints its outcome, and a Rollback paragraph giving both revert and disable-without-revert paths. They are also enforced executably: LINT-9, 'the lint ships with an operator-facing release note, observability and rollback path', passed in the adjudicator's own run, so this is not a doc that can silently rot. Cause is classifier_premise_unsound: the detector did not match tokens that are demonstrably present and test-pinned, while the underlying release-ops judgment is complete. This should be corrected via premise correction and re-adjudicated by a different judge, not waived and not closed by weakening the detector.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:52.487Z"
+    },
+    {
+      "event_id": "e41ff6a3-be71-4e1e-b792-c1cd6172fc69",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The adjudicator declined to call this sound or unsound because the two honest readings genuinely conflict and the tiebreak is an owner call, not a technical one. Against shipping as-is: pr-prepare.json's own split analysis says needs_clean_branch with recommended_strategy clean_branch_or_split_pr, citing 43 files against a 30-file reviewability guideline, repo-control and agent-config files in the diff, and 29 commits from base; gate:senior_gap_judgment is block with 4 critical gaps. For shipping as-is: the content is one coherent intent (17 deletions, one lint, one lint test, one acceptance spec, and the doc updates reassigning coverage ownership for the deleted files) and splitting would separate the deletions from the mapping evidence that justifies them, making each half less reviewable rather than more; the commit count and .vibepro artifact churn are process residue from many review rounds rather than additional product surface. Whether a reviewer accepts 43 files of mostly-deletions in one pass is a judgment about this repository's review capacity that the adjudicator has no standing to make for the owner.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae2af2f5dd0f0a451",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-07-31T23:46:52.926Z"
+    },
+    {
+      "event_id": "9a52e247-3783-48d4-8cac-007aa3444116",
+      "type": "premise_correction",
+      "item_id": "axis:release_ops",
+      "corrects_verdict_id": "b63e60c9-f589-455e-ac93-98d77b2a6c30",
+      "wrong_premise": "gate:judgment_axis_release_ops blocks with release_ops_operator_path_missing (unresolved: release_note, rollback_instruction) and release_ops_owner_visible_evidence_missing (unresolved: observability_evidence, rollback_instruction), i.e. the detector asserts that the operator action path, the release note, the observability evidence and the rollback instruction are absent from this change.",
+      "corrected_premise": "All four artefacts exist in the change and are pinned by an executable test. CHANGELOG.md:62 'Operator action: none for existing consumers; this is a repository-internal...'; CHANGELOG.md:67 'Observability: the lint reports through its exit code and prints either...'; CHANGELOG.md:75 'Rollback: revert the commit. The lint is a standalone script plus one CI...' which also gives the disable-without-revert path; and the release note is the surrounding CHANGELOG entry itself. They are not prose that can rot: test/e2e-product-execution-lint.test.js:241 'LINT-9 the lint ships with an operator-facing release note, observability and rollback path' asserts their presence and passes. The detector did not match tokens that are demonstrably present, so the blocking premise is factually wrong while the underlying release-ops judgment is complete.",
+      "reason": "Recorded as a factual correction, not a waiver and not a weakening of the detector. The independent adjudicator (agent ae2af2f5dd0f0a451) ruled axis:release_ops judged_unsound with cause classifier_premise_unsound, stating explicitly that it was unsound in the classifier's favour rather than the author's, and directed that it be corrected via premise correction and re-adjudicated by a different judge. The implementing agent independently re-verified each of the four artefacts by grepping CHANGELOG.md and confirming the LINT-9 assertion exists before recording this correction. Nothing in the gate logic, the detector, or the release-ops evidence was modified; only the premise statement is corrected so a fresh judge can re-adjudicate against the facts. Owner sato_keigo approved this correction path on 2026-08-01 via AskUserQuestion in session 70ea817c-ee56-48c0-ab7c-612da8629872, relayed to the implementing agent through the orchestrating session; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl. Grantor and recorder are deliberately separate.",
+      "replacement_evidence": [
+        {
+          "artifact": "CHANGELOG.md",
+          "sha256": "e8ff494b2936624b79543f46ffdbcc7fe3cacbf72b1ce6a0764fde670616e99e"
+        },
+        {
+          "artifact": "test/e2e-product-execution-lint.test.js",
+          "sha256": "7b68b521085f410c89bf8fc14e1f8d2a05eac63ac8ee665b64af765a319ab2c9"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "70ea817c-implementing-agent",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ae2af2f5dd0f0a451.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-08-01T00:15:11.260Z"
+    },
+    {
+      "event_id": "a3ba7c0d-f644-4674-818f-92e4cd2beb99",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "9a52e247-3783-48d4-8cac-007aa3444116",
+      "reason": "Re-adjudicated by a second independent judge after the premise correction. The judge read the CHANGELOG lines and ran the lint test rather than accepting the corrected premise: LINT-9 passes and its body genuinely asserts what its name claims, so the operator action, release note, observability and rollback artefacts are present and test-pinned, not merely named. The release-ops judgment is complete on the merits. IMPORTANT residual, reported by the judge rather than smoothed over: the gate's remaining objection is NOT a documentation gap but an evidence-record bookkeeping gap. The detector at src/pr-manager.js:9638-9660 keys on unresolved evidence records of kinds release_note, rollback_instruction and observability_evidence; it never inspects CHANGELOG prose. The mechanical remedy is therefore to register evidence records of those three kinds, not to author any new documentation. Recorded sound because the substantive release-ops question is answered and the residue is registration, not substance.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "afd16c4731150b057",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/afd16c4731150b057.output"
+      },
+      "head_commit": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "recorded_at": "2026-08-01T00:20:16.127Z"
+    },
+    {
+      "event_id": "9c0928c4-aab9-4adb-bc51-190f00bce439",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Not a token match. The Story states the harm concretely (a 9-line file asserting a literal against a regex built from that same literal, counted by node --test as a passing e2e test, so the pass count is a false statement about verified behaviour), names who is harmed (people using e2e pass counts as PR evidence), and enumerates three alternatives (a) bulk delete (b) rewrite all (c) measure per file and delete-or-rewrite, with reasons for rejecting (a) and (b). Decisive signal that intent was actually reasoned about rather than asserted: VET-S-2 carries a Superseded block narrowing an earlier overclaim from AC-level equivalence to representative-case granularity, under owner approval, and openly lists the 7 slugs that lose coverage. I verified the AC section parses to exactly 6 VET criteria under the real extractAcceptanceCriteria bullet rule.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:09:51.906Z"
+    },
+    {
+      "event_id": "ece73d10-7fae-4fb5-8b99-05fc6ed82c4a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I re-derived the current-reality premise instead of accepting flow_replay as a proxy. For each of the 17 files git actually deleted I fetched its content at the merge-base and applied the vacuity test: 17/17 had NO repository-internal import, NO process start and NO filesystem access. Zero counter-examples. So the premise the whole change rests on ('these files execute no product code') is true of the exact set removed, not merely of the sample quoted in the Story. I also confirmed the post-state: 70 remaining files, 0 vacuous under the same test. The flow_replay/scenario_clause_e2e evidence cited mechanically is real (I re-ran the acceptance spec, 7/7 pass at HEAD 55131e55), but my verdict rests on the direct history check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:09:52.298Z"
+    },
+    {
+      "event_id": "cb9c6be7-ecfe-4bf5-8a53-c58c0507141d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checked each stated invariant against the actual diff rather than against 'test files in diff'. (1) 'scripts/run-e2e-ts-specs.mjs behaviour unchanged' - the file is absent from the diff entirely. (2) 'existing behavioural tests unchanged' - test/vibepro-cli.test.js is not in the diff; the 6 *-acceptance.spec.ts that ARE modified were inspected line by line: the change only widens the nested runner's reporter format from /# pass N/ to /(?:ℹ|#) pass N/, keeping 'fail 0' mandatory, plus one exact 'pass 14' relaxed to a documented floor. No assertion is semantically weakened. (3) 'audit artifacts and roi-ledger not rewritten' - neither path appears in the diff. (4) Non Goal 'no src/ changes' - zero src/ files in the diff, which I confirmed is why AC-3/AC-4 needed mutation testing rather than a code change. The new invariant (no vacuous e2e file) is enforced, not just documented: CI runs the lint at .github/workflows/ci.yml:33.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:09:52.725Z"
+    },
+    {
+      "event_id": "973edd98-cbaf-404b-8c30-cc7174f7989b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Compared the declared boundary text against the real 48-file diff. Declared: test/e2e Tier A files + the lint, plus exactly 3 named derivatives (6 acceptance.spec.ts reporter fixes; package.json typecheck glob + verification-runner fixture; the routing-profiles functional_spec origin ref). All three are present and nothing product-side exceeds them: src/ is untouched. The remaining diff is this Story's own process record (Story/Spec/Architecture, 6 decision docs, P4-FREEZE-HANDOFF) plus two SSOT consistency edits. I specifically checked the one edit NOT named in the boundary text, docs/specs/vibepro-managed-worktree-gate.md: it replaces a claim that the deleted .spec.ts gave 'wording coverage' with a truthful description of the surviving runCli-based test. That is the same class as the declared pr-ship-command fix - removing a now-false coverage claim - so it is inside the boundary's stated purpose, not creep. The declared Tier B (8 docs/src-grep files) and mutation testing remain out, as stated.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:13.573Z"
+    },
+    {
+      "event_id": "7e8515c3-68e1-4904-8d6d-af903332f893",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure modes were genuinely enumerated and I executed every one rather than reading the flow_replay token. The lint is designed fail-closed and each path has a real failing outcome I reproduced in temp sandboxes: planted vacuous file -> rc=1 and named; vacuous file in a NESTED subdirectory -> rc=1 (no blind spot); missing directory -> rc=1; chmod 000 directory (EACCES) -> rc=1; present-but-empty directory -> rc=1 'silent no-op'; unreadable file -> rc=1 (LINT-3). test/e2e-product-execution-lint.test.js runs 11/11 green covering exactly these. Strongest signal that the analysis was honest rather than defensive: CHANGELOG.md carries an explicit 'What it is not' section naming the lint's own false-negative modes - it is a structural tripwire, a single unused import clears it, and a file that imports product code and then asserts only its own literals still passes. Disclosing your own gate's blind spot is not something token matching produces.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:13.985Z"
+    },
+    {
+      "event_id": "52482354-5451-4d07-91a0-4e91c7dc0441",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I did not accept the recorded lanes as done-ness. Three of the four lanes (e2e, typecheck, integration) ran at bff8fe0a while HEAD is 55131e55; I checked that delta and it is only .vibepro/config.json budget values plus two budget-override decision docs - no source or test file - so the code surface the lanes measured is the code surface at HEAD. I then re-executed the load-bearing evidence myself at the real HEAD: the acceptance spec 7/7, the lint suite 11/11, the two rewritten behavioural files 7/7, and all 13 mapped replacement cases across 6 suites. Caveat recorded but not disqualifying: 'npm run typecheck' is node --check, i.e. syntax parsing, not type checking, and the E-3 record itself carries the honest warning that it proves the command did not fail rather than how much it checked. I verified the widened glob is nonetheless real by planting a broken scripts/*.mjs in a copy - the loop exits nonzero. The unit/e2e/integration lanes carry the actual weight.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:14.402Z"
+    },
+    {
+      "event_id": "158164fd-64e2-4c54-8b73-4dc67583ca7f",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cited evidence bundle (story/spec docs in diff, contract_doc, topology_diagram, test files in diff) is generic and identical across five axis items, so I ignored it and checked the contract surfaces directly. src/ and bin/ are entirely absent from the diff, so no CLI command, flag, API, JSON schema or PR-body projection changes. package.json changes are additive only: a new lint:e2e-product-execution script and a widened typecheck glob - no script removed or renamed. Decisive for external users: package.json 'files' is [agent-instructions, bin, src, skills, docs assets, docs/playbooks, LICENSE, NOTICE, READMEs] - scripts/ is NOT published, so the new lint never reaches a consumer install and cannot fail anyone else's repo. The only theoretical break I could construct - the shell glob scripts/*.mjs staying literal in a repo with no .mjs files - cannot occur here (8 such files exist) and is dev-script scope, not consumer scope; I confirmed the loop exits nonzero on a genuinely broken .mjs. CI gains a step; it removes none.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:35.487Z"
+    },
+    {
+      "event_id": "318f633d-61d1-4fbb-b7ab-4f8d545cb147",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was accepted_followup with generic evidence, so I reasoned the rollback surface from the diff. There is no rollout gate, no feature flag, no stored-object schema change, no version skew surface: nothing in this change ships to consumers (scripts/ is outside package.json files) and no src/ file moves. The atomicity claim is the load-bearing rollback property and it checks out: the 17 deletions, the lint, and the CI step are in the same commit range, so a revert restores the deleted files AND removes the lint that would reject them in the same operation - there is no intermediate state where a restored vacuous file faces a live lint. No data migration exists to reverse. The one genuinely non-mechanical consequence is the cross-story coverage loss for 7 slugs, and that is itself revert-restorable and disclosed in CHANGELOG rather than discovered later.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:35.895Z"
+    },
+    {
+      "event_id": "7aea1ad0-170b-43b5-9b56-53be4fedd852",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checked persistent state concretely instead of accepting the generic bundle. The change does touch machine-validated stored state: .vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json had test_refs pointing at the deleted test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts, and they are re-pointed to test/vibepro-cli.test.js with the case 'pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes' - a case I executed myself and saw pass. I then scanned every tracked .vibepro/spec file for dangling code_refs/test_refs: 0 dangling. I also grepped every tracked file for each of the 17 deleted paths; the only surviving mentions are deliberate historical notes in docs/specs/vibepro-pr-ship-command.md and vibepro-managed-worktree-gate.md that say the file was deleted and why, not live pointers. Frozen audit artifacts and past pr-prepare.json keep their now-historical test_refs by explicit decision, and the replay consequence is disclosed. No migration, no cache/idempotency surface.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:36.308Z"
+    },
+    {
+      "event_id": "91638fd3-7ed4-4f69-80cc-1ab2dbb03587",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I can verify the parts but not the whole. Verified: the atomicity argument for the CODE is genuinely forced, not rhetorical - VET-S-1 is a same-HEAD invariant and the lint would reject the 17 files if they landed in a separate PR, so the deletions + lint + CI step cannot be split without a waiver. Also verified the behaviour-bearing surface is small: 48 files but only scripts/lint-e2e-product-execution.mjs, test/e2e-product-execution-lint.test.js, the acceptance spec, package.json and ci.yml carry logic, plus 17 mechanical deletions and 2 rewrites. What I cannot derive without a leap: whether this PR is READABLE as one consistent judgment by one reviewer. It also carries session bookkeeping not forced by the atomicity argument - P4-FREEZE-HANDOFF.md, two budget-override decision records, a worktree-loss-and-rebuild record and two discarded-observation records - which add reading volume without adding judgment surface, and the total is 2327 insertions / 867 deletions across CI, build config, product scripts, tests and docs. Whether that exceeds a reviewer's coherent-reading budget is a reviewer-capacity and team-norm call, not something the diff settles. The mechanical status was accepted_followup (deferred, not passed) and the cited evidence bundle does not address PR size at all, so there is nothing here I could upgrade honestly. Sending to a human.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:54.392Z"
+    },
+    {
+      "event_id": "508ae871-e853-48ba-8dd3-992f24c96d64",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified against CHANGELOG.md itself, not the generic bundle. The release note is present and substantive: it states what was removed and why no product coverage is lost, names the replacement suites, documents the lint's four clearing signals and that it scans recursively and runs in CI, and explains the reporter-format fix and the exact-to-floor relaxation. Two things make this genuinely operator-facing rather than a token: (1) a 'What it is not' section that names the lint's own blind spots (structural tripwire only, a single unused import clears it, an importing-but-still-literal-asserting file passes), and (2) a 'Cross-story effect' section that names all seven slugs losing test/e2e coverage AND traces the second-order detail that isStoryE2eCandidate() still resolves one candidate for them (this acceptance spec) but without an ac:N marker, so replayed audits report the same uncovered outcome. That is downstream operator impact actually followed through. The rollback path is the single-commit revert, and test LINT-9 asserts the operator-facing release note, observability and rollback path exist - I ran it green.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:10:54.799Z"
+    },
+    {
+      "event_id": "34c05953-25c2-4f72-8887-50cd9a9c0f5a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was not_required with NO evidence attached, so I derived the answer from the code rather than ratifying the classifier. The change introduces no JSON extraction and no parser into product code; src/ is untouched. scripts/lint-e2e-product-execution.mjs consumes file text through regex tests only, which cannot throw on malformed input - and the degenerate outcome is safe in the right direction: content the regexes cannot match yields zero signals, which the lint reports as a VIOLATION (rc=1), never as clean. I confirmed the adjacent read failure path too: an unreadable file returns 1 with 'fails closed rather than skipping a file it cannot read' (LINT-3 green), and an unenumerable directory re-throws with the failing path rather than degrading to an empty set. The only genuine parsing in the diff is in the acceptance spec (a regex over the Story markdown and REPORTER_PASS_COUNT over child reporter output); if the reporter format shifts again, the count resolves to NaN and the floor assertion fails loudly rather than passing quietly. So parse_failure cannot produce a silent wrong answer here.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:11:22.559Z"
+    },
+    {
+      "event_id": "63fc3789-c8a0-4caa-9e4b-c4bb43a220cc",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This is the on-point failure mode and it was actually traced, not asserted. Direction: the change REMOVES a live source of misleading green - 17 files that made node --test report e2e passes for zero verified behaviour, which I confirmed by pulling all 17 from git history and finding no import, no process, no fs in any of them. Handoff reconstructability was followed through concretely: the live machine-validated SSOT was repaired (routing-profiles spec.json test_refs re-pointed off a deleted file to a case I ran and saw pass) and I found 0 dangling refs across all tracked .vibepro/spec files, while frozen audit artifacts keep their historical refs by explicit decision with the replay consequence disclosed in both Story and CHANGELOG down to the isStoryE2eCandidate() detail. The new lifecycle risk the change itself creates - the lint becoming a fresh source of false green - is not hidden: CHANGELOG states it is a structural tripwire that a single unused import clears and that it does not certify a test verifies anything. Disclosed limits plus a repaired live SSOT is a sound lifecycle judgment; the residual risk is named rather than papered over.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:11:22.991Z"
+    },
+    {
+      "event_id": "f1b6c58b-de7f-49e3-926e-0cb87b94d44b",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified by mutation, which is stronger than the 'covered by npm run test:e2e:ts' token. Stale-pending and over-green are exactly what the two rewritten tests pin, in both directions. Over-green prevention: an explicit-delivery artifact must NOT fabricate agent_review - I dropped the !hasExplicitDelivery guard via an ESM load hook and S-003 failed; and an 'open' (non-accepted) waiver must NOT bypass gate:managed_worktree - that negative case is asserted and passes. Stale-pending removal: a merged artifact must not leave agent_review_recorded and pr_created pending - I removed the merged && !hasExplicitDelivery derivation and S-001 failed. Accepted-waiver bypass: forcing findAcceptedManagedWorktreeBypass to null killed exactly the ac:5 case and no other. A third case pins that an unverified delivery reports blocked rather than merged. Separately, the workflow lane cannot go silently green: runE2eTsSpecs returns 1 with 'silent no-op' on an empty spec set and never spawns a child, and 28 specs exist at HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "recorded_at": "2026-08-01T17:11:23.398Z"
+    }
+  ]
+}

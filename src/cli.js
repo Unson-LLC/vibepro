@@ -19,7 +19,7 @@ import {
   validateValidationPhaseEvidence,
   writeValidationSequence
 } from './validation-sequencing.js';
-import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
+import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordImplementationProvenance, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
 import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
@@ -232,6 +232,14 @@ import {
   renderConformanceMarkdown,
   runArchitectureConformance
 } from './architecture-conformance.js';
+import {
+  renderConformanceDeltaMarkdown,
+  runArchitectureConformanceDelta
+} from './architecture-conformance-delta.js';
+import {
+  renderRebaselineProposalMarkdown,
+  runRebaselineProposal
+} from './architecture-rebaseline-proposal.js';
 import {
   readInferredSpec,
   stabilizeClauseIds,
@@ -506,11 +514,11 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
-  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
-  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
+  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   Budget grant: decision record --source budget:delivery_efficiency:<story-id> also writes a tracked decision document under docs/management/decisions/ (type: budget_override_approval) and records its path as budget_approval.decision_doc; the workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff. The command fails if that path is gitignored.
   vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
@@ -519,8 +527,10 @@ Usage:
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  Cross-system adjudication: judgment-DAG routes (record --judgment, correct) reject an adjudicator whose --agent-system matches the story's recorded implementation provenance (vibepro adjudicate provenance) unless --allow-same-system <reason> is given (appended to an append-only log) or an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment exists. The evidence path (record without --judgment) only attaches a same_system warning and never blocks.
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -578,7 +588,8 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
+  vibepro architecture rebaseline-proposal [repo] [--model <path>] [--output <path>] [--parent-design <design-root-id>] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -788,11 +799,11 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
-  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
-  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
+  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   Budget grant: decision record --source budget:delivery_efficiency:<story-id> also writes a tracked decision document under docs/management/decisions/ (type: budget_override_approval) and records its path as budget_approval.decision_doc; the workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff. The command fails if that path is gitignored.
   vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
@@ -801,8 +812,10 @@ Usage:
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  Cross-system adjudication: judgment-DAG routes (record --judgment, correct) reject an adjudicator whose --agent-system matches the story's recorded implementation provenance (vibepro adjudicate provenance) unless --allow-same-system <reason> is given (appended to an append-only log) or an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment exists. The evidence path (record without --judgment) only attaches a same_system warning and never blocks.
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -846,7 +859,8 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
+  vibepro architecture rebaseline-proposal [repo] [--model <path>] [--output <path>] [--parent-design <design-root-id>] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -1728,6 +1742,7 @@ async function dispatchCli(argv, io = {}) {
           scenarios: getOptions(verifyArgs, '--scenario'),
           observed: getOptions(verifyArgs, '--observed'),
           timeoutMs: getOption(verifyArgs, '--timeout-ms'),
+          noProgressDeadlineMs: getOption(verifyArgs, '--no-progress-deadline-ms'),
           maxOutputBytes: getOption(verifyArgs, '--max-output-bytes'),
           strictHeadBinding: hasFlag(verifyArgs, '--strict-head-binding'),
           argv: runArgv,
@@ -2333,6 +2348,18 @@ async function dispatchCli(argv, io = {}) {
           ].join('\n') + '\n');
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'provenance') {
+        const result = await recordImplementationProvenance(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          agentSystem: getOption(rest, '--agent-system'),
+          agentId: getOption(rest, '--agent-id'),
+          sessionRef: getOption(rest, '--session-ref')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Implementation provenance recorded: ${result.record.provenance.agent_system} (${result.artifact})\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'record') {
         if (hasFlag(rest, '--judgment')) {
           const result = await recordJudgmentAdjudication(repoRoot, {
@@ -2344,11 +2371,13 @@ async function dispatchCli(argv, io = {}) {
             reason: getOption(rest, '--reason'),
             agentSystem: getOption(rest, '--agent-system'),
             agentId: getOption(rest, '--agent-id'),
-            sessionRef: getOption(rest, '--session-ref')
+            sessionRef: getOption(rest, '--session-ref'),
+            allowSameSystemReason: getOption(rest, '--allow-same-system')
           });
+          const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
           write(stdout, hasFlag(rest, '--json')
             ? `${JSON.stringify(result, null, 2)}\n`
-            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} [event ${result.entry.event_id}] (${result.artifact})\n`);
+            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} [event ${result.entry.event_id}] (${result.artifact})${warningsText}\n`);
           return { exitCode: 0, command, subcommand, result };
         }
         const result = await recordAdjudication(repoRoot, {
@@ -2360,9 +2389,10 @@ async function dispatchCli(argv, io = {}) {
           agentId: getOption(rest, '--agent-id'),
           sessionRef: getOption(rest, '--session-ref')
         });
+        const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})\n`);
+          : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})${warningsText}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'correct') {
@@ -2379,11 +2409,13 @@ async function dispatchCli(argv, io = {}) {
           replacementEvidence: getOptions(rest, '--replacement-evidence'),
           agentSystem: getOption(rest, '--agent-system'),
           agentId: getOption(rest, '--agent-id'),
-          sessionRef: getOption(rest, '--session-ref')
+          sessionRef: getOption(rest, '--session-ref'),
+          allowSameSystemReason: getOption(rest, '--allow-same-system')
         });
+        const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : `Judgment premise correction recorded: ${result.entry.item_id} -> ${result.entry.event_id} (${result.artifact})\n`);
+          : `Judgment premise correction recorded: ${result.entry.item_id} -> ${result.entry.event_id} (${result.artifact})${warningsText}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown adjudicate command: ${subcommand ?? ''}\n\n${renderHelp()}`);
@@ -3561,6 +3593,12 @@ async function dispatchCli(argv, io = {}) {
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
           gateOutcome: getOption(rest, '--outcome'),
+          // Dependency-injected into the architecture_conformance_delta shadow stage (CDL-S-7):
+          // gate-pr (src/pr-manager.js) must not import src/architecture-conformance-delta.js
+          // directly (target-model.json has no gate-pr -> architecture allowed_dependency), so
+          // only cli.js ("*" dependency) wires the runner. Other preparePullRequest call sites
+          // that do not pass this option fall back to the stage's inconclusive info node.
+          conformanceDelta: runArchitectureConformanceDelta,
           env: io.env ?? process.env
         });
         write(stdout, viewOutput
@@ -3776,6 +3814,23 @@ async function dispatchCli(argv, io = {}) {
       }
 
       if (subcommand === 'conformance') {
+        const baseRef = getOption(rest, '--base');
+        // --base/--head opt in to base/head delta mode (CDL-S-3/S-4); omitting --base preserves
+        // the original single-snapshot behavior and output schema exactly.
+        if (baseRef) {
+          const result = await runArchitectureConformanceDelta(repoRoot, {
+            baseRef,
+            headRef: getOption(rest, '--head') ?? 'HEAD',
+            modelPath: getOption(rest, '--model'),
+            graphPath: getOption(rest, '--graph')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderConformanceDeltaMarkdown(result));
+          const strict = hasFlag(rest, '--strict');
+          const exitCode = strict && result.delta.status === 'ok' && result.delta.summary.new_count > 0 ? 2 : 0;
+          return { exitCode, command, subcommand, result };
+        }
         const result = await runArchitectureConformance(repoRoot, {
           modelPath: getOption(rest, '--model'),
           graphPath: getOption(rest, '--graph')
@@ -3786,6 +3841,18 @@ async function dispatchCli(argv, io = {}) {
         const strict = hasFlag(rest, '--strict');
         const exitCode = strict && result.summary.violation_count > 0 ? 2 : 0;
         return { exitCode, command, subcommand, result };
+      }
+
+      if (subcommand === 'rebaseline-proposal') {
+        const result = await runRebaselineProposal(repoRoot, {
+          modelPath: getOption(rest, '--model'),
+          outputPath: getOption(rest, '--output'),
+          parentDesign: getOption(rest, '--parent-design')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderRebaselineProposalMarkdown(result));
+        return { exitCode: 0, command, subcommand, result };
       }
 
       if (subcommand === 'write') {

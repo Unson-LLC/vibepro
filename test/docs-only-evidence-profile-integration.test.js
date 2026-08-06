@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 // Integration boundary for story-vibepro-docs-only-evidence-profile: the final
 // output path from a merge result, through canonical audit promotion, into the
 // usage report's evidence-cost metrics. The unit tests pin each contract in

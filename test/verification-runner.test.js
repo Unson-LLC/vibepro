@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -25,6 +26,7 @@ import {
   COMPUTED_OBSERVATION_KEYS,
   buildRunWarnings,
   compareWorktreeSamples,
+  executeCommand,
   runArtifactProbeDocument,
   runnerArtifactCheckShape
 } from '../src/verification-runner.js';
@@ -382,6 +384,23 @@ test('verify run records a timeout kill as a failing run and names the timeout a
   assert.equal(artifact.run.timeout_ms, 700);
 });
 
+// Covers story-vibepro-unit-suite-concurrency-default:AC-3 (default timeout is 7200000 ms and
+// lands in the run artifact) and story-vibepro-unit-suite-concurrency-default:AC-5 (this test
+// fails if the default shrinks).
+test('verify run defaults to a timeout with headroom over the measured loaded-host full-suite run', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  // The full suite has been measured at 28 minutes (load ~100, unlimited parallelism) and
+  // 56 minutes (load ~35, --test-concurrency=2); a default near those turns slow-host runs
+  // into timeout fails that are not test failures.
+  assert.equal(artifact.run.timeout_ms, 7200000);
+});
+
 test('verify run keeps its computed summary sentence when the agent supplies one', async () => {
   const root = await setupRepo();
   await cli([
@@ -534,6 +553,80 @@ test('verify run reports an output-buffer kill as its own cause, not as a timeou
   const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
   assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_output_limit_exceeded'));
   assert.ok(!record.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
+});
+
+test('verify run kills a silent process on the no-progress deadline well before the wall-clock cap', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'Makefile'), 'all:\n\t@sleep 30\n');
+  const startedAt = Date.now();
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile', '--timeout-ms', '5000', '--no-progress-deadline-ms', '300',
+    '--', 'make'
+  ]);
+  const elapsedMs = Date.now() - startedAt;
+  assert.equal(result.result.status, 'fail');
+  assert.equal(result.result.timed_out, true);
+  // The no-progress deadline (300ms), not the wall-clock cap (5000ms), is what killed this:
+  // proven by finishing far short of the wall clock, not merely by the boolean outcome.
+  assert.ok(elapsedMs < 3000, `expected the no-progress deadline to kill well under the 5000ms wall clock, took ${elapsedMs}ms`);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
+  assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
+});
+
+test('executeCommand attributes a signal it did not send as an external kill, not a policy timeout', async () => {
+  // Exercised directly against the streaming executor rather than through `vibepro verify
+  // run`: routing through a shell runner like `make` would make the assertion here about
+  // GNU Make's own signal-propagation behavior instead of about executeCommand's
+  // attribution, since a grandchild that self-signals does not deliver that signal to the
+  // `make` process this module actually spawns.
+  const script = "setTimeout(() => { process.kill(process.pid, 'SIGTERM'); }, 50); setInterval(() => {}, 1000);";
+  const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
+    timeoutMs: 5000,
+    noProgressDeadlineMs: 5000,
+    maxOutputBytes: 1_000_000,
+    env: process.env
+  });
+  assert.equal(result.timedOut, false);
+  assert.equal(result.outputLimitExceeded, false);
+  assert.equal(result.externalKillSignal, 'SIGTERM');
+});
+
+test('executeCommand kills a silent command on the no-progress deadline independently of the wall clock', async () => {
+  const script = 'setInterval(() => {}, 1000);';
+  const startedAt = Date.now();
+  const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
+    timeoutMs: 10000,
+    noProgressDeadlineMs: 200,
+    maxOutputBytes: 1_000_000,
+    env: process.env
+  });
+  const elapsedMs = Date.now() - startedAt;
+  assert.equal(result.timedOut, true);
+  assert.equal(result.externalKillSignal, null);
+  assert.ok(elapsedMs < 5000, `expected the no-progress deadline to kill well under the 10000ms wall clock, took ${elapsedMs}ms`);
+});
+
+test('executeCommand: sustained streaming output extends the no-progress deadline past its own length', async () => {
+  const script = [
+    'let i = 0;',
+    'const t = setInterval(() => {',
+    '  i += 1;',
+    "  process.stdout.write('x');",
+    '  if (i >= 6) { clearInterval(t); process.exit(0); }',
+    '}, 40);'
+  ].join('\n');
+  const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
+    timeoutMs: 5000,
+    // Shorter than the ~240ms total run time but generous enough to absorb Node startup
+    // latency: only sustained silence, not the mere passage of time, should kill this.
+    noProgressDeadlineMs: 400,
+    maxOutputBytes: 1_000_000,
+    env: process.env
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.timedOut, false);
+  assert.equal(result.stdout.length, 6);
 });
 
 test('a partially sampled worktree does not report a change that did not happen, and says so', () => {
@@ -1152,8 +1245,10 @@ test('the typecheck script checks every file rather than only the glob head', as
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-typecheck-script-'));
   await mkdir(path.join(root, 'bin'), { recursive: true });
   await mkdir(path.join(root, 'src'), { recursive: true });
+  await mkdir(path.join(root, 'scripts'), { recursive: true });
   await writeFile(path.join(root, 'bin', 'vibepro.js'), 'export const entry = 1;\n', 'utf8');
   await writeFile(path.join(root, 'src', 'a-good.js'), 'export const a = 1;\n', 'utf8');
+  await writeFile(path.join(root, 'scripts', 'a-good.mjs'), 'export const s = 1;\n', 'utf8');
 
   const run = async () => execFileAsync('sh', ['-c', script], { cwd: root })
     .then(() => 0)
@@ -1164,6 +1259,13 @@ test('the typecheck script checks every file rather than only the glob head', as
   // Broken, and deliberately not the first entry of the glob.
   await writeFile(path.join(root, 'src', 'z-broken.js'), 'const x = ;\n', 'utf8');
   assert.equal(await run(), 1, 'a broken file after the first must fail the script');
+  await rm(path.join(root, 'src', 'z-broken.js'));
+  assert.equal(await run(), 0, 'the fixture must return to clean before the next case');
+
+  // scripts/*.mjs is the last glob, so a break there proves the script does not
+  // stop after the earlier categories.
+  await writeFile(path.join(root, 'scripts', 'z-broken.mjs'), 'const x = ;\n', 'utf8');
+  assert.equal(await run(), 1, 'a broken file in the last glob must fail the script');
 
   await rm(root, { recursive: true, force: true });
 });

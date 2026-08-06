@@ -1,0 +1,1192 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "updated_at": "2026-08-04T00:37:19.587Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+      "current_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785803839512-410ae10e",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-judgment-gate",
+      "source_status": null,
+      "summary": "Owner grant for the delta-merge landing round: differential re-reviews after origin/main advanced with pr-manager changes",
+      "reason": "PR #415-#420 merged into main changed src/pr-manager.js (summary surfaces, checkpoint gate list, dead-chain removal), staling the content-bound gate_evidence/architecture_boundary/runtime_contract reviews; frozen final_review requires a current runtime_contract record. Caps raised with spare slots to survive one more externally-forced merge without another grant commit.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "override_digest": "eb8c2fdef04ad171aa0129b513a549122a424b3e17b96e784f8c1456057194bd",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "sweet-chatelet-c1b354"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-04-budget-override-story-vibepro-uiux-intake-judgment-gate-eb8c2fde.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+          "current_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-04T00:37:19.501Z"
+      },
+      "recorded_at": "2026-08-04T00:37:19.514Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785698548093-b7bf5e8e",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split at current HEAD: 11 commits / 19 files, one behavioral surface with proven non-functional intermediates",
+      "reason": "Same justification as gate:pr_scope_judgment - the enforcement fix and fixture closure discovered during review are part of the same contract; a split would ship a decorative gate (the exact defect 417c3124 fixed) or strand the closure paths.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+          "current_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:22:28.079Z"
+      },
+      "recorded_at": "2026-08-02T19:22:28.094Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785698544662-930d1874",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled-scope justification at current HEAD: 11 commits / 19 files are one shippable contract including the review-discovered enforcement fix and the scanner-required acceptance spec",
+      "reason": "The gate is only honest if both closure paths ship with it, and the enforcement fix (417c3124) plus fixture closure (438ab5d8) are inseparable from the feat: the intermediate feat-only state was proven non-functional (decorative gate) by the architecture_boundary review. The budget-grant commit (7042185e) is required tracked bookkeeping for the same story's review cycle. Splitting any of these produces either a non-enforcing gate or an unreviewable orphan grant.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+          "current_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:22:24.636Z"
+      },
+      "recorded_at": "2026-08-02T19:22:24.663Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785698541545-c5871755",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: single-intent PR (uiux intake judgment gate), 11 commits / 19 tracked files at current HEAD, reviewable as one lane",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 11 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 07d1a793 adds the acceptance spec the Story E2E coverage scanner requires plus architecture-doc frontmatter and design-ssot lineage, and [REDACTED:d51350c779fb] are the four digest-bound budget grant bookkeeping pairs the head-bound review lifecycle consumed. All 19 files trace to the one gate contract or its story-process bookkeeping.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+          "current_head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:22:21.521Z"
+      },
+      "recorded_at": "2026-08-02T19:22:21.547Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785697515752-e14cafd7",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-judgment-gate",
+      "source_status": null,
+      "summary": "Owner grant: one more architecture_boundary re-record and runtime_contract lifecycle after the acceptance-spec commit",
+      "reason": "The E2E coverage scanner required a new acceptance spec file; that commit moved HEAD past the recorded runtime_contract review, and final_review is frozen-HEAD-bound. Raises architecture_boundary to 9 and runtime_contract to 4 so the tail closes without further grants.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "override_digest": "b4f14ac4ac945874eb6b4c3f43fec3a302116cfd07fa78e5f6f94cdd5da8c817",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "sweet-chatelet-c1b354"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-uiux-intake-judgment-gate-b4f14ac4.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "07d1a7932252f1229bfcb65d1f572f309019eca5",
+          "current_head_sha": "07d1a7932252f1229bfcb65d1f572f309019eca5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "07d1a7932252f1229bfcb65d1f572f309019eca5",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T19:05:15.743Z"
+      },
+      "recorded_at": "2026-08-02T19:05:15.753Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785696173733-cc254e0b",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-judgment-gate",
+      "source_status": null,
+      "summary": "Final owner grant with headroom: each grant commit stales the head-bound preflight lifecycle and forces a re-record",
+      "reason": "architecture_boundary cap 4 was consumed by the legitimate 4-round bug-finding cycle; each subsequent budget commit moves HEAD and requires one more re-record. Raising to 7 with modest headroom on other roles ends the grant-commit/stale-lifecycle loop so the story can close without further tracked-doc commits.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "override_digest": "85ee0d5f174a17f74a9b2a61e2e3b465e30f18630db4f537ab30b003a6ff9fff",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "sweet-chatelet-c1b354"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-uiux-intake-judgment-gate-85ee0d5f.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "2eca731c3c38fe9982e306b31009743a2544ae6b",
+          "current_head_sha": "2eca731c3c38fe9982e306b31009743a2544ae6b",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2eca731c3c38fe9982e306b31009743a2544ae6b",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T18:42:53.700Z"
+      },
+      "recorded_at": "2026-08-02T18:42:53.735Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785695906376-249e9f81",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-judgment-gate",
+      "source_status": null,
+      "summary": "Owner grant amendment: one implementation:runtime_contract dispatch for the validation-sequencing final_review phase",
+      "reason": "final_review fails closed without implementation:runtime_contract Agent Review provenance; the prior grant's per-role caps omitted that role. Adds runtime_contract:1 and raises subagent count to 16.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "override_digest": "7b110b0f7c64e4ee01f19318231fee38a6c279791f02c09f0a727153ddf47c97",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "sweet-chatelet-c1b354"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-uiux-intake-judgment-gate-7b110b0f.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "current_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T18:38:26.349Z"
+      },
+      "recorded_at": "2026-08-02T18:38:26.378Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785695729714-6dfb9483",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split at current HEAD: 7 commits / 15 files, one behavioral surface with proven non-functional intermediates",
+      "reason": "Same justification as gate:pr_scope_judgment - the enforcement fix and fixture closure discovered during review are part of the same contract; a split would ship a decorative gate (the exact defect 417c3124 fixed) or strand the closure paths.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "current_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T18:35:29.624Z"
+      },
+      "recorded_at": "2026-08-02T18:35:29.714Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785695722361-7e2c2fad",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled-scope justification at current HEAD: 7 commits / 15 files are one shippable contract including the review-discovered enforcement fix",
+      "reason": "The gate is only honest if both closure paths ship with it, and the enforcement fix (417c3124) plus fixture closure (438ab5d8) are inseparable from the feat: the intermediate feat-only state was proven non-functional (decorative gate) by the architecture_boundary review. The budget-grant commit (7042185e) is required tracked bookkeeping for the same story's review cycle. Splitting any of these produces either a non-enforcing gate or an unreviewable orphan grant.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "current_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T18:35:22.325Z"
+      },
+      "recorded_at": "2026-08-02T18:35:22.362Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785695710042-d7f6c83a",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: single-intent PR (uiux intake judgment gate), 7 commits / 15 tracked files at current HEAD, reviewable as one lane",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 7 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 7042185e is the digest-bound budget grant bookkeeping for the review cycle. All 15 files trace to the one gate contract or its story-process bookkeeping.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "current_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T18:35:09.985Z"
+      },
+      "recorded_at": "2026-08-02T18:35:10.044Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785695152907-2c1c9e3a",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-judgment-gate",
+      "source_status": null,
+      "summary": "Owner grant raising this story's review subagent capacity for the gate-stage final reviews",
+      "reason": "The preflight cycle legitimately consumed four architecture_boundary lifecycles finding and verifying a real enforcement bug (decorative gate) plus a fixture regression; the gate-stage final reviews still need first dispatches at the frozen head. Grant raises subagent count to 14 and sets per-role dispatch caps matching the actual consumed + remaining plan.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "override_digest": "52b02edfe11f2400c985cb78a016544d6e08f6c60db56747fdba898cebcbe633",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "sweet-chatelet-c1b354"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-uiux-intake-judgment-gate-52b02edf.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "438ab5d841d0831e31676f7a4a199a92347e1d78",
+          "current_head_sha": "438ab5d841d0831e31676f7a4a199a92347e1d78",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "438ab5d841d0831e31676f7a4a199a92347e1d78",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T18:25:52.889Z"
+      },
+      "recorded_at": "2026-08-02T18:25:52.909Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785692604565-7874dbb9",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": ".vibepro/config.json is committed intentionally: brainbase.stories[] registration is the self-dogfood story catalog",
+      "reason": "CLAUDE.md self-dogfood quickstart requires registering hand-written stories in .vibepro/config.json brainbase.stories[]; the file is already tracked in the repository and carries configuration, not diagnostic evidence. No other .vibepro artifacts are committed.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "current_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T17:43:24.555Z"
+      },
+      "recorded_at": "2026-08-02T17:43:24.566Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785692601865-5c9fd2f3",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split: one intent, one behavioral surface, reviewable as a single lane",
+      "reason": "Same justification as gate:pr_scope_judgment - the change is one contract across gate builder, decision type, Skill, and lineage docs; a split would produce non-functional intermediate states.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "current_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T17:43:21.855Z"
+      },
+      "recorded_at": "2026-08-02T17:43:21.866Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785692599353-f38a57a2",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled-scope justification: gate + decision type + Skill text + lineage docs are one shippable contract",
+      "reason": "The gate is only honest if both closure paths (intake coverage artifact, intake_not_applicable decision with reason) ship in the same PR; the Skill text is the firing judgment the harness verifies. Shipping any subset would either block every story with no closure or add a decision type nothing reads.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "current_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T17:43:19.327Z"
+      },
+      "recorded_at": "2026-08-02T17:43:19.354Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785692597146-4dd40242",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: single-intent PR (uiux intake judgment gate) reviewable by one reviewer",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + src/decision-records.js decision type + skills/vibepro-workflow/SKILL.md firing judgment + docs lineage are one contract; splitting would ship a blocking gate without its closure paths. Four focused commits, 8 tracked files, one behavioral surface (pr prepare gate DAG).",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "current_head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "861b9a5e3360097f32121e98f7f5ed78811a9851",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T17:43:17.137Z"
+      },
+      "recorded_at": "2026-08-02T17:43:17.148Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785685804781-68c70938",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "intake_not_applicable",
+      "status": "accepted",
+      "source": null,
+      "source_status": null,
+      "summary": "Gate/CLI/Skill change only; no UI/UX surface is touched",
+      "reason": "This story adds gate:uiux_intake_judgment to pr prepare, a decision type, and Skill text. No screen, route, visual style, or interaction behavior changes; UI/UX intake fields (target users, visual style, tone, etc.) have no object to describe.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "8fb5aa510ffceb91395c526d3c055ed9e8a11cae",
+          "current_head_sha": "8fb5aa510ffceb91395c526d3c055ed9e8a11cae",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8fb5aa510ffceb91395c526d3c055ed9e8a11cae",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T15:50:04.773Z"
+      },
+      "recorded_at": "2026-08-02T15:50:04.782Z"
+    }
+  ],
+  "summary": {
+    "total": 16,
+    "open": 0,
+    "by_type": {
+      "needs_review": 15,
+      "intake_not_applicable": 1
+    },
+    "by_status": {
+      "accepted": 16
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+        "expected_root": null,
+        "expected_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+        "current_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785803839512-410ae10e",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-judgment-gate",
+      "source_status": null,
+      "summary": "Owner grant for the delta-merge landing round: differential re-reviews after origin/main advanced with pr-manager changes",
+      "reason": "PR #415-#420 merged into main changed src/pr-manager.js (summary surfaces, checkpoint gate list, dead-chain removal), staling the content-bound gate_evidence/architecture_boundary/runtime_contract reviews; frozen final_review requires a current runtime_contract record. Caps raised with spare slots to survive one more externally-forced merge without another grant commit.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "override_digest": "eb8c2fdef04ad171aa0129b513a549122a424b3e17b96e784f8c1456057194bd",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "sweet-chatelet-c1b354"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-04-budget-override-story-vibepro-uiux-intake-judgment-gate-eb8c2fde.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+          "expected_root": null,
+          "expected_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+          "current_head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "78f40d932307b654ee89f20de0971a2649ea8a72",
+        "current_branch": "claude/sweet-chatelet-c1b354",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-04T00:37:19.501Z"
+      },
+      "recorded_at": "2026-08-04T00:37:19.514Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/decision-records.json"
+}

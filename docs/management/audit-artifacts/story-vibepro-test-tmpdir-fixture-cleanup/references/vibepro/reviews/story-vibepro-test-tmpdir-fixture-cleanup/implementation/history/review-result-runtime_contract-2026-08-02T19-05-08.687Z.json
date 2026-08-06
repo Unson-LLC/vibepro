@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "os.tmpdir() re-reads env per call (verified by probe); helper is test-only with zero src references; child env inheritance covers spawned processes; exit hook and 24h sweep are documented best-effort with acceptable blast radius",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "exit-hook-no-signal-handlers",
+      "detail": "process exit hook skips SIGKILL; accepted documented limitation mitigated by the 24h sweep"
+    },
+    {
+      "severity": "low",
+      "id": "sweep-touches-other-process-live-dirs-if-long-idle",
+      "detail": "age-based sweep has no liveness check; a >24h idle live scratch root could be swept; very low probability at normal suite durations"
+    },
+    {
+      "severity": "low",
+      "id": "conformance-gate-pattern-gap",
+      "detail": "conformance walk misses .spec.js; all current mkdtemp-using spec files verified to import the helper"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read helper in full; probed os.tmpdir() env re-read via node -e; grep confirmed zero src/ references and enumerated all helper importers; read conformance GATE tests; verified 3 post-rebase patched files only add the standard import via git show",
+    "evidence": null,
+    "inputs": [
+      "test/support/scratch-tmpdir.js",
+      "test/scratch-tmpdir-conformance.test.js",
+      "test/architecture-profiler.test.js",
+      "scripts/run-e2e-ts-specs.mjs"
+    ]
+  },
+  "judgment_delta": [
+    "import-time env mutation initially looked order-fragile; probe confirmed per-call env re-read so mechanism is sound; sweep liveness concern downgraded to low after modeling realistic suite durations"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "current_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+      "current_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T19:05:08.687Z",
+  "git_context": {
+    "head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T19:05:08.662Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "surface_files": [
+      {
+        "path": "scripts/run-e2e-ts-specs.mjs",
+        "sha256": "8844dbc5ddc1c91628a262de2b0e0a3bd28f41075adc2f512ea6e0b90b6087ec",
+        "size": 2954
+      },
+      {
+        "path": "test/architecture-profiler.test.js",
+        "sha256": "53e76c4468b8f89f632152e9eea05a2fac59eebdc4f529e8b815ca905d61b1e9",
+        "size": 2950
+      },
+      {
+        "path": "test/scratch-tmpdir-conformance.test.js",
+        "sha256": "6545dbe9b5cfe14da41a86038d920c65c336a6a300d47ec53789227c2452099b",
+        "size": 4113
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "9cfc3d8a90482ccb59eb2dab1077e8d3d232d70e7d460e02bf1ef6a9162375dc"
+  },
+  "source_fingerprint": "7eac58bc0f6a403117e228a840cfe6a2c6eb1db8697d8e8a1c6edd3d8266de9e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a9354afa77cae380c",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a9354afa77cae380c",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/verdict-runtime_contract.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a9354afa77cae380c",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

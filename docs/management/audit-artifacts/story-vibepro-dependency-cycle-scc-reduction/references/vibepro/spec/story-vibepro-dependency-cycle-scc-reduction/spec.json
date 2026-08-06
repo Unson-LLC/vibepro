@@ -1,0 +1,495 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "How a circularity measurement can lie: collapsing 69,490 simple cycles into one SCC without losing the ability to detect a real regression",
+      "mermaid": "flowchart LR\n    Src[repository source files] --> Scan[import scan edges]\n    Scan --> ModEdges[module edges with import weights]\n    ModEdges --> Tarjan[detectModuleSccs iterative Tarjan]\n    ModEdges --> Pairs[mutual dependency pair detection]\n    Tarjan --> SccV[dependency_cycle violation one per SCC]\n    Pairs --> MutV[mutual_dependency violation one per pair]\n    SccV --> Delta[conformance delta by_kind]\n    MutV --> Delta\n    Delta --> Ratchet[future ratchet gate on new regressions]\n\n    subgraph Threats\n        T1[collapsing to one SCC hides a genuinely new circular dependency because the count stays 1]\n        T2[violation identity depends on traversal order so ids churn between scans and every delta reads as new plus resolved]\n        T3[the reduction is achieved by capping or truncating output so the discarded remainder silently changes with graph size]\n        T4[a deep or large graph overflows the call stack and the scan reports fewer cycles than exist]\n        T5[cut candidates are presented as an exact minimum feedback arc set so a reader trusts an approximation as a proof]\n        T6[the new dimension is invisible to the delta ledger so resolving a mutual pair cannot be scored]\n        T7[removing the old enumerator breaks the code and test anchors of an already merged specification]\n    end\n\n    SccV -.-> T1\n    SccV -.-> T2\n    Tarjan -.-> T3\n    Tarjan -.-> T4\n    SccV -.-> T5\n    MutV -.-> T6\n    Tarjan -.-> T7\n\n    T1 -->|mitigation| M1[mutual dependency pairs are a separate dimension of about twenty items so a new bidirectional edge appears as a new violation even while the SCC count stays one]\n    T2 -->|mitigation| M2[component members are sorted and components are ordered by their joined member key so ids come from module names and never from discovery order]\n    T3 -->|mitigation| M3[every strongly connected component is emitted with no cap or length threshold and the reduction comes from the decomposition itself]\n    T4 -->|mitigation| M4[Tarjan is implemented with an explicit work stack so recursion depth never scales with node count]\n    T5 -->|mitigation| M5[the field is named feedback_edge_candidates and both the code comment and the rendered report state it is a weight ranked heuristic and not a minimum feedback arc set]\n    T6 -->|mitigation| M6[mutual_dependency is added to DELTA_VIOLATION_KINDS so by_kind reports new and resolved counts for it]\n    T7 -->|mitigation| M7[detectModuleCycles keeps its exported signature and its CDL-S-6 test while being removed from the pipeline]\n"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Circularity violation identity is derived only from the module names that constitute it (sorted members for an SCC, the alphabetically sorted pair for a mutual dependency), never from traversal order, discovery order, array index or group ordinal, so scanning the same tree twice yields an identical violation id set.",
+      "rationale": "The conformance delta ledger classifies violations as new/resolved/unchanged by matching ids across base and head. An id that moves with traversal order turns every scan into a full churn of new plus resolved and makes the ratchet signal meaningless.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "DCS-S-2: dependency_cycle violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "id: `dependency_cycle_scc:${members.join('+')}`,"
+          },
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "id: `mutual_dependency:${a}+${b}`,"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-1: detectModuleSccs is deterministic regardless of edge input order"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-2: scanning the same commit twice yields identical violation id sets and counts"
+          },
+          {
+            "file": "test/architecture-conformance-scc-integration.test.js",
+            "case": "DCS-S-3: the persisted SCC violation is internally consistent with the mutual_dependency dimension"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:1 (DCS-S-1) SCC detection is iterative, cycle-only and deterministically ordered"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "id: `dependency_cycle_scc:${members.join('+')}`,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "DCS-S-1: detectModuleSccs is deterministic regardless of edge input order"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "detectModuleSccs computes the strongly connected components of a directed module graph with an iterative (explicit work stack, non-recursive) Tarjan in O(V+E), returns only components that actually contain a cycle (size greater than one, or a single node with a self-loop), and returns them with members sorted and components ordered by their joined member key.",
+      "rationale": "The SCC is the unique order-independent decomposition of 'which nodes participate in a cycle'; the simple-cycle set encodes the same fact exponentially redundantly. An explicit work stack is required because this detector is the natural thing to point at a file-level graph next, where recursion depth would scale with node count.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "DCS-S-1: detectModuleSccs(moduleEdges) が有向モジュールグラフの強連結成分を反復（非再帰）版 Tarjan で線形時間 O(V+E) で求める"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "export function detectModuleSccs(moduleEdges) {"
+          },
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "const work = [{ node: root, edgeIndex: 0 }];"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-1: detectModuleSccs collapses a fully tangled graph to a single component"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-1: detectModuleSccs separates disjoint tangles and drops acyclic nodes"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:1 (DCS-S-1) SCC detection is iterative, cycle-only and deterministically ordered"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "export function detectModuleSccs(moduleEdges) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "DCS-S-1: detectModuleSccs collapses a fully tangled graph to a single component"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "The dependency_cycle dimension emits exactly one violation per cyclic strongly connected component, with id dependency_cycle_scc:<sorted members joined by plus>, replacing one violation per simple cycle; on this repository that reduces dependency_cycle from 69,490 to 1 without any cap, length threshold or truncation being applied.",
+      "rationale": "One tangle is one fact. Reducing the count by capping or thresholding the enumeration would make the discarded remainder move with graph size and break delta id stability, so the reduction has to come from the decomposition itself.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "DCS-S-2: dependency_cycle violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "const cycleFindings = detectModuleSccs(moduleEdges).map((members) => {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-6: a real bidirectional module import produces an independent dependency_cycle violation"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:2 ac:6 (DCS-S-2 / DCS-S-6) a newly introduced circular dependency is reported as one new SCC by the delta flow"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "const cycleFindings = detectModuleSccs(moduleEdges).map((members) => {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "CDL-S-6: a real bidirectional module import produces an independent dependency_cycle violation"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Each SCC violation carries members (sorted), module_edge_count, import_edge_count, mutual_pairs, and feedback_edge_candidates, where feedback_edge_candidates are the intra-SCC module edges ranked by ascending real import count and are labelled in both code and rendered output as a weight-ranked heuristic rather than a minimum feedback arc set.",
+      "rationale": "An SCC violation that says only 'these 16 modules are tangled' gives no way to act. Weight-ranked cut candidates give a cheapest-first starting point, and naming them as an approximation prevents a reader from treating an NP-hard problem as solved.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "DCS-S-3: SCC violation は members、module_edge_count、import_edge_count、mutual_pairs、feedback_edge_candidates を持つ"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "DCS-S-5: feedback_edge_candidates は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、最小 feedback arc set の厳密解ではない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "function rankFeedbackEdgeCandidates(internalEdges) {"
+          },
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "feedback_edge_candidates: rankFeedbackEdgeCandidates(internalEdges),"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-3: an SCC violation carries members, edge weights, mutual pairs and cut candidates"
+          },
+          {
+            "file": "test/architecture-conformance-scc-integration.test.js",
+            "case": "DCS-S-5: the rendered report surface shows the SCC, its mutual pairs and heuristic cut candidates"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:3 ac:5 (DCS-S-3 / DCS-S-5) the SCC violation carries actionable structure and heuristic cut candidates"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "function rankFeedbackEdgeCandidates(internalEdges) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "DCS-S-3: an SCC violation carries members, edge weights, mutual pairs and cut candidates"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "Module pairs that import each other in both directions are reported as their own violation kind mutual_dependency, one per pair, with id mutual_dependency:<a>+<b> in alphabetical order and per-direction real import counts and example file edges.",
+      "rationale": "A single SCC violation cannot regress visibly when one more bidirectional edge appears. Mutual pairs are both the smallest actionable cut candidates and the sensitive signal that keeps a real circularity regression detectable after the SCC collapse.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "DCS-S-4: 相互依存ペアが mutual_dependency という独立 kind の violation として出力される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "function findMutualDependencyPairs(moduleEdgeStats) {"
+          },
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "kind: 'mutual_dependency',"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-4: mutual_dependency violations carry both directions with import evidence"
+          },
+          {
+            "file": "test/architecture-conformance-scc-integration.test.js",
+            "case": "DCS-S-3: the persisted SCC violation is internally consistent with the mutual_dependency dimension"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:4 ac:6 (DCS-S-4 / DCS-S-6) repairing a mutual dependency is reported as resolved on its own dimension"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "function findMutualDependencyPairs(moduleEdgeStats) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "DCS-S-4: mutual_dependency violations carry both directions with import evidence"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "mutual_dependency is a first-class dimension of the conformance delta ledger: it appears in DELTA_VIOLATION_KINDS so the delta summary reports new/resolved/unchanged counts for it separately from dependency_cycle.",
+      "rationale": "The delta ledger keys by_kind on the violation kind. If mutual pairs lived only inside the SCC violation payload, resolving one pair would produce no measurable movement and no future ratchet could score it.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "DCS-S-6: architecture-conformance-delta.js の DELTA_VIOLATION_KINDS に mutual_dependency が含まれ、delta の by_kind に次元として現れる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "  'mutual_dependency'\n];"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-6: the conformance delta reports mutual_dependency as its own dimension"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:2 ac:6 (DCS-S-2 / DCS-S-6) a newly introduced circular dependency is reported as one new SCC by the delta flow"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:4 ac:6 (DCS-S-4 / DCS-S-6) repairing a mutual dependency is reported as resolved on its own dimension"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance-delta.js",
+            "must_contain": "  'mutual_dependency'\n];"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "DCS-S-6: the conformance delta reports mutual_dependency as its own dimension"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "detectModuleCycles keeps its exported signature and its normalized simple-cycle return contract so the merged Spec of story-vibepro-conformance-delta-ledger (clause S-003) keeps resolving its code anchor and its CDL-S-6 test, while no conformance violation id uses the retired dependency_cycle:<a>-><b> form any more.",
+      "rationale": "A merged Spec is the record of what a past story promised, not a mirror of current code; deleting an anchor it binds would break that record. Keeping the export while removing it from the pipeline preserves the anchor without letting the exponential enumeration back into the measurement.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "DCS-S-7: export function detectModuleCycles(moduleEdges) は署名・戻り値契約ともに維持され、既存の CDL-S-6 テストがそのまま通る。ただし conformance パイプラインからは呼ばれない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "export function detectModuleCycles(moduleEdges) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "DCS-S-7: detectModuleCycles stays exported while no conformance violation uses its id form"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-6: detectModuleCycles finds a normalized 2-module cycle regardless of start node"
+          },
+          {
+            "file": "test/architecture-conformance-scc-integration.test.js",
+            "case": "DCS-S-3: the persisted SCC violation is internally consistent with the mutual_dependency dimension"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:7 (DCS-S-7) the retired enumerator stays exported while the flow emits only SCC ids"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "export function detectModuleCycles(moduleEdges) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "DCS-S-7: detectModuleCycles stays exported while no conformance violation uses its id form"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "The conformance summary gains mutual_dependency_count and redefines dependency_cycle_count as the number of cyclic strongly connected components; every other summary field, the violation envelope shape, and the other dimensions (undeclared_dependency, budget_violation, orphan_file, stale_pattern) are unchanged, so existing consumers such as pr prepare's conformance_summary keep reading the same structure.",
+      "rationale": "The measurement is consumed by the senior-gap judgment path and by the delta ledger. Changing the meaning of one count and adding one field is a bounded, additive contract change; changing the envelope would silently break those consumers.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "DCS-S-6: summary に mutual_dependency_count が追加され、dependency_cycle_count は SCC 件数を指す"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "mutual_dependency_count: mutualFindings.length,"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-6: a real bidirectional module import produces an independent dependency_cycle violation"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "mutual_dependency_count: mutualFindings.length,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "CDL-S-6: a real bidirectional module import produces an independent dependency_cycle violation"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    },
+    {
+      "id": "SLA-001",
+      "type": "sla",
+      "statement": "On this repository, an architecture conformance scan reports dependency_cycle=1, mutual_dependency=20 and violation_count=55 (down from dependency_cycle=69,490 and violation_count=69,524 at origin/main 882c3df8) with undeclared_dependency=22, budget_violation=11 and orphan_file=1 unchanged, and completes in under two seconds (measured 0.51s wall clock, down from 7.86s).",
+      "rationale": "The point of the change is that the measurement becomes small enough to read and cheap enough to run on every PR; that is only true if the other dimensions are provably untouched, otherwise the reduction could be a scan that stopped looking.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "DCS-S-8: 本リポジトリ実測で dependency_cycle が 69,490 件から 1 件、mutual_dependency が 20 件、undeclared_dependency 22 / orphan_file 1 / budget_violation 11 が不変であることが確認できる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/vibepro-dependency-cycle-scc-reduction.md",
+            "anchor": "## 問題: 単純閉路列挙の組合せ爆発"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-scc-integration.test.js",
+            "case": "DCS-S-8: the real conformance CLI persists one SCC violation and leaves the other dimensions unchanged"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-2: scanning the same commit twice yields identical violation id sets and counts"
+          },
+          {
+            "file": "test/e2e/story-vibepro-dependency-cycle-scc-reduction-main.test.js",
+            "case": "ac:8 (DCS-S-8) the real repository scan collapses to one SCC and leaves the other dimensions unchanged"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/vibepro-dependency-cycle-scc-reduction.md",
+            "must_contain": "## 問題: 単純閉路列挙の組合せ爆発"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-scc-integration.test.js",
+            "must_cover": "DCS-S-8: the real conformance CLI persists one SCC violation and leaves the other dimensions unchanged"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T01:23:45.643Z",
+      "last_revised_at": "2026-08-05T03:17:47.050Z"
+    }
+  ],
+  "generated_at": "2026-08-05T03:17:47.047Z",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-08-05T03:10:37.405Z"
+}

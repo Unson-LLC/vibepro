@@ -1,0 +1,102 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+      "decision_id": "decision-1785412213308-6029fd69",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the diff on top of origin/claude/wizardly-meninsky-aa546d contains only this Story's commits (mechanism in src/decision-records.js, its tests, generated CLI reference, one backfill document, Story/Spec registration) — one governance intent, one reviewer can read it end to end. review_owner_map: gate stage gate_evidence role reviewed and passed by independent subagent aa53f6ecf2c037b10 (separate_session provenance); blast radius is limited to the decision-record write path, with consuming surfaces proven unchanged. decision_record: accepted bundled-scope decisions exist for gate:pr_scope_judgment and gate:split_resolution.",
+      "artifact": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-summary.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T11:50:38.666Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:runtime_change|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+      "decision_id": "decision-1785412209308-0f918d25",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "Old expectation: decision record --source budget:delivery_efficiency:<id> wrote only the workspace decision store and budget_approval had no decision_doc field. New expectation: it also writes docs/management/decisions/<date>-budget-override-<story>-<digest8>.md and records the path as budget_approval.decision_doc, failing when that path is gitignored. contract_doc traceability: docs/reference/cli.md and docs/ja/reference/cli.md (regenerated from vibepro help, commit 0eac545a) state the new contract; compatibility: no-grant decisions are unchanged (CON-001, BGT-S-4) and grant resolution semantics are untouched (resolveBudgetOverrideAuthority does not read decision_doc; consuming-surfaces and guardrail suites pass unchanged). Additive field plus a new fail-closed error path is the full surface delta.",
+      "artifact": "docs/reference/cli.md",
+      "activation_candidates": [
+        "pr_route:runtime_change",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T11:50:38.666Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "ux_surface|changed_path:ux_surface",
+      "axis": "ux_surface",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "decision_id": "decision-1785668509550-80d4d9d5",
+      "source": "gate:judgment_axis_ux_surface",
+      "reason": "screenshot / visual_qa / accessibility_evidence / flow_replay are not applicable to a headless CLI scanner rewrite; the CLI output contract is unchanged and covered by the integration test asserting the same stdout lines",
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "activation_candidates": [
+        "changed_path:ux_surface"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T11:56:35.683Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state|surface:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "decision_id": "decision-1785668506586-19990d97",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "migration_plan and rollback_plan are not applicable: the scanners read directory entries and file contents and write nothing; diagnosis artifacts are written by unchanged downstream code; idempotency verified by the integration run re-executing diagnose repeatedly with identical outcomes",
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "activation_candidates": [
+        "surface:data_state",
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T11:56:35.683Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "decision_id": "decision-1785668504445-9eccebf9",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "rollback_plan: revert the walker commits and the previous recursive implementations return with no data or config to unwind; feature_gate_disable is not applicable because no gate exists; the change is stateless in-process traversal only",
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T11:56:35.683Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "decision_id": "decision-1785668513001-fca82a0b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map is not applicable to a single-owner repo change; the decision_record for bundled scope (gate:pr_scope_judgment) documents why the 8 modules land together; every hunk is the same recursive-to-iterative rewrite reviewable side by side",
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T13:00:25.027Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

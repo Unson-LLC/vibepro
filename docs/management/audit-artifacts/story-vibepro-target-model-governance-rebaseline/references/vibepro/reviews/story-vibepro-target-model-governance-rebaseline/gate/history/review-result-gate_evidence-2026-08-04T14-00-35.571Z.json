@@ -1,0 +1,173 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-governance-rebaseline",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "target-model.json rules[] and allowed_dependencies are byte-identical to origin/main (only modules[].paths gained 5 machine-maintainable orphan assignments, verified by diff and by the TMG-S-1/S-8 live-code assertion which the reviewer reran); adjudication cards remain unanswered (answered_at null, pending_adjudication, enforced by TMG-S-7); proposal determinism test TMG-S-6 exists and passes; spec drift clean; all four verification-run artifacts (unit 2505/2505, integration 7/7, typecheck pass, e2e 96/96) are head-bound to 7eb0fc19 with clean worktree hashes. No findings.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=gate_orchestration. Diffed target-model.json line-by-line against origin/main confirming only paths[] additions; read the adjudication cards confirming answered_at null with 5 unanswered questions; ran test/architecture-rebaseline-proposal.test.js (13/13 pass including determinism and governance-invariant tests); ran spec drift (clean); read all four verification-runs artifacts confirming head binding and matching worktree hashes; reviewed additive-only diffs in architecture-conformance.js, architecture-conformance-delta.js, design-ssot.json, and .vibepro/config.json.",
+    "evidence": "node --test test/architecture-rebaseline-proposal.test.js (13/13 pass); vibepro spec drift . --id story-vibepro-target-model-governance-rebaseline --json (clean); verification-runs/{unit,integration,typecheck,e2e}.json all head_sha=7eb0fc19 pass",
+    "inputs": [
+      "docs/architecture/target-model.json",
+      "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+      "src/architecture-rebaseline-proposal.js",
+      "src/architecture-conformance.js",
+      "src/architecture-conformance-delta.js",
+      "test/architecture-rebaseline-proposal.test.js",
+      "docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md",
+      ".vibepro/spec/story-vibepro-target-model-governance-rebaseline/spec.json",
+      "design-ssot.json",
+      ".vibepro/config.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concerns that machine maintenance touched rules or allowed_dependencies, that cards were silently pre-answered, or that determinism was untested -> pass because the diff and dedicated repo tests (TMG-S-1/S-8, TMG-S-7, TMG-S-6) each independently rule these out and all evidence artifacts are current-head bound"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+    "expected_root": null,
+    "expected_head_sha": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+    "current_head_sha": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+      "expected_root": null,
+      "expected_head_sha": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "current_head_sha": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T14:00:35.571Z",
+  "git_context": {
+    "head_sha": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+    "current_branch": "codex/story-vibepro-target-model-governance-rebaseline",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T14:00:35.544Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "e966e6f3386ff64a826cfd9301099b7d85bd9317f1ae3ae45f09d5211a781940",
+        "size": 103148
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "2459f09aad18040ecccb1ea525bc0537ac5b59b3fd27ae270288bef6898072d4",
+        "size": 274674
+      },
+      {
+        "path": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+        "sha256": "07c716eaa803fbda6b211fb7258b078412673de2c34d09ab72c9bb64ec147288",
+        "size": 10151
+      },
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "0f679550025223de7af0c6fb1adc485548aa26fe3ddc8d78786dc46b5cc22564",
+        "size": 11409
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md",
+        "sha256": "ac11bc1d72f4d168a1ad11f7d2a384c15a5440245942059411621b191a1f7f4a",
+        "size": 9664
+      },
+      {
+        "path": "src/architecture-conformance-delta.js",
+        "sha256": "7d10d4e416d5d36e416c6e866e5555693c67f8c4a40fe154e75d9658fc2c7c23",
+        "size": 11564
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "6c726d43e6dc768cd2b01afe8239f40840cc9f0175d4e5f3db41e1204c53ad15",
+        "size": 23372
+      },
+      {
+        "path": "src/architecture-rebaseline-proposal.js",
+        "sha256": "cc41db9a45c52ced1bc6525b6fb218a854f711ce0e8d59c80604fb5bd736d13a",
+        "size": 22644
+      },
+      {
+        "path": "test/architecture-rebaseline-proposal.test.js",
+        "sha256": "a37fa78999d691cc05bf67dde2e19b5adf803f7ea956dfe7035d87032300044d",
+        "size": 18893
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "f934564bf3a4310f1284a6d4f227f1fa43b1874ce5493b3a1d082ea3567e147e"
+  },
+  "source_fingerprint": "e98529eae115647005d5dad3bf060b7a9a339dfede52daf9b59720b72028cafe",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aff8b5b1195e6897d",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "aff8b5b1195e6897d",
+    "session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/5dba809a-0bb8-481f-a513-6f094921cc5f/tasks/aff8b5b1195e6897d.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-target-model-governance-rebaseline/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close recorded with close_reason=completed at head 7eb0fc19; subagent ended after returning pass verdict JSON",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+      "implementation_session_id": "subagent-ad3f3c5891b8baf06",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

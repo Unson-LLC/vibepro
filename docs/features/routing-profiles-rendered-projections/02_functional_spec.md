@@ -153,7 +153,6 @@ Given recorded git context contains user_status_fingerprint_hash, freshness comp
 
 - {"anchor":"fingerprintHashForContext","file":"src/git-fingerprint.js"}
 - {"case":"pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes","file":"test/vibepro-cli.test.js"}
-- {"case":"story-vibepro-evidence-user-fingerprint evidence binding replay","file":"test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts"}
 
 ## Diagrams
 

@@ -21,7 +21,7 @@ test('story-vibepro-next-best-action-controller acceptance flow replay', async (
     maxBuffer: 2 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# fail 0\b/, 'focused Next Best Action suite must have no failures');
+  assert.match(result.stdout, /(?:ℹ|#) fail 0\b/, 'focused Next Best Action suite must have no failures');
   assert.match(result.stdout, /NBA-S-1 excludes policy, dependency, and classification violations/,
     'ac1 S-001 excludes forbidden or dependency-blocked Safe Actions');
   assert.match(result.stdout, /NBA-S-2 and NBA-S-4 record every metric and preserve unknown costs/,
