@@ -61,8 +61,17 @@ test('story-vibepro-uiux-intake-judgment-gate ac:1 gate always present and block
 
 test('story-vibepro-uiux-intake-judgment-gate ac:2 intake coverage artifact resolves the gate', async () => {
   const repo = await makeGitRepoWithStory();
-  const template = await runCli(['uiux', 'intake', 'template', repo, '--id', STORY, '--json']);
-  assert.equal(template.exitCode, 0, JSON.stringify(template.result ?? template.error, null, 2));
+  // vibepro uiux intake template was removed in the minimal-core rebuild (Slice 1); this writes
+  // the same .vibepro/uiux/<story-id>/uiux-intake-coverage.json artifact shape the gate reads.
+  const coverageDir = path.join(repo, '.vibepro', 'uiux', STORY);
+  await mkdir(coverageDir, { recursive: true });
+  await writeFile(path.join(coverageDir, 'uiux-intake-coverage.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    workflow: 'uiux-intake-coverage',
+    story_id: STORY,
+    status: 'needs_intake_detail',
+    missing_required_fields: ['target_users']
+  }, null, 2));
   const prepare = await prPrepare(repo);
   // story-vibepro-uiux-intake-judgment-gate ac:2 .vibepro/uiux/<story-id>/uiux-intake-coverage.json が存在するstoryではgateがpassedになる
   const gate = gateNode(prepare);

@@ -1351,26 +1351,3 @@ test('story derive binds global Graphify import to the configured current Story 
   await access(path.join(root, '.vibepro/graphify/graph.json'));
 });
 
-test('design-system derive binds Graphify evidence with --story-id', async () => {
-  const storyId = 'story-routing-design-system';
-  const root = await repo({
-    artifact_routing: {
-      schema_version: '0.1.0',
-      artifacts: { graphify: { canonical: 'artifacts/{feature_slug}/graphify' } }
-    }
-  });
-  const graphDir = path.join(root, 'artifacts', 'routing-design-system', 'graphify');
-  await mkdir(graphDir, { recursive: true });
-  await writeFile(path.join(graphDir, 'graph.json'), `${JSON.stringify({
-    nodes: [{ id: 'route:/settings', type: 'route' }],
-    edges: []
-  })}\n`);
-  let output = '';
-  const result = await runCli([
-    'design-system', 'derive', root, '--id', 'routing-ds', '--story-id', storyId, '--json'
-  ], { stdout: { write: (text) => { output += text; } } });
-  assert.equal(result.exitCode, 0);
-  const json = JSON.parse(output);
-  assert.equal(json.source_evidence.graphify.status, 'available');
-  assert.match(json.source_evidence.graphify.artifact, /artifacts\/routing-design-system\/graphify\/graph\.json/);
-});

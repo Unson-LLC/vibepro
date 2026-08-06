@@ -24,72 +24,11 @@ import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUs
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
 import { renderAgentHarnessStatus, scanAgentHarness } from './agent-harness-scanner.js';
-import {
-  getExploreEvidenceStatus,
-  prepareExploreEvidence,
-  recordExploreEvidence,
-  renderExplorePrepareSummary,
-  renderExploreRecordSummary,
-  renderExploreStatusSummary
-} from './explore-evidence.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { runDiagnosis } from './diagnostic-engine.js';
 import { ArtifactRoutingError, buildArtifactMigrationPlan, resolveArtifactRoute, resolveArtifactRoutes } from './artifact-routing.js';
 import { deriveEnvironmentGraph, renderEnvironmentGraphSummary } from './environment-graph.js';
-import { runDiagnosis } from './diagnostic-engine.js';
-import {
-  captureDesignModernizeScreens,
-  createDesignModernizePlan,
-  deriveProductDesignSystem,
-  renderCaptureSummary,
-  renderDerivedDesignSystemSummary,
-  renderDesignModernizePlan
-} from './design-modernize.js';
-import {
-  diffDesignMarkdown,
-  deriveNativeDesignSystem,
-  exportDesignMarkdown,
-  exportDesignSystem,
-  initDesignSystem,
-  ingestDesignMarkdown,
-  ingestExternalDesignSystemBundle,
-  ingestVisualDesignBrief,
-  lintDesignMarkdown,
-  renderDesignMarkdownDiffSummary,
-  renderDesignMarkdownLintSummary,
-  renderDesignSystemValidationSummary,
-  renderNativeDesignSystemSummary,
-  validateDesignSystem
-} from './design-system.js';
-import {
-  createUiuxIntakeTemplate,
-  renderUiuxIntakeCoverageSummary,
-  renderUiuxIntakeTemplateSummary,
-  validateUiuxIntake
-} from './uiux-intake.js';
-import {
-  createUiuxIaFlowMap,
-  renderUiuxIaFlowMapSummary
-} from './uiux-flow-map.js';
-import {
-  createResponsiveA11yMatrix,
-  renderResponsiveA11yMatrixSummary
-} from './uiux-responsive-a11y.js';
-import {
-  prepareUiuxCockpit,
-  renderUiuxPrepareSummary
-} from './uiux-prepare.js';
-import {
-  auditDesignSsotCoverage,
-  getDesignSsotStatus,
-  initDesignSsot,
-  linkDesignSsot,
-  reconcileDesignSsot,
-  renderDesignSsotCoverageSummary,
-  renderDesignSsotStatus,
-  renderDesignSsotSummary
-} from './design-ssot.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, resolveHumanOutputLanguage, setOutputLanguage } from './language.js';
-import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
 import {
   recordSessionLearning,
@@ -101,19 +40,6 @@ import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
 import { collectWorkspaceStatus, renderWorkspaceStatus } from './workspace-status.js';
-import {
-  comparePerformanceMeasurements,
-  renderPerformanceSummary,
-  runPerformanceMeasurement
-} from './performance-measurer.js';
-import {
-  compareStoryPerformance,
-  definePerformanceMetric,
-  recordPerformanceRun,
-  renderPerformanceDefineSummary,
-  renderPerformanceEvidenceSummary,
-  renderPerformanceRecordSummary
-} from './performance-evidence.js';
 import {
   authorizeAgentReviewDispatch,
   closeAgentReviewLifecycle,
@@ -190,8 +116,6 @@ import {
   renderPrShipSummary,
   shipPullRequest
 } from './pr-manager.js';
-import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
-import { renderVisualVerificationSummary, runVisualVerification } from './visual-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
@@ -205,10 +129,6 @@ import {
 import { OutcomeCommandError, recordOutcome, refreshOutcome, requireOutcomeStoryId } from './outcome-manager.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
-import {
-  exportStoryEngineeringPlaybook,
-  renderPlaybookExportSummary
-} from './playbook-exporter.js';
 import { validateSpec } from './spec-validator.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
@@ -216,28 +136,6 @@ import {
   recordPreSpecReadiness,
   renderPreSpecReadinessSummary
 } from './pre-spec-readiness.js';
-import {
-  assertArchitectureReadinessForFinal,
-  recordArchitectureReadiness,
-  renderArchitectureReadinessSummary
-} from './architecture-readiness.js';
-import {
-  defaultArchitectureFinalPath,
-  writeDraftArchitecture,
-  writeFinalArchitecture
-} from './architecture-store.js';
-import {
-  renderConformanceMarkdown,
-  runArchitectureConformance
-} from './architecture-conformance.js';
-import {
-  renderConformanceDeltaMarkdown,
-  runArchitectureConformanceDelta
-} from './architecture-conformance-delta.js';
-import {
-  renderRebaselineProposalMarkdown,
-  runRebaselineProposal
-} from './architecture-rebaseline-proposal.js';
 import {
   readInferredSpec,
   stabilizeClauseIds,
@@ -300,15 +198,6 @@ import {
   renderTaskShow,
   showTask
 } from './task-manager.js';
-import {
-  curateJourneyMap,
-  deriveJourneyMap,
-  getJourneyStatus,
-  renderJourneyCurateSummary,
-  renderJourneyHandoff,
-  renderJourneyMap,
-  renderJourneyStatus
-} from './journey-map.js';
 import {
   installBundledSkills,
   lintBundledSkills,
@@ -400,58 +289,6 @@ gh pr create as the standard path. After PR creation, import CI evidence, rerun
 pr prepare and pr create to refresh lifecycle artifacts, then use vibepro execute
 merge to record merge-time checks and GitHub merge results.
 
-Existing UI modernization:
-  vibepro design-system init <repo> --id <ds-id> --product <name>
-      Scaffold an empty-but-valid product-local Design System with explicit
-      needs_evidence gates before route/code evidence exists.
-  vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
-      Derive a product-local Design System from current route code, style/token
-      files, optional Graphify evidence, and product semantics.
-  vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
-      Normalize external token/component/guideline bundles into VibePro-native
-      DS sections as reference evidence only.
-  vibepro design-system ingest-design-md <repo> --id <ds-id> --file DESIGN.md
-      Ingest DESIGN.md YAML tokens and Markdown rationale as reference evidence,
-      write DESIGN.md/design-md.json artifacts, and add explicit DS gate checks.
-  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css|design-md
-      Export the aggregate DS JSON, human-readable summary, or CSS custom
-      property aliases. CSS export reports needs_tokens when no tokens exist.
-      Use --format design-md to emit the agent-readable DESIGN.md view.
-  vibepro design-system export-design-md <repo> --id <ds-id>
-      Write and print .vibepro/design-system/<ds-id>/DESIGN.md.
-  vibepro design-system lint <repo> --id <ds-id>
-      Lint DESIGN.md structure, token references, prose intent, Do/Don'ts, and contrast.
-  vibepro design-system diff <repo> --id <ds-id> --base <base-ref>
-      Compare the current DESIGN.md artifact with the selected git base ref.
-  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id> [--base <base-ref>]
-      Validate DS drift, CTA priority, state semantics, component roles,
-      navigation/density policy, style-token drift, and secret leakage before UI implementation.
-  Review .vibepro/design-system/<ds-id>/evidence-coverage.json and ds-gate.json,
-  then use design-modernize derive-system or plan for screen-level work. Generated
-  visual ideas are hypotheses; current code, Story/Spec, DS gates, and Gate DAG
-  remain authoritative.
-  vibepro design-ssot init <repo> --id <root-id> --root-doc <path>
-      Create or update a repo-committed Design SSOT lineage registry root.
-  vibepro design-ssot link <repo> --id <root-id> --kind <kind> --path <child-doc>
-      Link child ADR/Architecture/Story/Spec/UX docs to the design root.
-  vibepro design-ssot status <repo> [--id <root-id>]
-      Show the machine-readable design root / child lineage registry.
-  vibepro design-ssot coverage <repo> [--id <root-id>] [--base <ref>]
-      Audit registry coverage and changed unregistered design docs.
-  vibepro design-ssot reconcile <repo> [--id <root-id>] [--base <ref>]
-      Check root-only changes, missing required children, frontmatter gaps,
-      stale root hash bindings, and deterministic ADR supersession conflicts.
-  design-modernize plan also resolves top-level Journey context: if no Journey
-  context pack exists, it creates one through the Journey workflow, writes
-  journey-context.json into the plan artifacts, and keeps non-curated handoff
-  evidence visible instead of treating it as an authoritative product Journey.
-
-Public Discovery targets:
-  --base-url inspects the deployed HTTP(S) root and same-origin sitemap pages;
-  --public-dir inspects built HTML recursively; without either flag, source files are inspected.
-  Target priority is base-url > public-dir > source. Zero scanned pages are inconclusive,
-  not a clean pass; coverage also reports discovered, selected, omitted, failed, and scanned counts.
-
 Usage:
   vibepro help [command]
   vibepro version
@@ -484,33 +321,6 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro check list
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
-  vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
-  vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
-  vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
-  vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
-  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css|design-md [--json]
-  vibepro design-system export-design-md [repo] --id <ds-id> [--json]
-  vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
-  vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
-  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--base <base-ref>] [--json]
-  vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
-  vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
-  vibepro design-ssot status [repo] [--id <root-id>] [--json]
-  vibepro design-ssot coverage [repo] [--id <root-id>] [--base <base-ref>] [--json]
-  vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
-  vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
-  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--uiux-intake <file>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
-  vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
-  vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
-  vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
-  vibepro uiux map [repo] --id <story-id> [--uiux-intake <file>] [--route <path>] [--routes <csv>] [--json]
-  vibepro uiux evidence [repo] --id <story-id> [--route <path>] [--routes <csv>] [--viewport <id:WxH>] [--from <file>] [--json]
-  vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
-  vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
-  vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
@@ -545,14 +355,6 @@ Usage:
   vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
   vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
-  vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
-  vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
-  vibepro explore status [repo] --id <story-id> [--json]
-  vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
-  vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
-  vibepro performance define [repo] --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> [--intermediate-marker <id>] [--timeout-ms <ms>] [--failure-classification <class>] [--evidence-source <server_log|browser_e2e|api_log|client_marker|manual_observation>] [--readiness-kind <server_side|user_perceived|external_dependency|system_internal>] [--comparison-policy <json|name>] [--json]
-  vibepro performance record [repo] --id <story-id> --metric-id <id> --label <before|after> --status <completed|blocked|needs_review|timeout|auth_required|resource_unavailable|unknown> [--duration-ms <ms>] [--marker <id=ms>] [--evidence-source <type:ref:summary>] [--completion-condition <text>] [--run-id <id>] [--json]
-  vibepro performance compare [repo] --id <story-id> [--metric-id <id>] [--before-label <label>] [--after-label <label>] [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -566,12 +368,6 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
-  vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
-  vibepro journey derive [repo] [--id <journey-id>] [--json]
-  vibepro journey handoff [repo] [--id <journey-id>] [--json]
-  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--json]
-  vibepro journey map [repo] [--json]
-  vibepro journey status [repo] [--json]
   vibepro task list [repo] [--id <story-id>]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
   vibepro task show [repo] --task <task-id> [--id <story-id>]
@@ -584,10 +380,6 @@ Usage:
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
-  vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
-  vibepro architecture rebaseline-proposal [repo] [--model <path>] [--output <path>] [--parent-design <design-root-id>] [--json]
-  vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -610,8 +402,6 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
 まず人間が使う基本コマンド:
   vibepro init <repo> --language ja --story-id <id> --title <title>
       .vibepro/ を作り、出力言語とStoryを設定します。
-  vibepro check pr-readiness <repo> --story-id <id> --base <base-branch>
-      PR前に見るべき診断をまとめます。
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
       evidence-plan / decision-index / 短いpr-body / 検証証跡 / 必要なGate artifactを作り、変更リスクを分類します。
       Gate outcome台帳の分類が曖昧な場合だけ --outcome <source_fix|evidence_added|rewording_only|waiver|unclassified> で上書きできます。
@@ -681,58 +471,6 @@ base branch:
   READMEや例の origin/develop は固定ではありません。リポジトリに合わせて origin/main や main を指定してください。
   init後の案内と pr prepare の出力に候補を表示します。
 
-既存UI modernize:
-  vibepro design-system init <repo> --id <ds-id> --product <name>
-      route/code証跡がまだない段階で、needs_evidence Gate付きの空だがvalidな
-      プロダクトローカルDesign System正本を作ります。
-  vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code
-      現行route code、style/token files、任意のGraphify証跡、product semanticsから
-      プロダクトローカルなDesign System正本を作ります。
-  vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
-      外部DS bundleのtokens/components/guidelinesをreference-onlyとして正規化し、
-      VibePro-native DS sectionsへ取り込みます。
-  vibepro design-system ingest-design-md <repo> --id <ds-id> --file DESIGN.md
-      DESIGN.mdのYAML tokensとMarkdown rationaleをreference-onlyとして取り込み、
-      DESIGN.md/design-md.jsonとDS gateへ接続します。
-  vibepro design-system ingest-brief <repo> --id <ds-id> --brief-file <file>
-      外部visual DS briefをreference-onlyなvisual foundationsとしてnative DSへ取り込みます。
-  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css|design-md
-      aggregate DS JSON、人間向けMarkdown、CSS custom propertiesを出力します。
-      token未定義のCSS exportはneeds_tokensとして返します。
-      --format design-md ではagent可読なDESIGN.md viewを出力します。
-  vibepro design-system export-design-md <repo> --id <ds-id>
-      .vibepro/design-system/<ds-id>/DESIGN.mdを書き出して表示します。
-  vibepro design-system lint <repo> --id <ds-id>
-      DESIGN.mdの構造、token reference、prose intent、Do/Don't、contrastを検査します。
-  vibepro design-system diff <repo> --id <ds-id> --base <base-ref>
-      current DESIGN.md artifactをgit base ref上のartifactと比較します。
-  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id> [--base <base-ref>]
-      DS drift、CTA優先度、状態意味、component role、navigation/density、secret混入を
-      Story/Spec/Architecture文脈に対して検証し、base指定時は変更UIファイルのstyle-token driftも検出します。
-  .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
-  その後に design-modernize derive-system または plan で画面別作業へ進みます。
-  生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
-  vibepro design-ssot init <repo> --id <root-id> --root-doc <path>
-      repoにcommitされるDesign SSOT lineage registry rootを作成または更新します。
-  vibepro design-ssot link <repo> --id <root-id> --kind <kind> --path <child-doc>
-      child ADR/Architecture/Story/Spec/UX docsをdesign rootへ紐付けます。
-  vibepro design-ssot status <repo> [--id <root-id>]
-      design root / child lineage registryを機械可読に確認します。
-  vibepro design-ssot coverage <repo> [--id <root-id>] [--base <ref>]
-      registry coverageと変更された未登録design docを監査します。
-  vibepro design-ssot reconcile <repo> [--id <root-id>] [--base <ref>]
-      root-only変更、必須child欠落、frontmatter不足、stale hash、
-      accepted ADR supersession矛盾を確認します。
-  design-modernize plan は top-level Journey context にも接続します。Journey context pack が
-  未生成ならJourney workflow経由で作成し、plan artifactにjourney-context.jsonを書き、
-  curatedではないhandoff証跡をauthoritative Journeyとして扱わずに表示します。
-
-Public Discoveryの対象:
-  --base-url は公開済みHTTP(S) rootと同一originのsitemapページ、--public-dir は
-  build済みHTMLを再帰検査し、どちらも無ければsourceを検査します。優先順位は
-  base-url > public-dir > sourceです。検査0件は合格ではなくinconclusiveであり、
-  coverageには発見・選択・除外・失敗・検査件数をそれぞれ残します。
-
 英語で表示したい場合:
   vibepro init <repo> --language en
   vibepro config language <repo> --language en
@@ -766,33 +504,6 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro check list
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
-  vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
-  vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
-  vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
-  vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
-  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css|design-md [--json]
-  vibepro design-system export-design-md [repo] --id <ds-id> [--json]
-  vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
-  vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
-  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--base <base-ref>] [--json]
-  vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
-  vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
-  vibepro design-ssot status [repo] [--id <root-id>] [--json]
-  vibepro design-ssot coverage [repo] [--id <root-id>] [--base <base-ref>] [--json]
-  vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
-  vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
-  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--uiux-intake <file>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
-  vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
-  vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
-  vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
-  vibepro uiux map [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
-  vibepro uiux evidence [repo] --id <story-id> [--route <path>] [--routes <csv>] [--viewport <id:WxH>] [--from <file>] [--json]
-  vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
-  vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
-  vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
@@ -826,24 +537,10 @@ Usage:
   vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
-  vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
-  vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
-  vibepro explore status [repo] --id <story-id> [--json]
-  vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
-  vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
-  vibepro performance define [repo] --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> [--intermediate-marker <id>] [--timeout-ms <ms>] [--failure-classification <class>] [--evidence-source <server_log|browser_e2e|api_log|client_marker|manual_observation>] [--readiness-kind <server_side|user_perceived|external_dependency|system_internal>] [--comparison-policy <json|name>] [--json]
-  vibepro performance record [repo] --id <story-id> --metric-id <id> --label <before|after> --status <completed|blocked|needs_review|timeout|auth_required|resource_unavailable|unknown> [--duration-ms <ms>] [--marker <id=ms>] [--evidence-source <type:ref:summary>] [--completion-condition <text>] [--run-id <id>] [--json]
-  vibepro performance compare [repo] --id <story-id> [--metric-id <id>] [--before-label <label>] [--after-label <label>] [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
-  vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
-  vibepro journey derive [repo] [--id <journey-id>] [--json]
-  vibepro journey handoff [repo] [--id <journey-id>] [--json]
-  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--json]
-  vibepro journey map [repo] [--json]
-  vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
@@ -852,10 +549,6 @@ Usage:
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
-  vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
-  vibepro architecture rebaseline-proposal [repo] [--model <path>] [--output <path>] [--parent-design <design-root-id>] [--json]
-  vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -868,11 +561,9 @@ Usage:
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'status', 'usage', 'graph', 'env',
-  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
-  'playbook', 'journey', 'execute',
+  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task', 'execute',
   'decision', 'outcome', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
-  'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
-  'workspace', 'store'
+  'audit', 'workspace', 'store'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -1308,406 +999,6 @@ async function dispatchCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
-    if (command === 'design-system') {
-      const subcommand = rest[0] ?? 'derive';
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (subcommand === 'init') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await initDesignSystem(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          product: getOption(rest, '--product'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'derive') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await deriveNativeDesignSystem(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id') ?? getOption(rest, '--product'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          product: getOption(rest, '--product'),
-          routes: parseDesignRoutes(rest),
-          brief: getOption(rest, '--brief'),
-          briefFile: getOption(rest, '--brief-file'),
-          baseUrl: getOption(rest, '--base-url'),
-          fromCode: hasFlag(rest, '--from-code'),
-          runGraphify: hasFlag(rest, '--run-graphify'),
-          graphifyOut: getOption(rest, '--from'),
-          storyId: getOption(rest, '--story-id'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'ingest') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await ingestExternalDesignSystemBundle(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          product: getOption(rest, '--product'),
-          bundleFile: getOption(rest, '--bundle') ?? getOption(rest, '--design-system-bundle'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'ingest-design-md') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await ingestDesignMarkdown(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          product: getOption(rest, '--product'),
-          file: getOption(rest, '--file') ?? getOption(rest, '--design-md'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'export') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const format = getOption(rest, '--format') ?? 'json';
-        const result = await exportDesignSystem(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          format,
-          language
-        });
-        if (hasFlag(rest, '--json') && result.result.format !== 'json') {
-          write(stdout, `${JSON.stringify(result.result, null, 2)}\n`);
-        } else {
-          write(stdout, result.result.content);
-        }
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'export-design-md') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await exportDesignMarkdown(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : result.result.content);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'ingest-brief') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await ingestVisualDesignBrief(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          product: getOption(rest, '--product'),
-          briefFile: getOption(rest, '--brief-file'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'lint') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await lintDesignMarkdown(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          product: getOption(rest, '--product'),
-          file: getOption(rest, '--file') ?? getOption(rest, '--design-md')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDesignMarkdownLintSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'diff') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await diffDesignMarkdown(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          base: getOption(rest, '--base')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDesignMarkdownDiffSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'validate') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await validateDesignSystem(repoRoot, {
-          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--story'),
-          base: getOption(rest, '--base'),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDesignSystemValidationSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown design-system command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'design-ssot') {
-      const subcommand = rest[0] ?? 'status';
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (subcommand === 'init') {
-        const result = await initDesignSsot(repoRoot, {
-          id: getOption(rest, '--id'),
-          rootDoc: getOption(rest, '--root-doc') ?? getOption(rest, '--root'),
-          title: getOption(rest, '--title'),
-          owner: getOption(rest, '--owner'),
-          status: getOption(rest, '--status'),
-          registry: getOption(rest, '--registry'),
-          requiredChildKinds: getOption(rest, '--required-child-kinds')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderDesignSsotStatus({
-            status: result.status,
-            registry_sources: [result.registry],
-            summary: result.registry_summary,
-            design_roots: [result.design_root]
-          }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'link') {
-        const result = await linkDesignSsot(repoRoot, {
-          id: getOption(rest, '--id'),
-          kind: getOption(rest, '--kind'),
-          path: getOption(rest, '--path') ?? getOption(rest, '--child'),
-          relationship: getOption(rest, '--relationship'),
-          registry: getOption(rest, '--registry'),
-          required: !hasFlag(rest, '--optional'),
-          lastReviewedRootHash: getOption(rest, '--last-reviewed-root-hash')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : `Design SSOT linked: ${result.design_root_id} -> ${result.child.kind}:${result.child.path}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'status') {
-        const result = await getDesignSsotStatus(repoRoot, {
-          id: getOption(rest, '--id'),
-          registry: getOption(rest, '--registry')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderDesignSsotStatus(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'coverage') {
-        const result = await auditDesignSsotCoverage(repoRoot, {
-          id: getOption(rest, '--id'),
-          base: getOption(rest, '--base'),
-          registry: getOption(rest, '--registry')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDesignSsotCoverageSummary(result.result)}Artifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'reconcile') {
-        const result = await reconcileDesignSsot(repoRoot, {
-          id: getOption(rest, '--id'),
-          base: getOption(rest, '--base'),
-          registry: getOption(rest, '--registry')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDesignSsotSummary(result.result)}Artifacts: ${result.outDir}\n`);
-        return { exitCode: result.result.status === 'block' ? 2 : 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown design-ssot command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'design-modernize') {
-      const subcommand = rest[0] ?? 'plan';
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (subcommand === 'plan') {
-        const result = await createDesignModernizePlan(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? 'design-modernize',
-          product: getOption(rest, '--product'),
-          routes: parseDesignRoutes(rest),
-          brief: getOption(rest, '--brief'),
-          uiuxIntake: getOption(rest, '--uiux-intake') ?? getOption(rest, '--intake'),
-          baseUrl: getOption(rest, '--base-url'),
-          designSystemId: getOption(rest, '--design-system-id'),
-          designSystemTitle: getOption(rest, '--design-system-title'),
-          designSystemBundle: getOption(rest, '--design-system-bundle'),
-          sceneId: getOption(rest, '--scene-id'),
-          optionalReferenceStatus: 'not_required',
-          optionalReferenceNote: 'No external generator token is required; pass --design-system-bundle only when a reference system should constrain the design.'
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.plan, null, 2)}\n`
-          : `${renderDesignModernizePlan(result.plan)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'derive-system') {
-        const result = await deriveProductDesignSystem(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? 'design-modernize',
-          product: getOption(rest, '--product'),
-          routes: parseDesignRoutes(rest),
-          brief: getOption(rest, '--brief'),
-          baseUrl: getOption(rest, '--base-url'),
-          designSystemId: getOption(rest, '--design-system-id'),
-          designSystemTitle: getOption(rest, '--design-system-title'),
-          designSystemBundle: getOption(rest, '--design-system-bundle')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDerivedDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'capture') {
-        const result = await captureDesignModernizeScreens(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? 'design-modernize',
-          baseUrl: getOption(rest, '--base-url'),
-          routes: parseDesignRoutes(rest),
-          sampleHotelId: getOption(rest, '--sample-hotel-id'),
-          timeoutMs: parseNumberOption(rest, '--timeout-ms') ?? 30000
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.result, null, 2)}\n`
-          : renderCaptureSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown design-modernize command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'uiux') {
-      const area = rest[0];
-      if (!area || area === '--help' || area === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: area ?? 'help' };
-      }
-      if (area === 'map') {
-        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-        const result = await createUiuxIaFlowMap(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          uiuxIntake: getOption(rest, '--uiux-intake') ?? getOption(rest, '--intake'),
-          routes: parseDesignRoutes(rest)
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderUiuxIaFlowMapSummary(result));
-        return { exitCode: 0, command, subcommand: area, result };
-      }
-      if (area === 'evidence' || area === 'matrix') {
-        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-        const result = await createResponsiveA11yMatrix(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          routes: parseDesignRoutes(rest),
-          viewports: parseViewportOptions(rest),
-          sourcePath: getOption(rest, '--from') ?? getOption(rest, '--visual-residual')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderResponsiveA11yMatrixSummary(result));
-        return { exitCode: 0, command, subcommand: area, result };
-      }
-      if (area === 'prepare') {
-        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-        const result = await prepareUiuxCockpit(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          designSystemId: getOption(rest, '--design-system-id') ?? getOption(rest, '--design-system'),
-          baseRef: getOption(rest, '--base')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.readiness, null, 2)}\n`
-          : renderUiuxPrepareSummary(result));
-        return { exitCode: 0, command, subcommand: area, result };
-      }
-      const subcommand = rest[1];
-      const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
-      if (area !== 'intake') {
-        write(stderr, `Unknown uiux command: ${area ?? ''}\n\n${renderHelp()}`);
-        return { exitCode: 1, command };
-      }
-      if (subcommand === 'template') {
-        const result = await createUiuxIntakeTemplate(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          routes: parseDesignRoutes(rest)
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderUiuxIntakeTemplateSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'validate') {
-        const result = await validateUiuxIntake(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          intakeFile: getOption(rest, '--intake'),
-          brief: getOption(rest, '--brief'),
-          routes: parseDesignRoutes(rest)
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.coverage, null, 2)}\n`
-          : renderUiuxIntakeCoverageSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown uiux intake command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'check') {
-      const packId = rest[0];
-      if (!packId || packId === 'list' || packId === '--help' || packId === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        const packs = listCheckPacks();
-        const lines = [
-          'Available check packs:',
-          '',
-          ...packs.map((pack) => `- ${pack.id}: ${pack.title} (${pack.checks.join(', ')})`)
-        ];
-        write(stdout, `${lines.join('\n')}\n`);
-        return { exitCode: 0, command, subcommand: packId ?? 'list', packs };
-      }
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      const result = await runCheckPack(repoRoot, {
-        packId,
-        env: io.env,
-        runId: getOption(rest, '--run-id'),
-        storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
-        baseRef: getOption(rest, '--base'),
-        headRef: getOption(rest, '--head'),
-        strict: hasFlag(rest, '--strict'),
-        measure: hasFlag(rest, '--measure'),
-        includeHarness: hasFlag(rest, '--include-harness'),
-        includePublicDiscovery: hasFlag(rest, '--include-public-discovery'),
-        baseUrl: getOption(rest, '--base-url'),
-        publicDir: getOption(rest, '--public-dir'),
-        fetchImpl: io.fetchImpl,
-        pages: parseCsvOption(rest, '--pages'),
-        apis: parseCsvOption(rest, '--apis'),
-        samples: parseNumberOption(rest, '--samples') ?? 5,
-        build: hasFlag(rest, '--build'),
-        typecheck: !hasFlag(rest, '--no-typecheck'),
-        commands: getOptions(rest, '--command'),
-        startups: buildStartupOptions(rest),
-        prismaLog: getOption(rest, '--prisma-log'),
-        top: parseNumberOption(rest, '--top'),
-        coverageFile: getOption(rest, '--coverage-file')
-      });
-      write(stdout, hasFlag(rest, '--json')
-        ? `${JSON.stringify(result.check, null, 2)}\n`
-        : renderCheckPackSummary(result));
-      const exitCode = hasFlag(rest, '--fail-on-findings') && result.check.status !== 'pass' ? 1 : 0;
-      return { exitCode, command, subcommand: packId, result };
-    }
-
     if (command === 'verify') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -1752,64 +1043,6 @@ async function dispatchCli(argv, io = {}) {
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderVerificationRunSummary(result));
         return { exitCode: result.status === 'pass' ? 0 : 1, command, subcommand, result };
-      }
-      if (subcommand === 'flow') {
-        const storyId = getOption(rest, '--id');
-        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'verify flow'
-        });
-        const result = await runFlowVerification(repoRoot, {
-          baseUrl: getOption(rest, '--base-url'),
-          storyId,
-          runId: getOption(rest, '--run-id'),
-          journeyId: getOption(rest, '--journey'),
-          allowMutation: hasFlag(rest, '--allow-mutation'),
-          headed: hasFlag(rest, '--headed'),
-          basicAuth: getOption(rest, '--basic-auth'),
-          basicAuthEnv: getOption(rest, '--basic-auth-env'),
-          env: io.env,
-          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
-        });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.verification?.story_id ?? storyId,
-          target: 'pr_create'
-        }).catch(() => null);
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.verification, null, 2)}\n`
-          : renderFlowVerificationSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'visual') {
-        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'verify visual'
-        });
-        const result = await runVisualVerification(repoRoot, {
-          storyId,
-          baseUrl: getOption(rest, '--base-url'),
-          currentDir: getOption(rest, '--current-dir'),
-          qaId: getOption(rest, '--qa-id'),
-          thresholdPct: parseNumberOption(rest, '--threshold'),
-          runId: getOption(rest, '--run-id'),
-          journeyId: getOption(rest, '--journey'),
-          updateBaseline: hasFlag(rest, '--update-baseline'),
-          allowMutation: hasFlag(rest, '--allow-mutation'),
-          headed: hasFlag(rest, '--headed'),
-          basicAuth: getOption(rest, '--basic-auth'),
-          basicAuthEnv: getOption(rest, '--basic-auth-env'),
-          env: io.env,
-          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
-        });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.report?.story_id ?? storyId,
-          target: 'pr_create'
-        }).catch(() => null);
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.report, null, 2)}\n`
-          : renderVisualVerificationSummary(result));
-        return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'record') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
@@ -3065,159 +2298,6 @@ async function dispatchCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
-    if (command === 'explore') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'prepare') {
-        const result = await prepareExploreEvidence(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          topic: getOption(rest, '--topic'),
-          roles: getOptions(rest, '--role'),
-          language: getOption(rest, '--language')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderExplorePrepareSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'record') {
-        const inputPath = getOption(rest, '--input');
-        const stdinText = hasFlag(rest, '--from-stdin')
-          ? inputPath
-            ? await readFile(path.resolve(inputPath), 'utf8')
-            : await readStdin(io.stdin ?? process.stdin)
-          : '';
-        const result = await recordExploreEvidence(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          role: getOption(rest, '--role'),
-          status: getOption(rest, '--status'),
-          summary: getOption(rest, '--summary'),
-          findings: getOptions(rest, '--finding'),
-          artifacts: getOptions(rest, '--artifact'),
-          agentSystem: getOption(rest, '--agent-system'),
-          executionMode: getOption(rest, '--execution-mode'),
-          agentId: getOption(rest, '--agent-id'),
-          agentModel: getOption(rest, '--agent-model'),
-          agentTranscript: getOption(rest, '--agent-transcript'),
-          recordedBy: getOption(rest, '--recorded-by'),
-          stdinText
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderExploreRecordSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'status') {
-        const result = await getExploreEvidenceStatus(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderExploreStatusSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown explore command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'measure') {
-      const subcommand = rest[0];
-      if (subcommand === 'compare') {
-        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-        const result = await comparePerformanceMeasurements(repoRoot, {
-          before: getOption(rest, '--before'),
-          after: getOption(rest, '--after')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.comparison, null, 2)}\n`
-          : result.markdown);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
-      const result = await runPerformanceMeasurement(repoRoot, {
-        runId: getOption(rest, '--run-id'),
-        baseUrl: getOption(rest, '--base-url'),
-        pages: parseCsvOption(rest, '--pages'),
-        apis: parseCsvOption(rest, '--apis'),
-        samples: parseNumberOption(rest, '--samples') ?? 5,
-        build: hasFlag(rest, '--build'),
-        typecheck: !hasFlag(rest, '--no-typecheck'),
-        commands: getOptions(rest, '--command'),
-        startups: buildStartupOptions(rest),
-        prismaLog: getOption(rest, '--prisma-log')
-      });
-      write(stdout, hasFlag(rest, '--json')
-        ? `${JSON.stringify(result.measurement, null, 2)}\n`
-        : renderPerformanceSummary(result));
-      return { exitCode: 0, command, result };
-    }
-
-    if (command === 'performance') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'define') {
-        const result = await definePerformanceMetric(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          metricId: getOption(rest, '--metric-id'),
-          userStory: getOption(rest, '--user-story'),
-          startCondition: getOption(rest, '--start-condition'),
-          completionCondition: getOption(rest, '--completion-condition'),
-          intermediateMarkers: getOptions(rest, '--intermediate-marker'),
-          timeoutMs: parseNumberOption(rest, '--timeout-ms'),
-          failureClassifications: getOptions(rest, '--failure-classification'),
-          evidenceSources: getOptions(rest, '--evidence-source'),
-          comparisonPolicy: getOption(rest, '--comparison-policy'),
-          readinessKind: getOption(rest, '--readiness-kind')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.metric, null, 2)}\n`
-          : renderPerformanceDefineSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'record') {
-        const result = await recordPerformanceRun(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          metricId: getOption(rest, '--metric-id'),
-          runId: getOption(rest, '--run-id'),
-          label: getOption(rest, '--label'),
-          status: getOption(rest, '--status'),
-          durationMs: parseNumberOption(rest, '--duration-ms'),
-          startedAt: getOption(rest, '--started-at'),
-          completedAt: getOption(rest, '--completed-at'),
-          completionCondition: getOption(rest, '--completion-condition'),
-          markers: getOptions(rest, '--marker'),
-          evidenceSources: getOptions(rest, '--evidence-source'),
-          notes: getOption(rest, '--notes')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.run, null, 2)}\n`
-          : renderPerformanceRecordSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'compare') {
-        const result = await compareStoryPerformance(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          metricId: getOption(rest, '--metric-id'),
-          beforeLabel: getOption(rest, '--before-label'),
-          afterLabel: getOption(rest, '--after-label')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.comparison, null, 2)}\n`
-          : renderPerformanceEvidenceSummary(result.comparison));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown performance command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
     if (command === 'story') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -3331,88 +2411,6 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'playbook') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'export') {
-        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'playbook export');
-        const result = await exportStoryEngineeringPlaybook(repoRoot, {
-          storyId,
-          format: getOption(rest, '--format'),
-          outputPath: getOption(rest, '--output'),
-          language: getOption(rest, '--language')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderPlaybookExportSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown playbook command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'journey') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'derive') {
-        const result = await deriveJourneyMap(repoRoot, {
-          journeyId: getOption(rest, '--id')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.journey, null, 2)}\n`
-          : renderJourneyMap(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'handoff') {
-        const result = await deriveJourneyMap(repoRoot, {
-          journeyId: getOption(rest, '--id')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.journey.handoff, null, 2)}\n`
-          : renderJourneyHandoff(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'curate') {
-        const result = await curateJourneyMap(repoRoot, {
-          journeyId: getOption(rest, '--id'),
-          inputPath: getOption(rest, '--input'),
-          outputPath: getOption(rest, '--output')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.journey, null, 2)}\n`
-          : renderJourneyCurateSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'map') {
-        const status = await getJourneyStatus(repoRoot);
-        if (status.status === 'missing') {
-          write(stderr, `${status.reason}\n`);
-          return { exitCode: 2, command, subcommand, status };
-        }
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(status.journey, null, 2)}\n`
-          : renderJourneyMap(status.journey));
-        return { exitCode: 0, command, subcommand, result: status.journey };
-      }
-      if (subcommand === 'status') {
-        const status = await getJourneyStatus(repoRoot);
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(status, null, 2)}\n`
-          : renderJourneyStatus(status));
-        return { exitCode: 0, command, subcommand, result: status };
-      }
-      write(stderr, `Unknown journey command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
@@ -3570,12 +2568,9 @@ async function dispatchCli(argv, io = {}) {
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
           gateOutcome: getOption(rest, '--outcome'),
-          // Dependency-injected into the architecture_conformance_delta shadow stage (CDL-S-7):
-          // gate-pr (src/pr-manager.js) must not import src/architecture-conformance-delta.js
-          // directly (target-model.json has no gate-pr -> architecture allowed_dependency), so
-          // only cli.js ("*" dependency) wires the runner. Other preparePullRequest call sites
-          // that do not pass this option fall back to the stage's inconclusive info node.
-          conformanceDelta: runArchitectureConformanceDelta,
+          // architecture-conformance-delta.js was removed in the minimal-core rebuild (Slice 1);
+          // preparePullRequest's architecture_conformance_delta shadow stage falls back to its
+          // documented inconclusive info node when options.conformanceDelta is not provided.
           env: io.env ?? process.env
         });
         write(stdout, viewOutput
@@ -3764,111 +2759,6 @@ async function dispatchCli(argv, io = {}) {
       }
       write(stderr, `Unknown artifacts command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command, subcommand };
-    }
-
-    if (command === 'architecture') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-
-      if (subcommand === 'readiness') {
-        if (!storyId) throw new Error('--id <story-id> is required for architecture readiness');
-        const result = await recordArchitectureReadiness(repoRoot, {
-          storyId,
-          baseRef: getOption(rest, '--base'),
-          headRef: getOption(rest, '--head'),
-          branchName: getOption(rest, '--branch'),
-          env: io.env
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.readiness, null, 2)}\n`
-          : renderArchitectureReadinessSummary(result));
-        return { exitCode: result.readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
-      }
-
-      if (subcommand === 'conformance') {
-        const baseRef = getOption(rest, '--base');
-        // --base/--head opt in to base/head delta mode (CDL-S-3/S-4); omitting --base preserves
-        // the original single-snapshot behavior and output schema exactly.
-        if (baseRef) {
-          const result = await runArchitectureConformanceDelta(repoRoot, {
-            baseRef,
-            headRef: getOption(rest, '--head') ?? 'HEAD',
-            modelPath: getOption(rest, '--model'),
-            graphPath: getOption(rest, '--graph')
-          });
-          write(stdout, hasFlag(rest, '--json')
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : renderConformanceDeltaMarkdown(result));
-          const strict = hasFlag(rest, '--strict');
-          const exitCode = strict && result.delta.status === 'ok' && result.delta.summary.new_count > 0 ? 2 : 0;
-          return { exitCode, command, subcommand, result };
-        }
-        const result = await runArchitectureConformance(repoRoot, {
-          modelPath: getOption(rest, '--model'),
-          graphPath: getOption(rest, '--graph')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderConformanceMarkdown(result));
-        const strict = hasFlag(rest, '--strict');
-        const exitCode = strict && result.summary.violation_count > 0 ? 2 : 0;
-        return { exitCode, command, subcommand, result };
-      }
-
-      if (subcommand === 'rebaseline-proposal') {
-        const result = await runRebaselineProposal(repoRoot, {
-          modelPath: getOption(rest, '--model'),
-          outputPath: getOption(rest, '--output'),
-          parentDesign: getOption(rest, '--parent-design')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderRebaselineProposalMarkdown(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-
-      if (subcommand === 'write') {
-        if (!storyId) throw new Error('--id <story-id> is required for architecture write');
-        const inputPath = getOption(rest, '--input');
-        const caller = getOption(rest, '--caller') ?? 'unknown';
-        const draft = hasFlag(rest, '--draft');
-        const final = hasFlag(rest, '--final') || !draft;
-        if (draft && hasFlag(rest, '--final')) {
-          throw new Error('architecture write cannot use --draft and --final together');
-        }
-        const raw = inputPath
-          ? await readFile(path.resolve(inputPath), 'utf8')
-          : await readStdin(io.stdin ?? process.stdin);
-        if (!raw.trim()) throw new Error('architecture write received empty input');
-        const readiness = final
-          ? await assertArchitectureReadinessForFinal(repoRoot, storyId)
-          : null;
-        const outputPath = getOption(rest, '--output');
-        const artifact = draft
-          ? await writeDraftArchitecture(repoRoot, storyId, raw)
-          : await writeFinalArchitecture(repoRoot, storyId, raw, { outputPath });
-        write(stdout, `${JSON.stringify({
-          ok: true,
-          story_id: storyId,
-          mode: draft ? 'draft' : 'final',
-          caller,
-          architecture_readiness: readiness ? {
-            status: readiness.status,
-            created_at: readiness.created_at,
-            artifact: `.vibepro/architecture/${storyId}/architecture-readiness.json`
-          } : null,
-          artifact
-        }, null, 2)}\n`);
-        return { exitCode: 0, command, subcommand, artifact };
-      }
-
-      write(stderr, `Unknown architecture command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
     }
 
     if (command === 'spec') {
@@ -4528,20 +3418,6 @@ function parseCsvOption(args, name) {
   return value.split(',').map((item) => item.trim()).filter(Boolean);
 }
 
-function parseDesignRoutes(args) {
-  return [
-    ...parseCsvOption(args, '--routes'),
-    ...getOptions(args, '--route')
-  ].filter(Boolean);
-}
-
-function parseViewportOptions(args) {
-  return [
-    ...parseCsvOption(args, '--viewports'),
-    ...getOptions(args, '--viewport')
-  ].filter(Boolean);
-}
-
 function parseNumberOption(args, name) {
   const value = getOption(args, name);
   if (value === null) return null;
@@ -4573,18 +3449,6 @@ function renderPrPrepareProgressEvent(event) {
     return `[vibepro pr prepare] failed ${stage} duration_ms=${event.duration_ms}: ${event.error}`;
   }
   return `[vibepro pr prepare] ${event.event ?? 'progress'} ${stage}`;
-}
-
-function buildStartupOptions(args) {
-  const scripts = getOptions(args, '--startup-script');
-  const readyPattern = getOption(args, '--ready-pattern');
-  const timeoutMs = parseNumberOption(args, '--startup-timeout') ?? 30000;
-  return scripts.map((script) => ({
-    id: `startup:${script}`,
-    script,
-    readyPattern,
-    timeoutMs
-  }));
 }
 
 function write(stream, text) {
