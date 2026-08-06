@@ -326,3 +326,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:430:start -->
 - [PR #430](https://github.com/Unson-LLC/vibepro/pull/430) — [2026-08](/releases/2026-08): refactor: 縮小リファクタ Slice 2 — 実行エンジン本体（execute/gate/adjudicate/outcome/checkpoint）を削除
 <!-- vibepro-release-index-pr:430:end -->
+
+<!-- vibepro-release-index-pr:431:start -->
+- [PR #431](https://github.com/Unson-LLC/vibepro/pull/431) — [2026-08](/releases/2026-08): refactor: 縮小リファクタ Slice 3 — delivery-efficiency予算全系を削除
+<!-- vibepro-release-index-pr:431:end -->
