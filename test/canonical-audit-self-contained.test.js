@@ -400,9 +400,19 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
     status: 'hit',
     evidence_key: 'evk_compact',
     key_inputs: {
-      verification_summary_fingerprint: 'sha256:compact-verification',
-      verification_evidence_updated_at: '2026-06-23T00:02:00.000Z',
-      verification_command_timestamps: [
+      verification_summary_fingerprint: 'sha256:compact-verification'
+    },
+    // Descriptive-only metadata location since story-vibepro-content-scoped-evidence-reuse-key
+    // (CRK-S-1/D2): a current evidence-reuse.json has no top-level
+    // verification_evidence_updated_at/verification_command_timestamps and no
+    // key_inputs.verification_evidence_updated_at any more -- only this
+    // field. Fixed here (was previously the legacy key_inputs shape, which
+    // let this fixture resolve buildDecisionIndex's second fallback branch
+    // instead of exercising the third/current one canonical-audit.js reads
+    // from for any real post-Story artifact).
+    verification_evidence_metadata: {
+      updated_at: '2026-06-23T00:02:00.000Z',
+      command_timestamps: [
         {
           kind: 'unit',
           executed_at: '2026-06-23T00:02:00.000Z',

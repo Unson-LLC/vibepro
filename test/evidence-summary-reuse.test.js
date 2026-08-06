@@ -113,6 +113,22 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   // dedicated CRK-S-2 "no baseline" consumption test for that branch).
   await recordPassReview(repo, { stage: 'implementation', role: 'runtime_contract', inspectionInput: 'README.md', agentId: 'agent-runtime-baseline' });
 
+  // Record real verification evidence before any pr prepare so
+  // buildEvidenceReuse's `verification_evidence_metadata` (the only place
+  // CRK-S-1 still carries a wall-clock updated_at/command_timestamps, for
+  // descriptive audit/report consumers only -- never for the reuse key) is
+  // genuinely non-empty. A current evidence-reuse.json has no top-level
+  // `verification_evidence_updated_at` and no
+  // `key_inputs.verification_evidence_updated_at` any more, so this is the
+  // only branch canonical-audit.js/usage-report.js's consumer fallback
+  // chains can resolve from; without this, that fallback path is untested.
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'reuse.test.js'), "import test from 'node:test';\ntest('reuse', () => {});\n");
+  assert.equal((await runCli([
+    'verify', 'record', repo, '--id', STORY_ID, '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test test/reuse.test.js'
+  ])).exitCode, 0);
+
   const first = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
   assert.equal(first.exitCode, 0);
   const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
@@ -162,6 +178,16 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   const report = await createUsageReport(repo, { language: 'ja' });
   assert.equal(report.evidence_reuse.hit_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].latest_status, 'hit');
+  // usage-report.js's recordEvidenceReuse fallback chain
+  // (`?? evidenceReuse.verification_evidence_metadata?.updated_at` /
+  // `.command_timestamps`) is the only branch that can resolve on a current
+  // evidence-reuse.json -- assert it actually does, through a real pr
+  // prepare + createUsageReport, not a hand-built fixture with the legacy
+  // key_inputs shape.
+  assert.equal(report.evidence_reuse.by_story[0].verification_evidence_updated_at, secondReuse.verification_evidence_metadata.updated_at);
+  assert.ok(report.evidence_reuse.by_story[0].verification_evidence_updated_at);
+  assert.equal(report.evidence_reuse.by_story[0].verification_command_timestamps.length, 1);
+  assert.equal(report.evidence_reuse.by_story[0].verification_command_timestamps[0].kind, 'unit');
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_ledger_status, 'present');
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_bound_count, 4);
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_changed_count, 0);
