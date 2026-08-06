@@ -1790,3 +1790,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-dependency-c
 なし
 
 <!-- vibepro-release-pr:431:end -->
+
+<!-- vibepro-release-pr:432:start -->
+## [#432](https://github.com/Unson-LLC/vibepro/pull/432) refactor: 縮小リファクタ Slice 4 — run-context-capsuleスナップショット機構を削除（計画の実測更新込み）
+
+- Author: @sintariran
+- Merged: 2026-08-06T14:55:04Z
+- Commit: `b49b07f1dfb3461b87430c74bed705fbca9826ae`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:432:end -->

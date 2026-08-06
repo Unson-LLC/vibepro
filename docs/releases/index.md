@@ -330,3 +330,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:431:start -->
 - [PR #431](https://github.com/Unson-LLC/vibepro/pull/431) — [2026-08](/releases/2026-08): refactor: 縮小リファクタ Slice 3 — delivery-efficiency予算全系を削除
 <!-- vibepro-release-index-pr:431:end -->
+
+<!-- vibepro-release-index-pr:432:start -->
+- [PR #432](https://github.com/Unson-LLC/vibepro/pull/432) — [2026-08](/releases/2026-08): refactor: 縮小リファクタ Slice 4 — run-context-capsuleスナップショット機構を削除（計画の実測更新込み）
+<!-- vibepro-release-index-pr:432:end -->
