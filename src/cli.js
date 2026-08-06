@@ -103,6 +103,7 @@ import {
   resolveStoryContext,
   selectStory
 } from './story-manager.js';
+import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
 import {
   installBundledSkills,
   lintBundledSkills,
@@ -195,6 +196,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
+  vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
@@ -288,6 +291,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
+  vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -303,7 +308,7 @@ Usage:
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'status', 'graph', 'env',
-  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story',
+  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace',
   'decision', 'verify', 'review', 'guard', 'spec', 'report',
   'workspace', 'store'
 ];
@@ -1071,6 +1076,38 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'trace') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'backfill') {
+        const result = await backfillTraceability(repoRoot, {
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+          dryRun: hasFlag(rest, '--dry-run')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderTraceabilityBackfill(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'declare') {
+        const result = await declareTraceability(repoRoot, {
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+          lifecycle: getOption(rest, '--lifecycle'),
+          reason: getOption(rest, '--reason')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Traceability declared: ${result.story_id} lifecycle=${result.lifecycle}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown trace command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

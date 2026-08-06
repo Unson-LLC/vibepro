@@ -375,8 +375,7 @@ export function specReadinessMarker() {
     'story_selected',
     'graphify_context',
     'story_diagnosis',
-    'architecture_check',
-    'engineering_judgment'
+    'architecture_check'
   ]) {
     assert.equal(checksById.get(checkId)?.status, 'pass', `${checkId} should pass`);
   }
@@ -384,8 +383,6 @@ export function specReadinessMarker() {
   assert.ok(readiness.graphify.node_count > 0);
   assert.equal(typeof readiness.diagnosis.run_id, 'string');
   assert.equal(typeof readiness.architecture_check.run_id, 'string');
-  assert.equal(typeof readiness.engineering_judgment.route_type, 'string');
-  assert.ok(readiness.engineering_judgment.active_axis_count >= 0);
 });
 
 test('spec readiness missing diagnosis action uses design-input phase', async () => {

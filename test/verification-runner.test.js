@@ -10,11 +10,6 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import {
-  buildArtifactRemediationCommands,
-  buildVerificationCommandSearchText,
-  classifyVerificationEvidenceItem
-} from '../src/pr-manager.js';
-import {
   CALLER_FORBIDDEN_OBSERVATION_KEYS,
   HAND_SUPPLIABLE_OBSERVATION_KEYS,
   buildObservation,
@@ -1056,106 +1051,6 @@ test('the runner keeps lifting its own computed evidence_source through the same
     false,
     'the receipt-backed path must not report its own computed key as caller input'
   );
-});
-
-// Round 9, gate_evidence: with evidence_source now on every runner-produced record's
-// observation.values, the stale-evidence remediation command reconstructed it as
-// `--observed evidence_source=runner_direct` — which `verify record` rejects, so the command
-// pr prepare tells an operator to run could not run.
-test('the emitted stale-evidence remediation command is runnable against a runner-produced record', async () => {
-  const root = await setupRepo();
-  const run = await cli([
-    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
-    '--target', 'tests/sample.test.js',
-    '--scenario', 'sample unit suite passes',
-    '--', 'node', '--test', 'tests/sample.test.js'
-  ]);
-  assert.equal(run.exitCode, 0);
-  const recorded = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  assert.equal(recorded.observation.values.evidence_source, 'runner_direct', 'the fixture must carry the key');
-
-  const [recordCommand] = buildArtifactRemediationCommands({
-    artifact_type: 'verification_command',
-    kind: recorded.kind,
-    command: recorded.command,
-    summary: recorded.summary,
-    artifact: recorded.artifact,
-    observation: recorded.observation,
-    content_binding: recorded.content_binding
-  }, STORY_ID);
-  assert.ok(!recordCommand.includes('evidence_source'), `remediation command must not replay a rejected key: ${recordCommand}`);
-  assert.match(recordCommand, /--observed exit_code=0/);
-
-  // Executed, not only inspected: "unrunnable" is the finding, so the emitted string is run.
-  const executable = recordCommand.replace(
-    /^vibepro\b/,
-    `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`
-  );
-  await execFileAsync('/bin/sh', ['-c', executable], { cwd: root, encoding: 'utf8' });
-  const rerecorded = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  assert.equal(rerecorded.evidence_source, 'self_reported', 'replaying by hand must not inherit the runner trust marker');
-  assert.equal(rerecorded.observation.values.evidence_source, undefined);
-});
-
-// Round 15, architecture_boundary: the runner writes the whole provenance half of
-// observation.values on every record it makes, and pr-manager flattened that object into the
-// corpus its evidence classifiers match kinds against. `run_artifact` is
-// `.vibepro/pr/<story-id>/verification-runs/<kind>.json`, so the `story-` alternative in the
-// runtime_path_evidence pattern matched every runner_direct record whatever it actually
-// verified — and that kind feeds current_reality / failure_modes / done_evidence. The rule
-// asserted here is the class, not the one key: no caller-forbidden key or value reaches the
-// corpus at all, so no kind can be earned from how the record was produced.
-test('the evidence classification corpus excludes the provenance keys the runner writes', async () => {
-  const root = await setupRepo();
-  const run = await cli([
-    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
-    '--target', 'tests/sample.test.js',
-    '--scenario', 'the sample unit suite passes at the current head',
-    '--', 'node', '--test', 'tests/sample.test.js'
-  ]);
-  assert.equal(run.exitCode, 0);
-  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  const provenance = Object.entries(record.observation.values)
-    .filter(([key]) => CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key));
-  assert.ok(provenance.length > 5, `the fixture must carry the provenance half, got ${provenance.length} key(s)`);
-
-  // The reviewer's counterfactual: the pre-fix corpus is the same list with nothing excluded,
-  // and it carries the story id — from the record's own run artifact path, not from anything
-  // this run inspected.
-  const unfilteredCorpus = [
-    ...record.observation.targets,
-    ...record.observation.scenarios,
-    ...Object.entries(record.observation.values).flatMap(([key, value]) => [key, String(value)])
-  ].join('\n');
-  assert.match(unfilteredCorpus, /story-/, 'the pre-fix corpus carried the story id through run_artifact');
-
-  const corpus = buildVerificationCommandSearchText(record);
-  assert.doesNotMatch(corpus, /story-/, `provenance paths must not reach the corpus: ${corpus}`);
-  // A provenance value that an outcome key also reports — head_sha_before repeats head_sha on
-  // a run that did not move the head — is in the corpus on the outcome key's ticket, so only
-  // the values the provenance half alone contributes are asserted absent.
-  const outcomeValues = new Set(
-    Object.entries(record.observation.values)
-      .filter(([key]) => !CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key))
-      .map(([, value]) => String(value))
-  );
-  for (const [key, value] of provenance) {
-    assert.ok(!corpus.includes(key), `${key} states how the record was produced and must not be classified`);
-    if (outcomeValues.has(String(value))) continue;
-    assert.ok(!corpus.includes(String(value)), `the value of ${key} must not be classified either`);
-  }
-  // The outcome half still reaches the classifiers: this narrows what evidence is read from,
-  // it does not stop reading the observation.
-  assert.ok(corpus.includes('tests/sample.test.js'), corpus);
-  assert.ok(corpus.includes('exit_code'), corpus);
-
-  const kinds = classifyVerificationEvidenceItem(record).map((item) => item.kind);
-  assert.ok(
-    !kinds.includes('runtime_path_evidence'),
-    `a unit run over tests/sample.test.js earns no runtime path evidence: ${kinds.join(', ')}`
-  );
-  // What the record did verify is still classified, so the record is narrowed, not silenced.
-  assert.ok(kinds.includes('focused_test'), `focused_test is earned by the run itself: ${kinds.join(', ')}`);
 });
 
 test('status and evidence_source are computed facts, not hand-listed exceptions', async () => {

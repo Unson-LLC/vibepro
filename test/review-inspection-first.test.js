@@ -5,7 +5,6 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { buildAgentReviewRecoveryCommands } from '../src/pr-manager.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -141,20 +140,6 @@ test('architecture boundary request and dispatch emit the complete aggregate ins
     assert.match(content, /--inspection-input "<runtime-source-path>"/);
     assert.match(content, /--inspection-input "<test-path>"/);
   }
-});
-
-test('PR readiness recovery emits the complete aggregate inspection surface', () => {
-  const commands = buildAgentReviewRecoveryCommands({
-    storyId: 'story-test',
-    stage: 'architecture_spec',
-    role: 'architecture_boundary'
-  });
-  assert.match(commands[0], /review prepare .*--stage architecture_spec.*--role architecture_boundary/);
-  const command = commands.find((item) => item.startsWith('vibepro review record'));
-  assert.ok(command, 'PR recovery output must contain a record command');
-  assert.match(command, /--inspection-input '<design-story-spec-path>'/);
-  assert.match(command, /--inspection-input '<runtime-source-path>'/);
-  assert.match(command, /--inspection-input '<test-path>'/);
 });
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {

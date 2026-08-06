@@ -24,6 +24,7 @@ import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getAgentReviewStatus } from './agent-review.js';
+import { bindStoryTraceability } from './traceability.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -67,6 +68,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await writeFile(bodyPath, body, 'utf8');
 
   await recordManifestPrPrepare(root, storyId, { jsonPath, bodyPath }).catch(() => null);
+  await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification }).catch(() => null);
 
   return {
     story,
@@ -147,6 +149,19 @@ async function readReviewSummary(repoRoot, storyId) {
   } catch {
     return { recorded: false, status: null, summary: null, stages: [] };
   }
+}
+
+async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification }) {
+  const evidence = [{ type: 'pr_artifact', ref: toWorkspaceRelative(repoRoot, bodyPath) }];
+  if (verification?.recorded && verification.artifact) {
+    evidence.push({ type: 'pr_artifact', ref: verification.artifact });
+  }
+  await bindStoryTraceability(repoRoot, {
+    storyId,
+    source: 'pr_prepare',
+    lifecycle: 'in_progress',
+    evidence
+  });
 }
 
 async function recordManifestPrPrepare(repoRoot, storyId, artifacts) {
