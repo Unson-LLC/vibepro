@@ -334,3 +334,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:432:start -->
 - [PR #432](https://github.com/Unson-LLC/vibepro/pull/432) — [2026-08](/ja/releases/2026-08): refactor: 縮小リファクタ Slice 4 — run-context-capsuleスナップショット機構を削除（計画の実測更新込み）
 <!-- vibepro-release-index-pr:432:end -->
+
+<!-- vibepro-release-index-pr:435:start -->
+- [PR #435](https://github.com/Unson-LLC/vibepro/pull/435) — [2026-08](/ja/releases/2026-08): feat: v-nextフォローアップ — report fingerprint再設計とstory_source/AC対応マップのpr prepare再統合
+<!-- vibepro-release-index-pr:435:end -->
