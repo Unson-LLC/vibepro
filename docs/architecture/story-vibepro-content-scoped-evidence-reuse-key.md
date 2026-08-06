@@ -273,7 +273,7 @@ below decide the role's own freshness:
 | present | present, different digest | stale | Positive evidence on both sides, and they disagree: the role's inspected surface (or, for `strict_head`, the HEAD) moved. |
 | present | absent | stale | The role has real current content, but the cached bundle never recorded a baseline for it -- e.g. reviewed for the first time after the last `pr prepare`. No evidence the bundle ever accounted for this role. |
 | absent | absent | stale (fixed; previously fresh) | Zero positive evidence in **either** direction -- the role's literal first-ever review at this stage, or a role newly added to the roster in a round where nothing else drifted. `baseFresh` alone says the *shared* inputs did not change; it says nothing about this specific role. Defaulting this to fresh conflated "no drift evidence exists" with "freshness was confirmed" -- flagged by an independent `architecture_boundary` review on 2026-08-05 as an untested branch with zero regression coverage, and as the failure mode through which a future duck-typing shape drift in `buildRoleContentDigests` (reading `role.content_binding.*` / `role.freshness_policy.effective_mode` without validating their shape) would make every role's digest come back `null` and, prior to this fix, every role fail open to fresh as long as the shared base happened to match. Both the direct "first-ever review" case and this fail-open case are covered by dedicated tests in `test/evidence-summary-reuse.test.js` (`CRK-S-2 consumption a role with neither a current digest nor a previous baseline is not treated as spuriously fresh` and `buildRoleContentDigests omits a role whose content_binding shape is unrecognized ...`). |
-| absent | present | fresh (if `baseFresh`; **not** handled by this fix) | Falls through today with no positive-evidence check, same as the `absent`/`absent` case did before this fix. Reachable when a role had a baseline recorded at the last `pr prepare` but its recorded review result is no longer readable at `review prepare` time (e.g. `.vibepro/reviews/<story>/<stage>/review-result-<role>.json` deleted or unparsable, so `buildStageSummary` returns `result: null` for it, so `buildRoleContentDigests` omits it -- see `readJsonIfExists(getReviewResultPath(...))` in `src/agent-review.js`). Deliberately left out of this fix's scope: the reported finding was specifically the `absent`/`absent` branch, and closing this row too is a distinct, not-yet-flagged risk that deserves its own review rather than folding into this change. |
+| absent | present | stale (fixed in a same-day follow-up; previously fresh) | Falls through with an explicit `stale_reasons` entry (added to `evaluateEvidenceReuseForReview`'s branch table) rather than defaulting to fresh: "role has a previous evidence-reuse baseline but no current inspected content surface to confirm freshness against ... absence of drift evidence is not the same fact as confirmed freshness". Reachable when a role had a baseline recorded at the last `pr prepare` but (a) its recorded review result is no longer readable at `review prepare` time (`.vibepro/reviews/<story>/<stage>/review-result-<role>.json` deleted or unparsable, so `buildStageSummary` returns `result: null`), or (b) its entire inspected content surface was deleted, so `buildRoleContentDigests`'s own separate fix (below) correctly omits the role rather than resurrecting a stale digest. An independent `final_review` reproduced the fail-open outcome of this row directly against shipped source before either fix landed; both fixes shipped same-day, each with a dedicated regression test in `test/evidence-summary-reuse.test.js` (`buildRoleContentDigests does not resurrect a stale recorded digest when a role's entire inspected surface is deleted ...` and `evaluateEvidenceReuseForReview does not default a role to fresh when its previous baseline exists but no current digest can be computed`), each confirmed to fail before its fix and pass after. |
 
 The `absent`/`absent` row deliberately still resolves to plain `status:
 'stale'` (not a new third status value) once fixed: the existing
@@ -311,13 +311,32 @@ older code simply never reads).
   not invalidate reuse; a verification content change still does (D2).
 - `evidence-reuse.json`'s `role_reuse` map is sufficient on its own to
   reconstruct, for any role, whether it hit or missed and exactly which
-  digest changed (CRK-S-5).
-- A role whose current digest is present but has no recorded baseline, and a
-  role whose current digest and recorded baseline are both absent, are never
+  digest changed (CRK-S-5) -- with one known, accepted exception documented
+  below (a role whose entire inspected surface was deleted is silently
+  absent from `role_reuse` rather than recorded as an explicit miss).
+- A role whose current digest is present but has no recorded baseline, a
+  role whose current digest and recorded baseline are both absent, and a
+  role with a previously recorded baseline but no current digest, are never
   defaulted to fresh purely because the shared base is unchanged (CRK-S-2,
   `evaluateEvidenceReuseForReview`'s `current`/`previous` branch table above,
-  rows `present`/`absent` and `absent`/`absent`). This invariant does not
-  cover the inverse row -- no current digest but a previously recorded
-  baseline (`absent`/`present`) -- which still resolves to fresh whenever
-  `baseFresh` holds, unchanged from before this fix and deliberately out of
-  this fix's scope (see the Rationale note on that row above).
+  rows `present`/`absent`, `absent`/`absent`, and `absent`/`present`). All
+  three rows are covered by dedicated regression tests in
+  `test/evidence-summary-reuse.test.js`, each confirmed to fail before its
+  fix and pass after.
+- Known, accepted limitation (not covered by the invariant above): when a
+  role's entire inspected surface is deleted, `buildRoleReuseIndex` (which
+  iterates only `currentRoleDigests`) omits that role from `role_reuse`
+  entirely rather than recording an explicit `miss` entry with a reason, so
+  `evidence-reuse.json`'s own `role_reuse` map is not, by itself, sufficient
+  to reconstruct why that specific role went stale (CRK-S-5 / spec clause
+  C-001's "reconstructable from the artifact alone" promise does not hold
+  for this one row). This does **not** weaken the safety-relevant invariant
+  above: the aggregate `evidence_key`/`status` still correctly goes stale
+  (the digest map's key set changed), and `evaluateEvidenceReuseForReview`
+  still correctly returns `fresh: false` for the role via the `absent`/
+  `present` branch. The owner accepted this as a known limitation via a Gate
+  waiver on `gate:evidence_adjudication` (AC-5) rather than fixing it in this
+  Story, given the associated review-budget cost of another closure round;
+  the root fix (`buildRoleReuseIndex` synthesizing an explicit miss entry for
+  keys present only in `previousRoleDigests`) is tracked as a separate
+  follow-up Story.
