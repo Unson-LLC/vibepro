@@ -479,6 +479,28 @@ export function evaluateEvidenceReuseForReview({
           reason: 'strict HEAD role: review prepare current HEAD does not match evidence key HEAD'
         });
       }
+    } else if (!current && previous) {
+      // The evidence-reuse artifact's own key_inputs recorded a baseline for
+      // this role, but nothing can be freshly recomputed for it right now
+      // (e.g. its entire inspected content surface was deleted, so
+      // buildRoleContentDigests correctly omits it rather than resurrecting
+      // a stale hash -- see the crk-digest-fallback-masks-deleted-surface
+      // fix -- or its content_binding/freshness_policy shape drifted). This
+      // is the mirror image of the `current && !previous` branch above: a
+      // one-sided absence, not a same-digest match, so it must not fall
+      // through to the last branch (which requires both sides truthy) and
+      // silently inherit `fresh` from baseFresh alone. Do not default this
+      // to fresh just because baseFresh happens to be true -- that would
+      // conflate "no drift evidence exists" with "freshness was confirmed",
+      // the exact same failure mode the `!current && !previous` branch above
+      // guards against, just from the opposite (previously-known-then-lost)
+      // direction.
+      roleStaleReasons.push({
+        field: `role_surface:${roleKey}`,
+        previous: previous.digest,
+        current: null,
+        reason: 'role has a previous evidence-reuse baseline but no current inspected content surface to confirm freshness against (the surface may have been deleted or its shape changed): absence of drift evidence is not the same fact as confirmed freshness'
+      });
     } else if (previous && current && previous.digest !== current.digest) {
       roleStaleReasons.push({
         field: `role_surface:${roleKey}`,

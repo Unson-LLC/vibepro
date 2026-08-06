@@ -1174,3 +1174,90 @@ test("buildRoleContentDigests does not resurrect a stale recorded digest when a 
   assert.notEqual(second.status, 'hit', 'the aggregate status must not report a hit once a previously-tracked role has lost its entire recorded surface');
   assert.equal(second.role_reuse['implementation:runtime_contract'], undefined, "the deleted-surface role must be absent from role_reuse, not silently marked 'hit'");
 });
+
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-2, AC-5
+test("evaluateEvidenceReuseForReview does not default a role to fresh when its previous baseline exists but no current digest can be computed", () => {
+  // Sibling gap to the buildRoleContentDigests fix above, in a SEPARATE
+  // consumer: `review prepare` calls evaluateEvidenceReuseForReview directly
+  // with a freshly-computed `currentRoleDigests` (which, post-fix, correctly
+  // OMITS a role whose entire inspected surface was deleted) against an
+  // on-disk evidence-reuse.json that has not yet been rebuilt by `pr
+  // prepare` since the deletion -- an ordinary operational sequence, not an
+  // edge case. Before this fix, the `current && !previous` / `!current &&
+  // !previous` / `isStrictHead` / `previous && current && differ` branches
+  // left the resulting `!current && previous` combination completely
+  // unhandled, falling through with no stale reason added and defaulting to
+  // `fresh: true` whenever the shared base was otherwise clean -- the same
+  // "absence of drift evidence is not the same fact as confirmed freshness"
+  // failure this Story's own `!current && !previous` branch already guards
+  // against, just from the opposite (previously-known-then-lost) direction.
+  // An independent final_review reproduced this directly against shipped
+  // source before this fix landed.
+  const reuseBaseConfig = {
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    prContext: {
+      agent_reviews: {
+        stages: [{
+          stage: 'implementation',
+          roles: [{
+            role: 'runtime_contract',
+            freshness_policy: { effective_mode: 'content_surface' },
+            content_binding: { current_surface_hash: 'aaaa', recorded_surface_hash: 'aaaa', surface_files: ['src/deleted-module.js'], missing_files: [] }
+          }]
+        }]
+      }
+    },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  };
+  // Build twice with identical content so `reuse` is a genuine, already-hit
+  // artifact (empty role_reuse.stale_reasons) rather than a first-ever one
+  // (which would carry its own synthetic "no previous artifact" stale
+  // reason and double-count against the assertion below).
+  const reusePriorRound = buildEvidenceReuse(reuseBaseConfig);
+  const reuse = buildEvidenceReuse({ ...reuseBaseConfig, previousReuse: reusePriorRound });
+  assert.equal(reuse.role_reuse['implementation:runtime_contract'].status, 'hit');
+  assert.equal(reuse.key_inputs.role_surface_digests['implementation:runtime_contract'].digest, 'sha256:aaaa');
+
+  // `review prepare` is called AFTER the role's surface was deleted but
+  // BEFORE `pr prepare` rebuilds `evidence-reuse.json`: `reuse` above is the
+  // stale, not-yet-rebuilt artifact (previous digest still 'sha256:aaaa'),
+  // while `currentRoleDigests` reflects today's real, post-deletion
+  // content_binding via the fixed buildRoleContentDigests (the role is
+  // correctly absent, per the sibling regression test above).
+  const currentRoleDigestsAfterDeletion = buildRoleContentDigests([{
+    stage: 'implementation',
+    roles: [{
+      role: 'runtime_contract',
+      freshness_policy: { effective_mode: 'content_surface' },
+      content_binding: { current_surface_hash: null, recorded_surface_hash: 'aaaa', surface_files: ['src/deleted-module.js'], missing_files: ['src/deleted-module.js'] }
+    }]
+  }], { headSha: 'head-a' });
+  assert.deepEqual(currentRoleDigestsAfterDeletion, {}, 'precondition: the deleted-surface role must be absent from the freshly-computed digests');
+
+  const reviewEvaluation = evaluateEvidenceReuseForReview({
+    reuse,
+    gitContext: { head_sha: 'head-a' },
+    verificationEvidence: null,
+    stage: 'implementation',
+    roles: ['runtime_contract'],
+    currentRoleDigests: currentRoleDigestsAfterDeletion
+  });
+  // The actual fix under test: a previous-baseline-but-no-current-digest
+  // role must not resolve to fresh just because the shared base is clean.
+  assert.equal(reviewEvaluation.by_role.runtime_contract.fresh, false, 'a role whose surface disappeared must not be reported fresh just because a stale previous baseline still exists on disk');
+  assert.equal(reviewEvaluation.by_role.runtime_contract.first_input, false);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.status, 'stale');
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons.length, 1);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons[0].field, 'role_surface:implementation:runtime_contract');
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons[0].previous, 'sha256:aaaa');
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons[0].current, null);
+  assert.match(
+    reviewEvaluation.by_role.runtime_contract.stale_reasons[0].reason,
+    /absence of drift evidence is not the same fact as confirmed freshness/
+  );
+  assert.equal(reviewEvaluation.status, 'stale');
+  assert.equal(reviewEvaluation.fresh, false);
+  assert.equal(reviewEvaluation.first_input, false);
+});
