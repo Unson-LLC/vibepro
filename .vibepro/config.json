@@ -1439,6 +1439,18 @@
         "started_at": "2026-08-05",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-deadline-bounded-review-consumption",
+        "title": "review lifecycle の agent_consumption_ms を「生存していた時間」に境界づける — close_reason で9件のcompletedを免除し、timeoutの1件だけをtimeout_msで束縛して11,073,531msを4,656,074msへ縮めるdeadline-bounded attribution",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-06",
+        "due_at": null,
+        "category": "quality"
       }
     ],
     "current_story_id": "story-vibepro-dependency-cycle-scc-reduction"
