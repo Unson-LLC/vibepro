@@ -318,3 +318,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:428:start -->
 - [PR #428](https://github.com/Unson-LLC/vibepro/pull/428) — [2026-08](/releases/2026-08): story-vibepro-dependency-cycle-scc-reduction - dependency_cycle の SCC 縮約 — 69,490件の単純閉路列挙を「1つのSCC + 20の相互依存ペア」へ畳み、ratchet gate を載せられる粒度にする
 <!-- vibepro-release-index-pr:428:end -->
+
+<!-- vibepro-release-index-pr:429:start -->
+- [PR #429](https://github.com/Unson-LLC/vibepro/pull/429) — [2026-08](/releases/2026-08): refactor: 縮小リファクタ Slice 1 — 診断/UIUX/architecture/performanceスキャナ群を削除
+<!-- vibepro-release-index-pr:429:end -->
