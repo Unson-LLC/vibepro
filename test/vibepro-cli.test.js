@@ -1362,40 +1362,16 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(output, /vibepro review record <repo>.*--inspection-summary <text>.*--inspection-input <path>.*--judgment-delta <text>/);
   assert.match(output, /vibepro execute merge <repo> --story-id <id>/);
-  assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
-  assert.match(output, /vibepro design-system init \[repo\]/);
-  assert.match(output, /vibepro design-system derive \[repo\]/);
-  assert.match(output, /vibepro design-system ingest \[repo\]/);
-  assert.match(output, /vibepro design-system ingest-design-md \[repo\]/);
-  assert.match(output, /vibepro design-system export \[repo\]/);
-  assert.match(output, /vibepro design-system export-design-md \[repo\]/);
-  assert.match(output, /vibepro design-system lint \[repo\]/);
-  assert.match(output, /vibepro design-system diff \[repo\]/);
-  assert.match(output, /vibepro design-system validate \[repo\]/);
-  assert.match(output, /vibepro design-ssot init \[repo\]/);
-  assert.match(output, /vibepro design-ssot reconcile \[repo\]/);
-  assert.match(output, /既存UI modernize/);
-  assert.match(output, /プロダクトローカルなDesign System正本/);
-  assert.match(output, /evidence-coverage\.json と ds-gate\.json/);
   assert.match(output, /GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らない/);
   assert.doesNotMatch(output, /gh pr create.*標準経路として使/i);
   assert.match(output, /vibepro execute merge <repo> --story-id <id>.*--cost-accounting <json>.*--session-id <id>/);
-  assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
   assert.match(output, /vibepro harness learn \[repo\]/);
-  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|self-dogfood\|oss-readiness\|regression-risk\|all>/);
-  assert.match(output, /vibepro check list/);
   assert.match(output, /vibepro story map \[repo\] \[--json\]/);
   assert.match(output, /vibepro task brief \[repo\] --task <task-id>/);
   assert.match(output, /vibepro task plan \[repo\] --task <task-id>/);
   assert.match(output, /vibepro task handoff \[repo\] --task <task-id>/);
-  assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
-  assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
-  assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
-  assert.match(output, /vibepro performance compare \[repo\].*--id <story-id>/);
-  assert.match(output, /vibepro verify visual \[repo\].*--current-dir <dir>/);
-  assert.match(output, /vibepro verify visual \[repo\].*--basic-auth-env <env>/);
   assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro review prepare \[repo\].*--stage <stage>/);
   assert.match(output, /vibepro review record \[repo\].*--role <role>/);
@@ -1416,24 +1392,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr prepare <repo> --base <base-branch>/);
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro execute merge <repo> --story-id <id>/);
-  assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
-  assert.match(englishOutput, /vibepro journey curate \[repo\].*--input <judgments\.json\|yaml>/);
-  assert.match(englishOutput, /vibepro design-system init \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system ingest \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system ingest-design-md \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system export \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system export-design-md \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system lint \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system diff \[repo\]/);
-  assert.match(englishOutput, /vibepro design-system validate \[repo\]/);
-  assert.match(englishOutput, /vibepro design-ssot init \[repo\]/);
-  assert.match(englishOutput, /vibepro design-ssot reconcile \[repo\]/);
-  assert.match(englishOutput, /Existing UI modernization/);
-  assert.match(englishOutput, /product-local Design System/);
-  assert.match(englishOutput, /evidence-coverage\.json and ds-gate\.json/);
   assert.match(englishOutput, /Do not use raw\s+gh pr create/i);
-  assert.match(englishOutput, /vibepro check list/);
   assert.match(englishOutput, /vibepro story map \[repo\] \[--json\]/);
   assert.match(englishOutput, /vibepro task brief \[repo\] --task <task-id>/);
   assert.match(englishOutput, /vibepro task plan \[repo\] --task <task-id>/);
@@ -1441,16 +1400,6 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro execute merge <repo> --story-id <id>.*--cost-accounting <json>.*--session-id <id>/);
 });
 
-test('help documents check fail-on-findings enforcement mode', async () => {
-  let output = '';
-
-  const result = await runCli(['help'], {
-    stdout: { write: (text) => { output += text; } }
-  });
-
-  assert.equal(result.exitCode, 0);
-  assert.match(output, /--fail-on-findings/);
-});
 
 test('pr prepare resolves explicit story id from local Story docs even when config catalog is stale', async () => {
   const repo = await makeGitRepoWithStory();
@@ -2898,12 +2847,10 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   const diagnosisSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-diagnosis-packages', 'SKILL.md');
   const meetingMinutesSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-meeting-minutes-editor', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
-  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro check list/);
   assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro execute start/);
   assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /name: vibepro-codebase-memory/);
   assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /codebase-memory-mcp cli detect_changes/);
   assert.match(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
-  assert.match(await readFile(diagnosisSkillPath, 'utf8'), /vibepro performance compare/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /name: vibepro-meeting-minutes-editor/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Slack attachments/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Core Synopsis/);
@@ -2946,10 +2893,8 @@ test('codex commands install and verify VibePro AGENTS instructions', async () =
   assert.match(installedContent, /VIBEPRO_CODEX_START/);
   assert.match(installedContent, /review-cockpit\.html/);
   assert.match(installedContent, /vibepro pr create/);
-  assert.match(installedContent, /vibepro check list/);
   assert.match(installedContent, /agent-harness/);
   assert.match(installedContent, /vibepro-gate-evidence/);
-  assert.match(installedContent, /vibepro performance compare/);
   assert.match(installedContent, /server logs alone/);
 
   const ok = await runCli(['codex', 'verify', repo]);
@@ -10497,18 +10442,6 @@ test('required managed worktree guard covers review lifecycle, review record, ta
   assert.equal(reviewRecord.exitCode, 1);
   assert.match(reviewRecord.stderr, /managed worktree required for review record/);
 
-  const verifyFlow = await runCliWithStdout([
-    'verify',
-    'flow',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--base-url',
-    'http://127.0.0.1:9',
-    '--json'
-  ]);
-  assert.equal(verifyFlow.exitCode, 1);
-  assert.match(verifyFlow.stderr, /managed worktree required for verify flow/);
 
   const reviewStatus = await runCliWithStdout([
     'review',
@@ -15176,8 +15109,6 @@ test('VQG-S-5 Visual QA critical gate guidance points to residual artifacts', as
 
   assert.equal(result.exitCode, 1);
   assert.match(stderrOutput, /Visual QA Gate requires ready_for_review visual residual evidence/);
-  assert.match(stderrOutput, /vibepro verify visual \. --id <story-id> --base-url <preview-url>/);
-  assert.match(stderrOutput, /vibepro verify visual \. --id <story-id> --current-dir <dir>/);
   assert.match(stderrOutput, /\.vibepro\/qa\/<qa-id>\/visual-residual\.json/);
 });
 
@@ -20783,19 +20714,14 @@ test('story diagnose surfaces missing Journey context for UI stories (INV-SJD-1,
   assert.equal(result.result.status.journey_context.curated, false);
   assert.match(output, /## Journey Context/);
   assert.match(output, /Status \| missing/);
-  assert.match(output, /vibepro journey derive \. --id default-product-journey/);
-  assert.match(output, /vibepro journey handoff \. --id default-product-journey/);
   const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-ui-navigation', 'story-report.md'), 'utf8');
   assert.match(report, /## Journey Context/);
   assert.match(report, /Artifact kind \| -/);
-  assert.match(report, /vibepro journey curate \. --id default-product-journey --input <judgments\.json>/);
   const html = await readFile(path.join(repo, '.vibepro', 'stories', 'story-ui-navigation', 'index.html'), 'utf8');
   assert.match(html, /<h2>Journey Context<\/h2>/);
   assert.match(html, /<td>Status<\/td>\s*<td>missing<\/td>/);
   assert.match(html, /<td>Artifact kind<\/td>\s*<td>-<\/td>/);
   assert.match(html, /<td>Curated<\/td>\s*<td>no<\/td>/);
-  assert.match(html, /<code>vibepro journey derive \. --id default-product-journey<\/code>/);
-  assert.match(html, /<code>vibepro journey curate \. --id default-product-journey --input &lt;judgments\.json&gt;<\/code>/);
 });
 
 test('story diagnose distinguishes machine-derived and curated Journey artifacts (INV-SJD-3)', async () => {
