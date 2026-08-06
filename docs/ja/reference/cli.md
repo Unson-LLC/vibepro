@@ -4,7 +4,7 @@
 
 実行中のbinaryが正本です。最初に `vibepro version` でpackage版を確認し、`main` のマニュアルを読む場合は[リリースと監査](/ja/guide/release-and-audit)で公開済みpackageとの差を確認してください。
 
-Architecture / Specを確定する前に `story diagnose --phase design-input --run-graphify`、実装またはPR readinessの前に `story diagnose --phase pre-implementation --run-graphify` を実行します。通常の出荷経路は `story diagnose` → Architecture / Spec → 実装 → `verify record` → `review prepare/start/close/record` → `adjudicate` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` → `execute merge` です。`review record --status pass` は `--inspection-summary`、実在する `.vibepro` 外の `--inspection-input`、`--judgment-delta` を必須とします。旧来のassertion-only passは互換受理せずfail-closedになるため、既存automationを移行してください。各引数の完全な契約は以下の生成済みUsageを使ってください。
+Architecture / Specを確定する前に `story diagnose --phase design-input --run-graphify`、実装またはPR readinessの前に `story diagnose --phase pre-implementation --run-graphify` を実行します。通常の出荷経路は `story diagnose` → Architecture / Spec → 実装 → `verify record` → `review prepare/start/close/record` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` です。`review record --status pass` は `--inspection-summary`、実在する `.vibepro` 外の `--inspection-input`、`--judgment-delta` を必須とします。旧来のassertion-only passは互換受理せずfail-closedになるため、既存automationを移行してください。各引数の完全な契約は以下の生成済みUsageを使ってください。
 
 `decision record --source budget:delivery_efficiency:<story-id>` によるbudget grantは、workspaceのdecision store（gitignore対象）に加えて `docs/management/decisions/` 配下のtracked decision document（`type: budget_override_approval`）を必ず生成し、そのパスを `budget_approval.decision_doc` に記録します。PR diffでgrantor・digest・timestampをレビュー可能にするのはこのdocumentであり、生成先がgitignoreされている場合はコマンドがfailします。
 
@@ -50,14 +50,6 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
-  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
-  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro adjudicate prepare [repo] --id <story-id> [--json]
-  vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -71,10 +63,6 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
-  vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
-  vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
-  vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
-  vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -88,13 +76,6 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
-  vibepro task list [repo] [--id <story-id>]
-  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
-  vibepro task show [repo] --task <task-id> [--id <story-id>]
-  vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--evidence-decision-usage <json>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr autopilot [repo] [--story-id <id>] [--base <ref>] [--verify <kind=command>]... [--pr <number>] [--import-ci] [--check <name=kind>]... [--dry-run] [--stage-timeout-ms <ms>] [--progress] [--language ja|en] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]

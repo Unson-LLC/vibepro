@@ -27,7 +27,6 @@ import { writeFinalArchitecture } from '../src/architecture-store.js';
 import { readInferredSpec, writeInferredSpec } from '../src/spec-store.js';
 import { createStoryTasks } from '../src/story-task-generator.js';
 import { runCli } from '../src/cli.js';
-import { createTasksFromPlan } from '../src/task-manager.js';
 import { createUsageReport } from '../src/usage-report.js';
 import { importGraphifyArtifacts } from '../src/graphify-adapter.js';
 import { resolvePrTaskStatePath } from '../src/pr-manager.js';
@@ -964,37 +963,6 @@ test('story task projection failure creates neither task state nor task plan', a
   await assert.rejects(access(path.join(root, 'docs/tasks/story-safe.md')));
 });
 
-test('plan task projection failure leaves tasks and manifest routing fields untouched', async () => {
-  const outside = await mkdtemp(path.join(os.tmpdir(), 'vibepro-routing-plan-task-outside-'));
-  const root = await repo();
-  await runCli(['init', root, '--story-id', 'story-safe', '--title', 'Safe']);
-  const configPath = path.join(root, '.vibepro/config.json');
-  const config = JSON.parse(await readFile(configPath, 'utf8'));
-  config.artifact_routing = { artifacts: { task_plan: {
-    canonical: 'docs/tasks/{story_id}.md',
-    projections: [{ path: 'escaped/{story_id}.md', generated: true }]
-  } } };
-  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
-  await symlink(outside, path.join(root, 'escaped'));
-  const storiesDir = path.join(root, '.vibepro/stories');
-  await mkdir(storiesDir, { recursive: true });
-  await writeFile(path.join(storiesDir, 'story-plan.json'), `${JSON.stringify({
-    generated_at: '2026-07-19T00:00:00.000Z',
-    priority_stories: [{ story_id: 'story-safe', title: 'Safe' }],
-    task_candidates: [{ id: 'task-safe', story_id: 'story-safe', title: 'Safe task', target_files: ['src/safe.js'] }]
-  }, null, 2)}\n`);
-  const manifestPath = path.join(root, '.vibepro/vibepro-manifest.json');
-  const manifestBefore = await readFile(manifestPath, 'utf8');
-
-  await assert.rejects(
-    createTasksFromPlan(root, { storyId: 'story-safe' }),
-    (error) => error.code === 'repository_traversal'
-  );
-  await assert.rejects(access(path.join(root, '.vibepro/stories/story-safe/tasks')));
-  await assert.rejects(access(path.join(root, 'docs/tasks/story-safe.md')));
-  assert.equal(await readFile(manifestPath, 'utf8'), manifestBefore);
-});
-
 test('task plan writes its human-readable canonical to the configured feature packet', async () => {
   const root = await repo({
     artifact_routing: {
@@ -1023,18 +991,6 @@ test('task plan JSON writers honor a custom routed canonical instead of the lega
   });
   assert.equal(generated.artifacts.story_tasks_json, 'artifacts/checkout-safe/tasks.json');
   await access(path.join(root, 'artifacts/checkout-safe/tasks.json'));
-  await assert.rejects(access(path.join(root, '.vibepro/stories/story-checkout-safe/tasks/tasks.json')));
-
-  await mkdir(path.join(root, '.vibepro/stories'), { recursive: true });
-  await writeFile(path.join(root, '.vibepro/stories/story-plan.json'), `${JSON.stringify({
-    generated_at: '2026-07-21T00:00:00.000Z',
-    priority_stories: [story],
-    task_candidates: [{ id: 'task-checkout', story_id: story.story_id, title: 'Checkout task', target_files: ['src/index.js'] }]
-  }, null, 2)}\n`);
-  const planned = await createTasksFromPlan(root, { storyId: story.story_id });
-  assert.equal(planned.results[0].artifacts.json, 'artifacts/checkout-safe/tasks.json');
-  const routed = JSON.parse(await readFile(path.join(root, 'artifacts/checkout-safe/tasks.json'), 'utf8'));
-  assert.equal(routed.source_run.run_id, 'story-plan');
   await assert.rejects(access(path.join(root, '.vibepro/stories/story-checkout-safe/tasks/tasks.json')));
 });
 

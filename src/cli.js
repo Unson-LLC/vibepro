@@ -19,7 +19,6 @@ import {
   validateValidationPhaseEvidence,
   writeValidationSequence
 } from './validation-sequencing.js';
-import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordImplementationProvenance, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
 import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
@@ -63,42 +62,11 @@ import {
   pollFindingRepairFromRepo,
   recordFindingRepair
 } from './review-finding-repair-loop.js';
-import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import {
-  getExecutionNext,
-  getExecutionStatus,
-  reconcileAllMergedExecutionStates,
   reconcileExecutionState,
-  renderExecutionNextSummary,
-  renderExecutionReconcileAllSummary,
-  renderExecutionStateSummary,
-  startExecution,
   updateExecutionStateFromPrCreate,
-  updateExecutionStateFromPrMerge,
   updateExecutionStateFromPrPrepare
 } from './execution-state.js';
-import {
-  GuardedRunError,
-  createGuardedRunSession,
-  isGuardedRunError,
-  renderGuardedRunError,
-  renderGuardedRunSummary
-} from './guarded-run-session.js';
-import { composeProductionRuntimeDependencies } from './agent-runtime-connectors.js';
-import { createCodexGuardedRunBridge } from './codex-runtime-bridge.js';
-import {
-  StoryRunPortfolioError,
-  createStoryRunPortfolioController,
-  renderStoryRunPortfolioError,
-  renderStoryRunPortfolioSummary
-} from './story-run-portfolio.js';
-import {
-  executeMerge,
-  persistMergeFollowupState,
-  persistMergeRecoveryState,
-  projectPublicPrMergeResult,
-  renderPrMergeSummary
-} from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
@@ -108,7 +76,6 @@ import {
 import {
   autopilotPullRequest,
   createPullRequest,
-  evaluateGateReadiness,
   preparePullRequest,
   renderPrAutopilotSummary,
   renderPrCreateSummary,
@@ -126,7 +93,6 @@ import {
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
 } from './decision-records.js';
-import { OutcomeCommandError, recordOutcome, refreshOutcome, requireOutcomeStoryId } from './outcome-manager.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
@@ -187,18 +153,6 @@ import {
   selectStory
 } from './story-manager.js';
 import {
-  createTasksFromPlan,
-  createTaskBrief,
-  createTaskExecution,
-  createTaskHandoff,
-  createTaskPlan,
-  listTasks,
-  renderTaskCreateSummary,
-  renderTaskList,
-  renderTaskShow,
-  showTask
-} from './task-manager.js';
-import {
   installBundledSkills,
   lintBundledSkills,
   listBundledSkills,
@@ -238,38 +192,11 @@ Typical PR-safety flow:
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
   vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
-  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
 
 Review record migration:
   A pass result now requires --inspection-summary, at least one existing non-.vibepro
   --inspection-input, and --judgment-delta. Existing automation must add those inputs;
   VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
-
-Guarded Run sessions:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
-  vibepro execute runtime-dispatch <repo> --story-id <id> --run-id <id> --request <json-file> [--json]
-  vibepro execute runtime-poll <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
-  vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
-  vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
-      Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
-      Without --until this command only persists state. --until pr-ready defaults to the closed autonomous Action DAG and guarded agent execution.
-      The default provider order is codex then claude-code. Explicit legacy/profile/provider overrides remain supported.
-      PR creation, merge, waiver, and material external side effects always remain explicit human operations. --disable-autonomous-actions audibly falls back to legacy.
-  vibepro execute status <repo> --story-id <id> --run-id <run-id>
-      Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
-  vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
-  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>] [--disable-autonomous-actions]
-      Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
-      resume accepts --until pr-ready to retry only incomplete allowlisted Actions after an explicit resume.
-  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
-  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
-  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
-  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
-      Coordinate isolated one-Story Runs sequentially; stopped entries require an explicit typed decision.
-      watch returns one current snapshot and exits; it does not stream.
-      Guarded commands accept only --target pr_ready; rejected candidates require an explicit --run-id.
-  vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
-      Restore a configured linked mirror from its authority; never promote the mirror.
 
 PR prepare creates evidence-plan, decision-index, concise pr-body, verification
 evidence, and plan-selected gate/review artifacts under .vibepro/pr/<story-id>/
@@ -285,9 +212,8 @@ Use \`pr prepare --outcome <source_fix|evidence_added|rewording_only|waiver|uncl
 only to override ambiguous gate outcome ledger classification.
 If required gates are unresolved, next_commands points back to review or
 verification. Only use vibepro pr create for normal PR creation; do not use raw
-gh pr create as the standard path. After PR creation, import CI evidence, rerun
-pr prepare and pr create to refresh lifecycle artifacts, then use vibepro execute
-merge to record merge-time checks and GitHub merge results.
+gh pr create as the standard path. After PR creation, import CI evidence and rerun
+pr prepare / pr create to refresh lifecycle artifacts.
 
 Usage:
   vibepro help [command]
@@ -328,16 +254,6 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   Budget grant: decision record --source budget:delivery_efficiency:<story-id> also writes a tracked decision document under docs/management/decisions/ (type: budget_override_approval) and records its path as budget_approval.decision_doc; the workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff. The command fails if that path is gitignored.
-  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
-  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
-  Outcome workflow: usage report --json -> choose trace/collision, parent revision, and one eligible source -> outcome record -> outcome refresh. Zero sources require current trace-specific verification evidence or an accepted waiver before rerunning pr prepare/report; multiple sources require an explicit --source from the bounded report; stale parents require a fresh report.
-  vibepro adjudicate prepare [repo] --id <story-id> [--json]
-  vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
-  Cross-system adjudication: judgment-DAG routes (record --judgment, correct) reject an adjudicator whose --agent-system matches the story's recorded implementation provenance (vibepro adjudicate provenance) unless --allow-same-system <reason> is given (appended to an append-only log) or an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment exists. The evidence path (record without --judgment) only attaches a same_system warning and never blocks.
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -351,10 +267,6 @@ Usage:
   vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
-  vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
-  vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
-  vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
-  vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -368,13 +280,6 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
-  vibepro task list [repo] [--id <story-id>]
-  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
-  vibepro task show [repo] --task <task-id> [--id <story-id>]
-  vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--evidence-decision-usage <json>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr autopilot [repo] [--story-id <id>] [--base <ref>] [--verify <kind=command>]... [--pr <number>] [--import-ci] [--check <name=kind>]... [--dry-run] [--stage-timeout-ms <ms>] [--progress] [--language ja|en] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
@@ -420,34 +325,6 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       pr prepareを再実行し、PR作成に進めるか、必要なreview prepare / review start / review recordを表示します。
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
       Gate DAGがreadyになった後、VibePro経由でPRを作成します。
-  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
-      PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
-
-Guarded Runセッション:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
-  vibepro execute runtime-dispatch <repo> --story-id <id> --run-id <id> --request <json-file> [--json]
-  vibepro execute runtime-poll <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
-  vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
-  vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
-      pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
-      --until未指定時は状態だけを永続化します。--until pr-readyは閉じた自律Action DAGとguarded agent実行を既定で選びます。
-      providerの既定順はcodex→claude-codeです。明示的なlegacy/profile/provider指定は維持されます。
-      PR作成、merge、waiver、重大な外部副作用は必ず人間の明示操作に残ります。--disable-autonomous-actionsは監査可能な形でlegacyへフォールバックします。
-  vibepro execute status <repo> --story-id <id> --run-id <run-id>
-      指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
-  vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
-  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>] [--disable-autonomous-actions]
-      Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
-      resumeは--until pr-readyを受け付け、明示的な再開後に未完了のallowlist済みActionだけを再試行します。
-  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
-  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
-  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
-  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
-      1 Run = 1 Storyを保ったまま逐次実行し、停止したStoryの継続・skip・retryには型付き判断を要求します。
-      watchは現在値を1回返して終了するsnapshotです。streamingは行いません。
-      guarded commandの--targetはpr_readyだけを受け付け、棄却候補があれば明示的な--run-idを要求します。
-  vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
-      設定済みmirrorだけをauthorityから復旧し、mirrorをauthorityへ昇格しません。
 
 risk-adaptive Gate DAG:
   workflow_heavy 変更では、workflow replay / production path / release confidence /
@@ -465,7 +342,7 @@ risk-adaptive Gate DAG:
 
 PR作成経路:
   通常のPR作成では vibepro pr create を使ってください。GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らないため、標準経路にしません。
-  PR作成後は CI を import し、pr prepare / pr create を再実行して既存PR本文とpr-create.jsonを現在head向けに更新してから execute merge へ進みます。
+  PR作成後は CI を import し、pr prepare / pr create を再実行して既存PR本文とpr-create.jsonを現在head向けに更新します。
 
 base branch:
   READMEや例の origin/develop は固定ではありません。リポジトリに合わせて origin/main や main を指定してください。
@@ -511,16 +388,6 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   Budget grant: decision record --source budget:delivery_efficiency:<story-id> also writes a tracked decision document under docs/management/decisions/ (type: budget_override_approval) and records its path as budget_approval.decision_doc; the workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff. The command fails if that path is gitignored.
-  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
-  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
-  Outcome workflow: usage report --json -> choose trace/collision, parent revision, and one eligible source -> outcome record -> outcome refresh. Zero sources require current trace-specific verification evidence or an accepted waiver before rerunning pr prepare/report; multiple sources require an explicit --source from the bounded report; stale parents require a fresh report.
-  vibepro adjudicate prepare [repo] --id <story-id> [--json]
-  vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
-  Cross-system adjudication: judgment-DAG routes (record --judgment, correct) reject an adjudicator whose --agent-system matches the story's recorded implementation provenance (vibepro adjudicate provenance) unless --allow-same-system <reason> is given (appended to an append-only log) or an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment exists. The evidence path (record without --judgment) only attaches a same_system warning and never blocks.
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -533,18 +400,10 @@ Usage:
   vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
-  vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
-  vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
-  vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
-  vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
-  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
-  vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
@@ -561,8 +420,8 @@ Usage:
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'status', 'usage', 'graph', 'env',
-  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task', 'execute',
-  'decision', 'outcome', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
+  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story',
+  'decision', 'verify', 'review', 'guard', 'spec', 'report',
   'audit', 'workspace', 'store'
 ];
 
@@ -573,7 +432,6 @@ export const TOP_LEVEL_COMMANDS = [
 const AUTO_SNAPSHOT_SUBCOMMANDS = {
   verify: ['run', 'record', 'import-ci'],
   review: ['start', 'close', 'record'],
-  adjudicate: ['record'],
   spec: ['write'],
   pr: ['prepare'],
   decision: ['record']
@@ -1539,116 +1397,6 @@ async function dispatchCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
-    if (command === 'adjudicate') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'prepare') {
-        if (hasFlag(rest, '--judgment')) {
-          const result = await prepareJudgmentAdjudication(repoRoot, {
-            storyId: getOption(rest, '--id')
-          });
-          write(stdout, hasFlag(rest, '--json')
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : [
-              `Judgment adjudication request generated: ${result.artifact}`,
-              `- route: ${result.route ?? '-'} / profile: ${result.profile ?? '-'}`,
-              `- items: ${result.item_count}`,
-              'Dispatch this checklist to an independent fresh-context subagent (not the implementing agent), then record each item verdict with `vibepro adjudicate record --judgment`.'
-            ].join('\n') + '\n');
-          return { exitCode: 0, command, subcommand, result };
-        }
-        const result = await prepareAdjudication(repoRoot, {
-          storyId: getOption(rest, '--id')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : [
-            `Adjudication request generated: ${result.artifact}`,
-            `- story: ${result.story_path}`,
-            `- clauses: ${result.clause_count}`,
-            `- recorded evidence entries: ${result.evidence_count}`,
-            'Dispatch this request to an independent fresh-context subagent (not the implementing agent), then record each clause verdict with `vibepro adjudicate record`.'
-          ].join('\n') + '\n');
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'provenance') {
-        const result = await recordImplementationProvenance(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          agentSystem: getOption(rest, '--agent-system'),
-          agentId: getOption(rest, '--agent-id'),
-          sessionRef: getOption(rest, '--session-ref')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : `Implementation provenance recorded: ${result.record.provenance.agent_system} (${result.artifact})\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'record') {
-        if (hasFlag(rest, '--judgment')) {
-          const result = await recordJudgmentAdjudication(repoRoot, {
-            storyId: getOption(rest, '--id'),
-            itemId: getOption(rest, '--item'),
-            verdict: getOption(rest, '--verdict'),
-            unsoundCause: getOption(rest, '--unsound-cause'),
-            correctionId: getOption(rest, '--correction-id'),
-            reason: getOption(rest, '--reason'),
-            agentSystem: getOption(rest, '--agent-system'),
-            agentId: getOption(rest, '--agent-id'),
-            sessionRef: getOption(rest, '--session-ref'),
-            allowSameSystemReason: getOption(rest, '--allow-same-system')
-          });
-          const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
-          write(stdout, hasFlag(rest, '--json')
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} [event ${result.entry.event_id}] (${result.artifact})${warningsText}\n`);
-          return { exitCode: 0, command, subcommand, result };
-        }
-        const result = await recordAdjudication(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          clauseId: getOption(rest, '--clause'),
-          verdict: getOption(rest, '--verdict'),
-          reason: getOption(rest, '--reason'),
-          agentSystem: getOption(rest, '--agent-system'),
-          agentId: getOption(rest, '--agent-id'),
-          sessionRef: getOption(rest, '--session-ref')
-        });
-        const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})${warningsText}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'correct') {
-        if (!hasFlag(rest, '--judgment')) {
-          throw new Error('adjudicate correct requires --judgment');
-        }
-        const result = await recordPremiseCorrection(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          itemId: getOption(rest, '--item'),
-          originalVerdictId: getOption(rest, '--original-verdict-id'),
-          incorrectPremise: getOption(rest, '--incorrect-premise'),
-          correctedPremise: getOption(rest, '--corrected-premise'),
-          reason: getOption(rest, '--reason'),
-          replacementEvidence: getOptions(rest, '--replacement-evidence'),
-          agentSystem: getOption(rest, '--agent-system'),
-          agentId: getOption(rest, '--agent-id'),
-          sessionRef: getOption(rest, '--session-ref'),
-          allowSameSystemReason: getOption(rest, '--allow-same-system')
-        });
-        const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : `Judgment premise correction recorded: ${result.entry.item_id} -> ${result.entry.event_id} (${result.artifact})${warningsText}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown adjudicate command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
     if (command === 'decision') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -1707,594 +1455,6 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown decision command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'outcome') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h') {
-        write(stdout, renderOutcomeHelp(null, getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (!['record', 'refresh'].includes(subcommand)) {
-        write(stderr, `Unknown outcome command: ${subcommand ?? ''}\n\n${renderOutcomeHelp(null, getOption(rest, '--language'))}`);
-        return { exitCode: 1, command };
-      }
-      if (hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderOutcomeHelp(subcommand, getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand };
-      }
-      const storyId = requireOutcomeStoryId(
-        getOption(rest, '--id'),
-        `outcome ${subcommand} requires --id <story-id>`
-      );
-      await assertManagedWorktreeCommandAllowed(repoRoot, { storyId, commandName: `outcome ${subcommand}` });
-      if (subcommand === 'record') {
-        const valueJson = getOption(rest, '--value-json');
-        let parsedValue;
-        try {
-          parsedValue = valueJson == null ? undefined : JSON.parse(valueJson);
-        } catch {
-          throw new OutcomeCommandError('outcome_value_json_invalid', '--value-json must contain valid JSON');
-        }
-        const result = await recordOutcome(repoRoot, {
-          storyId,
-          traceId: getOption(rest, '--trace'),
-          collisionGroup: getOption(rest, '--collision-group'),
-          traceSourceRef: getOption(rest, '--trace-source-ref'),
-          parentRevision: getOption(rest, '--parent-revision'),
-          status: getOption(rest, '--status'),
-          producer: getOption(rest, '--producer'),
-          source: getOption(rest, '--source'),
-          value: parsedValue,
-          reason: getOption(rest, '--reason')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderOutcomeCommandResult(result, { subcommand }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'refresh') {
-        const result = await refreshOutcome(repoRoot, { storyId, baseRef: getOption(rest, '--base') });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderOutcomeCommandResult(result, { subcommand }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-    }
-
-    if (command === 'checkpoint') {
-      const stage = rest[0] && !rest[0].startsWith('--') ? rest[0] : null;
-      const repoIndex = stage ? 1 : 0;
-      const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
-      if (!stage || stage === '--help' || stage === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        const result = { checkpoints: listCheckpointStages() };
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderCheckpointList(result));
-        return { exitCode: 0, command, subcommand: stage ?? 'help', result };
-      }
-      const result = await runCheckpoint(repoRoot, {
-        stage,
-        storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
-        taskId: getOption(rest, '--task'),
-        groupId: getOption(rest, '--group'),
-        baseRef: getOption(rest, '--base'),
-        headRef: getOption(rest, '--head'),
-        branchName: getOption(rest, '--branch'),
-        strict: hasFlag(rest, '--strict'),
-        allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
-        language: getOption(rest, '--language')
-      });
-      write(stdout, hasFlag(rest, '--json')
-        ? `${JSON.stringify(result, null, 2)}\n`
-        : renderCheckpointSummary(result));
-      return { exitCode: result.status === 'passed' ? 0 : 2, command, subcommand: stage, result };
-    }
-
-    if (command === 'gate') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'check') {
-        const jsonOutput = hasFlag(rest, '--json');
-        const ciMode = hasFlag(rest, '--ci');
-        const result = await evaluateGateReadiness(repoRoot, {
-          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
-          baseRef: getOption(rest, '--base'),
-          headRef: getOption(rest, '--head'),
-          language: getOption(rest, '--language'),
-          env: io.env ?? process.env
-        });
-        result.ci = ciMode;
-        if (result.status === 'error') {
-          write(stderr, jsonOutput
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : `# VibePro Gate Check\n\n- status: error\n- error: ${result.error}\n`);
-          return { exitCode: 1, command, subcommand, result };
-        }
-        write(stdout, jsonOutput
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderGateCheckSummary(result, { ciMode }));
-        return { exitCode: result.ready_for_pr_create ? 0 : 1, command, subcommand, result };
-      }
-      write(stderr, `Unknown gate command: ${subcommand}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'execute') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      const executionOptions = {
-        storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
-        target: getOption(rest, '--target') ?? 'pr_create',
-        baseRef: getOption(rest, '--base'),
-        pr: getOption(rest, '--pr'),
-        branchName: getOption(rest, '--branch'),
-        worktreePath: getOption(rest, '--worktree-path'),
-        taskId: getOption(rest, '--task'),
-        groupId: getOption(rest, '--group')
-      };
-      const runOptions = {
-        ...executionOptions,
-        runId: hasFlag(rest, '--run-id') ? (getOption(rest, '--run-id') ?? '') : null,
-        repairLinkedCopy: hasFlag(rest, '--repair-linked-copy'),
-        until: getOption(rest, '--until'),
-        dryRun: hasFlag(rest, '--dry-run'),
-        decisionId: getOption(rest, '--decision'),
-        answer: getOption(rest, '--answer'),
-        answeredBy: getOption(rest, '--answered-by'),
-        reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? [],
-        autonomy: getOption(rest, '--autonomy'),
-        actionProfile: getOption(rest, '--action-profile'),
-        autonomousEnabled: hasFlag(rest, '--disable-autonomous-actions') ? false : undefined,
-        maxAttempts: parseNumberOption(rest, '--max-attempts'),
-        maxIterations: parseNumberOption(rest, '--max-iterations'),
-        maxDurationMs: parseNumberOption(rest, '--max-duration-ms'),
-        maxTokens: parseNumberOption(rest, '--max-tokens'),
-        maxCostUsd: parseNumberOption(rest, '--max-cost-usd'),
-        retryBackoffMs: parseNumberOption(rest, '--retry-backoff-ms'),
-        retryableStopCodes: getOption(rest, '--retryable-stop-codes')?.split(',').map((item) => item.trim()).filter(Boolean),
-        providerFallbacks: getOption(rest, '--provider-fallbacks')?.split(',').map((item) => item.trim()).filter(Boolean)
-      };
-      const knownExecuteSubcommands = new Set([
-        'run', 'status', 'watch', 'resume', 'cancel',
-        'runtime-dispatch', 'runtime-poll', 'runtime-reconcile', 'runtime-ingest',
-        'start', 'next', 'reconcile', 'merge',
-        'portfolio-create', 'portfolio-status', 'portfolio-advance', 'portfolio-decide', 'portfolio-promote'
-      ]);
-      if (runOptions.repairLinkedCopy
-          && knownExecuteSubcommands.has(subcommand)
-          && subcommand !== 'watch') {
-        const error = new GuardedRunError(
-          'repair_linked_copy_not_supported',
-          '--repair-linked-copy is supported only by execute watch.',
-          { command: `execute ${subcommand}`, supported_command: 'execute watch' }
-        );
-        const jsonOutput = hasFlag(rest, '--json');
-        write(stderr, jsonOutput
-          ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
-          : renderGuardedRunError(error, { repoRoot }));
-        return { exitCode: 2, command, subcommand, result: error.toJSON() };
-      }
-      if (subcommand === 'run'
-          || subcommand === 'watch'
-          || subcommand === 'resume'
-          || subcommand === 'cancel'
-          || subcommand === 'runtime-dispatch'
-          || subcommand === 'runtime-poll'
-          || subcommand === 'runtime-reconcile'
-          || subcommand === 'runtime-ingest'
-          || (subcommand === 'status' && hasFlag(rest, '--run-id'))) {
-        const jsonOutput = hasFlag(rest, '--json');
-        const bridge = io.codexSubagentHost
-          ? createCodexGuardedRunBridge({
-            repoRoot,
-            host: io.codexSubagentHost,
-            now: io.guardedRunDependencies?.now,
-            env: io.env ?? process.env,
-            guardedRunDependencies: io.guardedRunDependencies ?? {},
-            recordAgentReview: io.guardedRunDependencies?.recordAgentReview ?? recordAgentReview
-          })
-          : null;
-        await bridge?.ready;
-        const guardedRun = bridge?.session ?? createGuardedRunSession(composeProductionRuntimeDependencies(
-            io.guardedRunDependencies ?? {},
-            { env: io.env ?? process.env }
-          ));
-        try {
-          if (subcommand.startsWith('runtime-') && !bridge) {
-            throw new GuardedRunError(
-              'runtime_unavailable',
-              'Codex runtime commands require VIBEPRO_CODEX_HOST_MODULE or an embedded codexSubagentHost'
-            );
-          }
-          const guardedPolicyFlags = [
-            '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',
-            '--max-tokens', '--max-cost-usd', '--retry-backoff-ms',
-            '--retryable-stop-codes', '--provider-fallbacks'
-          ];
-          const offPathPolicyFlags = subcommand === 'run'
-            ? []
-            : guardedPolicyFlags.filter((flag) => hasFlag(rest, flag));
-          if (offPathPolicyFlags.length > 0) {
-            throw new GuardedRunError(
-              'policy_options_not_supported',
-              'Guarded autonomy policy options are supported only by execute run.',
-              { command: `execute ${subcommand}`, unsupported_options: offPathPolicyFlags, supported_command: 'execute run' }
-            );
-          }
-          if (subcommand !== 'run' && hasFlag(rest, '--action-profile')) {
-            throw new GuardedRunError(
-              'action_profile_not_supported',
-              '--action-profile is supported only by execute run.',
-              { command: `execute ${subcommand}`, supported_command: 'execute run' }
-            );
-          }
-          if (!['run', 'resume'].includes(subcommand) && hasFlag(rest, '--disable-autonomous-actions')) {
-            throw new GuardedRunError(
-              'autonomous_feature_option_not_supported',
-              '--disable-autonomous-actions is supported only by execute run and execute resume.',
-              { command: `execute ${subcommand}`, supported_commands: ['execute run', 'execute resume'] }
-            );
-          }
-          if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
-            throw new GuardedRunError(
-              'invalid_target',
-              'Guarded Run commands support only target=pr_ready.',
-              { target: executionOptions.target, supported_target: 'pr_ready' }
-            );
-          }
-          if ((subcommand === 'run' || subcommand === 'resume') && runOptions.until && runOptions.until !== 'pr-ready') {
-            throw new GuardedRunError('invalid_until', 'Guarded Run supports only --until pr-ready.', { until: runOptions.until });
-          }
-          if (runOptions.autonomy && runOptions.autonomy !== 'guarded') {
-            throw new GuardedRunError('invalid_autonomy', 'Guarded Run supports only --autonomy guarded.', { autonomy: runOptions.autonomy });
-          }
-          if (runOptions.actionProfile && !['legacy', 'autonomous'].includes(runOptions.actionProfile)) {
-            throw new GuardedRunError(
-              'invalid_action_profile',
-              'Guarded Run supports only --action-profile legacy or autonomous.',
-              { action_profile: runOptions.actionProfile, supported_profiles: ['legacy', 'autonomous'] }
-            );
-          }
-          let runtimeRequest = null;
-          if (subcommand === 'runtime-dispatch') {
-            const requestPath = getOption(rest, '--request');
-            if (!requestPath) throw new GuardedRunError('runtime_request_required', 'runtime-dispatch requires --request <json-file>');
-            try {
-              runtimeRequest = JSON.parse(await readFile(path.resolve(requestPath), 'utf8'));
-            } catch (error) {
-              throw new GuardedRunError('runtime_request_invalid', `Cannot read runtime request: ${error.message}`, { request_path: requestPath });
-            }
-          }
-          let runtimeEvent = null;
-          if (subcommand === 'runtime-ingest') {
-            const eventPath = getOption(rest, '--event');
-            if (!eventPath) throw new GuardedRunError('runtime_event_required', 'runtime-ingest requires --event <json-file>');
-            try {
-              runtimeEvent = JSON.parse(await readFile(path.resolve(eventPath), 'utf8'));
-            } catch (error) {
-              throw new GuardedRunError('runtime_event_invalid', `Cannot read runtime event: ${error.message}`, { event_path: eventPath });
-            }
-          }
-          const runtimeOptions = {
-            storyId: executionOptions.storyId,
-            runId: runOptions.runId,
-            dispatchId: getOption(rest, '--dispatch-id'),
-            request: runtimeRequest
-          };
-          const result = subcommand === 'runtime-dispatch'
-            ? await guardedRun.dispatchRuntime(repoRoot, runtimeOptions)
-            : subcommand === 'runtime-poll'
-              ? await guardedRun.pollRuntime(repoRoot, runtimeOptions)
-            : subcommand === 'runtime-reconcile'
-              ? await guardedRun.reconcileRuntime(repoRoot, runtimeOptions)
-              : subcommand === 'runtime-ingest'
-                ? await bridge.ingestCompletion({
-                  story_id: executionOptions.storyId,
-                  run_id: runOptions.runId,
-                  dispatch_id: runtimeOptions.dispatchId,
-                  event: runtimeEvent
-                })
-                : subcommand === 'run'
-            ? runOptions.until
-              ? runOptions.dryRun
-                ? await guardedRun.orchestrate(repoRoot, runOptions)
-                : await guardedRun.orchestrate(repoRoot, {
-                    ...runOptions,
-                    runId: (await guardedRun.run(repoRoot, runOptions)).run_id
-                  })
-              : await guardedRun.run(repoRoot, runOptions)
-            : subcommand === 'status'
-              ? await guardedRun.status(repoRoot, runOptions)
-              : subcommand === 'watch'
-                ? await guardedRun.watch(repoRoot, runOptions)
-                : subcommand === 'resume'
-                  ? runOptions.until
-                    ? await guardedRun.orchestrate(repoRoot, {
-                        ...runOptions,
-                        runId: (await guardedRun.status(repoRoot, runOptions)).status === 'running'
-                          ? runOptions.runId
-                          : (await guardedRun.resume(repoRoot, runOptions)).run_id
-                      })
-                    : await guardedRun.resume(repoRoot, runOptions)
-                  : await guardedRun.cancel(repoRoot, runOptions);
-          write(stdout, jsonOutput
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : renderGuardedRunSummary(result));
-          return { exitCode: 0, command, subcommand, result };
-        } catch (error) {
-          if (!isGuardedRunError(error)) throw error;
-          write(stderr, jsonOutput
-            ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
-            : renderGuardedRunError(error, { repoRoot }));
-          return { exitCode: 2, command, subcommand, result: error.toJSON() };
-        }
-      }
-      if (subcommand?.startsWith('portfolio-')) {
-        const jsonOutput = hasFlag(rest, '--json');
-        const controller = createStoryRunPortfolioController(io.storyRunPortfolioDependencies ?? {});
-        const portfolioOptions = {
-          portfolioId: getOption(rest, '--portfolio-id'),
-          storyIds: getOption(rest, '--stories')?.split(',').map((item) => item.trim()).filter(Boolean),
-          mode: getOption(rest, '--mode'),
-          storyId: getOption(rest, '--story-id'),
-          decision: getOption(rest, '--decision'),
-          policyType: getOption(rest, '--policy-type'),
-          reason: getOption(rest, '--reason'),
-          decisionId: getOption(rest, '--human-decision-id'),
-          answer: getOption(rest, '--answer'),
-          answeredBy: getOption(rest, '--answered-by'),
-          reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean),
-          sourceStoryId: getOption(rest, '--source-story-id'),
-          consumerStoryId: getOption(rest, '--consumer-story-id'),
-          artifactPath: getOption(rest, '--artifact'),
-          digest: getOption(rest, '--digest'),
-          rawTranscript: hasFlag(rest, '--raw-transcript')
-        };
-        try {
-          const operation = subcommand.slice('portfolio-'.length);
-          const result = operation === 'create'
-            ? await controller.create(repoRoot, portfolioOptions)
-            : operation === 'status'
-              ? await controller.status(repoRoot, portfolioOptions)
-              : operation === 'advance'
-                ? await controller.advance(repoRoot, portfolioOptions)
-                : operation === 'decide'
-                  ? await controller.decide(repoRoot, portfolioOptions)
-                  : operation === 'promote'
-                    ? await controller.promote(repoRoot, portfolioOptions)
-                    : null;
-          if (!result) throw new StoryRunPortfolioError('unknown_portfolio_command', `Unknown Portfolio command: ${subcommand}.`);
-          write(stdout, jsonOutput ? `${JSON.stringify(result, null, 2)}\n` : renderStoryRunPortfolioSummary(result));
-          return { exitCode: 0, command, subcommand, result };
-        } catch (error) {
-          if (!(error instanceof StoryRunPortfolioError)) throw error;
-          const payload = error.toJSON();
-          write(stderr, jsonOutput ? `${JSON.stringify(payload, null, 2)}\n` : renderStoryRunPortfolioError(error));
-          return { exitCode: 2, command, subcommand, result: payload };
-        }
-      }
-      if (subcommand === 'start') {
-        const result = await startExecution(repoRoot, executionOptions);
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.state, null, 2)}\n`
-          : renderExecutionStateSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'status') {
-        let result;
-        try {
-          result = await getExecutionStatus(repoRoot, executionOptions);
-        } catch (error) {
-          if (!String(error?.message ?? '').startsWith('execution state JSON is corrupt:')) throw error;
-          const corruptState = {
-            ok: false,
-            error: {
-              code: 'execution_state_corrupt',
-              status: 'quarantined',
-              story_id: executionOptions.storyId,
-              message: error.message,
-              recovery: {
-                start_command: `vibepro execute start ${repoRoot} --story-id ${executionOptions.storyId}`
-              }
-            }
-          };
-          write(stderr, hasFlag(rest, '--json')
-            ? `${JSON.stringify(corruptState, null, 2)}\n`
-            : `${corruptState.error.message} Run ${corruptState.error.recovery.start_command} to create a clean state.\n`);
-          return { exitCode: 1, command, subcommand, result: corruptState };
-        }
-        if (!result.found) {
-          const missingState = {
-            ok: false,
-            error: {
-              code: 'execution_state_missing',
-              status: 'not_found',
-              story_id: executionOptions.storyId,
-              message: `Execution state is missing for ${executionOptions.storyId}.`,
-              recovery: {
-                start_command: `vibepro execute start ${repoRoot} --story-id ${executionOptions.storyId}`
-              }
-            }
-          };
-          write(stderr, hasFlag(rest, '--json')
-            ? `${JSON.stringify(missingState, null, 2)}\n`
-            : `${missingState.error.message} Run ${missingState.error.recovery.start_command} before querying status.\n`);
-          return { exitCode: 1, command, subcommand, result: missingState };
-        }
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.state, null, 2)}\n`
-          : renderExecutionStateSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'next') {
-        const result = await getExecutionNext(repoRoot, executionOptions);
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.next, null, 2)}\n`
-          : renderExecutionNextSummary(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'reconcile') {
-        const result = hasFlag(rest, '--all-merged')
-          ? await reconcileAllMergedExecutionStates(repoRoot, executionOptions)
-          : await reconcileExecutionState(repoRoot, executionOptions);
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.state ?? result, null, 2)}\n`
-          : result.state ? renderExecutionStateSummary(result) : renderExecutionReconcileAllSummary(result));
-        const reconciledState = result.state ?? result;
-        const unresolved = hasFlag(rest, '--all-merged')
-          ? (result.stories ?? []).some((story) => story.after_status !== 'merged')
-          : reconciledState.completion_status === 'failed'
-            || (Boolean(reconciledState.reconciliation?.status)
-              && reconciledState.reconciliation.status !== 'reconciled');
-        return { exitCode: unresolved ? 2 : 0, command, subcommand, result };
-      }
-      if (subcommand === 'merge') {
-        const storyId = executionOptions.storyId ?? await resolveSelectedStoryId(repoRoot, 'execute merge');
-        await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'execute merge'
-        });
-        const runExecuteMerge = io.executeMerge ?? executeMerge;
-        const result = await runExecuteMerge(repoRoot, {
-          ...executionOptions,
-          storyId,
-          strategy: getOption(rest, '--strategy'),
-          deleteBranch: hasFlag(rest, '--delete-branch'),
-          pr: getOption(rest, '--pr'),
-          costAccountingPath: getOption(rest, '--cost-accounting'),
-          sessionId: getOption(rest, '--session-id') ?? getOption(rest, '--thread-id') ?? defaultSessionId(io.env),
-          inferSession: hasFlag(rest, '--infer-session') || getOption(rest, '--session-id') === 'auto',
-          codexHome: getOption(rest, '--codex-home'),
-          automationMemoryPath: getOption(rest, '--automation-memory') ?? io.env?.VIBEPRO_AUTOMATION_MEMORY ?? null,
-          windowStart: getOption(rest, '--window-start'),
-          windowEnd: getOption(rest, '--window-end'),
-          dryRun: hasFlag(rest, '--dry-run'),
-          env: io.env
-        });
-        // The returned merge may contain canonical-audit metadata calculated
-        // after the last local pr-merge write. Use the persisted local artifact
-        // as the CAS baseline when available so a real public invocation can
-        // append sync-failure guidance without mistaking its own finalization
-        // delta for a concurrent operator write.
-        let expectedMergeBeforeExecutionStateSync = structuredClone(
-          result.execution_state_sync_baseline ?? result.merge
-        );
-        const persistedMergePath = result.artifacts?.pr_merge_json ?? null;
-        if (!result.execution_state_sync_baseline && persistedMergePath) {
-          try {
-            expectedMergeBeforeExecutionStateSync = JSON.parse(await readFile(
-              path.resolve(repoRoot, persistedMergePath),
-              'utf8'
-            ));
-          } catch {
-            // Preserve the returned merge as a conservative fallback. The
-            // follow-up CAS will still fail closed if the artifact differs.
-          }
-        }
-        let executionStateSyncFailure = null;
-        try {
-          const syncExecutionState = io.updateExecutionStateFromPrMerge ?? updateExecutionStateFromPrMerge;
-          await syncExecutionState(repoRoot, result, {
-            target: executionOptions.target,
-            baseRef: executionOptions.baseRef,
-            storyId
-          });
-        } catch (error) {
-          executionStateSyncFailure = 'Execution-state synchronization failed after merge processing.';
-          const executionStateSyncError = serializeCliError(error);
-          const retainedPrSelector = result.merge.pr?.url
-            ?? result.merge.pr?.selector
-            ?? result.merge.delivery?.pr_url
-            ?? result.merge.pr_url
-            ?? null;
-          result.merge.execution_state_sync = {
-            status: 'failed',
-            reason: executionStateSyncFailure,
-            error: executionStateSyncError,
-            recovery_command: `vibepro execute reconcile . --story-id ${storyId} --base ${executionOptions.baseRef ?? result.merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}`
-          };
-          result.merge.reconciliation_action = {
-            status: 'required',
-            reason: 'execution_state_sync_failed',
-            commands: [result.merge.execution_state_sync.recovery_command]
-          };
-          result.merge.reconciliation = {
-            status: 'reconciliation_required',
-            reasons: [...new Set([...(result.merge.reconciliation?.reasons ?? []), 'execution_state_sync_failed'])],
-            evaluated_at: new Date().toISOString(),
-            head_sha: result.merge.current_head_sha ?? null
-          };
-          result.merge.stop_reason = 'execution_state_sync_failed';
-          const persistFollowup = (
-            process.env.NODE_ENV === 'test'
-            && process.env.VIBEPRO_TEST_FORCE_MERGE_FOLLOWUP_FAILURE === '1'
-          )
-            ? async () => {
-                const error = new Error('injected canonical merge follow-up persistence failure');
-                error.code = 'merge_followup_test_failure';
-                throw error;
-              }
-            : (io.persistMergeFollowupState ?? persistMergeFollowupState);
-          try {
-            await persistFollowup(repoRoot, {
-              storyId,
-              merge: result.merge,
-              expectedMerge: expectedMergeBeforeExecutionStateSync
-            });
-            result.merge.execution_state_sync.followup_persistence = 'persisted';
-          } catch (persistenceError) {
-            result.merge.execution_state_sync.followup_persistence = 'failed';
-            result.merge.execution_state_sync.persistence_error = persistenceError.message;
-            result.merge.execution_state_sync.persistence_error_details = serializeCliError(persistenceError);
-            const persistRecovery = io.persistMergeRecoveryState ?? persistMergeRecoveryState;
-            try {
-              const recoveryMerge = structuredClone(result.merge);
-              recoveryMerge.execution_state_sync.recovery_persistence = 'persisted_local';
-              await persistRecovery(repoRoot, {
-                storyId,
-                merge: recoveryMerge,
-                expectedMerge: expectedMergeBeforeExecutionStateSync
-              });
-              result.merge.execution_state_sync.recovery_persistence = 'persisted_local';
-            } catch (recoveryPersistenceError) {
-              result.merge.execution_state_sync.recovery_persistence = 'failed';
-              result.merge.execution_state_sync.recovery_persistence_error = recoveryPersistenceError.message;
-              result.merge.execution_state_sync.recovery_persistence_error_details = serializeCliError(recoveryPersistenceError);
-            }
-            executionStateSyncFailure = 'Execution-state synchronization and follow-up persistence failed after merge processing.';
-          }
-          write(stderr, `${executionStateSyncFailure}\n`);
-        }
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(projectPublicPrMergeResult(result), null, 2)}\n`
-          : renderPrMergeSummary(result));
-        return {
-          exitCode: executionStateSyncFailure
-            ? 1
-            : result.merge.status === 'failed'
-            ? 1
-            : result.merge.reconciliation?.status === 'reconciliation_required'
-              ? 2
-              : result.merge.status === 'blocked'
-                ? 2
-                : 0,
-          command,
-          subcommand,
-          result
-        };
-      }
-      write(stderr, `Unknown execute command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
@@ -2411,113 +1571,6 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'task') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'create') {
-        if (!hasFlag(rest, '--from-plan')) throw new Error('task create currently requires --from-plan');
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await createTasksFromPlan(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          taskId: getOption(rest, '--task'),
-          limit: parseNumberOption(rest, '--limit'),
-          allowedPaths: parseAllowedPathsOption(getOption(rest, '--allowed-paths')),
-          language
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderTaskCreateSummary(result, language));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'list') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await listTasks(repoRoot, { storyId: getOption(rest, '--id') });
-        write(stdout, renderTaskList(result, language));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'show') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await showTask(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          taskId: getOption(rest, '--task')
-        });
-        write(stdout, renderTaskShow(result, language));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'brief') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await createTaskBrief(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group'),
-          language
-        });
-        write(stdout, localizedText(language, {
-          ja: `Taskブリーフィングを作成しました: ${result.artifacts.markdown}\n`,
-          en: `Task briefing created: ${result.artifacts.markdown}\n`
-        }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'plan') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await createTaskPlan(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group'),
-          language
-        });
-        write(stdout, localizedText(language, {
-          ja: `Task計画を作成しました: ${result.artifacts.markdown}\n`,
-          en: `Task plan created: ${result.artifacts.markdown}\n`
-        }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'handoff') {
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await createTaskHandoff(repoRoot, {
-          storyId: getOption(rest, '--id'),
-          taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group'),
-          language
-        });
-        write(stdout, localizedText(language, {
-          ja: `Task handoffを作成しました: ${result.artifacts.markdown}\n`,
-          en: `Task handoff created: ${result.artifacts.markdown}\n`
-        }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'execute') {
-        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot);
-        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'task execute'
-        });
-        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-        const result = await createTaskExecution(repoRoot, {
-          storyId,
-          taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group'),
-          baseRef: getOption(rest, '--base'),
-          dryRunPrCreate: hasFlag(rest, '--dry-run-pr'),
-          language,
-          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.execution, null, 2)}\n`
-          : localizedText(language, {
-            ja: `Task実行セッションを作成しました: ${result.artifacts.markdown}\n`,
-            en: `Task execution session created: ${result.artifacts.markdown}\n`
-          }));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
@@ -2978,11 +2031,7 @@ async function dispatchCli(argv, io = {}) {
     write(stderr, `Unknown command: ${command}\n\n${renderHelp()}`);
     return { exitCode: 1, command };
   } catch (error) {
-    if (error instanceof OutcomeCommandError) {
-      write(stderr, hasFlag(argv, '--json')
-        ? `${JSON.stringify(serializeOutcomeCommandError(error), null, 2)}\n`
-        : renderOutcomeCommandError(error));
-    } else if (hasFlag(argv, '--json')) {
+    if (hasFlag(argv, '--json')) {
       write(stderr, `${JSON.stringify(buildCliErrorPayload(error), null, 2)}\n`);
     } else {
       write(stderr, `${error.message}\n`);

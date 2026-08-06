@@ -8,7 +8,6 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import { renderOutcomeCommandError, renderOutcomeCommandResult, runCli, serializeOutcomeCommandError, TOP_LEVEL_COMMANDS } from '../src/cli.js';
-import { projectPublicPrMergeResult } from '../src/merge-manager.js';
 import { OutcomeCommandError } from '../src/outcome-manager.js';
 
 const execFileAsync = promisify(execFile);
@@ -66,16 +65,10 @@ const SMOKE = {
   brainbase: { setup: 'none', args: () => ['brainbase'] },
   pr: { setup: 'story', args: (r) => ['pr', 'prepare', r, '--base', 'main'] },
   story: { setup: 'story', args: (r) => ['story', 'add', r, '--id', 'story-y', '--title', 'Y', '--view', 'dev', '--period', '2026-W18'] },
-  execute: { setup: 'story', args: (r) => ['execute', 'status', r, '--story-id', 'story-x', '--json'] },
-  task: { setup: 'story', args: (r) => ['task', r] },
   decision: { setup: 'story', args: (r) => ['decision', 'status', r, '--id', 'story-x'] },
-  outcome: { setup: 'none', args: () => ['outcome', '--help'] },
   verify: { setup: 'story', args: (r) => ['verify', r] },
   review: { setup: 'story', args: (r) => ['review', 'status', r, '--id', 'story-x'] },
   guard: { setup: 'story', args: (r) => ['guard', 'status', r] },
-  adjudicate: { setup: 'story', args: (r) => ['adjudicate', 'prepare', r, '--id', 'story-x'] },
-  checkpoint: { setup: 'story', args: (r) => ['checkpoint', r] },
-  gate: { setup: 'story', args: (r) => ['gate', 'check', r, '--story-id', 'story-x'] },
   spec: { setup: 'story', args: (r) => ['spec', r] },
   report: { setup: 'story', args: (r) => ['report', r] },
   audit: { setup: 'story', args: (r) => ['audit', 'replay', r, '--story-id', 'story-x', '--json'] },
@@ -160,168 +153,6 @@ test('outcome promotion text exposes bounded recovery diagnostics without raw co
   assert.match(json, /canonical_audit_push_indeterminate/);
   assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER/);
   assert.doesNotMatch(json, /worktree_path|primary|commands|results/);
-});
-
-test('execute merge JSON projects bounded persistence diagnostics without internal command output', async () => {
-  const rawResult = {
-    merge: {
-      status: 'failed',
-      strategy: 'merge',
-      pr: { url: 'https://operator:secret@example.invalid/pr/1' },
-      reconciliation: { reasons: ['raw parser error: secret output'] },
-      warnings: ['Provider JSON response could not be parsed for gh pr view https://token@example.invalid: raw failure'],
-      canonical_audit: {
-        status: 'failed',
-        persistence: {
-          status: 'failed',
-          reason: 'canonical_audit_push_indeterminate',
-          pushed: false,
-          worktree_path: '/tmp/vibepro-canonical-audit-story-x-1',
-          command: 'git push https://token@example.invalid/repo.git',
-          commands: ['git push https://token@example.invalid/repo.git'],
-          args: ['push', 'https://token@example.invalid/repo.git'],
-          env: { GH_TOKEN: 'SECRET_ENV_SHOULD_NOT_RENDER' },
-          output: 'SECRET_OUTPUT_SHOULD_NOT_RENDER',
-          results: [{ stdout: 'SECRET_SHOULD_NOT_RENDER', stderr: 'raw failure' }],
-          push_postcondition: { status: 'indeterminate', remote_sha: null },
-          cleanup: { attempted: true, removed: false, status: 'failed' },
-          recovery: 'verify remote state before retrying'
-        }
-      },
-      execution_state_sync: {
-        status: 'failed',
-        reason: 'primary sync failure',
-        recovery_command: 'vibepro execute reconcile . --story-id story-x --base main'
-      },
-      reconciliation_action: {
-        status: 'required',
-        reason: 'execution_state_sync_failed',
-        commands: ['vibepro execute reconcile . --story-id story-x --base main']
-      }
-    }
-  };
-  const projected = projectPublicPrMergeResult(rawResult);
-
-  assert.equal(projected.canonical_audit.persistence.status, 'failed');
-  assert.equal(projected.canonical_audit.persistence.reason, 'canonical_audit_push_indeterminate');
-  assert.deepEqual(projected.canonical_audit.persistence.push_postcondition, {
-    status: 'indeterminate',
-    remote_sha: null
-  });
-  assert.deepEqual(projected.canonical_audit.persistence.cleanup, {
-    attempted: true,
-    removed: false,
-    status: 'failed'
-  });
-  assert.equal(projected.canonical_audit.persistence.recovery, 'verify remote state before retrying');
-  assert.equal(
-    projected.execution_state_sync.reason,
-    'Execution-state synchronization failed after merge processing.'
-  );
-  assert.deepEqual(projected.reconciliation_action.commands, [
-    'vibepro execute reconcile . --story-id story-x --base main'
-  ]);
-  assert.deepEqual(projected.warnings, [
-    'Merge processing produced a warning. Inspect stop_reason and reconciliation state.'
-  ]);
-  assert.equal(projected.pr.url, 'https://example.invalid/pr/1');
-  assert.deepEqual(projected.reconciliation.reasons, ['merge_reconciliation_required']);
-  const json = JSON.stringify(projected);
-  assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example/);
-
-  const repo = await makeStoryRepo();
-  let stdout = '';
-  const cliResult = await runCli([
-    'execute',
-    'merge',
-    repo,
-    '--story-id',
-    'story-x',
-    '--json'
-  ], {
-    executeMerge: async () => structuredClone(rawResult),
-    updateExecutionStateFromPrMerge: async () => {},
-    stdout: { write: (chunk) => { stdout += chunk; } },
-    stderr: { write: () => {} },
-    env: process.env
-  });
-  assert.equal(cliResult.exitCode, 1);
-  const cliJson = JSON.parse(stdout);
-  assert.equal(
-    cliJson.execution_state_sync.reason,
-    'Execution-state synchronization failed after merge processing.'
-  );
-  assert.deepEqual(cliJson.reconciliation_action.commands, [
-    'vibepro execute reconcile . --story-id story-x --base main'
-  ]);
-  assert.deepEqual(cliJson.warnings, [
-    'Merge processing produced a warning. Inspect stop_reason and reconciliation state.'
-  ]);
-  assert.doesNotMatch(
-    stdout,
-    /SECRET_SHOULD_NOT_RENDER|SECRET_ENV_SHOULD_NOT_RENDER|SECRET_OUTPUT_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example|\"command\"|\"args\"|\"env\"|\"output\"/
-  );
-});
-
-test('execute merge JSON sanitizes dependency-injected synchronization failure details', async () => {
-  const repo = await makeStoryRepo();
-  let stdout = '';
-  let stderr = '';
-  const rawResult = {
-    merge: {
-      status: 'merged',
-      strategy: 'merge',
-      base: 'main',
-      current_head_sha: 'deadbeef',
-      pr: { url: 'https://example.test/pr/1' },
-      preconditions: {
-        gate_ready: true,
-        clean_worktree: true,
-        base_freshness: { status: 'passed' },
-        remote_head_match: { status: 'passed' },
-        checks_ready: { status: 'passed' },
-        review_policy: { status: 'passed' },
-        open_pull_request: { status: 'passed' }
-      },
-      commands: ['gh pr merge 1 --repo token@example.invalid/repo'],
-      warnings: []
-    }
-  };
-
-  const cliResult = await runCli([
-    'execute',
-    'merge',
-    repo,
-    '--story-id',
-    'story-x',
-    '--json'
-  ], {
-    executeMerge: async () => structuredClone(rawResult),
-    updateExecutionStateFromPrMerge: async () => {
-      const error = new Error('SECRET_SYNC_ERROR');
-      error.code = 'SECRET_SYNC_CODE';
-      throw error;
-    },
-    persistMergeFollowupState: async () => {},
-    stdout: { write: (chunk) => { stdout += chunk; } },
-    stderr: { write: (chunk) => { stderr += chunk; } },
-    env: process.env
-  });
-
-  assert.equal(cliResult.exitCode, 1);
-  const cliJson = JSON.parse(stdout);
-  assert.equal(
-    cliJson.execution_state_sync.reason,
-    'Execution-state synchronization failed after merge processing.'
-  );
-  assert.deepEqual(cliJson.reconciliation_action.commands, [
-    'vibepro execute reconcile . --story-id story-x --base main --pr https://example.test/pr/1'
-  ]);
-  assert.match(stderr, /Execution-state synchronization failed after merge processing/);
-  assert.equal(Object.hasOwn(cliJson, 'commands'), false);
-  assert.equal(Object.hasOwn(cliJson.execution_state_sync, 'error'), false);
-  assert.doesNotMatch(stdout, /SECRET_SYNC_ERROR|SECRET_SYNC_CODE|token@example/);
-  assert.doesNotMatch(stderr, /SECRET_SYNC_ERROR|SECRET_SYNC_CODE/);
 });
 
 test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
@@ -434,16 +265,3 @@ test('outcome success text exposes the refresh persistence contract', () => {
   assert.match(rendered, /persistence: status=pushed commit=commit-123/);
 });
 
-test('outcome help is scoped to the selected subcommand', async () => {
-  for (const [argv, expected, excluded] of [
-    [['outcome', '--help'], /VibePro Outcome/, /vibepro design-system/],
-    [['outcome', 'record', '--help'], /outcome record/, /outcome refresh \[repo\]/],
-    [['outcome', 'refresh', '--help'], /outcome refresh/, /--value-json/]
-  ]) {
-    let output = '';
-    const result = await runCli(argv, { stdout: { write: (chunk) => { output += chunk; } } });
-    assert.equal(result.exitCode, 0);
-    assert.match(output, expected);
-    assert.doesNotMatch(output, excluded);
-  }
-});
