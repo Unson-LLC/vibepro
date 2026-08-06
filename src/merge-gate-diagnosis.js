@@ -569,7 +569,9 @@ function buildExplanation({
     case 'gate_waiver_incomplete':
       return `The waiver in pr-create.json is incomplete or not marked allowed, so it cannot authorize the merge.`;
     case 'gate_waiver_stale':
-      return `The waiver in pr-create.json targets a different gate set (${gateList}) than the current gate status, so it cannot authorize the merge.`;
+      // blockingGates may be sourced from the DAG under the current-evidence-
+      // first ordering, so the list must not be attributed to the waiver.
+      return `The waiver in pr-create.json targets a different gate set than the current gate surface, so it cannot authorize the merge.${blockingGates.length > 0 ? ` Current evidence names: ${gateList}.` : ''}`;
     case 'gate_evidence_missing':
       return `No gate evidence exists for this story: pr-prepare.json, pr-create.json and gate-dag.json are all absent.`;
     case 'artifact_unreadable':

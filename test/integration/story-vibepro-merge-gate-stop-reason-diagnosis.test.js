@@ -206,6 +206,10 @@ test('MGD-INT-1 a stale pr-create waiver reaches every merge output surface as a
   assert.match(html, /Diagnosis explanation[\s\S]{0,300}pr-create\.json is bound to/);
   assert.match(html, new RegExp(`Artifact binding heads[\\s\\S]{0,300}pr_create: artifact_head=${staleSha}`));
   assert.match(html, new RegExp(`Artifact binding heads[\\s\\S]{0,400}current_head=${headSha}`));
+  // Recovery commands stay off the review surface entirely; an added
+  // 'Next actions' row previously survived every test.
+  assert.doesNotMatch(html, /next[\s_-]?actions?/i);
+  assert.doesNotMatch(html, /vibepro pr create/);
 });
 
 test('MGD-INT-2 execute merge --explain reports the same verdict read-only, and reports missing evidence as missing evidence', async () => {

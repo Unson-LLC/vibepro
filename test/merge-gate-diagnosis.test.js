@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
@@ -530,6 +532,33 @@ test('MGD-AC-16 the waiver document never shadows or substitutes for current evi
   assert.deepEqual(waiverOnly.diagnosis.blocking_gates, []);
 });
 
+test('MGD-AC-18 a DAG whose unresolved nodes are all unnameable keeps the specific cause', () => {
+  // hasUnresolvedGateDagNodes applies the same id filter collectBlockingGates
+  // uses. Without it this state reports the generic gate_status_unresolvable
+  // instead of naming what is actually wrong with the artifact.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: {
+      story: { story_id: STORY_ID },
+      // head-bound, but carries no gate_status at all
+      pr_context: {
+        gate_dag: {
+          overall_status: 'needs_verification',
+          nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }]
+        }
+      },
+      git: { base_ref: 'main', head_sha: HEAD },
+      artifact_freshness: freshness('pr_prepare', HEAD)
+    },
+    prCreate: prCreateFixture(),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.diagnosis.cause, 'gate_status_missing');
+  assert.equal(context.diagnosis.stop_reason, 'gate_status_unresolved');
+  assert.match(context.diagnosis.explanation, /carries no gate_status/);
+  assert.deepEqual(context.diagnosis.blocking_gates, []);
+});
+
 test('MGD-AC-19 the story node is a gate, not scaffolding', () => {
   // INV-003 says so in its own words, and it is behaviour-carrying: filtering
   // story out of the DAG collector turns this verdict into a nameless
@@ -970,4 +999,42 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     []
   );
   assert.ok(swept > 5000, `sweep covered ${swept} states`);
+});
+
+test('MGD-AC-23 a stale waiver explanation never attributes DAG gates to the waiver', () => {
+  // Under current-evidence-first ordering, blocking_gates for a waiver-mismatch
+  // denial can be sourced from the DAG. The old wording rendered that list as
+  // "The waiver ... targets a different gate set (<list>)", asserting the
+  // waiver named gates it never named.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: {
+        overall_status: 'needs_verification',
+        ready_for_pr_create: false,
+        unresolved_gates: [],
+        critical_unresolved_gates: []
+      },
+      gateDag: { overall_status: 'needs_verification', nodes: [{ id: 'gate:dag_named', type: 'verification_gate', required: true, status: 'needs_evidence' }] }
+    }),
+    prCreate: prCreateFixture({ gateOverride: NONCRITICAL_WAIVER }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.gateAuthorization.reason, 'gate_override_targets_mismatch');
+  assert.equal(context.diagnosis.stop_reason, 'gate_waiver_stale');
+  assert.deepEqual(context.diagnosis.blocking_gates.map((gate) => `${gate.id}@${gate.source}`), ['gate:dag_named@gate_dag']);
+  // The list is attributed to current evidence, never to the waiver document.
+  assert.doesNotMatch(context.diagnosis.explanation, /targets a different gate set \(/);
+  assert.match(context.diagnosis.explanation, /Current evidence names: gate:dag_named/);
+});
+
+test('MGD-AC-22 the MGD-AC numbering in this file has no silent gaps', () => {
+  // Twice a slice-based edit deleted neighbouring tests without anyone
+  // noticing until external mutation testing exposed the hole. Contiguity is
+  // mechanically checkable, so check it mechanically.
+  const source = readFileSync(fileURLToPath(import.meta.url), 'utf8');
+  const ids = [...new Set([...source.matchAll(/MGD-AC-(\d+)/g)].map((match) => Number(match[1])))]
+    .sort((a, b) => a - b);
+  const expected = Array.from({ length: ids.at(-1) }, (_, index) => index + 1);
+  assert.deepEqual(ids, expected, 'an MGD-AC test was deleted or renumbered without renumbering the rest');
 });
