@@ -1239,11 +1239,6 @@ test('named profile Graphify review and PR producers leave the removed legacy di
   const io = { stdout: { write: (v) => { output += v; } }, stderr: { write: (v) => { output += v; } } };
   const review = await runCli(['review', 'prepare', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk', '--json'], io);
   assert.equal(review.exitCode, 0, output);
-  const start = await runCli([
-    'review', 'start', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk',
-    '--agent-system', 'codex', '--agent-id', 'routing-test-agent', '--json'
-  ], io);
-  assert.equal(start.exitCode, 0, output);
   const prepare = await runCli(['pr', 'prepare', root, '--base', 'main', '--story-id', storyId, '--allow-extra-files', '--evidence-depth', 'full', '--evidence-depth-reason', 'named routing regression', '--evidence-depth-consumer', 'artifact-routing-test', '--evidence-depth-target', 'gate:e2e'], io);
   assert.equal(prepare.exitCode, 0, output);
   const record = await runCli([
