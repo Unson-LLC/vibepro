@@ -8440,6 +8440,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-deadline-bounded-review-consumption.md",
+            "required": false,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -8449,10 +8458,17 @@
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-deadline-bounded-review-consumption.md",
+          "required": false,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-06T00:31:43.944Z"
+  "updated_at": "2026-08-06T01:40:16.996Z"
 }

@@ -47,7 +47,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "S-001",
@@ -94,7 +94,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "S-002",
@@ -137,7 +137,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "INV-002",
@@ -180,7 +180,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "C-001",
@@ -235,7 +235,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "C-002",
@@ -298,7 +298,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "S-003",
@@ -335,7 +335,7 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     },
     {
       "id": "INV-003",
@@ -355,6 +355,13 @@
           "classification": "existing",
           "files": [
             "src/budget-override-authority.js"
+          ]
+        },
+        {
+          "condition": "input.budget_override?.status === 'unauthorized'",
+          "classification": "existing",
+          "files": [
+            "src/delivery-efficiency-guardrail.js"
           ]
         }
       ],
@@ -398,7 +405,62 @@
         ]
       },
       "first_seen_at": "2026-08-06T01:09:41.495Z",
-      "last_revised_at": "2026-08-06T01:09:41.495Z"
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "Given a review lifecycle entry's close_reason status transitions to one of four terminal values recognized by resolveLifecycleEffectiveStatus and REVIEW_CLOSE_REASONS (completed, timeout, replaced, manual_shutdown) at the end of the agent review dispatch flow, when aggregateDeliveryMetrics processes that status transition to compute the entry's agent_consumption_ms charge, then only the three non-completed terminal status transitions are subject to the timeout_ms deadline bound, so the deadline-bounded attribution flow never shortens the completed status transition's charge.",
+      "rationale": "Restates the architecture doc's flow diagram (Lifecycle -> Duration -> close_reason branch -> Bound/Full/Fallback -> Sum) in workflow state-transition terms: REVIEW_CLOSE_REASONS (src/agent-review.js) enumerates the four terminal states this Story's bound branches on, and resolveLifecycleEffectiveStatus (src/agent-review.js) is the existing state-transition logic that already treats 'elapsed_ms > timeout_ms' as a boundary condition. This clause documents that aggregateDeliveryMetrics's close_reason branch mirrors an existing state boundary rather than introducing a new one.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "other",
+            "index": 0,
+            "text_snippet": "resolveLifecycleEffectiveStatus（src/agent-review.js:4065-4079）は既に「elapsed_ms > normalizeTimeoutMs(entry.timeout_ms)」なら「timed_out」と判定する既存の締切ロジックを持っている"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "const REVIEW_CLOSE_REASONS = ['completed', 'timeout', 'replaced', 'manual_shutdown'];"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "if (Number.isFinite(elapsedMs) && elapsedMs > normalizeTimeoutMs(entry.timeout_ms)) return 'timed_out';"
+          },
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "if (review.close_reason === 'completed') return duration;"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-1: a completed lifecycle stays unbounded even past its own timeout_ms"
+          },
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-2: timeout, replaced, manual_shutdown, and an unrecognized future close_reason are all bounded to timeout_ms"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/agent-review.js",
+            "must_contain": "const REVIEW_CLOSE_REASONS = ['completed', 'timeout', 'replaced', 'manual_shutdown'];"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "are all bounded to timeout_ms"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:40:04.445Z",
+      "last_revised_at": "2026-08-06T01:40:04.445Z"
     }
   ],
   "diagrams": [
@@ -406,6 +468,11 @@
       "kind": "flow",
       "mermaid": "flowchart TD\n  Lifecycle[\"review lifecycle entry<br/>started_at / closed_at / close_reason / timeout_ms\"] --> Duration[\"duration = closed_at - started_at\"]\n  Duration --> Branch{\"close_reason === 'completed'?\"}\n  Branch -->|yes| Full[\"charge = duration<br/>(bound対象外)\"]\n  Branch -->|no: timeout/replaced/<br/>manual_shutdown/未知値| HasTimeout{\"timeout_ms が有限?\"}\n  HasTimeout -->|yes| Bound[\"charge = min(duration, timeout_ms)<br/>excluded = duration - charge\"]\n  HasTimeout -->|no: 欠落/非有限| Fallback[\"charge = duration<br/>(後方互換フォールバック)\"]\n  Full --> Sum[\"agent_consumption_ms = Σ charge\"]\n  Bound --> Sum\n  Fallback --> Sum\n  Bound --> Excluded[\"deadline_excluded_ms += excluded<br/>deadline_excluded_count += 1\"]\n  Sum --> Budget[\"evaluateDeliveryBudget<br/>max_agent_consumption_ms\"]\n  Excluded --> Report[\"pr prepare 効率性レポート<br/>dispatch decision evidence\"]",
       "rationale": "Mirrors the decision diagram in docs/architecture/vibepro-deadline-bounded-review-consumption.md exactly: shows the close_reason branch, the timeout_ms finiteness guard, and where the two new fields (agent_consumption_ms's bound and deadline_excluded_ms/count) each flow to downstream consumers (evaluateDeliveryBudget and the pr prepare efficiency report)."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Operator[\"review close --close-reason<br/>(operator/agent-controlled)\"] -->|\"could mislabel a genuinely<br/>completed review as timeout\"| Discriminator{\"close_reason<br/>discriminator\"}\n  Discriminator -->|\"declared timeout\"| Bound[\"charge = min(duration, timeout_ms)<br/>undercharges a completed review\"]\n  Discriminator -->|\"declared completed\"| Full[\"charge = duration<br/>(no undercount incentive)\"]\n  Bound --> Mitigation1[\"Mitigation: close_reason=completed<br/>normally carries close_evidence +<br/>result_artifact; falsely claiming<br/>timeout while presenting completion<br/>evidence is a false evidence-integrity claim\"]\n  Bound --> Mitigation2[\"Mitigation: deadline_excluded_ms /<br/>deadline_excluded_count always surface<br/>in pr prepare output, so large<br/>exclusions are conspicuous, not silent\"]",
+      "rationale": "Threat surface for this Story per the architecture doc 残余リスク section: the operator-supplied close_reason discriminator could mislabel a completed review as timeout to reduce its charged agent_consumption_ms. Mitigated by (1) close_evidence/result_artifact normally accompanying a completed close, making a false timeout claim an evidence-integrity violation, and (2) deadline_excluded_ms/deadline_excluded_count always surfacing in pr prepare output so large exclusions are conspicuous rather than silent."
     }
   ],
   "parent_design": [
@@ -416,5 +483,5 @@
     "caller": "claude_code",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": null
+  "previous_spec_id": "2026-08-06T01:09:41.493Z"
 }
