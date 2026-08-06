@@ -20636,6 +20636,60 @@ test('pr prepare keeps explicit foreign work-item lineage unsafe for atomic scop
   }]);
 });
 
+// `story-<word>` compounds saturate real commit messages without ever naming a
+// Story entity: English loanword adjectives fused into Japanese prose
+// ("Story-local増枠"), source modules (src/story-manager.js), placeholder field
+// names (<story-id>), and test globs. Treating them as work-item ids escalated
+// scope to `unsafe_for_atomic_override` and poisoned the premises of accepted
+// scope waivers on rerun.
+test('pr prepare does not read prose and identifier "story-" compounds as foreign work-item lineage', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'prose-lineage.js'), 'export const first = true;\n');
+  await git(repo, ['add', 'src/prose-lineage.js']);
+  await git(repo, ['commit', '-m', 'feat: add story-pr-prepare runtime']);
+  await writeFile(path.join(repo, 'src', 'prose-lineage.js'), 'export const first = false;\n');
+  await git(repo, ['add', 'src/prose-lineage.js']);
+  await git(repo, ['commit', '-m', [
+    'chore: レビュー予算のStory-local増枠（オーナー承認済み）',
+    '',
+    'src/story-manager.js の <story-id> 経路と',
+    'test/e2e/story-pr-prepare-*.spec.ts も合わせて更新'
+  ].join('\n')]);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.result.preparation.scope.signals, [{
+    id: 'multiple_commits_scope_contamination_risk',
+    unsafe_for_atomic_override: false,
+    referenced_work_items: ['story-pr-prepare'],
+    foreign_work_items: []
+  }]);
+});
+
+// The adversarial half of the rule above: narrowing extraction must not neuter
+// the gate. A conventionally shaped id stays foreign lineage even when it names
+// no Story file on disk, so cross-repo and deleted Stories stay fail-closed.
+test('pr prepare still detects a conventionally shaped foreign Story id in Japanese prose', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'delimited-lineage.js'), 'export const first = true;\n');
+  await git(repo, ['add', 'src/delimited-lineage.js']);
+  await git(repo, ['commit', '-m', 'feat: add story-pr-prepare runtime']);
+  await writeFile(path.join(repo, 'src', 'delimited-lineage.js'), 'export const first = false;\n');
+  await git(repo, ['add', 'src/delimited-lineage.js']);
+  await git(repo, ['commit', '-m', 'fix: story-other-repo-feature の残作業を取り込む']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.result.preparation.scope.signals, [{
+    id: 'multiple_commits_foreign_story_lineage',
+    unsafe_for_atomic_override: true,
+    referenced_work_items: ['story-other-repo-feature', 'story-pr-prepare'],
+    foreign_work_items: ['story-other-repo-feature']
+  }]);
+});
+
 test('pr prepare accepts a versioned branch merge only when canonical remote topology resolves to a merge parent', async () => {
   const repo = await makeGitRepoWithStory();
   const originalBranch = (await git(repo, ['branch', '--show-current'])).stdout.trim();

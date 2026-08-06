@@ -3723,9 +3723,9 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectSco
   }
   if (commits.length > 1) {
     const currentStoryId = String(storyId ?? '').trim().toLowerCase();
-    const referencedWorkItems = [...new Set(commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message)))];
+    const referencedWorkItems = [...new Set(commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message, currentStoryId)))];
     const acceptedVersionedLineage = currentStoryId
-      ? commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message)
+      ? commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message, currentStoryId)
         .filter((reference) => reference !== currentStoryId && isCurrentStoryLineage(reference, currentStoryId, commit))
         .map((reference) => ({
           reference,
@@ -3738,7 +3738,7 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectSco
         })))
       : [];
     const foreignWorkItems = currentStoryId
-      ? [...new Set(commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message)
+      ? [...new Set(commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message, currentStoryId)
         .filter((reference) => !isCurrentStoryLineage(reference, currentStoryId, commit))))]
       : referencedWorkItems;
     if (foreignWorkItems.length > 0) {
@@ -3790,10 +3790,37 @@ function isCurrentStoryLineage(reference, currentStoryId, commit) {
   return Boolean(commit?.remote_tracking_sha && commit.parent_shas.includes(commit.remote_tracking_sha));
 }
 
-function extractCommitWorkItemRefs(message) {
+// The conventional VibePro Story id is `story-<project>-<topic...>`. Requiring
+// that much structure is what separates a reference to a Story entity from the
+// `story-<word>` compounds that saturate real commit messages: source modules
+// (`src/story-manager.js`), field names (`<story-id>`), subcommands
+// (`story-derive`), and prose adjectives (`Story-local`, `Story-scoped`).
+const CONVENTIONAL_STORY_ID_MIN_SEGMENTS = 3;
+
+function countWorkItemIdSegments(value) {
+  return String(value ?? '').split('-').filter(Boolean).length;
+}
+
+// The current Story is the only demonstrated instance of this repo's id
+// convention, so never demand more structure than it has: a repo whose Stories
+// are named `story-auth` keeps 2-segment foreign refs fail-closed.
+function storyWorkItemRefMinSegments(currentStoryId) {
+  const currentSegments = countWorkItemIdSegments(currentStoryId);
+  if (currentSegments === 0) return CONVENTIONAL_STORY_ID_MIN_SEGMENTS;
+  return Math.min(CONVENTIONAL_STORY_ID_MIN_SEGMENTS, currentSegments);
+}
+
+function extractCommitWorkItemRefs(message, currentStoryId = null) {
   const text = String(message ?? '').toLowerCase();
+  const minSegments = storyWorkItemRefMinSegments(currentStoryId);
+  // A work-item reference is a standalone id-shaped token. The letter/digit
+  // boundaries reject ids fused into a surrounding word — `Story-local増枠`
+  // and `のstory-level` are Japanese prose, not lineage. The segment body
+  // rejects truncated tokens (`story-vibepro-`) that carry no resolvable id.
+  const storyRefs = (text.match(/(?<![\p{L}\p{N}_-])story-(?:[a-z0-9]+-)*[a-z0-9]+(?![\p{L}\p{N}_-])/gu) ?? [])
+    .filter((reference) => countWorkItemIdSegments(reference) >= minSegments);
   return [...new Set([
-    ...(text.match(/\bstory-[a-z0-9][a-z0-9-]*/g) ?? []),
+    ...storyRefs,
     ...(text.match(/\b(?:str|bfd|bug|inc)-\d+\b/g) ?? [])
   ])];
 }

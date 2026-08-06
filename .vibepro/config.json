@@ -1439,6 +1439,18 @@
         "started_at": "2026-08-05",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-scope-work-item-ref-id-shape",
+        "title": "Scope分類のwork-item参照抽出をid形状で判定する — commit messageの「Story-local」等の散文複合語をforeign lineage誤検出しない",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-06",
+        "due_at": null,
+        "category": "quality"
       }
     ],
     "current_story_id": "story-vibepro-dependency-cycle-scc-reduction"
