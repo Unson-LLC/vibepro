@@ -37,25 +37,16 @@ import {
   readReviewSurfaceViolationSummary
 } from './agent-review.js';
 import {
-  reconcileExecutionState,
-  updateExecutionStateFromPrCreate,
-  updateExecutionStateFromPrPrepare
-} from './execution-state.js';
-import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
   buildManagedWorktreeCommandWarning,
   evaluateManagedWorktreeCommandContext
 } from './managed-worktree.js';
 import {
-  autopilotPullRequest,
   createPullRequest,
   preparePullRequest,
-  renderPrAutopilotSummary,
   renderPrCreateSummary,
-  renderPrPrepareSummary,
-  renderPrShipSummary,
-  shipPullRequest
+  renderPrPrepareSummary
 } from './pr-manager.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
@@ -92,19 +83,6 @@ import {
   stabilizeTalkingPointIds,
   writeNarrative
 } from './report-store.js';
-import { createUsageReport, renderUsageReport } from './usage-report.js';
-import {
-  projectPrPrepareForLlm,
-  renderCanonicalAuditReplay,
-  replayCanonicalAuditBundle
-} from './canonical-audit.js';
-import {
-  collectSessionEfficiencyAudit,
-  commitAuditAutomationMemory,
-  preflightAuditAutomationMemory,
-  renderSessionEfficiencyAudit
-} from './session-efficiency-audit.js';
-import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
 import {
   addStory,
   archiveStory,
@@ -140,53 +118,33 @@ const execFileAsync = promisify(execFile);
 
 const HELP_EN = `VibePro CLI
 
-VibePro is a CLI control plane for safer AI-driven PRs. It turns Story,
-Architecture, Spec, verification, Agent Review, and PR evidence into a
-risk-adaptive Gate DAG, then blocks PR creation until required gates pass.
-
-It does not directly rewrite the target repository. It stores diagnosis,
-verification, review, split-plan, and PR-gate evidence under .vibepro/ so
-humans and AI agents can continue with reviewable context.
+VibePro is a minimal CLI control plane for Story-driven AI development.
+Per docs/management/REBUILD.md ("最小コアのスコープ"), it no longer carries a
+Gate DAG, readiness/blocking evaluation, delivery-efficiency budgets, review
+lifecycle accounting, or auto-generated audit artifacts. It stores Story,
+Spec, verification, review, and PR evidence under .vibepro/ so humans and AI
+agents can continue with reviewable context; it does not block PR creation.
 
 Core model:
   Story defines user value and acceptance criteria.
-  Architecture defines boundaries, responsibilities, and dependency direction.
-  Spec defines concrete behavior and invariants.
-  Responsibility Authority Registry resolves repo/domain SSOT for cross-story responsibilities.
-  Graphify expands investigation scope beyond changed files when available.
-  Risk-adaptive Gate DAG decides what evidence is required before PR creation.
+  Spec defines concrete behavior and invariants, with code_refs/test_refs traceability.
+  A lightweight review pass (role-based, no lifecycle accounting) records findings.
+  PR prepare/create summarize Spec + verification + review evidence into a PR body.
 
-Typical PR-safety flow:
+Typical flow:
   vibepro init <repo> --story-id <id> --title <title> --language en
-  vibepro pr prepare <repo> --base <base-branch> --story-id <id>
+  vibepro story diagnose <repo> --id <id> --run-graphify
+  vibepro spec write <repo> --id <id> --draft
   vibepro verify record <repo> --id <id> --kind unit --status pass --command "npm test"
   vibepro review prepare <repo> --id <id> --stage gate
-  vibepro review status <repo> --id <id>
+  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text>
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
-  vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
 
-Review record migration:
-  A pass result now requires --inspection-summary, at least one existing non-.vibepro
-  --inspection-input, and --judgment-delta. Existing automation must add those inputs;
-  VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
-
-PR prepare creates evidence-plan, decision-index, concise pr-body, verification
-evidence, and plan-selected gate/review artifacts under .vibepro/pr/<story-id>/
-when initialized.
-For agent handoff, pass a bounded projection first with \`pr prepare --summary-json\`
-or \`pr prepare --view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>\`.
-Keep full JSON artifacts as durable evidence and drill down by referenced gate id
-or artifact path only when needed.
-An explicit \`--evidence-depth standard|full\` request requires
-\`--evidence-depth-reason\`, \`--evidence-depth-consumer\`, and at least one
-\`--evidence-depth-target <path-or-gate>\` together.
-Use \`pr prepare --outcome <source_fix|evidence_added|rewording_only|waiver|unclassified>\`
-only to override ambiguous gate outcome ledger classification.
-If required gates are unresolved, next_commands points back to review or
-verification. Only use vibepro pr create for normal PR creation; do not use raw
-gh pr create as the standard path. After PR creation, import CI evidence and rerun
-pr prepare / pr create to refresh lifecycle artifacts.
+pr prepare writes .vibepro/pr/<story-id>/pr-prepare.json (Story + Spec presence +
+recorded verification + recorded review, no Gate DAG) and a PR body markdown file.
+pr create pushes the current branch and runs \`gh pr create\` (or refreshes an
+existing open PR's body); it does not block on any gate.
 
 Usage:
   vibepro help [command]
@@ -200,13 +158,6 @@ Usage:
   vibepro store snapshot [repo] --story-id <id> [--json]
   vibepro store hydrate [repo] --story-id <id> [--json]
   vibepro store status [repo] --story-id <id> [--json]
-  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
-  vibepro audit replay [repo] --story-id <id> [--json]
-  vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
-  vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
-  vibepro audit session-cost [repo] --story-id <id> [--run-id <id>] [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
-  vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
-  vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -246,10 +197,8 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--evidence-decision-usage <json>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
-  vibepro pr autopilot [repo] [--story-id <id>] [--base <ref>] [--verify <kind=command>]... [--pr <number>] [--import-ci] [--check <name=kind>]... [--dry-run] [--stage-timeout-ms <ms>] [--progress] [--language ja|en] [--json]
-  vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -263,52 +212,34 @@ Usage:
 
 const HELP_JA = `VibePro CLI
 
-VibeProは、AI駆動開発のPRを安全に進めるためのCLI制御基盤です。
-Story / Architecture / Spec / Verification / Agent Review / PR Evidenceを
-risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止めます。
-
-対象リポジトリのコードを直接書き換えるのではなく、診断結果・検証証跡・レビュー証跡・
-分割方針・PR Gateの文脈を .vibepro/ に保存します。
+VibeProは、Story起点のAI開発を進めるための最小CLI制御基盤です。
+docs/management/REBUILD.md（「最小コアのスコープ」）に従い、Gate DAG・
+readiness/blocking判定・delivery-efficiencyバジェット・review lifecycle会計・
+audit artifactの自動生成は廃止しました。Story・Spec・検証証跡・レビュー証跡・
+PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を追える形にしますが、
+PR作成をブロックする機構は持ちません。
 
 まず人間が使う基本コマンド:
   vibepro init <repo> --language ja --story-id <id> --title <title>
       .vibepro/ を作り、出力言語とStoryを設定します。
-  vibepro pr prepare <repo> --base <base-branch> --story-id <id>
-      evidence-plan / decision-index / 短いpr-body / 検証証跡 / 必要なGate artifactを作り、変更リスクを分類します。
-      Gate outcome台帳の分類が曖昧な場合だけ --outcome <source_fix|evidence_added|rewording_only|waiver|unclassified> で上書きできます。
+  vibepro story diagnose <repo> --id <id> --run-graphify
+      Storyの調査コンテキストを作ります。
+  vibepro spec write <repo> --id <id> --draft
+      code_refs/test_refsのトレーサビリティを持つSpecを書きます。
   vibepro verify record <repo> --id <id> --kind unit --status pass --command "npm test"
       現在のgit状態で実行した検証証跡を記録します。
   vibepro review prepare <repo> --id <id> --stage gate
-      Codex / Claude Code の並列サブエージェントへ渡すレビュー依頼を作ります。
-  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text> --inspection-summary <text> --inspection-input <path> --judgment-delta <text> --agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed
-      required Agent Review Gate を通すレビュー結果を、現在のgit状態・サブエージェント証跡に紐づけて記録します。
-      passには --inspection-summary、実在する.vibepro外の --inspection-input、--judgment-delta が必須です。旧来のassertion-only passは互換受理せずfail-closedになるため、既存automationを移行してください。
-      サブエージェントの結果を受け取った後、review record を実行する前にそのサブエージェントを close/shutdown し、--agent-closed を付けて記録してください。
-      人間レビューは監査文脈として記録できますが、required gate のpass代替にはなりません。
-  vibepro review status <repo> --id <id>
-      必須レビューの不足・stale・blockを確認します。
-  vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
-      pr prepareを再実行し、PR作成に進めるか、必要なreview prepare / review recordを表示します。
+      役割別レビュー依頼を作ります（lifecycle会計・予算・authorize儀式は無し）。
+  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text>
+      レビュー結果を記録します。
+  vibepro pr prepare <repo> --base <base-branch> --story-id <id>
+      Story + Spec有無 + 記録済み検証 + 記録済みレビューを要約し、
+      .vibepro/pr/<story-id>/pr-prepare.json とPR本文を作ります。ブロックはしません。
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
-      Gate DAGがreadyになった後、VibePro経由でPRを作成します。
-
-risk-adaptive Gate DAG:
-  workflow_heavy 変更では、workflow replay / production path / release confidence /
-  preview・network・runtime review などの重いGateが自動で追加されます。
-  状態・worker・権限・課金・送信などの横断責務では、responsibility-authority.json /
-  docs/responsibility-authority/*.json と contracts/*.json / docs/contracts/*.json を解決し、
-  未登録なら no_registered_authority、証跡不足なら gate:responsibility_authority で止めます。
-  必須Gateが未解決の間、next_commands は PR作成ではなく review / verification / prepare を案内します。
+      現在のブランチをpushし、gh pr create（または既存PRの本文更新）を実行します。
 
 .vibepro/ の意味:
-  診断・Story・Gate・レビュー証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。
-  AIエージェントには full JSON artifact ではなく、まず pr prepare --summary-json または --view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap> の限定viewを渡します。
-  full artifactは永続正本として保存し、必要なgate id/pathだけを対象にdrill-downします。
-  --evidence-depth standard|full を明示する場合は、--evidence-depth-reason、--evidence-depth-consumer、1つ以上の --evidence-depth-target <path-or-gate> を全て指定します。
-
-PR作成経路:
-  通常のPR作成では vibepro pr create を使ってください。GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らないため、標準経路にしません。
-  PR作成後は CI を import し、pr prepare / pr create を再実行して既存PR本文とpr-create.jsonを現在head向けに更新します。
+  Story・Spec・検証・レビュー・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。
 
 base branch:
   READMEや例の origin/develop は固定ではありません。リポジトリに合わせて origin/main や main を指定してください。
@@ -327,13 +258,6 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
-  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
-  vibepro audit replay [repo] --story-id <id> [--json]
-  vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
-  vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
-  vibepro audit session-cost [repo] --story-id <id> [--run-id <id>] [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
-  vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
-  vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -364,9 +288,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
-  vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -379,10 +302,10 @@ Usage:
 // assert every command is exercised end-to-end — a missing/broken handler import
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
-  'version', 'help', 'init', 'config', 'doctor', 'status', 'usage', 'graph', 'env',
+  'version', 'help', 'init', 'config', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story',
   'decision', 'verify', 'review', 'guard', 'spec', 'report',
-  'audit', 'workspace', 'store'
+  'workspace', 'store'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -679,128 +602,6 @@ async function dispatchCli(argv, io = {}) {
       return { exitCode: result.status === 'failed' ? 1 : 0, command, subcommand, result };
     }
 
-    if (command === 'usage') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (subcommand === 'report') {
-        const result = await createUsageReport(repoRoot, {
-          since: getOption(rest, '--since'),
-          logs: getOptions(rest, '--log'),
-          codexLogs: getOptions(rest, '--codex-log'),
-          claudeLogs: getOptions(rest, '--claude-log'),
-          subagentRoi: hasFlag(rest, '--subagent-roi'),
-          gateRoi: hasFlag(rest, '--gate-roi'),
-          language: getOption(rest, '--language')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderUsageReport(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown usage command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'audit') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
-        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
-      }
-      if (subcommand === 'memory') {
-        const action = rest[1];
-        const memoryRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
-        if (action === 'preflight') {
-          const result = await preflightAuditAutomationMemory(memoryRepoRoot, {
-            memoryPath: getOption(rest, '--memory') ?? getOption(rest, '--automation-memory') ?? io.env?.VIBEPRO_AUTOMATION_MEMORY ?? null,
-            fallbackLastRun: getOption(rest, '--fallback-last-run'),
-            fallbackHours: getOption(rest, '--fallback-hours'),
-            now: getOption(rest, '--now')
-          });
-          write(stdout, hasFlag(rest, '--json')
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : renderAuditMemoryResult(result));
-          return { exitCode: ['ready', 'fallback'].includes(result.status) ? 0 : 2, command, subcommand, action, result };
-        }
-        if (action === 'commit') {
-          const result = await commitAuditAutomationMemory(memoryRepoRoot, {
-            memoryPath: getOption(rest, '--memory') ?? getOption(rest, '--automation-memory') ?? io.env?.VIBEPRO_AUTOMATION_MEMORY ?? null,
-            lastRun: getOption(rest, '--last-run'),
-            windowStart: getOption(rest, '--window-start'),
-            windowEnd: getOption(rest, '--window-end'),
-            note: getOption(rest, '--note'),
-            now: getOption(rest, '--now')
-          });
-          write(stdout, hasFlag(rest, '--json')
-            ? `${JSON.stringify(result, null, 2)}\n`
-            : renderAuditMemoryResult(result));
-          return { exitCode: result.status === 'committed' ? 0 : 2, command, subcommand, action, result };
-        }
-        write(stderr, `Unknown audit memory action: ${action ?? ''}\n\n${renderHelp()}`);
-        return { exitCode: 1, command, subcommand };
-      }
-      if (subcommand === 'replay') {
-        const result = await replayCanonicalAuditBundle(repoRoot, {
-          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderCanonicalAuditReplay(result));
-        return { exitCode: result.status === 'ready' ? 0 : 2, command, subcommand, result };
-      }
-      if (subcommand === 'session-cost') {
-        const result = await collectSessionEfficiencyAudit(repoRoot, {
-          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
-          runId: getOption(rest, '--run-id'),
-          sessionId: getOption(rest, '--session-id') ?? getOption(rest, '--thread-id') ?? defaultSessionId(io.env),
-          inferSession: hasFlag(rest, '--infer-session') || getOption(rest, '--session-id') === 'auto',
-          codexHome: getOption(rest, '--codex-home'),
-          automationMemoryPath: getOption(rest, '--automation-memory') ?? io.env?.VIBEPRO_AUTOMATION_MEMORY ?? null,
-          windowStart: getOption(rest, '--window-start'),
-          windowEnd: getOption(rest, '--window-end'),
-          baseRef: getOption(rest, '--base'),
-          headRef: getOption(rest, '--head') ?? 'HEAD',
-          includeWorktreeDiff: !hasFlag(rest, '--no-worktree-diff'),
-          now: getOption(rest, '--now')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderSessionEfficiencyAudit(result));
-        return { exitCode: result.audit_readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
-      }
-      write(stderr, `Unknown audit command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
-    if (command === 'trace') {
-      const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (subcommand === 'backfill') {
-        const result = await backfillTraceability(repoRoot, {
-          storyId: getOption(rest, '--story-id'),
-          dryRun: hasFlag(rest, '--dry-run')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderTraceabilityBackfill(result));
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'declare') {
-        const result = await declareTraceability(repoRoot, {
-          storyId: getOption(rest, '--story-id'),
-          lifecycle: getOption(rest, '--lifecycle'),
-          reason: getOption(rest, '--reason')
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : `Traceability declared: ${result.story_id} lifecycle=${result.lifecycle}\n`);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      write(stderr, `Unknown trace command: ${subcommand ?? ''}\n\n${renderHelp()}`);
-      return { exitCode: 1, command };
-    }
-
     if (command === 'diagnose') {
       const repoRoot = rest[0] ?? process.cwd();
       const runId = getOption(rest, '--run-id');
@@ -853,10 +654,6 @@ async function dispatchCli(argv, io = {}) {
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.story_id,
-          target: 'pr_create'
-        }).catch(() => null);
         write(stdout, hasFlag(verifyArgs, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderVerificationRunSummary(result));
@@ -882,10 +679,6 @@ async function dispatchCli(argv, io = {}) {
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.evidence.story_id,
-          target: 'pr_create'
-        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.evidence, null, 2)}\n`
           : renderVerificationEvidenceSummary(result));
@@ -906,10 +699,6 @@ async function dispatchCli(argv, io = {}) {
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.story_id,
-          target: 'pr_create'
-        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderCiImportSummary(result));
@@ -941,10 +730,6 @@ async function dispatchCli(argv, io = {}) {
           ],
           language: getOption(rest, '--language')
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.review?.story_id ?? result.summary?.story_id,
-          target: 'pr_create'
-        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewPrepareSummary(result));
@@ -1004,10 +789,6 @@ async function dispatchCli(argv, io = {}) {
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.review?.story_id ?? result.summary?.story_id,
-          target: 'pr_create'
-        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewRecordSummary(result));
@@ -1159,10 +940,6 @@ async function dispatchCli(argv, io = {}) {
           stdinText: hasFlag(rest, '--from-stdin') ? await readStdin(io.stdin ?? process.stdin) : '',
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.decision?.story_id ?? storyId,
-          target: 'pr_create'
-        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderDecisionRecordSummary(result));
@@ -1306,20 +1083,6 @@ async function dispatchCli(argv, io = {}) {
       }
       if (subcommand === 'prepare') {
         const jsonOutput = hasFlag(rest, '--json');
-        const summaryJsonOutput = hasFlag(rest, '--summary-json');
-        const viewOutput = getOption(rest, '--view') ?? (summaryJsonOutput ? 'canonical-summary' : null);
-        const progressOutput = jsonOutput || summaryJsonOutput || Boolean(viewOutput) || hasFlag(rest, '--progress');
-        const explicitEvidenceDepth = getOption(rest, '--evidence-depth');
-        const implicitSummaryEvidenceDepth = !explicitEvidenceDepth && (summaryJsonOutput || Boolean(viewOutput));
-        const evidenceDepth = explicitEvidenceDepth ?? (implicitSummaryEvidenceDepth ? 'summary' : null);
-        const evidenceDepthReason = getOption(rest, '--evidence-depth-reason')
-          ?? (implicitSummaryEvidenceDepth ? 'limited pr prepare view requested' : null);
-        const evidenceDepthConsumer = getOption(rest, '--evidence-depth-consumer')
-          ?? (implicitSummaryEvidenceDepth ? 'limited_pr_prepare_view' : null);
-        const evidenceDecisionUsageRaw = getOption(rest, '--evidence-decision-usage');
-        const evidenceDecisionUsage = evidenceDecisionUsageRaw == null
-          ? null
-          : JSON.parse(evidenceDecisionUsageRaw);
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
@@ -1332,120 +1095,16 @@ async function dispatchCli(argv, io = {}) {
           baseRef: getOption(rest, '--base'),
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
-          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
-          evidenceDepth,
-          evidenceDepthReason,
-          evidenceDepthConsumer,
-          evidenceDepthTargets: getOptions(rest, '--evidence-depth-target'),
-          evidenceDecisionUsage,
-          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
-          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
-          strict: hasFlag(rest, '--strict'),
-          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
-          gateOutcome: getOption(rest, '--outcome'),
-          // architecture-conformance-delta.js was removed in the minimal-core rebuild (Slice 1);
-          // preparePullRequest's architecture_conformance_delta shadow stage falls back to its
-          // documented inconclusive info node when options.conformanceDelta is not provided.
           env: io.env ?? process.env
         });
-        write(stdout, viewOutput
-          ? `${JSON.stringify(projectPrPrepareForLlm(result.preparation, viewOutput), null, 2)}\n`
-          : jsonOutput
-            ? `${JSON.stringify(result.preparation, null, 2)}\n`
-            : renderPrPrepareSummary(result));
-        await updateExecutionStateFromPrPrepare(repoRoot, result, {
-          target: 'pr_create',
-          baseRef: getOption(rest, '--base')
-        }).catch(() => null);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'autopilot') {
-        const jsonOutput = hasFlag(rest, '--json');
-        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
-        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr autopilot');
-        await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'pr autopilot'
-        });
-        const result = await autopilotPullRequest(repoRoot, {
-          storyId,
-          taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group'),
-          baseRef: getOption(rest, '--base'),
-          headRef: getOption(rest, '--head-ref'),
-          headBranch: getOption(rest, '--head'),
-          branchName: getOption(rest, '--branch'),
-          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
-          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
-          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
-          strict: hasFlag(rest, '--strict'),
-          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
-          language: getOption(rest, '--language'),
-          verifyCommands: getOptions(rest, '--verify'),
-          pr: getOption(rest, '--pr'),
-          importCi: hasFlag(rest, '--import-ci'),
-          ciChecks: getOptions(rest, '--check'),
-          ciCoverage: getOptions(rest, '--coverage'),
-          dryRun: hasFlag(rest, '--dry-run'),
-          env: io.env
-        });
         write(stdout, jsonOutput
-          ? `${JSON.stringify(result.autopilot, null, 2)}\n`
-          : renderPrAutopilotSummary(result));
-        await updateExecutionStateFromPrPrepare(repoRoot, result, {
-          target: 'pr_create',
-          baseRef: getOption(rest, '--base')
-        }).catch(() => null);
-        return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'ship') {
-        const jsonOutput = hasFlag(rest, '--json');
-        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
-        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr ship');
-        await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'pr ship'
-        });
-        const result = await shipPullRequest(repoRoot, {
-          storyId,
-          taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group'),
-          baseRef: getOption(rest, '--base'),
-          prBase: getOption(rest, '--base'),
-          headRef: getOption(rest, '--head-ref'),
-          headBranch: getOption(rest, '--head'),
-          branchName: getOption(rest, '--branch'),
-          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
-          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
-          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
-          title: getOption(rest, '--title'),
-          dryRun: hasFlag(rest, '--dry-run'),
-          allowNeedsVerification: hasFlag(rest, '--allow-needs-verification'),
-          verificationWaiver: getOption(rest, '--verification-waiver'),
-          strict: hasFlag(rest, '--strict'),
-          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
-          language: getOption(rest, '--language'),
-          env: io.env
-        });
-        write(stdout, jsonOutput
-          ? `${JSON.stringify(result.ship, null, 2)}\n`
-          : renderPrShipSummary(result));
-        await updateExecutionStateFromPrPrepare(repoRoot, result, {
-          target: 'pr_create',
-          baseRef: getOption(rest, '--base')
-        }).catch(() => null);
-        if (result.execution) {
-          await updateExecutionStateFromPrCreate(repoRoot, result, {
-            target: 'pr_create',
-            baseRef: getOption(rest, '--base')
-          }).catch(() => null);
-        }
+          ? `${JSON.stringify(result.preparation, null, 2)}\n`
+          : renderPrPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'create') {
         const jsonOutput = hasFlag(rest, '--json');
-        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr create');
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
@@ -1460,25 +1119,14 @@ async function dispatchCli(argv, io = {}) {
           headRef: getOption(rest, '--head-ref'),
           headBranch: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
-          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
-          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
-          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           title: getOption(rest, '--title'),
           dryRun: hasFlag(rest, '--dry-run'),
-          allowNeedsVerification: hasFlag(rest, '--allow-needs-verification'),
-          verificationWaiver: getOption(rest, '--verification-waiver'),
-          strict: hasFlag(rest, '--strict'),
-          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
           env: io.env
         });
         write(stdout, jsonOutput
           ? `${JSON.stringify(result.execution, null, 2)}\n`
           : renderPrCreateSummary(result));
-        await updateExecutionStateFromPrCreate(repoRoot, result, {
-          target: 'pr_create',
-          baseRef: getOption(rest, '--base')
-        }).catch(() => null);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown pr command: ${subcommand ?? ''}\n\n${renderHelp()}`);
@@ -1984,24 +1632,6 @@ function getOption(args, name) {
   return args[index + 1] ?? null;
 }
 
-function defaultSessionId(env = process.env) {
-  return env?.VIBEPRO_SESSION_ID
-    ?? env?.CODEX_SESSION_ID
-    ?? env?.CLAUDE_SESSION_ID
-    ?? null;
-}
-
-function renderAuditMemoryResult(result) {
-  return [
-    `audit-memory: ${result.status}`,
-    `memory: ${result.memory_path ?? '-'}`,
-    `window: ${result.window_start ?? '-'} -> ${result.window_end ?? '-'}`,
-    `fallback: ${result.fallback_used ? result.source ?? 'used' : 'no'}`,
-    result.artifact ? `artifact: ${result.artifact}` : null,
-    result.required_action ? `required_action: ${result.required_action}` : null
-  ].filter(Boolean).join('\n') + '\n';
-}
-
 function renderProcessRecordStoreResult(subcommand, result) {
   if (result.status === 'failed') {
     return `store ${subcommand} failed: ${result.reason}\n`;
@@ -2181,25 +1811,6 @@ function parseAllowedPathsOption(value) {
   if (!value) return undefined;
   const parsed = value.split(',').map((item) => item.trim()).filter(Boolean);
   return parsed.length > 0 ? parsed : undefined;
-}
-
-function renderPrPrepareProgressEvent(event) {
-  const stage = event.stage ?? 'unknown';
-  if (event.event === 'stage_start') {
-    return event.timeout_ms
-      ? `[vibepro pr prepare] start ${stage} timeout_ms=${event.timeout_ms}`
-      : `[vibepro pr prepare] start ${stage} timeout_ms=disabled`;
-  }
-  if (event.event === 'stage_complete') {
-    return `[vibepro pr prepare] done ${stage} duration_ms=${event.duration_ms}`;
-  }
-  if (event.event === 'stage_timeout') {
-    return `[vibepro pr prepare] timeout ${stage} duration_ms=${event.duration_ms}: ${event.error}`;
-  }
-  if (event.event === 'stage_failed') {
-    return `[vibepro pr prepare] failed ${stage} duration_ms=${event.duration_ms}: ${event.error}`;
-  }
-  return `[vibepro pr prepare] ${event.event ?? 'progress'} ${stage}`;
 }
 
 function write(stream, text) {

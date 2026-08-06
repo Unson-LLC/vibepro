@@ -7,9 +7,8 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
-import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
+import { assertManagedWorktreeCommandAllowed } from './managed-worktree.js';
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
-import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 import {
@@ -231,13 +230,6 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectReviewGitContext(root, storyId);
-  const evidenceReuseArtifact = await readEvidenceReuseIfExists(root, storyId);
-  const verificationEvidence = await readJsonIfExists(await resolvePrArtifactFile(root, storyId, 'verification-evidence.json'));
-  const evidenceReuse = evaluateEvidenceReuseForReview({
-    reuse: evidenceReuseArtifact,
-    gitContext,
-    verificationEvidence
-  });
   const prPrepareArtifact = await readJsonIfExists(await resolvePrArtifactFile(root, storyId));
   const boundedArtifactHandoff = buildBoundedArtifactHandoff(prPrepareArtifact?.artifact_budget);
   const plan = {
@@ -248,7 +240,6 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     created_at: new Date().toISOString(),
     output: { language },
     git_context: gitContext,
-    evidence_reuse: evidenceReuse,
     bounded_artifact_handoff: boundedArtifactHandoff,
     review_policy: summarizeReviewPolicyForStage(reviewPolicy, stage, roles),
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),

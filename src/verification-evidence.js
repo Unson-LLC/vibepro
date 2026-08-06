@@ -4,7 +4,7 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
+import { assertManagedWorktreeCommandAllowed } from './managed-worktree.js';
 import { collectGitContext } from './git-fingerprint.js';
 import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';

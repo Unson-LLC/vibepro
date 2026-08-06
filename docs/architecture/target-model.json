@@ -89,10 +89,7 @@
         "src/git-fingerprint.js",
         "src/git-identity.js",
         "src/checkpoint-manager.js",
-        "src/execution-state.js",
         "src/managed-worktree.js",
-        "src/managed-worktree-gate.js",
-        "src/merge-manager.js",
         "src/codex-manager.js",
         "src/run-lineage.js",
         "src/language.js",
@@ -100,7 +97,6 @@
         "src/story-id.js",
         "src/managed-command-executor.js",
         "src/atomic-file.js",
-        "src/canonical-persistence.js",
         "src/process-record-store.js",
         "src/story-transaction-lock.js"
       ]
@@ -144,8 +140,7 @@
         "src/architecture-profiler.js",
         "src/architecture-conformance.js",
         "src/architecture-conformance-delta.js",
-        "src/architecture-rebaseline-proposal.js",
-        "src/code-topology-provider.js"
+        "src/architecture-rebaseline-proposal.js"
       ]
     },
     {
@@ -153,8 +148,7 @@
       "responsibility": "Specの保存・検証・drift検知",
       "paths": [
         "src/spec-*",
-        "src/pre-spec-readiness.js",
-        "src/recipe-preflight.js"
+        "src/pre-spec-readiness.js"
       ]
     },
     {
@@ -165,7 +159,6 @@
         "src/evidence-*",
         "src/docs-only-change.js",
         "src/ci-evidence.js",
-        "src/explore-evidence.js",
         "src/performance-evidence.js",
         "src/performance-measurer.js",
         "src/coverage-report.js",
@@ -178,8 +171,6 @@
       "responsibility": "agent review（軽量レビュー1周: prepare/record/summary）",
       "paths": [
         "src/agent-review.js",
-        "src/adjudication.js",
-        "src/responsibility-authority.js",
         "src/review-inspection-inputs.js",
         "src/review-surface-violations.js",
         "src/dispatch-identity.js"
@@ -190,25 +181,15 @@
       "responsibility": "Gate DAG・PR準備・senior判断・監査",
       "paths": [
         "src/pr-manager.js",
-        "src/senior-gap-judgment.js",
-        "src/gate-outcome-ledger.js",
-        "src/canonical-audit.js",
         "src/pr-artifact-budget.js",
         "src/traceability.js",
-        "src/change-risk-classifier.js",
-        "src/authorization-scoring.js",
         "src/validation-sequencing.js",
         "src/playbook-exporter.js",
         "src/report-store.js",
         "src/report-validator.js",
         "src/report-fingerprint.js",
         "src/content-binding.js",
-        "src/decision-outcome-ledger.js",
-        "src/outcome-manager.js",
-        "src/merge-gate-authorization.js",
-        "src/merge-public-projection.js",
-        "src/reconciliation-action.js",
-        "src/task-bound-repo-control.js"
+        "src/reconciliation-action.js"
       ]
     },
     {
@@ -256,7 +237,6 @@
         "src/network-contract-scanner.js",
         "src/oss-readiness-scanner.js",
         "src/public-discovery-scanner.js",
-        "src/regression-risk-scanner.js",
         "src/self-dogfood-scanner.js",
         "src/static-site-scanner.js",
         "src/terminal-link-scanner.js",
@@ -273,7 +253,6 @@
         "src/requirement-consistency.js",
         "src/refactoring-delta-reporter.js",
         "src/refactoring-opportunity-generator.js",
-        "src/diagram-requirement-resolver.js",
         "src/agent-harness-map.js"
       ]
     },
@@ -291,8 +270,6 @@
       "responsibility": "人間向けレポートと利用状況集計",
       "paths": [
         "src/html-report.js",
-        "src/usage-report.js",
-        "src/session-efficiency-audit.js",
         "src/delivery-efficiency-guardrail.js"
       ]
     },
