@@ -60,8 +60,17 @@ test('story-vibepro-uiux-intake-judgment-gate ac:6 S-001 an intake coverage arti
   const criterion = '`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` が存在するstoryではgateがpassedになる';
   const scenario = 'When .vibepro/uiux/<story-id>/uiux-intake-coverage.json or .vibepro/design-modernize/<story-id>/uiux-intake-coverage.json exists and parses as an object, gate:uiux_intake_judgment passes with resolved_by=intake_coverage_artifact and surfaces the artifact path and coverage status.';
   const repo = await makeGitRepoWithStory();
-  const template = await runCli(['uiux', 'intake', 'template', repo, '--id', STORY, '--json']);
-  assert.equal(template.exitCode, 0, `ac:6 ${criterion} — intake template must create the coverage artifact`);
+  // vibepro uiux intake template was removed in the minimal-core rebuild (Slice 1); this writes
+  // the same .vibepro/uiux/<story-id>/uiux-intake-coverage.json artifact shape the gate reads.
+  const coverageDir = path.join(repo, '.vibepro', 'uiux', STORY);
+  await mkdir(coverageDir, { recursive: true });
+  await writeFile(path.join(coverageDir, 'uiux-intake-coverage.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    workflow: 'uiux-intake-coverage',
+    story_id: STORY,
+    status: 'needs_intake_detail',
+    missing_required_fields: ['target_users']
+  }, null, 2));
   const prepare = await prPrepare(repo);
   const gate = gateNode(prepare);
   assert.equal(gate.status, 'passed', `ac:6 S-001 ${criterion} — ${scenario}`);
