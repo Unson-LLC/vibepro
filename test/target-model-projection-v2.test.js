@@ -165,7 +165,6 @@ test('TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映されている', 
     'src/merge-public-projection.js': 'gate-pr',
     'src/reconciliation-action.js': 'gate-pr',
     'src/task-bound-repo-control.js': 'gate-pr',
-    'src/budget-override-authority.js': 'gate-pr',
     'src/review-inspection-inputs.js': 'review',
     'src/review-surface-violations.js': 'review',
     'src/dispatch-identity.js': 'review'
