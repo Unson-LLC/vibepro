@@ -1028,6 +1028,30 @@ test('MGD-AC-23 a stale waiver explanation never attributes DAG gates to the wai
   assert.match(context.diagnosis.explanation, /Current evidence names: gate:dag_named/);
 });
 
+test('MGD-AC-24 a waiver-only gate list is attributed to the waiver, without a status', () => {
+  // The inverse of MGD-AC-23: with every current surface green and the waiver
+  // alone naming gates, the explanation must not claim current evidence names
+  // anything, and must not render a status for waiver-document gates -- the
+  // document records what was waived, not what is unresolved now. The first
+  // rewrite told the operator a resolved gate was unresolved here.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { overall_status: 'ready_for_review', ready_for_pr_create: true, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'needs_verification', nodes: [] }
+    }),
+    prCreate: prCreateFixture({
+      gateOverride: { ...NONCRITICAL_WAIVER, critical_unresolved_gates: [{ id: 'gate:e2e' }] }
+    }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.diagnosis.cause, 'gate_waiver_stale');
+  assert.ok(context.diagnosis.blocking_gates.every((gate) => gate.source === 'gate_override'));
+  assert.match(context.diagnosis.explanation, /The waiver document itself names: gate:e2e/);
+  assert.doesNotMatch(context.diagnosis.explanation, /Current evidence names/);
+  assert.doesNotMatch(context.diagnosis.explanation, /gate:e2e=/);
+});
+
 test('MGD-AC-22 the MGD-AC numbering in this file has no silent gaps', () => {
   // Twice a slice-based edit deleted neighbouring tests without anyone
   // noticing until external mutation testing exposed the hole. Contiguity is
@@ -1035,6 +1059,10 @@ test('MGD-AC-22 the MGD-AC numbering in this file has no silent gaps', () => {
   const source = readFileSync(fileURLToPath(import.meta.url), 'utf8');
   const ids = [...new Set([...source.matchAll(/MGD-AC-(\d+)/g)].map((match) => Number(match[1])))]
     .sort((a, b) => a - b);
-  const expected = Array.from({ length: ids.at(-1) }, (_, index) => index + 1);
+  // Pinning the expected maximum closes the boundary: deriving the range from
+  // ids.at(-1) alone cannot see deletion of the single highest-numbered test.
+  // Adding a test requires bumping this constant -- deliberate friction.
+  const HIGHEST_EXPECTED = 24;
+  const expected = Array.from({ length: HIGHEST_EXPECTED }, (_, index) => index + 1);
   assert.deepEqual(ids, expected, 'an MGD-AC test was deleted or renumbered without renumbering the rest');
 });

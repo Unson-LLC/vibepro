@@ -571,7 +571,22 @@ function buildExplanation({
     case 'gate_waiver_stale':
       // blockingGates may be sourced from the DAG under the current-evidence-
       // first ordering, so the list must not be attributed to the waiver.
-      return `The waiver in pr-create.json targets a different gate set than the current gate surface, so it cannot authorize the merge.${blockingGates.length > 0 ? ` Current evidence names: ${gateList}.` : ''}`;
+      // Attribute the list per gate source. Round nine attributed everything to
+      // the waiver (false when DAG-sourced); the first rewrite attributed
+      // everything to current evidence (false when waiver-sourced, and it told
+      // the operator a resolved gate was unresolved). Say who actually names
+      // what, and never render a status for waiver-document gates -- the
+      // document records what was waived, not what is unresolved now.
+      {
+        const currentNamed = blockingGates.filter((gate) => gate.source !== 'gate_override');
+        const waiverNamed = blockingGates.filter((gate) => gate.source === 'gate_override');
+        const suffix = currentNamed.length > 0
+          ? ` Current evidence names: ${currentNamed.map((gate) => `${gate.id}=${gate.status}(${gate.severity})`).join(', ')}.`
+          : waiverNamed.length > 0
+            ? ` The waiver document itself names: ${waiverNamed.map((gate) => gate.id).join(', ')}.`
+            : '';
+        return `The waiver in pr-create.json targets a different gate set than the current gate surface, so it cannot authorize the merge.${suffix}`;
+      }
     case 'gate_evidence_missing':
       return `No gate evidence exists for this story: pr-prepare.json, pr-create.json and gate-dag.json are all absent.`;
     case 'artifact_unreadable':
