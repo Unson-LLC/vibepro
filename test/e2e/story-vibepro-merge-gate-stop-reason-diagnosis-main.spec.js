@@ -201,19 +201,19 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
   assert.equal(
     stalePrCreate.explained.gate_authorization_diagnosis.stop_reason,
     'pr_create_artifact_stale',
-    'ac-2 S-001: a stale pr-create waiver reports pr_create_artifact_stale'
+    'ac-2 S-007: a stale pr-create waiver reports pr_create_artifact_stale'
   );
   assert.equal(
     stalePrCreate.explained.gate_authorization_diagnosis.artifact_bindings
       .find((binding) => binding.artifact === 'pr_prepare').status,
     'current',
-    'ac-5 S-001: the diagnosis states which artifact is current and which is stale'
+    'ac-5 S-007: the diagnosis states which artifact is current and which is stale'
   );
   assert.equal(
     stalePrCreate.explained.gate_authorization_diagnosis.artifact_bindings
       .find((binding) => binding.artifact === 'pr_create').artifact_head_sha,
     firstHead,
-    'ac-5 S-001: the stale binding carries the older artifact_head_sha'
+    'ac-5 S-007: the stale binding carries the older artifact_head_sha'
   );
 
   // The same state through the real merge command persists the same cause, and
@@ -247,7 +247,7 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
   assert.equal(
     incompleteWaiver.explained.gate_authorization_diagnosis.stop_reason,
     'gate_waiver_incomplete',
-    'ac-4 S-003: an incomplete waiver reports gate_waiver_incomplete'
+    'ac-4 S-001: an incomplete waiver reports gate_waiver_incomplete'
   );
 
   // State 6b: the waiver is complete but no longer matches the gate surface it
@@ -260,7 +260,7 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
   assert.equal(
     staleWaiver.explained.gate_authorization_diagnosis.stop_reason,
     'gate_waiver_stale',
-    'ac-4 S-003: a waiver whose targets no longer match reports gate_waiver_stale'
+    'ac-4 S-001: a waiver whose targets no longer match reports gate_waiver_stale'
   );
 
   // State 6c: a routed gate-dag.json describes a different authorization surface
@@ -307,14 +307,37 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
   assert.equal(
     unreadable.explained.gate_authorization_diagnosis.stop_reason,
     'artifact_unreadable',
-    'ac-1 ac-6: a malformed artifact is diagnosed by name, not surfaced as a raw parse error'
+    'ac-1 ac-6 S-008: a malformed artifact is diagnosed by name, not surfaced as a raw parse error'
   );
   assert.equal(
     unreadable.explained.gate_authorization_diagnosis.artifact_bindings
       .find((binding) => binding.artifact === 'pr_create').status,
     'unreadable',
-    'ac-5: the unparseable artifact is reported as unreadable, not as missing'
+    'ac-5 S-008: the unparseable artifact is reported as unreadable, not as missing'
   );
+
+  // State 9: a valid waiver would authorize, but a routed gate-dag.json cannot
+  // be parsed. The authority function treats it as absent; the diagnosis must
+  // not report authorized where the real merge would fail closed.
+  await writePrCreate(prDir, secondHead);
+  await writeFile(path.join(prDir, 'gate-dag.json'), '{ not json either\n');
+  const unreadableOverAuthorized = await explain(repo, env);
+  assert.equal(
+    unreadableOverAuthorized.exitCode,
+    2,
+    'ac-6 S-009: an unparseable routed artifact blocks even when the waiver would authorize'
+  );
+  assert.equal(
+    unreadableOverAuthorized.explained.gate_authorization_diagnosis.stop_reason,
+    'artifact_unreadable',
+    'ac-1 S-009: unreadable input outranks an otherwise-authorizing waiver'
+  );
+  assert.equal(
+    unreadableOverAuthorized.explained.gate_ready,
+    false,
+    'ac-6 S-009: gate_ready follows the diagnosis, not the raw authority verdict'
+  );
+  await rm(path.join(prDir, 'gate-dag.json'));
 
   // No state in this replay reached the provider.
   const ghCalls = await readFile(ghCallLog, 'utf8').catch(() => '');
