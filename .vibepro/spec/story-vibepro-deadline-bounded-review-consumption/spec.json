@@ -1,0 +1,420 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-deadline-bounded-review-consumption",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "aggregateDeliveryMetrics's agent_consumption_ms charge for a reviews[] entry whose close_reason is 'completed' equals the entry's full finished_at - started_at duration, unconditionally, even when that duration exceeds the entry's own timeout_ms.",
+      "rationale": "resolveConsumptionCharge returns the raw duration as soon as close_reason === 'completed', before it ever inspects timeout_ms. The real architecture_boundary lifecycle #2 from the 2026-08-05 incident ledger (744,613ms, timeout_ms=600,000, close_reason=completed) is the concrete case this exempts: a genuinely completed review must never be shortened by the deadline bound.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "close_reason === 'completed' の場合は現在どおり finished_at - started_at の全区間を計上する（変更なし）"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "function resolveConsumptionCharge(review, duration) {"
+          },
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "if (review.close_reason === 'completed') return duration;"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-1: a completed lifecycle stays unbounded even past its own timeout_ms"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/delivery-efficiency-guardrail.js",
+            "must_contain": "if (review.close_reason === 'completed') return duration;"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "a completed lifecycle stays unbounded even past its own timeout_ms"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a reviews[] entry whose close_reason is timeout, replaced, manual_shutdown, or any value other than 'completed' (including an unrecognized future value), and whose timeout_ms is a finite positive number, when aggregateDeliveryMetrics computes the entry's charge, then the charge is min(finished_at - started_at, timeout_ms), the excluded remainder (duration - charge) is added to deadline_excluded_ms, and deadline_excluded_count is incremented by 1 for that entry.",
+      "rationale": "Pins the bounded branch against the real gate_evidence lifecycle #10 from the 2026-08-05 incident ledger: 7,017,457ms (116.9 minutes) against timeout_ms=600,000, verified identically across all four non-completed close_reason values so the bound is proven to key off close_reason !== 'completed', not off a timeout-specific string match.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "close_reason が 'completed' 以外...timeout_ms が有限値の場合、計上区間は min(finished_at - started_at, timeout_ms) に縮められる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "function boundAgentConsumption(reviews, intervals) {"
+          },
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "return Math.min(duration, timeoutMs);"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-2: timeout, replaced, manual_shutdown, and an unrecognized future close_reason are all bounded to timeout_ms"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/delivery-efficiency-guardrail.js",
+            "must_contain": "return Math.min(duration, timeoutMs);"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "are all bounded to timeout_ms"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given a reviews[] entry whose timeout_ms is missing, null, NaN, a non-numeric string, zero, or negative, when aggregateDeliveryMetrics computes the entry's charge, then the charge equals the full finished_at - started_at duration regardless of close_reason, and neither deadline_excluded_ms nor deadline_excluded_count is incremented for that entry.",
+      "rationale": "This is the backward-compatibility fallback: existing callers that never populate close_reason/timeout_ms on their reviews[] entries must keep today's unbounded-sum behavior exactly. resolveConsumptionCharge's Number.isFinite/positivity guard runs before Math.min, so any non-finite or non-positive timeout_ms short-circuits to the full duration.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "timeout_ms が欠落または非有限...の場合、close_reason に関わらず現在どおり全区間を計上する（後方互換）"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) return duration;"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-3: missing, null, NaN, non-numeric, and non-positive timeout_ms all fall back to the full duration"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/delivery-efficiency-guardrail.js",
+            "must_contain": "if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) return duration;"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "all fall back to the full duration"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "aggregateDeliveryMetrics's review_wait_ms and subagent_wall_clock_ms remain computed from unionDuration(intervals) exactly as before this Story, and are never reduced by the close_reason/timeout_ms deadline bound that agent_consumption_ms now applies.",
+      "rationale": "boundAgentConsumption is a separate computation feeding only agent_consumption_ms/deadline_excluded_ms/deadline_excluded_count; the review_wait_ms/subagent_wall_clock_ms lines are untouched by this Story's diff. Deliberately shrinking the deadline-bound metric while leaving the wall-clock metric alone preserves the operational fact of how long the story was actually blocked, which is the point rejected alternative (a) in the architecture doc would have obscured.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "review_wait_ms と subagent_wall_clock_ms は unionDuration(intervals) のままであり、deadline 上限の対象にならない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "review_wait_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-4: review_wait_ms and subagent_wall_clock_ms stay union-based and unbounded when a bounded entry overlaps an unbounded one"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/delivery-efficiency-guardrail.js",
+            "must_contain": "review_wait_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "stay union-based and unbounded"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Both authorizeAgentReviewDispatch (src/agent-review.js) and buildDeliveryEfficiencyContext (src/pr-manager.js) construct each reviews[] entry passed into aggregateDeliveryMetrics with close_reason and timeout_ms copied verbatim from the corresponding lifecycle entry, so the deadline-bounded charge is reachable from both of this repository's live review-lifecycle call sites without any change to aggregateDeliveryMetrics's own call signature.",
+      "rationale": "aggregateDeliveryMetrics has three producers upstream (including story-run-portfolio.js's mergeCostAttribution, which forwards reviews[] unchanged), but only these two sites construct reviews[] from raw lifecycle entries. Both were changed to add exactly the same two fields, keeping the bound-vs-not-bound decision logic in the single aggregateDeliveryMetrics call site instead of duplicating min(duration, timeout_ms) at each caller.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "authorizeAgentReviewDispatch と buildDeliveryEfficiencyContext の両方が、reviews[] 構築時に close_reason と timeout_ms を lifecycle entry からそのまま渡すよう変更される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "close_reason: item.close_reason, timeout_ms: item.timeout_ms"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "close_reason: lifecycle.close_reason,"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-5: buildDeliveryEfficiencyContext propagates close_reason and timeout_ms from the lifecycle entry into reviews[]"
+          },
+          {
+            "file": "test/review-inspection-first.test.js",
+            "case": "DBA-S-5 DBA-S-8: a lifecycle bounded to its timeout_ms changes the authorize-path budget outcome"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/agent-review.js",
+            "must_contain": "close_reason: item.close_reason, timeout_ms: item.timeout_ms"
+          },
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "close_reason: lifecycle.close_reason,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/review-inspection-first.test.js",
+            "must_cover": "changes the authorize-path budget outcome"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "aggregateDeliveryMetrics's return value includes deadline_excluded_ms (total milliseconds excluded across all bounded reviews[] entries) and deadline_excluded_count (number of entries bounded), both null exactly when agent_consumption_ms is null (incomplete review timing) and otherwise numeric; withDeadlineExclusionVisibility (src/agent-review.js) carries both fields onto the dispatch-decision budget object, and story-run-portfolio.js's emptyCostAttribution/COUNT_COST_KEYS carry deadline_excluded_ms/deadline_excluded_count through persisted portfolio cost attribution, so pr prepare's efficiency report and dispatch decision evidence do not silently drop the excluded amount.",
+      "rationale": "A bound that shrinks agent_consumption_ms without a visible trail would be indistinguishable from a loosened guardrail. deadline_excluded_ms/deadline_excluded_count are threaded through every layer that persists or reports agent_consumption_ms: the aggregator return value, the dispatch-decision budget object consumed by owner-facing evidence, and the portfolio's persisted cost_attribution shape (whose emptyCostAttribution defaults and COUNT_COST_KEYS allowlist would otherwise silently drop the two new fields).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "戻り値に deadline_excluded_ms と deadline_excluded_count が追加され、pr prepare の効率性レポートと dispatch decision evidence の両方に伝播する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "deadline_excluded_ms: consumption ? consumption.deadline_excluded_ms : null,"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "function withDeadlineExclusionVisibility(budget, metrics) {"
+          },
+          {
+            "file": "src/story-run-portfolio.js",
+            "anchor": "deadline_excluded_ms: null,"
+          },
+          {
+            "file": "src/story-run-portfolio.js",
+            "anchor": "'deadline_excluded_count'"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-6: deadline_excluded_ms and deadline_excluded_count total every bounded lifecycle and stay null (not zero) when review timing is incomplete"
+          },
+          {
+            "file": "test/story-run-portfolio.test.js",
+            "case": "DBA-S-6: portfolio persists deadline_excluded_ms and deadline_excluded_count alongside the bounded agent_consumption_ms"
+          },
+          {
+            "file": "test/review-inspection-first.test.js",
+            "case": "DBA-S-5 DBA-S-8: a lifecycle bounded to its timeout_ms changes the authorize-path budget outcome"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/story-run-portfolio.js",
+            "must_contain": "'deadline_excluded_count'"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/story-run-portfolio.test.js",
+            "must_cover": "alongside the bounded agent_consumption_ms"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Given the real 10-entry story-vibepro-content-scoped-evidence-reuse-key review lifecycle ledger observed on 2026-08-05 (architecture_boundary x4, gate_evidence x6, all timeout_ms=600000, nine entries close_reason=completed and one entry close_reason=timeout at 7,017,457ms), when aggregateDeliveryMetrics is called with that ledger as literal reviews[] input, then agent_consumption_ms equals 4,656,074 (down from an unbounded sum of 11,073,531), deadline_excluded_ms equals 6,417,457, and deadline_excluded_count equals 1 -- not 10 -- demonstrating that the design does not degenerate to count x timeout_ms.",
+      "rationale": "This is the story's central non-degeneracy proof, fixed against measured production numbers rather than synthetic fixtures: 3 of the 10 real entries individually exceed the 600,000ms deadline, but bounding fires for only the 1 whose close_reason is not 'completed'. A collapse to count x timeout_ms here would reproduce the exact failure mode (a measured tier with no real producer) that stopped the earlier, unmerged story-vibepro-work-based-agent-consumption-budget design.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "実 lifecycle 記録（10件）...agent_consumption_ms が 11,073,531 から 4,656,074 へ、deadline_excluded_count が 1 になることを assert する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "function boundAgentConsumption(reviews, intervals) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "DBA-S-7: the real 2026-08-05 story-vibepro-content-scoped-evidence-reuse-key ledger replay bounds 11,073,531ms to 4,656,074ms with exactly one exclusion"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "11,073,531ms to 4,656,074ms with exactly one exclusion"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "evaluateDeliveryBudget's budget_exceeded stop reason and throwReviewDispatchStop's fail-closed exception path, and budget-override-authority.js's human-only grant requirement (grantor_kind: human, self-grant rejection, digest binding), are unchanged by deadline-bounded attribution; every pre-existing budget-override test continues to pass unmodified.",
+      "rationale": "This Story only changes how agent_consumption_ms is computed upstream of evaluateDeliveryBudget; the budget-evaluation and override-authority modules themselves are Non Goals. DBA-S-5/DBA-S-8's authorize-path test proves this by construction: with the bound applied, a fixture whose raw unbounded duration exceeds the configured budget (700,000ms) is charged only 600,000ms and dispatch proceeds (action=dispatch, status=within_budget) -- the same fail-closed machinery that would otherwise have stopped it is exercised, not bypassed.",
+      "inherited_behaviors": [
+        {
+          "condition": "dispatchDecision.action !== 'dispatch' triggers throwReviewDispatchStop",
+          "classification": "existing",
+          "files": [
+            "src/agent-review.js"
+          ]
+        },
+        {
+          "condition": "approval.grantor_kind !== 'human' is rejected",
+          "classification": "existing",
+          "files": [
+            "src/budget-override-authority.js"
+          ]
+        }
+      ],
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "evaluateDeliveryBudget の fail-closed 停止...と budget-override-authority.js が要求する human-only grant の経路は本 story で変更しない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "function throwReviewDispatchStop(dispatchDecision, budgetOverride = null) {"
+          },
+          {
+            "file": "src/budget-override-authority.js",
+            "anchor": "if (approval.grantor_kind !== 'human') reasons.push('grantor_not_human');"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-inspection-first.test.js",
+            "case": "DBA-S-5 DBA-S-8: a lifecycle bounded to its timeout_ms changes the authorize-path budget outcome"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/budget-override-authority.js",
+            "must_contain": "if (approval.grantor_kind !== 'human') reasons.push('grantor_not_human');"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/review-inspection-first.test.js",
+            "must_cover": "bounded to its timeout_ms changes the authorize-path budget outcome"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-06T01:09:41.495Z",
+      "last_revised_at": "2026-08-06T01:09:41.495Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart TD\n  Lifecycle[\"review lifecycle entry<br/>started_at / closed_at / close_reason / timeout_ms\"] --> Duration[\"duration = closed_at - started_at\"]\n  Duration --> Branch{\"close_reason === 'completed'?\"}\n  Branch -->|yes| Full[\"charge = duration<br/>(bound対象外)\"]\n  Branch -->|no: timeout/replaced/<br/>manual_shutdown/未知値| HasTimeout{\"timeout_ms が有限?\"}\n  HasTimeout -->|yes| Bound[\"charge = min(duration, timeout_ms)<br/>excluded = duration - charge\"]\n  HasTimeout -->|no: 欠落/非有限| Fallback[\"charge = duration<br/>(後方互換フォールバック)\"]\n  Full --> Sum[\"agent_consumption_ms = Σ charge\"]\n  Bound --> Sum\n  Fallback --> Sum\n  Bound --> Excluded[\"deadline_excluded_ms += excluded<br/>deadline_excluded_count += 1\"]\n  Sum --> Budget[\"evaluateDeliveryBudget<br/>max_agent_consumption_ms\"]\n  Excluded --> Report[\"pr prepare 効率性レポート<br/>dispatch decision evidence\"]",
+      "rationale": "Mirrors the decision diagram in docs/architecture/vibepro-deadline-bounded-review-consumption.md exactly: shows the close_reason branch, the timeout_ms finiteness guard, and where the two new fields (agent_consumption_ms's bound and deadline_excluded_ms/count) each flow to downstream consumers (evaluateDeliveryBudget and the pr prepare efficiency report)."
+    }
+  ],
+  "parent_design": [
+    "vibepro-deadline-bounded-review-consumption"
+  ],
+  "generated_at": "2026-08-06T01:09:41.493Z",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}
