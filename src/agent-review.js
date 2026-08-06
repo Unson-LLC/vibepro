@@ -10,9 +10,7 @@ import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
 import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
-import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
-import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 import {
   buildReviewDispatchDecision,
@@ -356,12 +354,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
   });
 
   const gitContext = await collectReviewGitContext(root, storyId);
-  const lineage = resolveRecorderLineage(options, {
-    story_id: storyId,
-    worktree_root: root,
-    branch: gitContext.current_branch,
-    head_sha: gitContext.head_sha
-  }, `review-${stage}-${role}`);
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const resultPath = getReviewResultPath(reviewDir, role);
@@ -411,7 +403,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
     git_context: gitContext,
     freshness_policy: freshnessPolicy,
     content_binding: contentBinding,
-    ...(lineage ? { lineage } : {}),
     source_fingerprint: sourceFingerprint,
     ...(options.runtimeDispatchId ? { runtime_dispatch_id: options.runtimeDispatchId } : {}),
     agent_provenance: buildAgentProvenance(root, {
@@ -530,10 +521,6 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
   });
-  await refreshActiveRunContextCapsule(root, {
-    storyId,
-    reason: 'review_recorded'
-  });
   return {
     review: result,
     summary,
@@ -541,25 +528,6 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
     history_artifact: toWorkspaceRelative(root, historyPath),
     reused
   };
-}
-
-function resolveRecorderLineage(options, recorderAuthority, dispatchId) {
-  const supplied = options.lineage ?? options.runLineage;
-  const runAuthority = options.runAuthority ?? options.activeRun ?? options.run ?? null;
-  if (!supplied && !runAuthority) return null;
-  const authority = runAuthority ? {
-    ...runAuthority,
-    story_id: runAuthority.story_id ?? runAuthority.storyId,
-    run_id: runAuthority.run_id ?? runAuthority.runId,
-    worktree_root: runAuthority.worktree_root ?? runAuthority.root_realpath ?? runAuthority.execution_context?.root_realpath,
-    branch: runAuthority.branch ?? runAuthority.current_branch,
-    head_sha: runAuthority.head_sha ?? runAuthority.current_head_sha
-  } : null;
-  const lineage = supplied
-    ? assertRunLineageBinding(supplied, authority)
-    : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
-  assertRunLineageBinding(lineage, recorderAuthority);
-  return lineage;
 }
 
 function requiresInspectionForPass(result) {

@@ -16,9 +16,9 @@
 | 1 | 診断/UIUX/architecture/performanceスキャナ群 | `uiux-*` `flow-*` `visual-verifier` `architecture-*` `performance-*` `*-scanner` `html-report` `usage-report` `requirement-consistency` `presets` `recipe-preflight` `playbook-exporter` `journey-map` `design-*` ほか約30ファイル + cli.js該当コマンド |
 | 2 | 実行エンジン本体（execute/gate/adjudicate/outcome/checkpoint） | `guarded-run-session` `execution-state` `task-manager` `outcome-manager` `merge-manager` `adjudication` `decision-*` `gate-outcome-ledger` `responsibility-authority` `senior-gap-judgment` `check-packs` ほか約23ファイル |
 | 3 | delivery-efficiency予算全系 | `evidence-cost-budget` `evidence-depth-planner` `evidence-reuse` `delivery-efficiency-guardrail` `budget-override-authority` `pr-artifact-budget` + pr-manager.js内の`buildDeliveryEfficiencyContext`等 |
-| 4 | head束縛stale化・audit自動生成 | `content-binding` `run-context-capsule` `run-lineage` `session-efficiency-audit` `process-record-store` `canonical-audit` `canonical-persistence` `merge-public-projection` + pr-manager.js内`buildPrFreshnessGate` |
+| 4 | run-context-capsule系のstale化スナップショット（実測で縮小: audit本体は execution-state→merge-manager 経由でpr-managerと不可分と判明しSlice 6へ統合。process-record-storeは`store`コマンドの実体でKEEPに再分類） | `run-context-capsule` とその呼び出し（decision-records / verification-evidence / agent-review の lineage 死径路） |
 | 5 | review lifecycle会計・authorize/close儀式 | agent-review.jsから`startAgentReviewLifecycle`/`authorizeAgentReviewDispatch`/`closeAgentReviewLifecycle`等を削除、`review`コマンドをprepare/record/summaryへ縮小、`independent-review-orchestrator` `review-surface-violations` |
-| 6 | Gate DAG本体とcli/pr-managerの最終縮小 | pr-manager.jsから`evaluateGateReadiness` `buildGateOverride` `shipPullRequest` `autopilotPullRequest` 等を削除し、`preparePullRequest`（証跡要約）と`createPullRequest`のみへ |
+| 6 | Gate DAG本体とcli/pr-managerの最終縮小（旧Slice 4残の audit 連鎖を含む） | pr-manager.jsから`evaluateGateReadiness` `buildGateOverride` `buildPrFreshnessGate` `buildArtifactConsistencyGate` `shipPullRequest` `autopilotPullRequest` 等を削除し、`preparePullRequest`（証跡要約）と`createPullRequest`のみへ。同時に execution-state / merge-manager / outcome-manager / canonical-audit / canonical-persistence / merge-public-projection / session-efficiency-audit / usage-report / evidence-cost-budget / strict-head-binding 全系を削除（依存の根がpr-managerなので一括でしか剥がれない） |
 
 ## 残す最終形（v-next コマンド面）
 

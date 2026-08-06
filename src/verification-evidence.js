@@ -8,9 +8,7 @@ import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js'
 import { collectGitContext } from './git-fingerprint.js';
 import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
-import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
-import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -53,12 +51,6 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   });
   const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(root, { storyId });
   const gitContext = await collectGitContext(root, { userExcludePaths: generatedProjectionPaths });
-  const lineage = resolveRecorderLineage(options, {
-    story_id: storyId,
-    worktree_root: root,
-    branch: gitContext.current_branch,
-    head_sha: gitContext.head_sha
-  }, `verification-${options.kind}`);
   const { check: artifactCheck, observedValues: liftedArtifactValues } = await crossCheckArtifact(root, {
     artifact: options.artifact,
     status: options.status
@@ -128,7 +120,6 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       content_binding: contentBinding,
-      ...(lineage ? { lineage } : {}),
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
         [managedWorktreeWarning, observationWarning, ...callerKeyWarnings].filter(Boolean),
@@ -148,10 +139,6 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     };
     await writeJsonAtomic(evidencePath, nextEvidence);
     return nextEvidence;
-  });
-  await refreshActiveRunContextCapsule(root, {
-    storyId,
-    reason: 'verification_recorded'
   });
   return {
     evidence,
@@ -186,25 +173,6 @@ function resolveComputedRecording(options) {
     observationOverrides: Array.isArray(options.observationOverrides) ? options.observationOverrides : [],
     additionalWarnings: Array.isArray(options.additionalWarnings) ? options.additionalWarnings : []
   };
-}
-
-function resolveRecorderLineage(options, recorderAuthority, dispatchId) {
-  const supplied = options.lineage ?? options.runLineage;
-  const runAuthority = options.runAuthority ?? options.activeRun ?? options.run ?? null;
-  if (!supplied && !runAuthority) return null;
-  const authority = runAuthority ? {
-    ...runAuthority,
-    story_id: runAuthority.story_id ?? runAuthority.storyId,
-    run_id: runAuthority.run_id ?? runAuthority.runId,
-    worktree_root: runAuthority.worktree_root ?? runAuthority.root_realpath ?? runAuthority.execution_context?.root_realpath,
-    branch: runAuthority.branch ?? runAuthority.current_branch,
-    head_sha: runAuthority.head_sha ?? runAuthority.current_head_sha
-  } : null;
-  const lineage = supplied
-    ? assertRunLineageBinding(supplied, authority)
-    : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
-  assertRunLineageBinding(lineage, recorderAuthority);
-  return lineage;
 }
 
 export function assertCommandMatchesVerificationKind(kind, command, status, observation = null, artifactCheck = null, artifactObservedValues = {}) {
