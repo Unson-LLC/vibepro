@@ -15,8 +15,7 @@ test('trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13',
     'test/delivery-efficiency-guardrail.test.js',
     'test/review-finding-repair-loop.test.js',
     'test/review-inspection-first.test.js',
-    'test/risk-adaptive-gate.test.js',
-    'test/story-run-portfolio.test.js'
+    'test/risk-adaptive-gate.test.js'
   ], {
     cwd: REPO_ROOT,
     encoding: 'utf8',

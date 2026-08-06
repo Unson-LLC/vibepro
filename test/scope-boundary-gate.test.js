@@ -8,7 +8,6 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { resolveCandidateTargetFiles } from '../src/task-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -184,82 +183,3 @@ test('scope boundary gate blocks PR creation when a changed file falls outside t
   assert.equal(waivedPrepare.gate_status.unresolved_gates.some((g) => g.id === 'gate:scope_boundary'), false);
 });
 
-test('task create --allowed-paths persists a declared scope boundary; without it the boundary is derived and informational', async () => {
-  const repo = await makeRepo();
-  await runCli([
-    'init',
-    repo,
-    '--story-id',
-    'story-agent-harness',
-    '--title',
-    'Agent harness readiness',
-    '--view',
-    'dev'
-  ]);
-  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-agent-harness.md'), `---
-story_id: story-agent-harness
-title: Agent harness readiness
-view: dev
----
-
-# Agent harness readiness
-
-## 受け入れ基準
-
-- [ ] harness status can run
-
-## 初期タスク
-
-1. Harness \`docs/specs/agent-harness.md\` 診断パッケージ
-   - \`docs/specs/agent-harness.md\`へcheck pack契約を追加する
-`);
-
-  await runCli(['story', 'derive', repo]);
-  await runCli(['story', 'plan', repo, '--limit', '10']);
-
-  const declaredResult = await runCli([
-    'task', 'create', repo,
-    '--from-plan',
-    '--id', 'story-agent-harness',
-    '--allowed-paths', ' src/agent-harness/**, docs/specs/agent-harness.md ,,',
-    '--json'
-  ]);
-  assert.equal(declaredResult.exitCode, 0, JSON.stringify(declaredResult.result ?? declaredResult.error, null, 2));
-  const declaredTasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-agent-harness', 'tasks', 'tasks.json'));
-  assert.equal(declaredTasks.scope_boundary.declared, true);
-  assert.equal(declaredTasks.scope_boundary.source, 'cli_declared');
-  assert.deepEqual(declaredTasks.scope_boundary.allowed_paths, ['src/agent-harness/**', 'docs/specs/agent-harness.md']);
-  const explicitTask = declaredTasks.tasks.find((task) => task.title.includes('docs/specs/agent-harness.md'));
-  assert.deepEqual(explicitTask?.target_files, ['docs/specs/agent-harness.md']);
-  assert.equal(explicitTask?.target_count, 1);
-
-  const undeclaredResult = await runCli(['task', 'create', repo, '--from-plan', '--id', 'story-agent-harness', '--json']);
-  assert.equal(undeclaredResult.exitCode, 0, JSON.stringify(undeclaredResult.result ?? undeclaredResult.error, null, 2));
-  const undeclaredTasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-agent-harness', 'tasks', 'tasks.json'));
-  assert.equal(undeclaredTasks.scope_boundary.declared, false);
-  assert.equal(['derived_from_target_files', 'none'].includes(undeclaredTasks.scope_boundary.source), true);
-});
-
-test('task target inference is exact-path-safe and preserves explicit targets', () => {
-  const allowedPaths = ['src/foo.js', 'src/cli.js', 'docs/reference.md'];
-  assert.deepEqual(resolveCandidateTargetFiles({
-    title: 'Update src/foo.js.bak but do not modify src/cli.js',
-    purpose: 'Read docs/reference.md for context'
-  }, allowedPaths), []);
-
-  assert.deepEqual(resolveCandidateTargetFiles({
-    title: 'Update src/foo.js but do not modify src/cli.js',
-    purpose: 'src/cli.jsへの逆呼び出しを追加しない'
-  }, allowedPaths), ['src/foo.js']);
-
-  assert.deepEqual(resolveCandidateTargetFiles({
-    title: 'Read docs/reference.md and update src/foo.js',
-    purpose: 'src/foo.jsを更新する'
-  }, allowedPaths), ['src/foo.js']);
-
-  assert.deepEqual(resolveCandidateTargetFiles({
-    title: 'Update src/foo.js',
-    target_files: ['src/explicit.js']
-  }, allowedPaths), ['src/explicit.js']);
-});

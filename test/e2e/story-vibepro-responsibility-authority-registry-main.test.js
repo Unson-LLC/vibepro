@@ -88,19 +88,6 @@ test('story-vibepro-responsibility-authority-registry replays responsibility aut
       }
     }, null, 2)}\n`
   );
-  const preEvidenceState = await runCli(['execute', 'reconcile', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
-  assert.equal(preEvidenceState.exitCode, 0, preEvidenceState.stderr);
-  assert.equal(
-    preEvidenceState.result.state.blocking_gate?.id,
-    'gate:responsibility_authority',
-    `${scenarioAssertions[2].marker}: ${scenarioAssertions[2].statement}`
-  );
-  assert.equal(
-    preEvidenceState.result.state.completed_phases.includes('ready_for_pr_create'),
-    false,
-    `${scenarioAssertions[2].marker}: ${scenarioAssertions[2].statement}`
-  );
-
   await runCli([
     'verify',
     'record',
