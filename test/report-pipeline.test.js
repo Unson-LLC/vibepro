@@ -109,6 +109,10 @@ export function handleCancel(user, sub) {
       title: 'INV-001 を検証するテストが存在しない'
     }]
   });
+  // report fingerprint reads the persisted pr-prepare.json (it does not
+  // recompute pr prepare on the fly), so the fixture must run `pr prepare`
+  // before any `report write` / `report fingerprint` call.
+  await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
   return repo;
 }
 
