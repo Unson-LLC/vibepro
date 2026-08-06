@@ -15,13 +15,13 @@ review lifecycle 1件が予算に計上する agent 消費量を、`close_reason
 
 ## 実測: 何が壊れていたか
 
-`src/delivery-efficiency-guardrail.js:231-271` の `aggregateDeliveryMetrics` は `agent_consumption_ms` を
+`src/delivery-efficiency-guardrail.js:231-274` の `aggregateDeliveryMetrics` は、本Story着手前は `agent_consumption_ms` を
 
 ```js
-intervals.reduce((sum, item) => sum + item[1] - item[0], 0)   // :252
+intervals.reduce((sum, item) => sum + item[1] - item[0], 0)   // bound実装前のコード。現在は boundAgentConsumption/resolveConsumptionCharge（:371-391）に置き換わっている
 ```
 
-として計算する。review lifecycle の `closed_at - started_at` を上限なしに単純合算するだけであり、同じ関数内の `review_wait_ms` / `subagent_wall_clock_ms`（`:250-251`）が使う `unionDuration` のような区間処理を経ない。
+として計算していた。review lifecycle の `closed_at - started_at` を上限なしに単純合算するだけであり、同じ関数内の `review_wait_ms` / `subagent_wall_clock_ms`（`:251-252`）が使う `unionDuration` のような区間処理を経なかった。
 
 2026-08-05、story `story-vibepro-content-scoped-evidence-reuse-key` で `architecture_boundary` 4件・`gate_evidence` 6件、計10件の lifecycle が閉じた。全件 `timeout_ms=600000`。
 
@@ -43,7 +43,7 @@ intervals.reduce((sum, item) => sum + item[1] - item[0], 0)   // :252
 
 10件の合計は 11,073,531ms（184.6分）。同じ story の `.vibepro/config.json` override `amendment_reason` に記録された `measured=11,073,531ms` と一致し、単純合算モデルを実測で裏付ける。limit は 9,000,000ms（150分）だったため合計が上限を超え、`remaining=0` となって以後の dispatch がすべて拒否され、3件目の owner budget 承認が必要になった。3件のうち最後の1件は story の重さではなくインフラ障害由来である。
 
-`resolveLifecycleEffectiveStatus`（`src/agent-review.js:4065-4079`）は既に「`elapsed_ms > normalizeTimeoutMs(entry.timeout_ms)` なら `timed_out`」という締切をシステム内部に持っている。システムは「これ以上は生存とみなさない」境界を既に持っているのに、`agent_consumption_ms` の計算だけがその境界を無視して合算を続けている。この内部矛盾が本設計の出発点である。
+`resolveLifecycleEffectiveStatus`（`src/agent-review.js:4085-4099`）は既に「`elapsed_ms > normalizeTimeoutMs(entry.timeout_ms)` なら `timed_out`」という締切をシステム内部に持っている。システムは「これ以上は生存とみなさない」境界を既に持っているのに、`agent_consumption_ms` の計算だけがその境界を無視して合算を続けている。この内部矛盾が本設計の出発点である。
 
 ## 設計: deadline-bounded attribution
 
@@ -71,8 +71,8 @@ flowchart TD
 
 呼び出し側は2箇所のみで、どちらも `reviews[]` を構築する箇所に `close_reason` / `timeout_ms` を渡すだけでよい:
 
-- `src/agent-review.js`（`authorizeAgentReviewDispatch` 内、`:819-824`）: `lifecycleEntries.map((item) => ({ role: item.role, started_at: item.started_at, finished_at: item.closed_at }))` に `close_reason: item.close_reason, timeout_ms: item.timeout_ms` を追加する。
-- `src/pr-manager.js`（`buildDeliveryEfficiencyContext` 内、`:11741-11745`）: 同様に `reviews.push({ role, started_at, finished_at })` へ2フィールドを追加する。
+- `src/agent-review.js`（`authorizeAgentReviewDispatch` 内、`:819-830`）: `lifecycleEntries.map((item) => ({ role: item.role, started_at: item.started_at, finished_at: item.closed_at }))` に `close_reason: item.close_reason, timeout_ms: item.timeout_ms` を追加する。
+- `src/pr-manager.js`（`buildDeliveryEfficiencyContext` 内、`:11741-11749`）: 同様に `reviews.push({ role, started_at, finished_at })` へ2フィールドを追加する。
 
 ### なぜ aggregateDeliveryMetrics 1箇所に置くか
 
@@ -80,7 +80,7 @@ flowchart TD
 
 ### なぜ review_wait_ms / subagent_wall_clock_ms は変えないか
 
-この2つは `unionDuration(intervals)`（`:250-251`）で、並行 dispatch を二重計上しないための「実際に経過した wall-clock」を測る指標であり、「誰にいくら agent 予算を課金するか」という attribution の指標ではない。deadline で縮めるべきなのは後者だけである。前者を縮めると、「実際には2時間何も進んでいなかった」という運用上の事実そのものが見えなくなる。
+この2つは `unionDuration(intervals)`（`:251-252`）で、並行 dispatch を二重計上しないための「実際に経過した wall-clock」を測る指標であり、「誰にいくら agent 予算を課金するか」という attribution の指標ではない。deadline で縮めるべきなのは後者だけである。前者を縮めると、「実際には2時間何も進んでいなかった」という運用上の事実そのものが見えなくなる。
 
 ### なぜ deadline_excluded_* を可視化するか
 
@@ -112,7 +112,7 @@ flowchart TD
 
 `close_reason` は運用者・エージェントが `review close --close-reason` で明示的に設定する値であり、原理的には正当に40分かけて完了した review を `timeout` として close すれば、計上を `timeout_ms`（10分）まで圧縮できてしまう。これは防止ではなく軽減である。
 
-**主たる歯止め（検証済み）**: `review record` は、close 済みの lifecycle の `close_reason` が `'completed'` 以外であれば結果の添付を拒否する（`src/agent-review.js:505-508`: `entry.closed_at && entry.close_reason !== 'completed'` の場合に `review record ${stage}:${role} cannot attach a result to lifecycle closed as ${entry.close_reason}` を throw する）。この経路は既存の passing test `review record persists no result after timeout, replacement, or manual shutdown`（`test/review-inspection-first.test.js:836`）で裏付けられている。したがって、実際には review が完了して結果を残せる状態にあるのに、計上を減らす目的で `close_reason=timeout` と偽って close すると、その review 結果は current artifact にも history にも一切残らない。過小計上を狙う偽装は review dispatch を最初からやり直すコストを発生させ、節約できたはずの計上分より高くつく。これは「証跡整合性を土台にしたシステムでは虚偽の evidence 主張になる」という定性的な牽制より強い、コードが強制する具体的な牽制である。
+**主たる歯止め（検証済み）**: `review record` は、close 済みの lifecycle の `close_reason` が `'completed'` 以外であれば結果の添付を拒否する（`src/agent-review.js:505-508`: `entry.closed_at && entry.close_reason !== 'completed'` の場合に `` `review record ${stage}:${role} cannot attach a result to lifecycle closed as ${entry.close_reason ?? 'unknown'}` `` を throw する）。この経路は既存の passing test `review record persists no result after timeout, replacement, or manual shutdown`（`test/review-inspection-first.test.js:836`）で裏付けられている。したがって、実際には review が完了して結果を残せる状態にあるのに、計上を減らす目的で `close_reason=timeout` と偽って close すると、その review 結果は current artifact にも history にも一切残らない。過小計上を狙う偽装は review dispatch を最初からやり直すコストを発生させ、節約できたはずの計上分より高くつく。これは「証跡整合性を土台にしたシステムでは虚偽の evidence 主張になる」という定性的な牽制より強い、コードが強制する具体的な牽制である。
 
 **副次的な歯止め（可視性。範囲は機械可読サーフェスに限る——過大な主張をしない）**: `deadline_excluded_ms` / `deadline_excluded_count` は `pr prepare` の機械可読サーフェス — `pr-prepare.json` の `gate_dag.summary.efficiency_debt.metrics`、`--summary-json` / `--view blocking-gates` / `--view gate-evidence` の各投影、および各 lifecycle の `dispatch_decision.decision_evidence.budget` — には必ず現れる。ただし人間向け HTML レポート（`gate-dag.html` / `pr-prepare.html` を生成する `src/html-report.js` の `renderGateDagHtml`・`renderAgentReviewPanel`）にはこれらのフィールドへの参照が一切なく（`efficiency|agent_consumption|deadline_excluded` を `src/html-report.js` に grep すると0件）、`src/pr-manager.js` の `risks` / `review_points` にも除外量に基づく callout がない。JSON/CLI サーフェスを直接見ない human reviewer にとって、大きな除外は「目立つ形で人間の目に入る」わけではなく、機械可読サーフェスに正しく記録されているに留まる（HTML への反映は「後続に残すもの」参照）。
 
