@@ -15,4 +15,4 @@ VibeProはローカル証跡を保存しますが、canonical audit bundleを生
 
 ## 0.2.0-beta.3へのupgrade
 
-これはbeta段階のbreaking cleanupです。廃止commandを呼ぶautomationは `vibepro help` にあるcommandへ移行してください。従来の広いworkflowを一時的に残す場合は `vibepro@0.2.0-beta.2` にpinします。
+これはbeta段階のbreaking cleanupです。廃止commandを呼ぶautomationは `vibepro help` にあるcommandへ移行してください。従来の広いworkflowを一時的に残す場合は `vibepro@0.2.0-beta.3` にpinします。

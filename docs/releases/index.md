@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-07 | [`0.2.0-beta.3`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.3) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | Post-merge continuous release |
 | 2026-07-16 | [`0.2.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.0) | npm `latest` / `beta` | Current published beta after the release workflow completes |
@@ -338,3 +339,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:435:start -->
 - [PR #435](https://github.com/Unson-LLC/vibepro/pull/435) — [2026-08](/releases/2026-08): feat: v-nextフォローアップ — report fingerprint再設計とstory_source/AC対応マップのpr prepare再統合
 <!-- vibepro-release-index-pr:435:end -->
+
+<!-- vibepro-release-index-pr:437:start -->
+- [PR #437](https://github.com/Unson-LLC/vibepro/pull/437) — [2026-08](/releases/2026-08): release: publish minimal core beta.3
+<!-- vibepro-release-index-pr:437:end -->
