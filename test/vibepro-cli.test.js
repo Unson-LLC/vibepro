@@ -1133,7 +1133,14 @@ test('init and config language manage human output language', async () => {
   assert.equal(initResult.exitCode, 0);
   assert.match(initOutput, /VibePro workspace initialized/);
   assert.match(initOutput, /Human output language: en/);
-  assert.match(initOutput, /coding agent/);
+  // issue #436 item 2: the init summary used to point at removed Gate DAG
+  // surfaces ("bounded LLM/coding agent view", "--summary-json", "gate id/
+  // path drill-down"); it now names commands that actually exist in v-next.
+  assert.match(initOutput, /vibepro story diagnose/);
+  assert.match(initOutput, /vibepro verify record/);
+  assert.match(initOutput, /vibepro review prepare/);
+  assert.doesNotMatch(initOutput, /--summary-json/);
+  assert.doesNotMatch(initOutput, /drill-down/);
   let config = await readJson(path.join(repo, '.vibepro', 'config.json'));
   assert.equal(config.output.language, 'en');
 
