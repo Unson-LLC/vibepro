@@ -5,7 +5,7 @@ import path from 'node:path';
 import { assertArtifactWritePath, resolveArtifactRoute } from './artifact-routing.js';
 import { getWorkspaceDir } from './workspace.js';
 
-const SCHEMA_VERSION = '0.1.0';
+const SCHEMA_VERSION = '0.2.0';
 const MODEL = 'vibepro-senior-engineering-judgment-dag';
 export const STANDARD_JUDGMENT_AXES = Object.freeze([
   'public_contract',
@@ -28,7 +28,19 @@ const ALLOWED = Object.freeze({
   freshness: new Set(['current', 'stale', 'unknown']),
   evidenceRelation: new Set(['supports', 'refutes', 'non_discriminating']),
   constraintKind: new Set(['invariant', 'preference']),
-  residualRisk: new Set(['low', 'medium', 'high', 'unknown'])
+  residualRisk: new Set(['low', 'medium', 'high', 'unknown']),
+  historyBoundaryKind: new Set(['initial', 'verified_external_outcome', 'simplification_baseline']),
+  batchChangeKind: new Set(['addition', 'simplification', 'validation', 'external_value']),
+  structuralEffect: new Set(['increase', 'neutral', 'decrease', 'unknown']),
+  externalOutcome: new Set(['improved', 'unchanged', 'regressed', 'unknown']),
+  constraintStatus: new Set(['verified', 'hypothesized', 'unknown']),
+  optionAction: new Set(['build', 'fix', 'delete', 'consolidate', 'redesign', 'retire', 'measure', 'experiment'])
+});
+
+const MODE_ALLOWED_OPTION_ACTIONS = Object.freeze({
+  VALUE: Object.freeze(['build', 'fix', 'delete', 'consolidate', 'redesign', 'retire']),
+  SIMPLIFY: Object.freeze(['delete', 'consolidate', 'redesign', 'retire']),
+  VALIDATE: Object.freeze(['measure', 'experiment'])
 });
 
 export function evaluateSeniorJudgment(input) {
@@ -36,6 +48,9 @@ export function evaluateSeniorJudgment(input) {
   const analysisDepth = deriveAnalysisDepth(normalized);
   const frameStatus = normalized.problem_frame.status;
   const frameValid = frameStatus === 'valid';
+  const modeDecision = frameValid ? deriveDevelopmentMode(normalized.development_cycle) : null;
+  const developmentMode = modeDecision?.mode ?? null;
+  const allowedOptionActions = developmentMode ? [...MODE_ALLOWED_OPTION_ACTIONS[developmentMode]] : [];
   const safeToDefer = isSafeToDeferProfile(normalized.decision_profile);
   const activeAxes = frameValid
     ? normalized.axes.filter((axis) => axis.activation === 'active').map((axis) => axis.id)
@@ -59,25 +74,34 @@ export function evaluateSeniorJudgment(input) {
   }
 
   const constraintsById = new Map(normalized.constraints.map((constraint) => [constraint.id, constraint]));
-  const { viableOptions, prunedOptions } = pruneOptions(normalized.options, constraintsById);
+  const { viableOptions, prunedOptions } = pruneOptions(
+    normalized.options,
+    constraintsById,
+    developmentMode
+  );
   const reachableOutcomes = hypothesisOutcomes.filter((outcome) => outcome.reachable);
   const recommendation = deriveRecommendation({
     frameStatus,
     outcomes: reachableOutcomes,
-    viableOptions
+    viableOptions,
+    prunedOptions,
+    optionCount: normalized.options.length
   });
   const unknowns = buildUnknowns(reachableOutcomes);
   const nextActions = buildNextActions({
     frameStatus,
     outcomes: reachableOutcomes,
     viableOptions,
-    recommendation
+    recommendation,
+    developmentMode
   });
   const graph = buildJudgmentGraph(normalized, {
     analysisDepth,
     activeAxes,
     hypothesisOutcomes,
-    recommendation
+    recommendation,
+    developmentMode,
+    developmentModeReasons: modeDecision?.reasons ?? []
   });
   const topologicalOrder = validateJudgmentGraph(graph);
 
@@ -87,6 +111,9 @@ export function evaluateSeniorJudgment(input) {
     story_id: normalized.story_id,
     run_id: normalized.run_id,
     parent_run_id: normalized.parent_run_id,
+    development_mode: developmentMode,
+    development_mode_reasons: modeDecision?.reasons ?? [],
+    allowed_option_actions: allowedOptionActions,
     analysis_depth: analysisDepth,
     nodes: graph.nodes,
     edges: graph.edges,
@@ -102,7 +129,9 @@ export function evaluateSeniorJudgment(input) {
       frameStatus,
       outcomes: reachableOutcomes,
       viableOptions,
-      recommendation
+      recommendation,
+      developmentMode,
+      developmentModeReasons: modeDecision?.reasons ?? []
     }),
     unknowns,
     next_actions: nextActions,
@@ -164,6 +193,7 @@ export async function evaluateSeniorJudgmentRun(repoRoot, options = {}) {
       observations: input.observations,
       contradictions: input.contradictions,
       problem_frame: input.problem_frame,
+      development_cycle: input.development_cycle,
       decision_profile: input.decision_profile,
       axes: input.axes,
       constraints: input.constraints,
@@ -186,6 +216,7 @@ export function renderSeniorJudgmentSummary(result) {
   return [
     `Senior judgment run: ${result.run_id}`,
     `Story: ${result.story_id}`,
+    `Development mode: ${result.development_mode ?? 'not_selected'}`,
     `Analysis depth: ${result.analysis_depth}`,
     `Advisory recommendation: ${result.recommendation}`,
     `Active axes: ${result.active_axes.join(', ') || 'none'}`,
@@ -224,7 +255,7 @@ export function renderSeniorJudgmentMarkdown(result) {
     })
     : ['- No hypothesis branch was reachable.'];
   const viable = result.viable_options.length > 0
-    ? result.viable_options.map((option) => `- \`${option.id}\`: ${option.summary} (residual risk: ${option.residual_risk})`)
+    ? result.viable_options.map((option) => `- \`${option.id}\`: ${option.summary} (action: ${option.action}, residual risk: ${option.residual_risk})`)
     : ['- None'];
   const pruned = result.pruned_options.length > 0
     ? result.pruned_options.map((option) => `- \`${option.id}\`: ${option.reason} (${option.pruned_by.join(', ')})`)
@@ -238,6 +269,10 @@ export function renderSeniorJudgmentMarkdown(result) {
     ? result.next_actions.map((action) => `- ${action.type}${action.hypothesis_id ? ` for \`${action.hypothesis_id}\`` : ''}`)
     : ['- None'];
   const delta = renderDecisionDelta(result.decision_delta);
+  const modeReasons = result.development_mode_reasons.length > 0
+    ? result.development_mode_reasons.map((reason) => `- ${reason}`)
+    : ['- Development mode was not selected because the problem frame did not reach the mode route.'];
+  const developmentCycle = context.development_cycle;
 
   return [
     '# Senior Engineering Judgment',
@@ -259,6 +294,16 @@ export function renderSeniorJudgmentMarkdown(result) {
     `- Status: **${context.problem_frame.status}**`,
     `- Statement: ${context.problem_frame.statement}`,
     `- Reason: ${context.problem_frame.reason}`,
+    '',
+    '## Development mode',
+    '',
+    `- Development mode: **${result.development_mode ?? 'not_selected'}**`,
+    `- History boundary: ${developmentCycle.history_boundary.kind} (\`${developmentCycle.history_boundary.source_ref}\`)`,
+    `- Adopted batches since boundary: ${developmentCycle.adopted_batches.length}`,
+    `- Proposed batch: \`${developmentCycle.proposed_batch.id}\` (${developmentCycle.proposed_batch.change_kind})`,
+    `- Allowed option actions: ${result.allowed_option_actions.map((action) => `\`${action}\``).join(', ') || 'none'}`,
+    '',
+    ...modeReasons,
     '',
     '## Reachability',
     '',
@@ -316,6 +361,7 @@ export function validateSeniorJudgmentInput(input) {
   assertEnum(input.problem_frame.status, ALLOWED.frameStatus, 'problem_frame.status');
   requireText(input.problem_frame.statement, 'problem_frame.statement');
   requireText(input.problem_frame.reason, 'problem_frame.reason');
+  assertPlainObject(input.development_cycle, 'development_cycle');
   assertPlainObject(input.decision_profile, 'decision_profile');
   assertEnum(input.decision_profile.materiality, ALLOWED.materiality, 'decision_profile.materiality');
   assertEnum(input.decision_profile.reversibility, ALLOWED.reversibility, 'decision_profile.reversibility');
@@ -325,6 +371,7 @@ export function validateSeniorJudgmentInput(input) {
   assertArray(input.options, 'options');
 
   const allIds = new Set();
+  validateDevelopmentCycle(input.development_cycle, input.story_id, allIds);
   const observationIds = new Set();
   for (const observation of input.observations) {
     assertPlainObject(observation, 'observation');
@@ -408,6 +455,7 @@ export function validateSeniorJudgmentInput(input) {
     assertPlainObject(option, 'option');
     registerId(option.id, 'option.id', allIds);
     requireText(option.summary, `option ${option.id}.summary`);
+    assertEnum(option.action, ALLOWED.optionAction, `option ${option.id}.action`);
     assertArray(option.addresses, `option ${option.id}.addresses`);
     assertArray(option.violates, `option ${option.id}.violates`);
     assertEnum(option.residual_risk, ALLOWED.residualRisk, `option ${option.id}.residual_risk`);
@@ -429,6 +477,58 @@ export function validateSeniorJudgmentInput(input) {
     ...input,
     parent_run_id: input.parent_run_id ?? null
   };
+}
+
+function validateDevelopmentCycle(cycle, storyId, allIds) {
+  assertPlainObject(cycle.history_boundary, 'development_cycle.history_boundary');
+  assertEnum(
+    cycle.history_boundary.kind,
+    ALLOWED.historyBoundaryKind,
+    'development_cycle.history_boundary.kind'
+  );
+  requireText(cycle.history_boundary.source_ref, 'development_cycle.history_boundary.source_ref');
+  assertArray(cycle.adopted_batches, 'development_cycle.adopted_batches');
+
+  for (const batch of cycle.adopted_batches) {
+    assertPlainObject(batch, 'development_cycle adopted batch');
+    registerId(batch.id, 'development_cycle.adopted_batches[].id', allIds);
+    assertUniqueTextArray(batch.story_ids, `adopted batch ${batch.id}.story_ids`);
+    assertEnum(batch.change_kind, ALLOWED.batchChangeKind, `adopted batch ${batch.id}.change_kind`);
+    assertEnum(batch.structural_effect, ALLOWED.structuralEffect, `adopted batch ${batch.id}.structural_effect`);
+    assertEnum(batch.external_outcome, ALLOWED.externalOutcome, `adopted batch ${batch.id}.external_outcome`);
+    assertNonEmptyTextArray(batch.source_refs, `adopted batch ${batch.id}.source_refs`);
+    if (batch.external_outcome === 'improved') {
+      throw new Error(
+        `history boundary must move past adopted batch ${batch.id} because external_outcome is improved`
+      );
+    }
+  }
+
+  assertPlainObject(cycle.current_constraint, 'development_cycle.current_constraint');
+  assertEnum(
+    cycle.current_constraint.status,
+    ALLOWED.constraintStatus,
+    'development_cycle.current_constraint.status'
+  );
+  requireText(cycle.current_constraint.statement, 'development_cycle.current_constraint.statement');
+  assertNonEmptyTextArray(
+    cycle.current_constraint.source_refs,
+    'development_cycle.current_constraint.source_refs'
+  );
+
+  const proposed = cycle.proposed_batch;
+  assertPlainObject(proposed, 'development_cycle.proposed_batch');
+  registerId(proposed.id, 'development_cycle.proposed_batch.id', allIds);
+  assertUniqueTextArray(proposed.story_ids, 'development_cycle.proposed_batch.story_ids');
+  if (!proposed.story_ids.includes(storyId)) {
+    throw new Error(`development_cycle.proposed_batch.story_ids must include story_id ${storyId}`);
+  }
+  assertEnum(proposed.change_kind, ALLOWED.batchChangeKind, 'development_cycle.proposed_batch.change_kind');
+  assertBoolean(
+    proposed.directly_addresses_constraint,
+    'development_cycle.proposed_batch.directly_addresses_constraint'
+  );
+  assertNonEmptyTextArray(proposed.source_refs, 'development_cycle.proposed_batch.source_refs');
 }
 
 export function validateJudgmentGraph(graph) {
@@ -568,10 +668,78 @@ function evaluateHypothesis(axis, hypothesis, context) {
   };
 }
 
-function pruneOptions(options, constraintsById) {
+function deriveDevelopmentMode(cycle) {
+  const proposed = cycle.proposed_batch;
+  if (proposed.change_kind === 'simplification') {
+    return {
+      mode: 'SIMPLIFY',
+      reasons: [`Proposed batch ${proposed.id} is explicitly a simplification batch.`]
+    };
+  }
+
+  const ineffectiveGrowth = cycle.adopted_batches.filter((batch) => (
+    batch.structural_effect === 'increase'
+    && ['unchanged', 'regressed'].includes(batch.external_outcome)
+  ));
+  if (ineffectiveGrowth.length > 0) {
+    return {
+      mode: 'SIMPLIFY',
+      reasons: [
+        `Structural growth failed to improve the external outcome in adopted batch(es): ${ineffectiveGrowth.map((batch) => batch.id).join(', ')}.`
+      ]
+    };
+  }
+
+  if (proposed.change_kind === 'validation') {
+    return {
+      mode: 'VALIDATE',
+      reasons: [`Proposed batch ${proposed.id} is explicitly a validation batch.`]
+    };
+  }
+  if (cycle.current_constraint.status !== 'verified') {
+    return {
+      mode: 'VALIDATE',
+      reasons: [`The current constraint is ${cycle.current_constraint.status}, not verified.`]
+    };
+  }
+
+  const unmeasuredGrowth = cycle.adopted_batches.filter((batch) => (
+    batch.structural_effect === 'increase' && batch.external_outcome === 'unknown'
+  ));
+  if (unmeasuredGrowth.length > 0) {
+    return {
+      mode: 'VALIDATE',
+      reasons: [
+        `External outcome is unknown after structural growth in adopted batch(es): ${unmeasuredGrowth.map((batch) => batch.id).join(', ')}.`
+      ]
+    };
+  }
+
+  if (proposed.directly_addresses_constraint) {
+    return {
+      mode: 'VALUE',
+      reasons: [`Proposed batch ${proposed.id} directly addresses the verified current constraint.`]
+    };
+  }
+  return {
+    mode: 'VALIDATE',
+    reasons: [`Proposed batch ${proposed.id} is not yet tied directly to the verified current constraint.`]
+  };
+}
+
+function pruneOptions(options, constraintsById, developmentMode) {
   const viableOptions = [];
   const prunedOptions = [];
+  const allowedActions = new Set(MODE_ALLOWED_OPTION_ACTIONS[developmentMode] ?? []);
   for (const option of options) {
+    if (developmentMode && !allowedActions.has(option.action)) {
+      prunedOptions.push({
+        ...option,
+        pruned_by: [`development_mode:${developmentMode}`],
+        reason: 'development_mode_mismatch'
+      });
+      continue;
+    }
     const violatedInvariants = option.violates.filter(
       (constraintId) => constraintsById.get(constraintId)?.kind === 'invariant'
     );
@@ -594,9 +762,14 @@ function pruneOptions(options, constraintsById) {
   return { viableOptions, prunedOptions };
 }
 
-function deriveRecommendation({ frameStatus, outcomes, viableOptions }) {
+function deriveRecommendation({ frameStatus, outcomes, viableOptions, prunedOptions, optionCount }) {
   if (frameStatus === 'invalid') return 'revise_problem';
   if (frameStatus === 'uncertain') return 'human_decision_required';
+  if (
+    optionCount > 0
+    && viableOptions.length === 0
+    && prunedOptions.some((option) => option.reason === 'development_mode_mismatch')
+  ) return 'revise_options';
   if (outcomes.some((outcome) => outcome.outcome === 'inconclusive')) return 'needs_investigation';
 
   const confirmed = outcomes.filter((outcome) => outcome.outcome === 'risk_confirmed');
@@ -631,7 +804,7 @@ function buildUnknowns(outcomes) {
     }));
 }
 
-function buildNextActions({ frameStatus, outcomes, viableOptions, recommendation }) {
+function buildNextActions({ frameStatus, outcomes, viableOptions, recommendation, developmentMode }) {
   if (frameStatus === 'invalid') {
     return [{ type: 'reframe_problem', reason: 'The current problem frame was judged invalid.' }];
   }
@@ -640,6 +813,24 @@ function buildNextActions({ frameStatus, outcomes, viableOptions, recommendation
   }
 
   const actions = [];
+  if (developmentMode === 'SIMPLIFY') {
+    actions.push({
+      type: 'prioritize_simplification_batch',
+      allowed_actions: [...MODE_ALLOWED_OPTION_ACTIONS.SIMPLIFY]
+    });
+  } else if (developmentMode === 'VALIDATE') {
+    actions.push({
+      type: 'validate_external_outcome_before_next_delivery_batch',
+      allowed_actions: [...MODE_ALLOWED_OPTION_ACTIONS.VALIDATE]
+    });
+  }
+  if (recommendation === 'revise_options') {
+    actions.push({
+      type: 'design_mode_compatible_option',
+      development_mode: developmentMode,
+      allowed_actions: [...(MODE_ALLOWED_OPTION_ACTIONS[developmentMode] ?? [])]
+    });
+  }
   for (const outcome of outcomes) {
     if (outcome.outcome === 'inconclusive') {
       actions.push({
@@ -675,12 +866,21 @@ function buildNextActions({ frameStatus, outcomes, viableOptions, recommendation
   return actions;
 }
 
-function buildRecommendationReasons({ frameStatus, outcomes, viableOptions, recommendation }) {
+function buildRecommendationReasons({
+  frameStatus,
+  outcomes,
+  viableOptions,
+  recommendation,
+  developmentMode,
+  developmentModeReasons
+}) {
   if (frameStatus === 'invalid') return ['The problem frame was judged invalid before risk-axis evaluation.'];
   if (frameStatus === 'uncertain') return ['The problem frame remains uncertain and requires explicit human judgment.'];
   const counts = Object.create(null);
   for (const outcome of outcomes) counts[outcome.outcome] = (counts[outcome.outcome] ?? 0) + 1;
   return [
+    `Development mode: ${developmentMode}.`,
+    ...developmentModeReasons,
     `Reachable hypotheses: ${outcomes.length}.`,
     `Outcomes: ${Object.entries(counts).map(([state, count]) => `${state}=${count}`).join(', ') || 'none'}.`,
     `Viable mitigation options: ${viableOptions.length}.`,
@@ -695,28 +895,56 @@ function buildJudgmentGraph(input, context) {
   const addEdge = (from, to, condition, traversed) => edges.push({ from, to, condition, traversed });
   const frameStatus = input.problem_frame.status;
   const frameValid = frameStatus === 'valid';
+  const developmentMode = context.developmentMode;
+  const adoptedStoryCount = input.development_cycle.adopted_batches
+    .reduce((count, batch) => count + batch.story_ids.length, 0);
 
   addNode('input_integrity', 'common_spine', 'satisfied');
   addNode('goal_contract', 'common_spine', 'satisfied');
+  addNode('portfolio_history', 'common_spine', 'satisfied', {
+    boundary_kind: input.development_cycle.history_boundary.kind,
+    boundary_source_ref: input.development_cycle.history_boundary.source_ref,
+    adopted_batch_count: input.development_cycle.adopted_batches.length,
+    adopted_story_count: adoptedStoryCount
+  });
   addNode('contradiction_scan', 'common_spine', 'satisfied', { contradiction_count: input.contradictions.length });
   addNode('problem_frame', 'common_spine', frameStatus === 'valid'
     ? 'satisfied'
     : frameStatus === 'invalid' ? 'reframe_required' : 'human_decision_required');
+  addNode('development_mode_route', 'mode_route', frameValid ? 'satisfied' : 'not_reached', {
+    development_mode: developmentMode,
+    reasons: context.developmentModeReasons
+  });
+  for (const mode of ['VALUE', 'SIMPLIFY', 'VALIDATE']) {
+    addNode(`mode:${mode.toLowerCase()}`, 'development_mode', frameValid && developmentMode === mode
+      ? 'active'
+      : 'not_reached');
+  }
   addNode('decision_profile', 'common_spine', frameValid ? 'satisfied' : 'not_reached');
   addNode('depth_route', 'common_spine', frameValid ? 'satisfied' : 'not_reached', { depth: context.analysisDepth });
   addNode('active_branch_fan_in', 'fan_in', frameValid ? deriveFanInState(context.hypothesisOutcomes) : 'not_reached');
-  addNode('option_pruning', 'constraint_pruning', frameValid ? 'satisfied' : 'not_reached');
+  addNode('option_pruning', 'constraint_pruning', frameValid ? 'satisfied' : 'not_reached', {
+    development_mode: developmentMode,
+    allowed_actions: developmentMode ? [...MODE_ALLOWED_OPTION_ACTIONS[developmentMode]] : []
+  });
   addNode('recommendation', 'terminal', recommendationState(context.recommendation), {
     recommendation: context.recommendation,
     advisory: true
   });
 
   addEdge('input_integrity', 'goal_contract', 'valid_input', true);
-  addEdge('goal_contract', 'contradiction_scan', 'goal_fixed', true);
+  addEdge('goal_contract', 'portfolio_history', 'goal_fixed', true);
+  addEdge('portfolio_history', 'contradiction_scan', 'causal_history_boundary_fixed', true);
   addEdge('contradiction_scan', 'problem_frame', 'observations_recorded', true);
-  addEdge('problem_frame', 'decision_profile', 'problem_frame == valid', frameValid);
+  addEdge('problem_frame', 'development_mode_route', 'problem_frame == valid', frameValid);
   addEdge('problem_frame', 'recommendation', 'problem_frame != valid', !frameValid);
-  addEdge('decision_profile', 'depth_route', 'problem_frame == valid', frameValid);
+  for (const mode of ['VALUE', 'SIMPLIFY', 'VALIDATE']) {
+    const modeNodeId = `mode:${mode.toLowerCase()}`;
+    const selected = frameValid && developmentMode === mode;
+    addEdge('development_mode_route', modeNodeId, `development_mode == ${mode}`, selected);
+    addEdge(modeNodeId, 'decision_profile', 'selected_mode_enters_story_judgment', selected);
+  }
+  addEdge('decision_profile', 'depth_route', 'development_mode_selected', frameValid);
 
   const outcomeByHypothesis = new Map(context.hypothesisOutcomes.map((outcome) => [outcome.hypothesis_id, outcome]));
   for (const axis of input.axes) {
@@ -848,6 +1076,10 @@ function buildDecisionDelta(parent, evaluation, input) {
       from: parent.decision_context?.problem_frame?.status ?? 'absent',
       to: input.problem_frame.status
     },
+    development_mode: {
+      from: parent.development_mode ?? 'not_selected',
+      to: evaluation.development_mode ?? 'not_selected'
+    },
     analysis_depth: { from: parent.analysis_depth, to: evaluation.analysis_depth },
     recommendation: { from: parent.recommendation, to: evaluation.recommendation },
     activated_axes: evaluation.active_axes.filter((axis) => !(parent.active_axes ?? []).includes(axis)),
@@ -866,6 +1098,7 @@ function renderDecisionDelta(delta) {
   if (!delta) return ['- Initial judgment run.'];
   const lines = [
     `- Problem frame: ${delta.problem_frame.from} -> ${delta.problem_frame.to}`,
+    `- Development mode: ${delta.development_mode.from} -> ${delta.development_mode.to}`,
     `- Analysis depth: ${delta.analysis_depth.from} -> ${delta.analysis_depth.to}`,
     `- Recommendation: ${delta.recommendation.from} -> ${delta.recommendation.to}`,
     `- Activated axes: ${delta.activated_axes.map((axis) => `\`${axis}\``).join(', ') || 'none'}`,
@@ -924,6 +1157,15 @@ function assertNonEmptyTextArray(value, label) {
   assertArray(value, label);
   if (value.length === 0) throw new Error(`${label} must not be empty`);
   value.forEach((item, index) => requireText(item, `${label}[${index}]`));
+}
+
+function assertUniqueTextArray(value, label) {
+  assertNonEmptyTextArray(value, label);
+  if (new Set(value).size !== value.length) throw new Error(`${label} must not contain duplicates`);
+}
+
+function assertBoolean(value, label) {
+  if (typeof value !== 'boolean') throw new Error(`${label} must be a boolean`);
 }
 
 function assertArray(value, label) {

@@ -11,7 +11,7 @@ import {
 function createInput(overrides = {}) {
   const { axes = [], ...rest } = overrides;
   return {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     story_id: 'story-senior-judgment',
     run_id: 'judgment-001',
     parent_run_id: null,
@@ -31,6 +31,25 @@ function createInput(overrides = {}) {
       statement: 'The target path violates the expected contract',
       reason: 'A current failing test reproduces the contract mismatch'
     },
+    development_cycle: {
+      history_boundary: {
+        kind: 'initial',
+        source_ref: 'docs/stories/story-senior-judgment.md'
+      },
+      adopted_batches: [],
+      current_constraint: {
+        status: 'verified',
+        statement: 'The current target path blocks the declared external outcome',
+        source_refs: ['test/failure.test.js']
+      },
+      proposed_batch: {
+        id: 'batch-current',
+        story_ids: ['story-senior-judgment'],
+        change_kind: 'external_value',
+        directly_addresses_constraint: true,
+        source_refs: ['docs/stories/story-senior-judgment.md']
+      }
+    },
     decision_profile: {
       materiality: 'medium',
       reversibility: 'costly',
@@ -42,6 +61,157 @@ function createInput(overrides = {}) {
     ...rest
   };
 }
+
+test('SEJ-000 portfolio history and one selected development mode precede story-local axes', () => {
+  const result = evaluateSeniorJudgment(createInput());
+  const order = new Map(result.topological_order.map((id, index) => [id, index]));
+
+  assert.equal(result.development_mode, 'VALUE');
+  assert.ok(order.get('goal_contract') < order.get('portfolio_history'));
+  assert.ok(order.get('portfolio_history') < order.get('contradiction_scan'));
+  assert.ok(order.get('problem_frame') < order.get('development_mode_route'));
+  assert.ok(order.get('development_mode_route') < order.get('mode:value'));
+  assert.ok(order.get('mode:value') < order.get('decision_profile'));
+  assert.ok(order.get('decision_profile') < order.get('axis:data_state'));
+  assert.equal(result.nodes.find((node) => node.id === 'mode:value').state, 'active');
+  assert.equal(result.nodes.find((node) => node.id === 'mode:simplify').state, 'not_reached');
+  assert.equal(result.nodes.find((node) => node.id === 'mode:validate').state, 'not_reached');
+});
+
+test('SEJ-MODE-1 verified current constraint directly addressed by the batch selects VALUE', () => {
+  const result = evaluateSeniorJudgment(createInput({
+    options: [{
+      id: 'fix-current-constraint',
+      summary: 'Fix the current user-facing failure',
+      action: 'fix',
+      addresses: [],
+      violates: [],
+      residual_risk: 'low'
+    }]
+  }));
+
+  assert.equal(result.development_mode, 'VALUE');
+  assert.deepEqual(result.allowed_option_actions, ['build', 'fix', 'delete', 'consolidate', 'redesign', 'retire']);
+  assert.deepEqual(result.viable_options.map((option) => option.id), ['fix-current-constraint']);
+});
+
+test('SEJ-MODE-2/5 ineffective structural addition selects SIMPLIFY and prunes additive options', () => {
+  const input = createInput({
+    development_cycle: {
+      history_boundary: {
+        kind: 'verified_external_outcome',
+        source_ref: 'analytics/release-40'
+      },
+      adopted_batches: [{
+        id: 'batch-41',
+        story_ids: ['story-gate-addition', 'story-evidence-addition'],
+        change_kind: 'addition',
+        structural_effect: 'increase',
+        external_outcome: 'unchanged',
+        source_refs: ['git/release-41', 'analytics/release-41']
+      }],
+      current_constraint: {
+        status: 'verified',
+        statement: 'External completion did not improve',
+        source_refs: ['analytics/release-41']
+      },
+      proposed_batch: {
+        id: 'batch-42',
+        story_ids: ['story-senior-judgment', 'story-next-control'],
+        change_kind: 'addition',
+        directly_addresses_constraint: true,
+        source_refs: ['docs/stories/story-next-control.md']
+      }
+    },
+    options: [
+      {
+        id: 'add-another-gate',
+        summary: 'Add another control surface',
+        action: 'build',
+        addresses: [],
+        violates: [],
+        residual_risk: 'medium'
+      },
+      {
+        id: 'consolidate-controls',
+        summary: 'Consolidate the existing control surfaces',
+        action: 'consolidate',
+        addresses: [],
+        violates: [],
+        residual_risk: 'low'
+      }
+    ]
+  });
+  const result = evaluateSeniorJudgment(input);
+
+  assert.equal(result.development_mode, 'SIMPLIFY');
+  assert.deepEqual(result.viable_options.map((option) => option.id), ['consolidate-controls']);
+  assert.equal(result.pruned_options.find((option) => option.id === 'add-another-gate').reason, 'development_mode_mismatch');
+
+  const incompatibleOnly = evaluateSeniorJudgment({
+    ...input,
+    run_id: 'judgment-002',
+    options: [input.options[0]]
+  });
+  assert.equal(incompatibleOnly.recommendation, 'revise_options');
+  assert.ok(incompatibleOnly.next_actions.some((action) => action.type === 'design_mode_compatible_option'));
+});
+
+test('SEJ-MODE-3/4 unknown outcome selects VALIDATE without counting parallel stories as repeated additions', () => {
+  const result = evaluateSeniorJudgment(createInput({
+    development_cycle: {
+      history_boundary: {
+        kind: 'initial',
+        source_ref: 'docs/management/REBUILD.md'
+      },
+      adopted_batches: [{
+        id: 'parallel-batch',
+        story_ids: ['story-a', 'story-b', 'story-c', 'story-d'],
+        change_kind: 'addition',
+        structural_effect: 'increase',
+        external_outcome: 'unknown',
+        source_refs: ['git/parallel-batch']
+      }],
+      current_constraint: {
+        status: 'verified',
+        statement: 'A current external constraint is known',
+        source_refs: ['analytics/current']
+      },
+      proposed_batch: {
+        id: 'next-batch',
+        story_ids: ['story-senior-judgment', 'story-next'],
+        change_kind: 'addition',
+        directly_addresses_constraint: true,
+        source_refs: ['docs/stories/story-next.md']
+      }
+    },
+    options: [
+      {
+        id: 'ship-next-batch',
+        summary: 'Ship another implementation batch',
+        action: 'fix',
+        addresses: [],
+        violates: [],
+        residual_risk: 'low'
+      },
+      {
+        id: 'measure-current-outcome',
+        summary: 'Measure the current external outcome',
+        action: 'measure',
+        addresses: [],
+        violates: [],
+        residual_risk: 'low'
+      }
+    ]
+  }));
+
+  const historyNode = result.nodes.find((node) => node.id === 'portfolio_history');
+  assert.equal(result.development_mode, 'VALIDATE');
+  assert.equal(historyNode.adopted_batch_count, 1);
+  assert.equal(historyNode.adopted_story_count, 4);
+  assert.deepEqual(result.viable_options.map((option) => option.id), ['measure-current-outcome']);
+  assert.equal(result.pruned_options.find((option) => option.id === 'ship-next-batch').reason, 'development_mode_mismatch');
+});
 
 function completeAxes(axes) {
   const supplied = new Map(axes.map((axis) => [axis.id, axis]));
@@ -87,6 +257,8 @@ test('SEJ-001 invalid problem frame short-circuits judgment axes', () => {
   }));
 
   assert.equal(result.recommendation, 'revise_problem');
+  assert.equal(result.development_mode, null);
+  assert.equal(result.nodes.find((node) => node.id === 'development_mode_route').state, 'not_reached');
   assert.equal(result.nodes.find((node) => node.id === 'axis:data_state').state, 'not_reached');
   assert.deepEqual(result.active_axes, []);
   assert.equal(result.advisory, true);
@@ -257,6 +429,7 @@ test('SEJ-005/006 invariant pruning affects advice and graph validation rejects 
     options: [{
       id: 'unsafe-option',
       summary: 'Drop and recreate the data',
+      action: 'redesign',
       addresses: ['h-1'],
       violates: ['inv-no-loss'],
       residual_risk: 'high'
@@ -278,6 +451,7 @@ test('SEJ-005/006 invariant pruning affects advice and graph validation rejects 
     options: [{
       id: 'unmeasured-option',
       summary: 'Apply a mitigation whose residual risk has not been measured',
+      action: 'fix',
       addresses: ['h-1'],
       violates: [],
       residual_risk: 'unknown'
@@ -295,4 +469,17 @@ test('SEJ-005/006 invariant pruning affects advice and graph validation rejects 
     ...createInput(),
     axes: []
   }), /missing standard judgment axes/i);
+  assert.throws(() => validateSeniorJudgmentInput(createInput({
+    development_cycle: {
+      ...createInput().development_cycle,
+      adopted_batches: [{
+        id: 'stale-boundary-batch',
+        story_ids: ['story-improved'],
+        change_kind: 'external_value',
+        structural_effect: 'neutral',
+        external_outcome: 'improved',
+        source_refs: ['analytics/improved']
+      }]
+    }
+  })), /history boundary.*improved/i);
 });

@@ -11,7 +11,7 @@ import { initWorkspace } from '../src/workspace.js';
 
 function createInput(overrides = {}) {
   return {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     story_id: 'story-senior-judgment',
     run_id: 'judgment-001',
     parent_run_id: null,
@@ -30,6 +30,25 @@ function createInput(overrides = {}) {
       status: 'valid',
       statement: 'The implementation violates the expected contract',
       reason: 'The reproduction isolates the implementation boundary'
+    },
+    development_cycle: {
+      history_boundary: {
+        kind: 'initial',
+        source_ref: 'docs/stories/story-senior-judgment.md'
+      },
+      adopted_batches: [],
+      current_constraint: {
+        status: 'verified',
+        statement: 'The current failure blocks the declared external outcome',
+        source_refs: ['test/reproduction.test.js']
+      },
+      proposed_batch: {
+        id: 'batch-current',
+        story_ids: ['story-senior-judgment'],
+        change_kind: 'external_value',
+        directly_addresses_constraint: true,
+        source_refs: ['docs/stories/story-senior-judgment.md']
+      }
     },
     decision_profile: {
       materiality: 'low',
@@ -84,6 +103,7 @@ test('judgment evaluate writes immutable run evidence and review projections wit
   assert.equal(cliResult.exitCode, 0);
   const output = JSON.parse(stdout);
   assert.equal(output.recommendation, 'proceed');
+  assert.equal(output.development_mode, 'VALUE');
   assert.equal(output.advisory, true);
   assert.match(output.artifacts.run_json, /senior-judgment\/runs\/judgment-001\.json$/);
   const current = JSON.parse(await readFile(
@@ -95,10 +115,12 @@ test('judgment evaluate writes immutable run evidence and review projections wit
     'utf8'
   );
   assert.equal(current.recommendation, 'proceed');
+  assert.equal(current.decision_context.development_cycle.proposed_batch.id, 'batch-current');
   assert.equal(current.decision_context.axes.length, STANDARD_JUDGMENT_AXES.length);
   assert.equal('gate_status' in current, false);
   assert.equal('ready_for_pr_create' in current, false);
   assert.match(markdown, /Advisory recommendation: \*\*proceed\*\*/);
+  assert.match(markdown, /Development mode: \*\*VALUE\*\*/);
   assert.match(markdown, /test\/state-migration\.test\.js/);
   assert.match(markdown, /preserves every row and identifier/);
   assert.match(markdown, /Final authority remains with humans, CI, and repository rules/);
