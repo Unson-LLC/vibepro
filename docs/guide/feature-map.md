@@ -7,6 +7,7 @@
 | Preserve product intent | `story`, `spec`, `trace` | Story, Spec, and trace records |
 | Preserve execution evidence | `verify` | Verification records tied to repository state |
 | Preserve human or agent judgment | `review`, `decision` | Review and decision records |
+| Evaluate senior engineering choices | `judgment evaluate` | Advisory decision DAG and immutable run history |
 | Add command guardrails | `guard` | Local guard configuration and reports |
 | Prepare a PR handoff | `pr prepare`, `pr create` | PR context and human-readable body |
 | Configure coding agents | `skills`, `codex`, `harness` | Installed instructions and learning records |
