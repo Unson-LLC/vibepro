@@ -176,3 +176,23 @@ test('snapshot rejects unsafe story ids and the fail-soft wrapper never throws',
   assert.equal(soft.status, 'failed');
   assert.equal(warnings.length, 1);
 });
+
+// issue #436 item 3: `story add`/`story select` accept any non-empty --id
+// (no `story-` prefix requirement — the mana-runtime repro used
+// `slack-split-surrogate-safe`), but this store previously validated with
+// isSafeStoryId, which additionally requires a `story-` prefix. That
+// mismatch made every command for a non-`story-`-prefixed story log a
+// spurious `invalid_story_id` warning even though init/story add had
+// already accepted the id. Only unsafe path segments (traversal,
+// separators, percent-encoding) should be rejected here.
+test('snapshot accepts a CLI-accepted story id without a story- prefix', async () => {
+  const { worktree } = await makeRepoWithWorktree();
+  const storyId = 'slack-split-surrogate-safe';
+  await writeRecord(worktree, path.join('spec', storyId, 'spec.json'), '{}\n');
+  const result = await snapshotProcessRecords({ repoRoot: worktree, storyId });
+  assert.equal(result.status, 'ok');
+  const warnings = [];
+  const soft = await snapshotProcessRecordsFailSoft({ repoRoot: worktree, storyId, logger: { warn: (m) => warnings.push(m) } });
+  assert.notEqual(soft.status, 'failed');
+  assert.equal(warnings.length, 0);
+});

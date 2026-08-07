@@ -2,7 +2,7 @@ import { copyFile, mkdir, readFile, readdir, stat, utimes, writeFile } from 'nod
 import path from 'node:path';
 
 import { getWorkspaceDir } from './workspace.js';
-import { isSafeStoryId } from './story-id.js';
+import { isSafeStoryPathSegment } from './story-id.js';
 
 // Process records whose loss caused the 2026-07-30 fail-open incidents:
 // reviews, adjudications, verification evidence, spec, decision records under
@@ -142,7 +142,15 @@ export async function snapshotProcessRecordsFailSoft({ repoRoot, storyId, logger
 }
 
 async function resolveTransferContext({ repoRoot, storyId }) {
-  if (!isSafeStoryId(storyId)) return { error: 'invalid_story_id' };
+  // storyId is used directly as a path segment below (store_root/<storyId>),
+  // so this only needs to guard against unsafe path segments (traversal,
+  // separators, percent-encoding) — the same rule `story add`/`story select`
+  // themselves accept (any non-empty --id, no `story-` prefix requirement).
+  // The stricter isSafeStoryId (which requires a `story-` prefix) rejected
+  // CLI-accepted ids like `slack-split-surrogate-safe`, logging spurious
+  // `invalid_story_id` warnings on every command for such a story
+  // (issue #436 item 3).
+  if (!isSafeStoryPathSegment(storyId)) return { error: 'invalid_story_id' };
   const root = path.resolve(repoRoot);
   const resolution = await resolveDurableStoreRoot(root);
   const storeRoot = path.join(resolution.store_root, storyId);

@@ -1734,34 +1734,40 @@ function renderGateCheckSummary(result, { ciMode = false } = {}) {
 }
 
 function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
-  const prPrepareCommand = `vibepro pr prepare ${shellPath(repoRoot)} --base ${baseBranch ?? '<base-branch>'}`;
+  const base = baseBranch ?? '<base-branch>';
+  const storyDiagnoseCommand = `vibepro story diagnose ${shellPath(repoRoot)} --id <story-id> --run-graphify`;
+  const verifyRecordCommand = `vibepro verify record ${shellPath(repoRoot)} --id <story-id> --kind unit --status pass --command "npm test"`;
+  const reviewPrepareCommand = `vibepro review prepare ${shellPath(repoRoot)} --id <story-id> --stage gate`;
+  const prPrepareCommand = `vibepro pr prepare ${shellPath(repoRoot)} --base ${base}`;
   return localizedText(language, {
     ja: [
       `VibePro workspaceを初期化しました: ${workspaceDir}`,
       '',
-      '.vibepro/ は診断・Story・PR gate・レビュー証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。',
+      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGやPR作成をブロックする機構は持ちません。',
       `人間向け出力言語: ${language}`,
       `base branch候補: ${baseBranch ?? '未検出。origin/main, origin/develop, main, develop など実リポジトリの既定branchを指定してください。'}`,
       '',
       '次にやること:',
       '1. README全体を読む前に、まず `vibepro help` の「基本コマンド」を確認する',
-      `2. PR前の道標を作る: ${prPrepareCommand} --story-id <story-id>`,
-      `3. LLM/agentへ渡す前に bounded view を作る: ${prPrepareCommand} --story-id <story-id> --summary-json`,
-      '4. full JSON artifactは永続正本として保存し、必要なgate id/pathだけを対象にdrill-downする',
+      `2. Storyの調査コンテキストを作る: ${storyDiagnoseCommand}`,
+      `3. 現在のgit状態で実行した検証証跡を記録する: ${verifyRecordCommand}`,
+      `4. 役割別レビュー依頼を作る: ${reviewPrepareCommand}`,
+      `5. Story + Spec有無 + 記録済み検証 + 記録済みレビューを要約したPR本文を作る: ${prPrepareCommand} --story-id <story-id>`,
       ''
     ].join('\n'),
     en: [
       `VibePro workspace initialized: ${workspaceDir}`,
       '',
-      '.vibepro/ is the workspace for diagnosis, Story, PR gate, and review evidence. It is separate from application source changes.',
+      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. It carries no Gate DAG or PR-creation-blocking machinery.',
       `Human output language: ${language}`,
       `Base branch candidate: ${baseBranch ?? 'not detected. Use the repository default such as origin/main, origin/develop, main, or develop.'}`,
       '',
       'Next steps:',
       '1. Start with `vibepro help` before reading the full README.',
-      `2. Create the PR guide: ${prPrepareCommand} --story-id <story-id>`,
-      `3. Create a bounded LLM/coding agent view before handoff: ${prPrepareCommand} --story-id <story-id> --summary-json`,
-      '4. Keep full JSON artifacts as durable evidence and drill down only by referenced gate id or path.',
+      `2. Create the Story investigation context: ${storyDiagnoseCommand}`,
+      `3. Record verification evidence for the current git state: ${verifyRecordCommand}`,
+      `4. Create the role-based review request: ${reviewPrepareCommand}`,
+      `5. Summarize Story + Spec presence + recorded verification + recorded review into a PR body: ${prPrepareCommand} --story-id <story-id>`,
       ''
     ].join('\n')
   });
