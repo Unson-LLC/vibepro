@@ -4,12 +4,12 @@ The authoritative source version is `package.json`; an installed binary reports 
 
 | Channel | Expected after this release | Authority |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.3` | Live npm registry dist-tag |
-| npm `beta` | `0.2.0-beta.3` | Live npm registry dist-tag |
-| Repository `main` | `0.2.0-beta.3` release source | Git commit and `package.json` |
+| npm `latest` | `0.2.0-beta.4` | Live npm registry dist-tag |
+| npm `beta` | `0.2.0-beta.4` | Live npm registry dist-tag |
+| Repository `main` | `0.2.0-beta.4` release source | Git commit and `package.json` |
 | Manual build | Source commit in footer/meta | Deployed VitePress artifact |
 
-## 0.2.0-beta.3
+## 0.2.0-beta.4
 
 Publishes the rebuilt minimal core and aligns the npm README, VitePress entry pages, generated CLI reference, and CI with that contract. This is a breaking beta change: commands and automatic control-plane mechanisms removed by the rebuild are not compatibility aliases.
 

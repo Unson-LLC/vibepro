@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-07 | [`0.2.0-beta.4`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.4) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-07 | [`0.2.0-beta.3`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.3) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | PRマージ後のcontinuous release |
@@ -355,3 +356,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:443:start -->
 - [PR #443](https://github.com/Unson-LLC/vibepro/pull/443) — [2026-08](/ja/releases/2026-08): fix: derive judgment mode from causal evidence
 <!-- vibepro-release-index-pr:443:end -->
+
+<!-- vibepro-release-index-pr:444:start -->
+- [PR #444](https://github.com/Unson-LLC/vibepro/pull/444) — [2026-08](/ja/releases/2026-08): fix: 判断モードの証拠境界を分離
+<!-- vibepro-release-index-pr:444:end -->

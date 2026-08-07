@@ -1933,3 +1933,24 @@ Update to vibepro@beta and migrate automation to commands listed by vibepro help
 なし
 
 <!-- vibepro-release-pr:443:end -->
+
+<!-- vibepro-release-pr:444:start -->
+## [#444](https://github.com/Unson-LLC/vibepro/pull/444) fix: 判断モードの証拠境界を分離
+
+- Author: @sintariran
+- Merged: 2026-08-07T16:07:53Z
+- Commit: `af91a470adfb895701c0e0c56cc0788c0f5b39cd`
+
+### Change Summary
+
+Senior Engineering Judgment DAGが、問題の存在と解決方向の証拠を別々に扱うようになりました。構造的過剰はSIMPLIFY、価値制約はVALUE、判断証拠が不足・不明ならVALIDATEへ分岐します。公開versionの投影対象を現行版フィールドへ限定し、過去のrelease履歴とrollback先を保持したままVitePress metadataを同期します。
+
+### Compatibility
+
+Breaking beta change: senior judgment input schemaは0.2.0から0.3.0へ更新されました。0.2.0入力は曖昧な旧契約として拒否されます。
+
+### User Action
+
+senior judgment入力のcurrent_constraintへkindとdecision_evidenceを追加してください。kindはvalue_constraintまたはstructural_excess、decision_evidence.statusはsufficient、insufficient、unknownのいずれかです。
+
+<!-- vibepro-release-pr:444:end -->

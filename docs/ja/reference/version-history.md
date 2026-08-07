@@ -4,12 +4,12 @@ source versionの正本は `package.json` で、installed binaryは `vibepro ver
 
 | Channel | このrelease後の期待値 | 正本 |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.3` | liveなnpm registry dist-tag |
-| npm `beta` | `0.2.0-beta.3` | liveなnpm registry dist-tag |
-| Repository `main` | `0.2.0-beta.3` release source | Git commitと `package.json` |
+| npm `latest` | `0.2.0-beta.4` | liveなnpm registry dist-tag |
+| npm `beta` | `0.2.0-beta.4` | liveなnpm registry dist-tag |
+| Repository `main` | `0.2.0-beta.4` release source | Git commitと `package.json` |
 | Manual build | footer/metaのsource commit | deployed VitePress artifact |
 
-## 0.2.0-beta.3
+## 0.2.0-beta.4
 
 再構築した最小コアを公開し、npm README、VitePressの入口、generated CLI reference、CIをその契約に揃えます。これはbeta段階のbreaking changeで、再構築時に削除したcommandや自動control-plane機構に互換aliasはありません。
 
