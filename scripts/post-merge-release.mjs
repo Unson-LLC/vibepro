@@ -380,13 +380,17 @@ async function upsertIndexEntry(root, pr, month) {
 
 export async function projectPublishedVersion(root, before, after, mergedAt) {
   if (!shouldReleaseVersion(before, after)) return false;
-  for (const relative of [
-    'docs/ja/reference/version-history.md', 'docs/reference/version-history.md',
-    'docs/ja/guide/release-and-audit.md', 'docs/guide/release-and-audit.md'
-  ]) {
+  const targets = [
+    ['docs/ja/reference/version-history.md', projectVersionHistory],
+    ['docs/reference/version-history.md', projectVersionHistory],
+    ['docs/ja/guide/release-and-audit.md', (content) => projectUpgradeHeading(content, before, after, 'ja')],
+    ['docs/guide/release-and-audit.md', (content) => projectUpgradeHeading(content, before, after, 'en')],
+    ['docs/.vitepress/config.mjs', projectSoftwareVersion]
+  ];
+  for (const [relative, project] of targets) {
     const file = path.join(root, relative);
     const content = await readFile(file, 'utf8');
-    await writeFile(file, content.replaceAll(before, after));
+    await writeFile(file, project(content, before, after));
   }
   const date = new Date(mergedAt).toISOString().slice(0, 10);
   const rows = [
@@ -402,6 +406,46 @@ export async function projectPublishedVersion(root, before, after, mergedAt) {
     }
   }
   return true;
+}
+
+function projectVersionHistory(content, before, after) {
+  const lines = content.split('\n');
+  for (const prefix of ['| npm `latest` |', '| npm `beta` |', '| Repository `main` |']) {
+    const index = lines.findIndex((line) => line.startsWith(prefix));
+    if (index < 0) throw new Error(`Published-version field is missing: ${prefix}`);
+    lines[index] = replaceCurrentVersion(lines[index], before, after, prefix);
+  }
+
+  const currentHeading = lines.findIndex((line) => line.startsWith('## '));
+  if (currentHeading < 0) throw new Error('Published-version heading is missing');
+  lines[currentHeading] = replaceCurrentVersion(lines[currentHeading], before, after, 'published-version heading');
+  return lines.join('\n');
+}
+
+function projectUpgradeHeading(content, before, after, locale) {
+  const lines = content.split('\n');
+  const beforeHeading = locale === 'ja' ? `## ${before}\u3078\u306eupgrade` : `## Upgrade to ${before}`;
+  const afterHeading = locale === 'ja' ? `## ${after}\u3078\u306eupgrade` : `## Upgrade to ${after}`;
+  const index = lines.findIndex((line) => line === beforeHeading || line === afterHeading);
+  if (index < 0) throw new Error(`Current upgrade heading is missing for locale ${locale}`);
+  lines[index] = afterHeading;
+  return lines.join('\n');
+}
+
+function projectSoftwareVersion(content, before, after) {
+  const lines = content.split('\n');
+  const index = lines.findIndex((line) => /^\s+softwareVersion: '[^']+',?$/u.test(line));
+  if (index < 0) throw new Error('VitePress softwareVersion field is missing');
+  lines[index] = replaceCurrentVersion(lines[index], before, after, 'VitePress softwareVersion');
+  return lines.join('\n');
+}
+
+function replaceCurrentVersion(line, before, after, field) {
+  if (line.includes(after)) return line;
+  if (!line.includes(before)) {
+    throw new Error(`${field} must identify ${before} or ${after}`);
+  }
+  return line.replace(before, after);
 }
 
 function releaseBlock(number, note) {

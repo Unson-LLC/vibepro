@@ -87,7 +87,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             node scripts/post-merge-release.mjs project --event "$GITHUB_EVENT_PATH"
-            git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md
+            git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md docs/.vitepress/config.mjs
             if git diff --cached --quiet; then
               pushed=true
               echo "docs_commit=unchanged_or_reconciled" >> "$GITHUB_STEP_SUMMARY"

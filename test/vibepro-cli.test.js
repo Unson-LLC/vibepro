@@ -7342,13 +7342,14 @@ The authorization scoring module is called from pr prepare.
 
 
 test('--version prints the package version', async () => {
+  const packageJson = await readJson(path.resolve('package.json'));
   const versions = [];
   for (const arg of ['--version', '-v', 'version']) {
     let out = '';
     const result = await runCli([arg], { stdout: { write: (text) => { out += text; } } });
     assert.equal(result.exitCode, 0);
     assert.equal(result.command, 'version');
-    assert.match(out.trim(), /^\d+\.\d+\.\d+/);
+    assert.equal(out.trim(), packageJson.version);
     versions.push(out.trim());
   }
   assert.equal(new Set(versions).size, 1);
@@ -7356,6 +7357,7 @@ test('--version prints the package version', async () => {
 
 test('package metadata and README are ready for Apache-2.0 OSS publication', async () => {
   const packageJson = await readJson(path.resolve('package.json'));
+  const packageLock = await readJson(path.resolve('package-lock.json'));
   const readme = await readFile(path.resolve('README.md'), 'utf8');
   const readmeJa = await readFile(path.resolve('README.ja.md'), 'utf8');
   const license = await readFile(path.resolve('LICENSE'), 'utf8');
@@ -7372,7 +7374,8 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   ];
 
   assert.equal(packageJson.license, 'Apache-2.0');
-  assert.equal(packageJson.version, '0.2.0-beta.3');
+  assert.equal(packageLock.version, packageJson.version);
+  assert.equal(packageLock.packages?.['']?.version, packageJson.version);
   assert.match(packageJson.description, /Story, Spec, verification, review, and PR evidence/);
   assert.equal(packageJson.keywords.includes('ai-agents'), true);
   assert.equal(packageJson.keywords.includes('developer-tools'), true);

@@ -13,7 +13,7 @@ The authoritative source version is `package.json`; an installed binary reports 
 
 Publishes the rebuilt minimal core and aligns the npm README, VitePress entry pages, generated CLI reference, and CI with that contract. This is a breaking beta change: commands and automatic control-plane mechanisms removed by the rebuild are not compatibility aliases.
 
-## 0.2.0-beta.3
+## 0.2.0-beta.2
 
 The previous published beta contained the broader evidence-gate and managed workflow. Pin this version only when migration time is required; it does not represent the current minimal-core direction.
 
