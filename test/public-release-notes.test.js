@@ -51,19 +51,20 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
     'releases/2026-05.html',
     'releases/2026-06.html',
     'releases/2026-07.html',
+    'releases/2026-08.html',
     'ja/releases/index.html',
     'ja/releases/2026-01.html',
     'ja/releases/2026-05.html',
     'ja/releases/2026-06.html',
-    'ja/releases/2026-07.html'
+    'ja/releases/2026-07.html',
+    'ja/releases/2026-08.html'
   ]) {
     assert.match(contract, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(jaVersion, /\/ja\/releases\//);
   assert.match(enVersion, /\/releases\//);
-  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.2`/);
-  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.2`/);
-  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.2`/);
-  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.2`/);
+  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.3`/);
+  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.3`/);
+  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.3`/);
+  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.3`/);
 });
-

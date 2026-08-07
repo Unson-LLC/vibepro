@@ -47,6 +47,7 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'releases/2026-05.html',
   'releases/2026-06.html',
   'releases/2026-07.html',
+  'releases/2026-08.html',
   'ja/guide/agent-review.html',
   'ja/guide/ai-pr-workflow.html',
   'ja/guide/check-packs.html',
@@ -71,7 +72,8 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'ja/releases/2026-01.html',
   'ja/releases/2026-05.html',
   'ja/releases/2026-06.html',
-  'ja/releases/2026-07.html'
+  'ja/releases/2026-07.html',
+  'ja/releases/2026-08.html'
 ];
 
 const REQUIRED_FILES = [

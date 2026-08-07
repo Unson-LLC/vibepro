@@ -1,47 +1,31 @@
 # Install and First Run
 
-Install the published early beta or use a local checkout of current `main`.
+VibePro requires Node.js 20 or newer. The public package is currently a beta.
 
 ```bash
+npx vibepro@beta --help
+# or
 npm install -g vibepro@beta
-vibepro version
+vibepro --help
 ```
 
-For a local checkout:
+Initialize a target repository:
 
 ```bash
-npm install
-npm link
-vibepro version
+vibepro init /path/to/repo \
+  --story-id story-example \
+  --title "Example change" \
+  --language en
 ```
 
-Run a first health check in the target repository:
+This creates `.vibepro/` in the target repository. It is a context and evidence workspace, not application source.
+
+Check the installation and repository state:
 
 ```bash
-vibepro doctor .
-vibepro story list .
-vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
+vibepro doctor /path/to/repo --json
+vibepro status /path/to/repo --json
+vibepro story list /path/to/repo --all
 ```
 
-The npm package and this manual may represent different commits. The installed
-binary's `vibepro help` is authoritative for its command contract; see
-[Release and Audit](/guide/release-and-audit) for the version boundary.
-
-## Optional: codebase-memory-mcp
-
-`codebase-memory-mcp` is optional. VibePro does not bundle, install, update, or configure it. When the `codebase-memory-mcp` command is available on `PATH`, `vibepro pr prepare` performs one best-effort read-only topology query for the current changed files.
-
-Typical local setup:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -s -- --skip-config
-export PATH="$HOME/.local/bin:$PATH"
-codebase-memory-mcp --version
-codebase-memory-mcp cli index_repository '{"repo_path":"'"$(pwd)"'"}'
-codebase-memory-mcp cli list_projects '{}'
-```
-
-Use `--skip-config` when VibePro should use only the CLI command and should not modify MCP settings for Codex, Claude, or other agents.
-
-The provider is useful only after the repository has been indexed. A missing provider, failed query, clean worktree, or no changed-file match is recorded as `pr_context.code_topology_context.available=false` and does not block readiness by itself.
+Then follow the [Minimal Core Flow](/guide/control-loop). Use `vibepro help --language en` whenever documentation and the installed package differ.

@@ -1,29 +1,18 @@
-# リリースと監査
+# リリース境界
 
-## 公開packageとcurrent main
+VibeProでは4種類の証明を分けます。
 
-| Surface | 意味 | 確認方法 |
-| --- | --- | --- |
-| npm `latest` / `beta` | 公開対象: `0.2.0-beta.2` | `npm view vibepro dist-tags --json` と `vibepro version` |
-| GitHub `main` | unreleased changeを含む現在のsource | `git rev-parse HEAD` と `CHANGELOG.md` のUnreleased |
-| このmanual build | footerと `vibepro-source-commit` meta tagに出るcommit | GitHub `main` と比較 |
-| Local artifact | 特定repo / Story / headの証跡 | `.vibepro/` とGit headを確認 |
+1. `package.json` のversionはrelease sourceを示します。
+2. package workflowの成功はnpm publish処理の完了を示します。
+3. npm registryのversion、dist-tags、`gitHead` は利用者がinstallする内容を示します。
+4. 公開manualのsource-commit meta tagはliveなdocument buildを示します。
 
-packageはearly betaです。install対象を明示する場合:
+version bumpのmergeだけでnpm公開済みとはせず、VitePress build成功だけでlive deployment済みとはしません。それぞれを独立に確認します。
 
-```bash
-npm install -g vibepro@beta
-vibepro version
-```
+## 最小コアのaudit境界
 
-current `main` のmanualにあるcommandが古いinstalled binaryにもあるとは限りません。生成済み[CLIリファレンス](/ja/reference/cli)はmanual source commitに一致し、差がある場合は実行中binaryの `vibepro help` が正本です。
+VibeProはローカル証跡を保存しますが、canonical audit bundleを生成せず、証跡が十分かも判定しません。保存期間、access control、review policy、CI要件、最終承認は利用側の責任です。
 
-## PR・CI・mergeのfreshness
+## 0.2.0-beta.3へのupgrade
 
-Evidenceと通常roleのreviewは既定でcontent-surface-boundです。検査したsurfaceが変わればstaleになり、無関係なcommitだけならcurrentを維持します。CI evidenceと高リスクroleなどのstrict HEAD-bound evidenceは任意のcommitでstaleになります。treeを確定してcommitし、verificationと独立reviewを記録してから `pr prepare` / `pr create` を実行します。CI完了後はimportし、prepareと既存PRをrefreshしてから `execute merge` します。
-
-## Canonical auditとROI
-
-`audit replay` は出荷したStoryをcanonical artifactから再構成できるか確認します。`usage report --gate-roi --subagent-roi` はGateや独立reviewがコストに見合う判断を生んだかを示します。blocked sourceはblockedのまま扱い、活動0に見せません。
-
-Cloudflare Pagesのdeploy詳細はproduct modelではなく[hosting reference](/ja/reference/cloudflare-pages)に置きます。
+これはbeta段階のbreaking cleanupです。廃止commandを呼ぶautomationは `vibepro help` にあるcommandへ移行してください。従来の広いworkflowを一時的に残す場合は `vibepro@0.2.0-beta.2` にpinします。
