@@ -1,0 +1,166 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "created_at": "2026-08-04T09:39:18.787Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 8 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-conformance-delta-ledger/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-conformance-delta-ledger/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-conformance-delta-ledger/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-conformance-delta-ledger.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "7 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5,
+        "intake_not_applicable": 1
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+          "expected_root": null,
+          "expected_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+          "current_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785819946807-34a14aed",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "Scope reviewed: single-reviewer readable, single owner, blast radius bounded to architecture-conformance-delta.js + its pr-manager/cli wiring",
+        "reason": "scope_reviewed: the 11 changed files form one coherent judgment (new derive-only conformance-delta runner + its shadow-stage wiring + its tests + its docs); no unrelated decisions are bundled. review_owner_map: src/architecture-conformance-delta.js and src/architecture-conformance.js are owned by the architecture-conformance domain; src/pr-manager.js and src/cli.js shadow-stage wiring is owned by the pr-manager/gate-dag domain; both are already the same responsibility-authority contract owners recorded in docs/contracts/vibepro-responsibility-authority.json and docs/contracts/vibepro-core-responsibilities.json. Graphify related_file_blast_radius (3 changed / 151 related files) stays within existing VibePro CLI/gate-dag module boundaries, no new module or cross-domain reach. decision_record: this record itself is the auditable scope decision.",
+        "reviewer": null,
+        "artifact": "docs/architecture/vibepro-conformance-delta-ledger.md",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+            "expected_root": null,
+            "expected_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+            "current_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+          "current_branch": "codex/story-vibepro-conformance-delta-ledger",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-04T05:05:46.801Z"
+        },
+        "recorded_at": "2026-08-04T05:05:46.807Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-04T09:39:15.602Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "branch": "codex/story-vibepro-conformance-delta-ledger",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "99f992d8a975df84c6e8bab2191bd5027ba85749",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

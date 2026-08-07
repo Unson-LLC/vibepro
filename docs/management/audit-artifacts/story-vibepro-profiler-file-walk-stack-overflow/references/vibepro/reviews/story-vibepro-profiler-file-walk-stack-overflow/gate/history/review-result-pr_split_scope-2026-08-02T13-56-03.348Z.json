@@ -1,0 +1,174 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Scope coherent and correctly bundled: all 8 walkers on the single runDiagnosis path (4 unconditional), so splitting ships a still-crashing diagnose; commits single-intent including the lineage and owner-grant commits. Delta since subagent inspection verified by coordinator: 0 src/ or test/ changes since 15a6b013; only spec lineage metadata, design-ssot hash binding, docs/specs pointer, responsibility registry, and the owner budget grant. Final frozen-binding suite 2377/2377 at 49c35bb5",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "fix-commit-bundles-story-bootstrap",
+      "detail": "9b219c90 combines walker fix with story registration; acceptable self-dogfood bootstrap"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "fix-commit-bundles-story-bootstrap",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "story registration must exist for the gates validating the fix",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Per-commit git show --stat over all commits confirming single intent; buildEvidence confirms all 8 scanners on the diagnosis path; config/design-ssot/registry/grant diffs contain only this story's entries",
+    "evidence": null,
+    "inputs": [
+      "src/diagnostic-engine.js",
+      "src/network-contract-scanner.js",
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "responsibility-authority.json",
+      "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "docs/management/decisions/2026-08-02-budget-override-story-vibepro-profiler-file-walk-stack-overflow-fb7646bc.md"
+    ]
+  },
+  "judgment_delta": [
+    "Proved the anti-split rationale technically; re-bound to final head verifying the docs-and-grant-only delta"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+    "expected_root": null,
+    "expected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "expected_root": null,
+      "expected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T13:56:03.348Z",
+  "git_context": {
+    "head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "current_branch": "claude/vigorous-sinoussi-3a7efb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T13:56:03.270Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "f3e0bd842a05aac40e78311e5c6848ea75b71f4845b63a7f8d73911e29dd1621",
+        "size": 90901
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "f65076dc0bda7f73e07540bb449969480d01089c3b40dc17cdfae43f29e1e580",
+        "size": 254868
+      },
+      {
+        "path": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-profiler-file-walk-stack-overflow-fb7646bc.md",
+        "sha256": "0e705579a2cbd8f7d4b2a03795ce2aaa904979901abd5a35b271a27b8bff6e99",
+        "size": 1325
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+        "sha256": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549",
+        "size": 4423
+      },
+      {
+        "path": "responsibility-authority.json",
+        "sha256": "abd9c2e9a85cfb16136fc6d5973f62c0d520627cc6bd2f9de93d902b59825185",
+        "size": 20223
+      },
+      {
+        "path": "src/diagnostic-engine.js",
+        "sha256": "46e631474970ef241677f45a75ecee4a8cc7c7e34dbd1ed8ca0e84d68f94a412",
+        "size": 92218
+      },
+      {
+        "path": "src/network-contract-scanner.js",
+        "sha256": "71eadb6b82f1c65cdd7691a38ceb35f7879dfdde8cd8a10c95fd227e590fbc90",
+        "size": 16238
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "3a618029d120a59e771a986f2b19eb9bddf89564ec51b9c9d818cab456c357de"
+  },
+  "source_fingerprint": "7c82f0436a3e0bd55086d669c94e4fc197c62f42ee39cc67944cd110308a7f55",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a32dd57bf67606cbf",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-pr_split_scope.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "background task a32dd57bf67606cbf completed; verdict JSON returned as final message",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "same_session",
+      "reviewer_session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+      "implementation_session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

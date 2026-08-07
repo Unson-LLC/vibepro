@@ -1,0 +1,1339 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-08-05T04:55:55.082Z",
+  "base_ref": "origin/main",
+  "head_ref": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+  "base": {
+    "status": "ok",
+    "model_version": 2,
+    "violation_count": 55,
+    "summary": {
+      "violation_count": 55,
+      "undeclared_dependency_count": 22,
+      "budget_violation_count": 11,
+      "orphan_file_count": 1,
+      "stale_pattern_count": 0,
+      "dependency_cycle_count": 1,
+      "mutual_dependency_count": 20,
+      "module_file_counts": {
+        "cli": 5,
+        "workspace-infra": 22,
+        "graph": 3,
+        "story": 7,
+        "task": 2,
+        "architecture": 7,
+        "spec": 6,
+        "evidence": 12,
+        "review": 8,
+        "gate-pr": 21,
+        "run-session": 11,
+        "agent-runtime": 8,
+        "scanners": 17,
+        "diagnosis": 7,
+        "uiux-design": 9,
+        "reporting": 4,
+        "skills": 1
+      }
+    }
+  },
+  "head": {
+    "status": "ok",
+    "model_version": 2,
+    "violation_count": 55,
+    "summary": {
+      "violation_count": 55,
+      "undeclared_dependency_count": 22,
+      "budget_violation_count": 11,
+      "orphan_file_count": 1,
+      "stale_pattern_count": 0,
+      "dependency_cycle_count": 1,
+      "mutual_dependency_count": 20,
+      "module_file_counts": {
+        "cli": 5,
+        "workspace-infra": 22,
+        "graph": 3,
+        "story": 7,
+        "task": 2,
+        "architecture": 7,
+        "spec": 6,
+        "evidence": 12,
+        "review": 8,
+        "gate-pr": 21,
+        "run-session": 11,
+        "agent-runtime": 8,
+        "scanners": 17,
+        "diagnosis": 7,
+        "uiux-design": 9,
+        "reporting": 4,
+        "skills": 1
+      }
+    }
+  },
+  "previous_model_version": 2,
+  "model_version_changed": false,
+  "delta": {
+    "status": "ok",
+    "new": [],
+    "resolved": [],
+    "unchanged": [
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-001",
+        "id": "undeclared_dependency:workspace-infra->gate-pr",
+        "from_module": "workspace-infra",
+        "to_module": "gate-pr",
+        "edge_count": 13,
+        "example_edges": [
+          "src/checkpoint-manager.js -> src/pr-manager.js",
+          "src/decision-records.js -> src/budget-override-authority.js",
+          "src/execution-state.js -> src/reconciliation-action.js"
+        ],
+        "summary": "workspace-infra -> gate-pr は宣言されていない依存 (13 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:review->gate-pr",
+        "from_module": "review",
+        "to_module": "gate-pr",
+        "edge_count": 3,
+        "example_edges": [
+          "src/adjudication.js -> src/traceability.js",
+          "src/agent-review.js -> src/content-binding.js",
+          "src/agent-review.js -> src/validation-sequencing.js"
+        ],
+        "summary": "review -> gate-pr は宣言されていない依存 (3 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:review->reporting",
+        "from_module": "review",
+        "to_module": "reporting",
+        "edge_count": 3,
+        "example_edges": [
+          "src/agent-review.js -> src/delivery-efficiency-guardrail.js",
+          "src/review-finding-repair-loop.js -> src/delivery-efficiency-guardrail.js",
+          "src/review-repair.js -> src/usage-report.js"
+        ],
+        "summary": "review -> reporting は宣言されていない依存 (3 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:agent-runtime->run-session",
+        "from_module": "agent-runtime",
+        "to_module": "run-session",
+        "edge_count": 3,
+        "example_edges": [
+          "src/codex-runtime-bridge.js -> src/agent-runtime-adapter.js",
+          "src/codex-runtime-bridge.js -> src/agent-runtime-connectors.js",
+          "src/codex-runtime-bridge.js -> src/guarded-run-session.js"
+        ],
+        "summary": "agent-runtime -> run-session は宣言されていない依存 (3 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:story->task",
+        "from_module": "story",
+        "to_module": "task",
+        "edge_count": 2,
+        "example_edges": [
+          "src/brainbase-importer.js -> src/story-task-generator.js",
+          "src/story-manager.js -> src/story-task-generator.js"
+        ],
+        "summary": "story -> task は宣言されていない依存 (2 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-001",
+        "id": "undeclared_dependency:workspace-infra->review",
+        "from_module": "workspace-infra",
+        "to_module": "review",
+        "edge_count": 2,
+        "example_edges": [
+          "src/checkpoint-manager.js -> src/agent-review.js",
+          "src/execution-state.js -> src/agent-review.js"
+        ],
+        "summary": "workspace-infra -> review は宣言されていない依存 (2 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:evidence->gate-pr",
+        "from_module": "evidence",
+        "to_module": "gate-pr",
+        "edge_count": 2,
+        "example_edges": [
+          "src/ci-evidence.js -> src/validation-sequencing.js",
+          "src/verification-evidence.js -> src/content-binding.js"
+        ],
+        "summary": "evidence -> gate-pr は宣言されていない依存 (2 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-001",
+        "id": "undeclared_dependency:workspace-infra->reporting",
+        "from_module": "workspace-infra",
+        "to_module": "reporting",
+        "edge_count": 2,
+        "example_edges": [
+          "src/merge-manager.js -> src/html-report.js",
+          "src/merge-manager.js -> src/session-efficiency-audit.js"
+        ],
+        "summary": "workspace-infra -> reporting は宣言されていない依存 (2 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:story->reporting",
+        "from_module": "story",
+        "to_module": "reporting",
+        "edge_count": 2,
+        "example_edges": [
+          "src/story-html.js -> src/html-report.js",
+          "src/story-run-portfolio.js -> src/delivery-efficiency-guardrail.js"
+        ],
+        "summary": "story -> reporting は宣言されていない依存 (2 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:story->diagnosis",
+        "from_module": "story",
+        "to_module": "diagnosis",
+        "edge_count": 1,
+        "example_edges": [
+          "src/brainbase-importer.js -> src/refactoring-delta-reporter.js"
+        ],
+        "summary": "story -> diagnosis は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:diagnosis->gate-pr",
+        "from_module": "diagnosis",
+        "to_module": "gate-pr",
+        "edge_count": 1,
+        "example_edges": [
+          "src/check-packs.js -> src/pr-manager.js"
+        ],
+        "summary": "diagnosis -> gate-pr は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-001",
+        "id": "undeclared_dependency:workspace-infra->run-session",
+        "from_module": "workspace-infra",
+        "to_module": "run-session",
+        "edge_count": 1,
+        "example_edges": [
+          "src/decision-records.js -> src/run-context-capsule.js"
+        ],
+        "summary": "workspace-infra -> run-session は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-002",
+        "id": "undeclared_dependency:diagnosis->cli",
+        "from_module": "diagnosis",
+        "to_module": "cli",
+        "edge_count": 1,
+        "example_edges": [
+          "src/diagnostic-engine.js -> src/runtime-info.js"
+        ],
+        "summary": "diagnosis -> cli は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:graph->agent-runtime",
+        "from_module": "graph",
+        "to_module": "agent-runtime",
+        "edge_count": 1,
+        "example_edges": [
+          "src/graphify-adapter.js -> src/progress-deadline.js"
+        ],
+        "summary": "graph -> agent-runtime は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-001",
+        "id": "undeclared_dependency:workspace-infra->evidence",
+        "from_module": "workspace-infra",
+        "to_module": "evidence",
+        "edge_count": 1,
+        "example_edges": [
+          "src/merge-manager.js -> src/evidence-cost-budget.js"
+        ],
+        "summary": "workspace-infra -> evidence は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-002",
+        "id": "undeclared_dependency:gate-pr->cli",
+        "from_module": "gate-pr",
+        "to_module": "cli",
+        "edge_count": 1,
+        "example_edges": [
+          "src/pr-manager.js -> src/runtime-info.js"
+        ],
+        "summary": "gate-pr -> cli は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:spec->gate-pr",
+        "from_module": "spec",
+        "to_module": "gate-pr",
+        "edge_count": 1,
+        "example_edges": [
+          "src/pre-spec-readiness.js -> src/pr-manager.js"
+        ],
+        "summary": "spec -> gate-pr は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-001",
+        "id": "undeclared_dependency:workspace-infra->cli",
+        "from_module": "workspace-infra",
+        "to_module": "cli",
+        "edge_count": 1,
+        "example_edges": [
+          "src/repo-status.js -> src/doctor.js"
+        ],
+        "summary": "workspace-infra -> cli は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-002",
+        "id": "undeclared_dependency:story->cli",
+        "from_module": "story",
+        "to_module": "cli",
+        "edge_count": 1,
+        "example_edges": [
+          "src/story-catalog-generator.js -> src/presets.js"
+        ],
+        "summary": "story -> cli は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:story->gate-pr",
+        "from_module": "story",
+        "to_module": "gate-pr",
+        "edge_count": 1,
+        "example_edges": [
+          "src/story-manager.js -> src/traceability.js"
+        ],
+        "summary": "story -> gate-pr は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:evidence->run-session",
+        "from_module": "evidence",
+        "to_module": "run-session",
+        "edge_count": 1,
+        "example_edges": [
+          "src/verification-evidence.js -> src/run-context-capsule.js"
+        ],
+        "summary": "evidence -> run-session は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "undeclared_dependency",
+        "severity": "review",
+        "rule_id": "R-004",
+        "id": "undeclared_dependency:agent-runtime->evidence",
+        "from_module": "agent-runtime",
+        "to_module": "evidence",
+        "edge_count": 1,
+        "example_edges": [
+          "src/verification-runner.js -> src/verification-evidence.js"
+        ],
+        "summary": "agent-runtime -> evidence は宣言されていない依存 (1 edges, import scan)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/adjudication.js",
+        "file": "src/adjudication.js",
+        "line_count": 1675,
+        "limit": 1500,
+        "baseline": false,
+        "summary": "src/adjudication.js は行数予算 (1500行) を超過 (1675行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/agent-review.js",
+        "file": "src/agent-review.js",
+        "line_count": 4261,
+        "limit": 3657,
+        "baseline": true,
+        "summary": "src/agent-review.js は baseline (3657行) を超過して成長した (4261行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/canonical-audit.js",
+        "file": "src/canonical-audit.js",
+        "line_count": 2907,
+        "limit": 2688,
+        "baseline": true,
+        "summary": "src/canonical-audit.js は baseline (2688行) を超過して成長した (2907行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/cli.js",
+        "file": "src/cli.js",
+        "line_count": 4617,
+        "limit": 3930,
+        "baseline": true,
+        "summary": "src/cli.js は baseline (3930行) を超過して成長した (4617行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/execution-state.js",
+        "file": "src/execution-state.js",
+        "line_count": 1919,
+        "limit": 1500,
+        "baseline": false,
+        "summary": "src/execution-state.js は行数予算 (1500行) を超過 (1919行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/guarded-run-session.js",
+        "file": "src/guarded-run-session.js",
+        "line_count": 2575,
+        "limit": 2382,
+        "baseline": true,
+        "summary": "src/guarded-run-session.js は baseline (2382行) を超過して成長した (2575行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/journey-map.js",
+        "file": "src/journey-map.js",
+        "line_count": 1769,
+        "limit": 1757,
+        "baseline": true,
+        "summary": "src/journey-map.js は baseline (1757行) を超過して成長した (1769行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/merge-manager.js",
+        "file": "src/merge-manager.js",
+        "line_count": 1990,
+        "limit": 1500,
+        "baseline": false,
+        "summary": "src/merge-manager.js は行数予算 (1500行) を超過 (1990行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/pr-manager.js",
+        "file": "src/pr-manager.js",
+        "line_count": 15969,
+        "limit": 14922,
+        "baseline": true,
+        "summary": "src/pr-manager.js は baseline (14922行) を超過して成長した (15969行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/session-efficiency-audit.js",
+        "file": "src/session-efficiency-audit.js",
+        "line_count": 2818,
+        "limit": 2750,
+        "baseline": true,
+        "summary": "src/session-efficiency-audit.js は baseline (2750行) を超過して成長した (2818行)"
+      },
+      {
+        "kind": "budget_violation",
+        "severity": "review",
+        "rule_id": "R-003",
+        "id": "budget_violation:file:src/usage-report.js",
+        "file": "src/usage-report.js",
+        "line_count": 2279,
+        "limit": 2131,
+        "baseline": true,
+        "summary": "src/usage-report.js は baseline (2131行) を超過して成長した (2279行)"
+      },
+      {
+        "kind": "orphan_file",
+        "severity": "review",
+        "rule_id": null,
+        "id": "orphan_file:src/scan-ignored-dirs.js",
+        "file": "src/scan-ignored-dirs.js",
+        "summary": "src/scan-ignored-dirs.js はtarget modelのどのモジュールにも属していない"
+      },
+      {
+        "kind": "dependency_cycle",
+        "severity": "review",
+        "rule_id": null,
+        "id": "dependency_cycle_scc:agent-runtime+architecture+cli+diagnosis+evidence+gate-pr+graph+reporting+review+run-session+scanners+spec+story+task+uiux-design+workspace-infra",
+        "members": [
+          "agent-runtime",
+          "architecture",
+          "cli",
+          "diagnosis",
+          "evidence",
+          "gate-pr",
+          "graph",
+          "reporting",
+          "review",
+          "run-session",
+          "scanners",
+          "spec",
+          "story",
+          "task",
+          "uiux-design",
+          "workspace-infra"
+        ],
+        "module_edge_count": 88,
+        "import_edge_count": 347,
+        "mutual_pairs": [
+          [
+            "architecture",
+            "gate-pr"
+          ],
+          [
+            "cli",
+            "diagnosis"
+          ],
+          [
+            "cli",
+            "gate-pr"
+          ],
+          [
+            "cli",
+            "story"
+          ],
+          [
+            "cli",
+            "workspace-infra"
+          ],
+          [
+            "diagnosis",
+            "gate-pr"
+          ],
+          [
+            "diagnosis",
+            "spec"
+          ],
+          [
+            "diagnosis",
+            "story"
+          ],
+          [
+            "evidence",
+            "gate-pr"
+          ],
+          [
+            "evidence",
+            "workspace-infra"
+          ],
+          [
+            "gate-pr",
+            "reporting"
+          ],
+          [
+            "gate-pr",
+            "review"
+          ],
+          [
+            "gate-pr",
+            "spec"
+          ],
+          [
+            "gate-pr",
+            "story"
+          ],
+          [
+            "gate-pr",
+            "workspace-infra"
+          ],
+          [
+            "reporting",
+            "workspace-infra"
+          ],
+          [
+            "review",
+            "run-session"
+          ],
+          [
+            "review",
+            "workspace-infra"
+          ],
+          [
+            "run-session",
+            "workspace-infra"
+          ],
+          [
+            "story",
+            "task"
+          ]
+        ],
+        "feedback_edge_candidates": [
+          {
+            "from": "agent-runtime",
+            "to": "evidence",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/verification-runner.js -> src/verification-evidence.js"
+            ]
+          },
+          {
+            "from": "architecture",
+            "to": "gate-pr",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/architecture-readiness.js -> src/pr-manager.js"
+            ]
+          },
+          {
+            "from": "cli",
+            "to": "scanners",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/cli.js -> src/agent-harness-scanner.js"
+            ]
+          },
+          {
+            "from": "cli",
+            "to": "task",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/cli.js -> src/task-manager.js"
+            ]
+          },
+          {
+            "from": "diagnosis",
+            "to": "cli",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/diagnostic-engine.js -> src/runtime-info.js"
+            ]
+          }
+        ],
+        "summary": "モジュール循環依存 (強連結成分, 16 modules): agent-runtime, architecture, cli, diagnosis, evidence, gate-pr, graph, reporting, review, run-session, scanners, spec, story, task, uiux-design, workspace-infra — 内部 88 module edges / 347 imports, 相互依存ペア 20 組"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:architecture+gate-pr",
+        "modules": [
+          "architecture",
+          "gate-pr"
+        ],
+        "import_edge_count": 3,
+        "directions": [
+          {
+            "from": "architecture",
+            "to": "gate-pr",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/architecture-readiness.js -> src/pr-manager.js"
+            ]
+          },
+          {
+            "from": "gate-pr",
+            "to": "architecture",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/playbook-exporter.js -> src/architecture-store.js",
+              "src/pr-manager.js -> src/code-topology-provider.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: architecture <-> gate-pr (architecture->gate-pr 1 imports, gate-pr->architecture 2 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:cli+diagnosis",
+        "modules": [
+          "cli",
+          "diagnosis"
+        ],
+        "import_edge_count": 4,
+        "directions": [
+          {
+            "from": "cli",
+            "to": "diagnosis",
+            "import_edge_count": 3,
+            "example_edges": [
+              "src/cli.js -> src/agent-harness-map.js",
+              "src/cli.js -> src/diagnostic-engine.js",
+              "src/cli.js -> src/check-packs.js"
+            ]
+          },
+          {
+            "from": "diagnosis",
+            "to": "cli",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/diagnostic-engine.js -> src/runtime-info.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: cli <-> diagnosis (cli->diagnosis 3 imports, diagnosis->cli 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:cli+gate-pr",
+        "modules": [
+          "cli",
+          "gate-pr"
+        ],
+        "import_edge_count": 10,
+        "directions": [
+          {
+            "from": "cli",
+            "to": "gate-pr",
+            "import_edge_count": 9,
+            "example_edges": [
+              "src/cli.js -> src/validation-sequencing.js",
+              "src/cli.js -> src/pr-manager.js",
+              "src/cli.js -> src/outcome-manager.js"
+            ]
+          },
+          {
+            "from": "gate-pr",
+            "to": "cli",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/pr-manager.js -> src/runtime-info.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: cli <-> gate-pr (cli->gate-pr 9 imports, gate-pr->cli 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:cli+story",
+        "modules": [
+          "cli",
+          "story"
+        ],
+        "import_edge_count": 5,
+        "directions": [
+          {
+            "from": "cli",
+            "to": "story",
+            "import_edge_count": 4,
+            "example_edges": [
+              "src/cli.js -> src/brainbase-importer.js",
+              "src/cli.js -> src/nocodb-story-sync.js",
+              "src/cli.js -> src/story-run-portfolio.js"
+            ]
+          },
+          {
+            "from": "story",
+            "to": "cli",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/story-catalog-generator.js -> src/presets.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: cli <-> story (cli->story 4 imports, story->cli 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:cli+workspace-infra",
+        "modules": [
+          "cli",
+          "workspace-infra"
+        ],
+        "import_edge_count": 16,
+        "directions": [
+          {
+            "from": "cli",
+            "to": "workspace-infra",
+            "import_edge_count": 15,
+            "example_edges": [
+              "src/cli.js -> src/workspace.js",
+              "src/cli.js -> src/process-record-store.js",
+              "src/cli.js -> src/guard.js"
+            ]
+          },
+          {
+            "from": "workspace-infra",
+            "to": "cli",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/repo-status.js -> src/doctor.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: cli <-> workspace-infra (cli->workspace-infra 15 imports, workspace-infra->cli 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:diagnosis+gate-pr",
+        "modules": [
+          "diagnosis",
+          "gate-pr"
+        ],
+        "import_edge_count": 4,
+        "directions": [
+          {
+            "from": "diagnosis",
+            "to": "gate-pr",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/check-packs.js -> src/pr-manager.js"
+            ]
+          },
+          {
+            "from": "gate-pr",
+            "to": "diagnosis",
+            "import_edge_count": 3,
+            "example_edges": [
+              "src/pr-manager.js -> src/refactoring-delta-reporter.js",
+              "src/pr-manager.js -> src/requirement-consistency.js",
+              "src/pr-manager.js -> src/diagram-requirement-resolver.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: diagnosis <-> gate-pr (diagnosis->gate-pr 1 imports, gate-pr->diagnosis 3 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:diagnosis+spec",
+        "modules": [
+          "diagnosis",
+          "spec"
+        ],
+        "import_edge_count": 3,
+        "directions": [
+          {
+            "from": "diagnosis",
+            "to": "spec",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/diagnostic-engine.js -> src/spec-drift.js",
+              "src/diagnostic-engine.js -> src/spec-store.js"
+            ]
+          },
+          {
+            "from": "spec",
+            "to": "diagnosis",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/spec-fingerprint.js -> src/requirement-consistency.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: diagnosis <-> spec (diagnosis->spec 2 imports, spec->diagnosis 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:diagnosis+story",
+        "modules": [
+          "diagnosis",
+          "story"
+        ],
+        "import_edge_count": 2,
+        "directions": [
+          {
+            "from": "diagnosis",
+            "to": "story",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/diagnostic-engine.js -> src/story-manager.js"
+            ]
+          },
+          {
+            "from": "story",
+            "to": "diagnosis",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/brainbase-importer.js -> src/refactoring-delta-reporter.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: diagnosis <-> story (diagnosis->story 1 imports, story->diagnosis 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:evidence+gate-pr",
+        "modules": [
+          "evidence",
+          "gate-pr"
+        ],
+        "import_edge_count": 11,
+        "directions": [
+          {
+            "from": "evidence",
+            "to": "gate-pr",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/ci-evidence.js -> src/validation-sequencing.js",
+              "src/verification-evidence.js -> src/content-binding.js"
+            ]
+          },
+          {
+            "from": "gate-pr",
+            "to": "evidence",
+            "import_edge_count": 9,
+            "example_edges": [
+              "src/canonical-audit.js -> src/evidence-cost-budget.js",
+              "src/pr-manager.js -> src/performance-evidence.js",
+              "src/pr-manager.js -> src/ci-evidence.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: evidence <-> gate-pr (evidence->gate-pr 2 imports, gate-pr->evidence 9 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:evidence+workspace-infra",
+        "modules": [
+          "evidence",
+          "workspace-infra"
+        ],
+        "import_edge_count": 19,
+        "directions": [
+          {
+            "from": "evidence",
+            "to": "workspace-infra",
+            "import_edge_count": 18,
+            "example_edges": [
+              "src/ci-evidence.js -> src/workspace.js",
+              "src/ci-evidence.js -> src/artifact-routing.js",
+              "src/evidence-reuse.js -> src/workspace.js"
+            ]
+          },
+          {
+            "from": "workspace-infra",
+            "to": "evidence",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/merge-manager.js -> src/evidence-cost-budget.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: evidence <-> workspace-infra (evidence->workspace-infra 18 imports, workspace-infra->evidence 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:gate-pr+reporting",
+        "modules": [
+          "gate-pr",
+          "reporting"
+        ],
+        "import_edge_count": 10,
+        "directions": [
+          {
+            "from": "gate-pr",
+            "to": "reporting",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/pr-manager.js -> src/delivery-efficiency-guardrail.js",
+              "src/pr-manager.js -> src/html-report.js"
+            ]
+          },
+          {
+            "from": "reporting",
+            "to": "gate-pr",
+            "import_edge_count": 8,
+            "example_edges": [
+              "src/delivery-efficiency-guardrail.js -> src/budget-override-authority.js",
+              "src/html-report.js -> src/merge-public-projection.js",
+              "src/html-report.js -> src/reconciliation-action.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: gate-pr <-> reporting (gate-pr->reporting 2 imports, reporting->gate-pr 8 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:gate-pr+review",
+        "modules": [
+          "gate-pr",
+          "review"
+        ],
+        "import_edge_count": 10,
+        "directions": [
+          {
+            "from": "gate-pr",
+            "to": "review",
+            "import_edge_count": 7,
+            "example_edges": [
+              "src/pr-manager.js -> src/adjudication.js",
+              "src/pr-manager.js -> src/review-inspection-inputs.js",
+              "src/pr-manager.js -> src/agent-review.js"
+            ]
+          },
+          {
+            "from": "review",
+            "to": "gate-pr",
+            "import_edge_count": 3,
+            "example_edges": [
+              "src/adjudication.js -> src/traceability.js",
+              "src/agent-review.js -> src/content-binding.js",
+              "src/agent-review.js -> src/validation-sequencing.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: gate-pr <-> review (gate-pr->review 7 imports, review->gate-pr 3 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:gate-pr+spec",
+        "modules": [
+          "gate-pr",
+          "spec"
+        ],
+        "import_edge_count": 8,
+        "directions": [
+          {
+            "from": "gate-pr",
+            "to": "spec",
+            "import_edge_count": 7,
+            "example_edges": [
+              "src/playbook-exporter.js -> src/spec-store.js",
+              "src/pr-manager.js -> src/spec-store.js",
+              "src/pr-manager.js -> src/spec-validator.js"
+            ]
+          },
+          {
+            "from": "spec",
+            "to": "gate-pr",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/pre-spec-readiness.js -> src/pr-manager.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: gate-pr <-> spec (gate-pr->spec 7 imports, spec->gate-pr 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:gate-pr+story",
+        "modules": [
+          "gate-pr",
+          "story"
+        ],
+        "import_edge_count": 2,
+        "directions": [
+          {
+            "from": "gate-pr",
+            "to": "story",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/playbook-exporter.js -> src/story-manager.js"
+            ]
+          },
+          {
+            "from": "story",
+            "to": "gate-pr",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/story-manager.js -> src/traceability.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: gate-pr <-> story (gate-pr->story 1 imports, story->gate-pr 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:gate-pr+workspace-infra",
+        "modules": [
+          "gate-pr",
+          "workspace-infra"
+        ],
+        "import_edge_count": 38,
+        "directions": [
+          {
+            "from": "gate-pr",
+            "to": "workspace-infra",
+            "import_edge_count": 25,
+            "example_edges": [
+              "src/canonical-audit.js -> src/workspace.js",
+              "src/canonical-audit.js -> src/artifact-routing.js",
+              "src/decision-outcome-ledger.js -> src/atomic-file.js"
+            ]
+          },
+          {
+            "from": "workspace-infra",
+            "to": "gate-pr",
+            "import_edge_count": 13,
+            "example_edges": [
+              "src/checkpoint-manager.js -> src/pr-manager.js",
+              "src/decision-records.js -> src/budget-override-authority.js",
+              "src/execution-state.js -> src/reconciliation-action.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: gate-pr <-> workspace-infra (gate-pr->workspace-infra 25 imports, workspace-infra->gate-pr 13 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:reporting+workspace-infra",
+        "modules": [
+          "reporting",
+          "workspace-infra"
+        ],
+        "import_edge_count": 8,
+        "directions": [
+          {
+            "from": "reporting",
+            "to": "workspace-infra",
+            "import_edge_count": 6,
+            "example_edges": [
+              "src/html-report.js -> src/language.js",
+              "src/session-efficiency-audit.js -> src/run-lineage.js",
+              "src/session-efficiency-audit.js -> src/workspace.js"
+            ]
+          },
+          {
+            "from": "workspace-infra",
+            "to": "reporting",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/merge-manager.js -> src/html-report.js",
+              "src/merge-manager.js -> src/session-efficiency-audit.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: reporting <-> workspace-infra (reporting->workspace-infra 6 imports, workspace-infra->reporting 2 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:review+run-session",
+        "modules": [
+          "review",
+          "run-session"
+        ],
+        "import_edge_count": 5,
+        "directions": [
+          {
+            "from": "review",
+            "to": "run-session",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/agent-review.js -> src/run-context-capsule.js"
+            ]
+          },
+          {
+            "from": "run-session",
+            "to": "review",
+            "import_edge_count": 4,
+            "example_edges": [
+              "src/agent-runtime-adapter.js -> src/dispatch-identity.js",
+              "src/guarded-run-session.js -> src/dispatch-identity.js",
+              "src/independent-review-orchestrator.js -> src/agent-review.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: review <-> run-session (review->run-session 1 imports, run-session->review 4 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:review+workspace-infra",
+        "modules": [
+          "review",
+          "workspace-infra"
+        ],
+        "import_edge_count": 16,
+        "directions": [
+          {
+            "from": "review",
+            "to": "workspace-infra",
+            "import_edge_count": 14,
+            "example_edges": [
+              "src/adjudication.js -> src/workspace.js",
+              "src/adjudication.js -> src/artifact-routing.js",
+              "src/adjudication.js -> src/decision-records.js"
+            ]
+          },
+          {
+            "from": "workspace-infra",
+            "to": "review",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/checkpoint-manager.js -> src/agent-review.js",
+              "src/execution-state.js -> src/agent-review.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: review <-> workspace-infra (review->workspace-infra 14 imports, workspace-infra->review 2 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:run-session+workspace-infra",
+        "modules": [
+          "run-session",
+          "workspace-infra"
+        ],
+        "import_edge_count": 13,
+        "directions": [
+          {
+            "from": "run-session",
+            "to": "workspace-infra",
+            "import_edge_count": 12,
+            "example_edges": [
+              "src/agent-runtime-adapter.js -> src/run-lineage.js",
+              "src/guarded-run-session.js -> src/execution-state.js",
+              "src/guarded-run-session.js -> src/git-identity.js"
+            ]
+          },
+          {
+            "from": "workspace-infra",
+            "to": "run-session",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/decision-records.js -> src/run-context-capsule.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: run-session <-> workspace-infra (run-session->workspace-infra 12 imports, workspace-infra->run-session 1 imports)"
+      },
+      {
+        "kind": "mutual_dependency",
+        "severity": "review",
+        "rule_id": null,
+        "id": "mutual_dependency:story+task",
+        "modules": [
+          "story",
+          "task"
+        ],
+        "import_edge_count": 3,
+        "directions": [
+          {
+            "from": "story",
+            "to": "task",
+            "import_edge_count": 2,
+            "example_edges": [
+              "src/brainbase-importer.js -> src/story-task-generator.js",
+              "src/story-manager.js -> src/story-task-generator.js"
+            ]
+          },
+          {
+            "from": "task",
+            "to": "story",
+            "import_edge_count": 1,
+            "example_edges": [
+              "src/task-manager.js -> src/story-manager.js"
+            ]
+          }
+        ],
+        "summary": "モジュール相互依存: story <-> task (story->task 2 imports, task->story 1 imports)"
+      }
+    ],
+    "summary": {
+      "new_count": 0,
+      "new_by_severity": {},
+      "resolved_count": 0,
+      "unchanged_count": 55,
+      "by_kind": {
+        "undeclared_dependency": {
+          "new": 0,
+          "resolved": 0,
+          "unchanged": 22
+        },
+        "budget_violation": {
+          "new": 0,
+          "resolved": 0,
+          "unchanged": 11
+        },
+        "orphan_file": {
+          "new": 0,
+          "resolved": 0,
+          "unchanged": 1
+        },
+        "stale_pattern": {
+          "new": 0,
+          "resolved": 0,
+          "unchanged": 0
+        },
+        "dependency_cycle": {
+          "new": 0,
+          "resolved": 0,
+          "unchanged": 1
+        },
+        "mutual_dependency": {
+          "new": 0,
+          "resolved": 0,
+          "unchanged": 20
+        }
+      }
+    }
+  }
+}

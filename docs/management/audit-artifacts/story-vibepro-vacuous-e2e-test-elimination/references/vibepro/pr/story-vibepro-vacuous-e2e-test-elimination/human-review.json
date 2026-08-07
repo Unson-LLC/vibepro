@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "created_at": "2026-08-02T01:44:07.799Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is needs_verification with 2 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: 差分が 46 files あり、レビュー可能な目安 30 files を超えている; repo制御ファイルやagent設定が差分に含まれている; baseからのcommitが 33 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-vacuous-e2e-test-elimination.md, docs/features/routing-profiles-rendered-projections/02_functional_spec.md, docs/specs/vibepro-managed-worktree-gate.md, docs/specs/vibepro-pr-ship-command.md)"
+    },
+    "decision_records": {
+      "total": 32,
+      "open": 0,
+      "by_type": {
+        "waiver": 11,
+        "needs_review": 20,
+        "noise": 1
+      },
+      "by_status": {
+        "accepted": 32
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+          "expected_root": null,
+          "expected_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "current_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785630846348-126557dd",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:design_ssot_reconciliation",
+        "source_status": null,
+        "summary": "Waive gate:design_ssot_reconciliation: both action items are pre-existing registry gaps in other Stories' spec docs, and closing them inside this PR is refused by VibePro's own cross-Story contamination guard",
+        "reason": "ATTRIBUTION. Recorded by the implementing agent as an engineering disposition. This is NOT an owner approval and no human has been asked to approve it; the owner's grants for this Story cover the landing sequence and the 48-file scope, not this gate. It is recorded under the branch VibePro itself sanctions for unresolved NON-CRITICAL gates, namely an explicit waiver reason. critical_unresolved_gate_count is 0 and blocking_gate_count is 0 at this head. WHAT IS WAIVED. gate:design_ssot_reconciliation status needs_review, from exactly two action items of kind unregistered_changed_design_doc: docs/specs/vibepro-managed-worktree-gate.md and docs/specs/vibepro-pr-ship-command.md. gate:senior_gap_judgment inherits the same two items plus a rollup of the gate itself as its three non-deferrable gaps, so this is one root cause presented twice, not two independent problems. PRE-EXISTING, NOT CAUSED BY THIS WORK. Both files were created on 2026-06-03, first commits 6f47eb5c and ee3b177b, and neither has ever appeared in design-ssot.json; grep returns zero occurrences of either basename. This Story began 2026-07-28. The gap predates it by nearly two months. WHY THE PROPER FIX IS REFUSED BY THE TOOL. Registration was attempted on 2026-07-30 and reverted, recorded in decision-1785409722747-95c630b8. Registering a design root requires adding parent_design to its child docs, and one of those children is another Story's Story doc, which pulled that document into this PR's diff and made gate:story_source_integrity report story_source_mismatch. VibePro refuses the cross-Story contamination that closing this gap inside this PR requires. Registering only the spec child was not attempted at this head and may be viable; it is left to the owning Stories because doing it here would restart the head-bound adjudication of 6 clauses and 14 judgment items for a documentation-registry change that alters no behaviour. WHY THE RESIDUAL RISK IS SMALL. This PR's entire change to both files is one line each, in the same section, doing the same thing: removing a pointer to a test file this Story deletes. vibepro-managed-worktree-gate.md previously cited a .test.js that still exists plus a .spec.ts that does not; the line now describes what the surviving file actually executes. vibepro-pr-ship-command.md previously cited two files that are both deleted; the line now names test/vibepro-cli.test.js as the canonical coverage. Leaving either untouched would keep directing a reader to a nonexistent test as the source of truth for regression coverage, which is the precise defect this Story exists to remove. Each file also carries a story_id frontmatter key binding it to its own Story, so design lineage is resolvable without the registry entry. HONEST LIMIT. The registry gap is not closed by this PR, only declined. Two design docs remain unregistered in Design SSOT after merge, and the reconciliation gate will keep reporting them for any future PR that touches them. The correct owners are story-vibepro-managed-worktree-gate and story-vibepro-pr-ship-command.",
+        "reviewer": null,
+        "artifact": null,
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+            "expected_root": null,
+            "expected_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+            "current_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "current_branch": "claude/vacuous-e2e-deletions",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-02T00:34:06.341Z"
+        },
+        "recorded_at": "2026-08-02T00:34:06.349Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "needs_quality_closure",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 1
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-02T01:44:02.445Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "branch": "claude/vacuous-e2e-deletions",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "5626ddb592359a3673e823a490cfa93facd64905",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

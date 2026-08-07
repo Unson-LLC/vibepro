@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "role": "runtime_contract",
+  "stage": "implementation",
+  "reviewed_head": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+  "agent_id": "tar_planning_product_v2",
+  "agent_thread_id": "/root/tar_planning_product_v2",
+  "summary": "Task proof only clears the mixed_repo_control_surface condition; atomic authority, Gate, review, verification, strict-target validation, and legacy fail-closed behavior remain mandatory.",
+  "findings": [],
+  "inspection_summary": "Reviewed the final frozen HEAD, Story, Architecture, Spec, evaluator, PR integration, CLI contracts, Story E2E, and all five runner-direct artifacts. Unit 303/303, integration 10/10, typecheck, docs build, and E2E passed with strict HEAD and unchanged-tree evidence.",
+  "inspection_inputs": [
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "The two commits after the prior runtime review only reserve Story-local review budget and do not change runtime semantics.",
+    "All verification evidence is now rebound to final HEAD ade5b873cd5cb3c42ffedf58bff2bdd959b52e73.",
+    "The final unit evidence expands to 303 related runtime tests and retains malformed, legacy, strict-target, and no-Task fail-closed coverage."
+  ],
+  "evidence_boundary": [
+    "Read-only review of runner-direct artifacts and logs; the reviewer did not rerun commands.",
+    "Cloud, deployment, and post-merge runtime remain outside this local PR-contract review."
+  ]
+}

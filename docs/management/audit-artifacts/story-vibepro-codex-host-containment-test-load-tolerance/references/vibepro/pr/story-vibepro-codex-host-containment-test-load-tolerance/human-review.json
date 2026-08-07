@@ -1,0 +1,165 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "created_at": "2026-08-02T21:31:38.456Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 5 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: premise correction (2026-08-03): 当初の前提「production は決定的に終了を保証しており、テスト側の検知余裕だけが不足」は full suite 実測で反証された（300000ms deadline でも 303 秒 timeout）。真因は containment の登録レース: worker は codex 子プロセスを detached（独立プロセス群）で spawn し pid 登録 (codex-process.json) が非同期 write のため、高負荷で worker の event loop が飢餓すると、host は codexPid 不明のまま escalation を完走し waitForPidExit(null)=true で『封じ込め成功』を返す。worker が SIGTERM ハンドラ実行前に SIGKILL されると孤児 codex には誰もシグナルを送らない。alternatives considered: (a) テスト側 deadline 拡大のみ（実測で反証済み）、(b) テストが codex-process.json 登録完了を待ってから shutdown する（本番で任意タイミングの shutdown に存在する穴を検証範囲から外すだけでレースを隠蔽する、却下）、(c) src 修正でレース窓を閉じる。selected: (c) 最小手術 — worker は spawn 直後に writeFileSync で同期的に codex-process.json を登録し（未登録窓を event loop 非依存のマイクロ秒単位へ縮小）、host の terminateWorkerTree は codexPid 不明のとき各 escalation 段階で codex-process.json を再解決してから殺害・確認する。テスト側 deadline 拡大（負荷起因の正当な遅延吸収）は維持する。compatibility impact: shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は不変。登録タイミングと再解決だけが変わる。rollback plan: worker の同期 write を async に戻し、host の再解決を削除するだけ。boundary and scope: src/codex-subagent-host.js の terminateWorkerTree/shutdown、src/codex-subagent-host-worker.js の pid 登録、test/codex-subagent-host.test.js に限定。"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "expected_root": null,
+          "expected_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785704593532-a5b20f43",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "Scope is reviewable as one coherent intent: containment flake root-cause fix with its registration surface",
+        "reason": "One reviewer can read this PR as a single consistent judgment: the diff is one root-cause investigation (containment test flake) yielding the fixture atomic-write fix, a narrow src registration-race hardening with escalation behavior unchanged, an e2e flow replay, and the mandatory VibePro registration surface (Story/spec pointer/design-ssot/config). pr_split_scope round-2 independently reviewed and passed the bundling; review owner map: gate_evidence, pr_split_scope, release_risk all have closed passing reviews with named subagent provenance.",
+        "reviewer": null,
+        "artifact": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+            "expected_root": null,
+            "expected_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+            "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "current_branch": "claude/relaxed-moser-327f0c",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-02T21:03:13.526Z"
+        },
+        "recorded_at": "2026-08-02T21:03:13.533Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-02T21:31:35.490Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "branch": "claude/relaxed-moser-327f0c",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "e9826c5176830b6cd8956030a2a20e9eb046c87b",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

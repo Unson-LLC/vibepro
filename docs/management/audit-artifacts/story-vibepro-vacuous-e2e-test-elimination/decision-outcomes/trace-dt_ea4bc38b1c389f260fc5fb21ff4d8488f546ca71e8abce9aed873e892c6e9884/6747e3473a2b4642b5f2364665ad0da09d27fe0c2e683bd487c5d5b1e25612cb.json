@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "ledger_path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_ea4bc38b1c389f260fc5fb21ff4d8488f546ca71e8abce9aed873e892c6e9884"
+  },
+  "parent_revision_fingerprint": "6a905a5a60a404316f567fd22763711cc275357b2de45627605ae96c5e2805fd",
+  "revision_fingerprint": "6747e3473a2b4642b5f2364665ad0da09d27fe0c2e683bd487c5d5b1e25612cb",
+  "trace": {
+    "decision_trace_id": "dt_ea4bc38b1c389f260fc5fb21ff4d8488f546ca71e8abce9aed873e892c6e9884",
+    "collision_group": null,
+    "trace_source_ref": "tsr_9faca648b7ed4dda975adb99de1691907ad0412737a2aade45607429d769b431",
+    "normalized_subject_key": "gate:judgment_dag_adjudication:axis:scope_reviewability",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/decision-records.json",
+      "native_id": "decision-1785543790766-421ceda1",
+      "digest": "89d960cf0f66a2ca67dcb7ec66dda0125ed6be027ef5368e4c35f07e8400cf74",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "parent_revision_fingerprint": "6a905a5a60a404316f567fd22763711cc275357b2de45627605ae96c5e2805fd",
+    "revision_fingerprint": "6747e3473a2b4642b5f2364665ad0da09d27fe0c2e683bd487c5d5b1e25612cb",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_ea4bc38b1c389f260fc5fb21ff4d8488f546ca71e8abce9aed873e892c6e9884"
+        },
+        "parent_revision_fingerprint": "5f957d805e3ff6347467da6ed54002f4f8c434654206dea4ea3a3249d3d2bfd6"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 407,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/407",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8dc2c3d65ec9acd7936a0cbdb07b4009242d1ff3",
+        "status": "merged",
+        "merged_at": "2026-08-02T01:44:24Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

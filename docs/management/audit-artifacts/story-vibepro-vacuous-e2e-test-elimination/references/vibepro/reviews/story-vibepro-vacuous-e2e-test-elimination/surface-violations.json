@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-review-surface-violations-v1",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "append_only": true,
+  "updated_at": "2026-07-31T04:20:49.494Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-57644591ac98e695",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "head_sha"
+      ],
+      "started": {
+        "head_sha": "36e09524fc7b6eb865c8c727e6aee89cec4df680",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "stage": "gate",
+      "role": "gate_evidence",
+      "lifecycle_id": "755ae805-4819-4cb4-98e1-92af47aff604",
+      "agent_system": "claude_code",
+      "agent_id": "a349a42443f965160",
+      "started_at": "2026-07-31T01:51:22.233Z",
+      "close_reason": "completed",
+      "close_evidence": "subagent a349a42443f965160 returned its final JSON verdict and terminated, but its verdict was bound to head 36e09524 which has since been superseded by an origin/main merge and four fix commits; the verdict content was folded into those fixes and deliberately NOT recorded as a result, because recording a stale-head verdict is the evidence laundering this Story exists to prevent. Transcript at /private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a349a42443f965160.output",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-31T04:20:46.829Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-d4781b17f9fe81a0",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "head_sha"
+      ],
+      "started": {
+        "head_sha": "36e09524fc7b6eb865c8c727e6aee89cec4df680",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "stage": "gate",
+      "role": "pr_split_scope",
+      "lifecycle_id": "5d34763e-3307-4e82-b3ff-7cf96bdb6b4c",
+      "agent_system": "claude_code",
+      "agent_id": "aefccc98ebee07886",
+      "started_at": "2026-07-31T01:51:23.467Z",
+      "close_reason": "completed",
+      "close_evidence": "subagent aefccc98ebee07886 returned its final JSON verdict and terminated, but its verdict was bound to head 36e09524 which has since been superseded by an origin/main merge and four fix commits; the verdict content was folded into those fixes and deliberately NOT recorded as a result, because recording a stale-head verdict is the evidence laundering this Story exists to prevent. Transcript at /private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/aefccc98ebee07886.output",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-31T04:20:48.108Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-ba1f1db5a4865ed6",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "head_sha"
+      ],
+      "started": {
+        "head_sha": "36e09524fc7b6eb865c8c727e6aee89cec4df680",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "c364fb617b8bf96085f5e3d507b56fc13c5b5fb7",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "stage": "gate",
+      "role": "release_risk",
+      "lifecycle_id": "a24d3a9b-2a94-427f-9612-328ba2976210",
+      "agent_system": "claude_code",
+      "agent_id": "af49fcd2962120cb7",
+      "started_at": "2026-07-31T01:51:24.738Z",
+      "close_reason": "completed",
+      "close_evidence": "subagent af49fcd2962120cb7 returned its final JSON verdict and terminated, but its verdict was bound to head 36e09524 which has since been superseded by an origin/main merge and four fix commits; the verdict content was folded into those fixes and deliberately NOT recorded as a result, because recording a stale-head verdict is the evidence laundering this Story exists to prevent. Transcript at /private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/af49fcd2962120cb7.output",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-31T04:20:49.493Z"
+    }
+  ]
+}

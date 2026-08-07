@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+  "ledger_path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_33e15f804d7b59aedeff632b7f2a0b1374d3f52f4f86d5db25697affd6d83698"
+  },
+  "parent_revision_fingerprint": "74478207f83953751e5659dd2788d9e32089a9896b180db61ff04739046bbed8",
+  "revision_fingerprint": "3f23adcb00d2fb799898e9d1b890cad44316d6ffa28d074bd0a212941172cc56",
+  "trace": {
+    "decision_trace_id": "dt_33e15f804d7b59aedeff632b7f2a0b1374d3f52f4f86d5db25697affd6d83698",
+    "collision_group": null,
+    "trace_source_ref": "tsr_0a3608e825ecd15f144c9cbf0f1558e5b630e8d86f8644823cf7c83ceb9b7239",
+    "normalized_subject_key": "gate:judgment_axis_scope_reviewability",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/decision-records.json",
+      "native_id": "decision-1785736509663-1aefe794",
+      "digest": "9ebfb17e0859561292b9e19c541cc4da784b7713280de9bffd1e7178484fe79f",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "parent_revision_fingerprint": "74478207f83953751e5659dd2788d9e32089a9896b180db61ff04739046bbed8",
+    "revision_fingerprint": "3f23adcb00d2fb799898e9d1b890cad44316d6ffa28d074bd0a212941172cc56",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_33e15f804d7b59aedeff632b7f2a0b1374d3f52f4f86d5db25697affd6d83698"
+        },
+        "parent_revision_fingerprint": "93394d42c30707e043bf97d705055e11d52b94b77a871dbeefa88fd93f375bd8"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 419,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/419",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "52da597503d976681590f6f5362d0479d3845027",
+        "status": "merged_externally",
+        "merged_at": "2026-08-03T08:25:33Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

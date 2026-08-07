@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "created_at": "2026-07-29T16:13:16.877Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADR不要: The alternative of recomputing the whole reconciliation block on every binding pass was rejected because other reconciliation reasons (delivery, canonical audit persistence) are owned by their own code paths; the compatible boundary is that applyDecisionOutcomeBinding only removes the failure marker it itself sets. Rollback is reverting the single function change; artifacts written with the stale flag remain valid and self-heal on the next successful binding pass.",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADR不要: The alternative of recomputing the whole reconciliation block on every binding pass was rejected because other reconciliation reasons (delivery, canonical audit persistence) are owned by their own code paths; the compatible boundary is that applyDecisionOutcomeBinding only removes the failure marker it itself sets. Rollback is reverting the single function change; artifacts written with the stale flag remain valid and self-heal on the next successful binding pass."
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "3 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-29T16:12:18.162Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "branch": "claude/nice-raman-8e6b75",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "6c6115cbeb86fb045048e57a5f47211504772d75",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

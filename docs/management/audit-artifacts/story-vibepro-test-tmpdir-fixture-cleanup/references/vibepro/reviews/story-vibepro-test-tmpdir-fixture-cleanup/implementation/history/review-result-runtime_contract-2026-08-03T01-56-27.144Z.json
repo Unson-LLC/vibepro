@@ -1,0 +1,142 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Differential: the added side-effect imports only redirect TMPDIR/TMP/TEMP; both patched files' spawnSync children inherit the redirected env with no override; 21/21 tests across the three target files pass; independent reimplementation of the walk over 141 matched files found 0 offenders and 0 false positives",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diff scope via git show; helper env model re-read; patched files' spawn usage checked for env overrides; three target files executed 21/21; independent Node walk cross-check",
+    "evidence": null,
+    "inputs": [
+      "test/support/scratch-tmpdir.js",
+      "test/node20-e2e-ts-ci-visibility.test.js",
+      "test/e2e-product-execution-lint.test.js",
+      "test/scratch-tmpdir-conformance.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "fix confirmed without runtime regressions or false positives"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "current_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+      "current_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T01:56:27.144Z",
+  "git_context": {
+    "head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T01:56:27.116Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "surface_files": [
+      {
+        "path": "test/e2e-product-execution-lint.test.js",
+        "sha256": "7c377f9c3e1464d56749917e4d4170dbea560deb4ede876d2ebca77f3fb952f6",
+        "size": 12491
+      },
+      {
+        "path": "test/node20-e2e-ts-ci-visibility.test.js",
+        "sha256": "9e3c9d72e56e0b341461fcf8786de503092eb5e0b3865b8a4ef9974d23851656",
+        "size": 6000
+      },
+      {
+        "path": "test/scratch-tmpdir-conformance.test.js",
+        "sha256": "be6306f90423328780dac2b54d347a70dabb0f7306c5c31f3e769784334b93c1",
+        "size": 4197
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1f15164d4cf5582a09495437e3b8c9a90d5a947799193e96720a03f4c048728f"
+  },
+  "source_fingerprint": "a165bea80ededc6714bc10056f60669d76854e0b7c619509d362814a09395a5b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a84e93cb196520673",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a84e93cb196520673",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/verdict-runtime_contract-r3.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a84e93cb196520673",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

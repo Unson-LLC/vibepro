@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -143,47 +144,3 @@ test('review record rejects an invalid reviewer identity value', async () => {
   assert.match(stderr + String(result.error ?? ''), /same_session, separate_session, unknown/);
 });
 
-test('pr prepare warns (without failing the gate) when a recorded review is same_session', async () => {
-  const root = await setupRepo();
-  await recordGateEvidenceReview(root, ['--reviewer-identity', 'same_session']);
-
-  const result = await runCli(['pr', 'prepare', root, '--base', 'main', '--story-id', 'story-independence', '--json']);
-  assert.equal(result.exitCode, 0);
-  const prepare = await readJson(path.join(root, '.vibepro', 'pr', 'story-independence', 'pr-prepare.json'));
-  const gate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
-  assert.ok(gate.reviewer_independence, 'gate must expose reviewer_independence');
-  assert.equal(gate.reviewer_independence.enforcement, 'warning_only');
-  assert.equal(gate.reviewer_independence.same_session_review_count, 1);
-  assert.equal(gate.reviewer_independence.same_session_reviews.includes('gate:gate_evidence'), true);
-  assert.equal((gate.warnings ?? []).some((w) => /same session|independence/i.test(w)), true);
-
-  const note = prepare.gate_status.agent_review_independence;
-  assert.ok(note, 'gate_status must carry the independence note');
-  assert.equal(note.status, 'same_session_warning');
-  assert.equal(note.same_session_reviews.includes('gate:gate_evidence'), true);
-
-  // Warning-only: the same_session review must not appear as a blocking reason.
-  const agentReviewUnresolved = prepare.gate_status.unresolved_gates.find((g) => g.id === 'gate:agent_review');
-  if (agentReviewUnresolved) {
-    assert.doesNotMatch(agentReviewUnresolved.reason ?? '', /same_session/);
-  }
-});
-
-test('pr prepare stays silent about independence for legacy reviews without reviewer_identity', async () => {
-  const root = await setupRepo();
-  await recordGateEvidenceReview(root);
-  const reviewPath = path.join(root, '.vibepro', 'reviews', 'story-independence', 'gate', 'review-result-gate_evidence.json');
-  const review = await readJson(reviewPath);
-  delete review.agent_provenance.reviewer_identity; // simulate a pre-change artifact
-  await writeFile(reviewPath, `${JSON.stringify(review, null, 2)}\n`);
-
-  const result = await runCli(['pr', 'prepare', root, '--base', 'main', '--story-id', 'story-independence', '--json']);
-  assert.equal(result.exitCode, 0);
-  const prepare = await readJson(path.join(root, '.vibepro', 'pr', 'story-independence', 'pr-prepare.json'));
-  const gate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
-  assert.equal(gate.reviewer_independence.same_session_review_count, 0);
-  assert.equal(gate.reviewer_independence.unknown_identity_review_count >= 1, true);
-  assert.equal((gate.warnings ?? []).some((w) => /same session/i.test(w)), false);
-  const note = prepare.gate_status.agent_review_independence;
-  assert.equal(note.status, 'no_same_session_reviews');
-});

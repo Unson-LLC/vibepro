@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "decision_id": "decision-1785728407129-38df7923",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent — add gate:uiux_intake_judgment to the verification checkpoint's curated gate_ids so the intermediate checkpoint stops emitting a misleading passed signal once the always-required gate node lands. review_owner_map: a single reviewer reads it in the fixed order src/checkpoint-manager.js (one list entry) -> test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js (policy pinned) -> docs/specs contract doc (old/new gate list table) -> design-ssot.json registration. decision_record: this record is the explicit scope-reviewability decision; no split is needed.",
+      "artifact": "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T03:40:29.191Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

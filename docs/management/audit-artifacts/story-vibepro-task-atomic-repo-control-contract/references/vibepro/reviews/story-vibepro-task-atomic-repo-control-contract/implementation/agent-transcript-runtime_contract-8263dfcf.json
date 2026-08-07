@@ -1,0 +1,25 @@
+{
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "reviewed_head": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+  "agent_id": "tar_planning_architecture_v2",
+  "agent_thread_id": "/root/tar_planning_architecture_v2",
+  "agent_session_id": "tar_planning_architecture_v2-8263dfcf-final",
+  "status": "pass",
+  "summary": "Typed Task exact path coverage and dependency connectivity only remove mixed_repo_control_surface; malformed, missing, legacy, uncovered-extra, and disconnected inputs remain fail-closed. Task evidence does not bypass Story atomic metadata, current-HEAD review and verification, Gate, strict target, or the VibePro PR lifecycle. No external API, DB, auth, or environment runtime contract changes were found.",
+  "inspection_summary": "The reviewer inspected the evaluator, PR scope assessment, public CLI repair path, Story E2E, the frozen-head change surface, and strict-head verification evidence. Unit 6/6, integration 10/10, typecheck, docs build, and Story E2E all passed at the exact frozen HEAD without tree mutation. Generated lane coverage and malformed canonical JSON execution are now explicit.",
+  "inspection_inputs": [
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json"
+  ],
+  "judgment_delta": "Prior PASS evidence was stale and generated-lane/parse-path coverage was incomplete -> exact current-HEAD verification plus source, test, and diff inspection confirms the frozen release candidate preserves the runtime contract and closes those gaps.",
+  "findings": []
+}

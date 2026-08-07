@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "updated_at": "2026-08-01T06:36:30.502Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Read line 9 of both docs/reference/cli.md and docs/ja/reference/cli.md. Both state in prose, not merely as a token, that a budget grant writes a tracked docs/management/decisions document of type budget_override_approval, records its path as budget_approval.decision_doc, and that the command fails if that path is gitignored, matching the verified implementation without overstating it. BGT-S-7 passes.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:30.498Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Read docs/management/decisions/2026-07-30-budget-override-story-vibepro-owner-gated-budget-override-1f29ffff.md: it carries approver sato_keigo, the session ref 70ea817c-ee56-48c0-ab7c-612da8629872, and a table enumerating all three grants; git ls-files --error-unmatch confirms it is tracked. Independently recomputed the digest with computeBudgetOverrideDigest from the live .vibepro/config.json override and it matches the document override_digest exactly, so the artifact is not stale. Limit: the referenced transcript itself was not opened; the clause only requires the reference be present.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:26.990Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "findExistingBudgetApprovalDoc (src/decision-records.js:283-292) matches on the budget-override story-id digest8 suffix regardless of date prefix, so a same-digest re-record reuses and overwrites the same path while a digest change yields a different suffix and a new file. Two BGT-S-5 tests pass against real files: the changed-budget case rewrites config to max_subagent_count 14 and asserts a distinct path with both files readable, and the later-date same-digest case asserts reuse rather than a second document.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:20.377Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "buildBudgetApprovalForSource returns null when --source is not a budget source (src/decision-records.js:236-241), and budget_approval: null is set unconditionally in the record shape at line 80, mirroring the secret_exposure not-applicable convention at 81-87; the doc-writing block at line 96 is skipped. BGT-S-4 passes, asserting budget_approval is null and that docs/management/decisions does not exist (ENOENT).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:16.795Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "isPathGitIgnored (src/decision-records.js:484-500) fails closed on any non-1 git check-ignore exit, and the throw at 307-310 precedes writeJsonAtomic at line 113 so no workspace record can be written. Both BGT-S-3 tests pass: the gitignored-path case asserts the records JSON is ENOENT, and the undeterminable-status case asserts no fallback to the untracked channel.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:03.713Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "src/decision-records.js:96-101 assigns budget_approval.decision_doc from writeBudgetApprovalDoc before the workspace record is persisted at line 113; line 345 returns a POSIX repo-relative path. BGT-S-2 re-reads the workspace decision-records.json from disk, asserts equality with the CLI JSON output, and asserts git check-ignore does not match the path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:00.544Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Read src/decision-records.js:294-346: writeBudgetApprovalDoc builds docs/management/decisions/<date>-budget-override-<story-id>-<digest8>.md with frontmatter type/decision_id/story_id/status/approver/approver_kind/approved_at/override_digest/recorded_by plus a Reason body. Ran the e2e spec; BGT-S-1 passes by driving the real bin/vibepro.js and reading the file back from disk.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ae05de85a5eab9102",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:35:52.704Z"
+    }
+  ]
+}

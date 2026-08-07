@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -6,9 +6,11 @@ import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { toWorkspaceRelative } from './workspace.js';
+import { classifyTermination, createProgressDeadline } from './progress-deadline.js';
 import {
   RUNNER_EVIDENCE_RECEIPT,
   assertCommandMatchesVerificationKind,
+  assertCommandNamedTestPathsExist,
   classifyRunnerArtifactProbe,
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
@@ -17,9 +19,18 @@ import {
 const execFileAsync = promisify(execFile);
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
-const DEFAULT_TIMEOUT_MS = 1800000;
+// The full suite has been measured at 28 minutes (load average ~100, unlimited parallelism)
+// and 56 minutes (load average ~35, --test-concurrency=2); a default near those measurements
+// records timeout-kill fails that are not test failures, so keep ~2x headroom over the worst.
+const DEFAULT_TIMEOUT_MS = 7200000;
 const MAX_OUTPUT_BUFFER_BYTES = 64 * 1024 * 1024;
 const MAX_STORED_LOG_BYTES = 256 * 1024;
+// SIGTERM -> grace -> SIGKILL contract for a policy-killed run (wall-clock, no-progress, or
+// output-limit cause). Short relative to typical suite run times so a killed run does not
+// itself become a slow operation, but long enough for a well-behaved process to exit cleanly
+// on SIGTERM before escalation.
+const TERMINATION_GRACE_MS = 2000;
+const PROGRESS_POLL_INTERVAL_MS = 200;
 
 // Every key in this set is produced by the runner from the actual execution.
 // An agent-supplied --observed value for any of them is not recorded as-is:
@@ -49,6 +60,7 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'log_truncated',
   'timed_out',
   'output_limit_exceeded',
+  'external_kill_signal',
   'tree_mutated_during_run',
   'head_moved_during_run',
   'worktree_changed_during_run',
@@ -138,16 +150,27 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   }
   const timeoutMs = normalizeTimeout(options.timeoutMs);
   const maxOutputBytes = normalizeOutputLimit(options.maxOutputBytes);
+  // Defaults to timeoutMs when unset: with no separate --no-progress-deadline-ms, the
+  // no-progress clock is exactly as permissive as the wall clock, so an already-silent
+  // command is killed at the same instant either way and the wall-clock cause wins by
+  // precedence — existing --timeout-ms-only behavior is unchanged. Passing a smaller value
+  // lets a caller catch a stalled-but-still-running suite before the full wall-clock budget
+  // is spent, while an actively progressing suite (tests keep completing) is not penalized.
+  const noProgressDeadlineMs = normalizeNoProgressDeadline(options.noProgressDeadlineMs, timeoutMs);
   // Check the declared kind against the command before running it: the artifact and log
   // for this kind are overwritten by the run, so a post-execution rejection would destroy
   // the previous record's artifact while leaving that record pointing at it.
   assertRunnableKindCommand(options.kind, renderCommand(argv));
+  // Reject nonexistent named test paths before executing: `node --test <missing-file>`
+  // exits 0, so without this the run would produce a passing record crediting coverage
+  // that never executed.
+  assertCommandNamedTestPathsExist(root, renderCommand(argv), 'pass');
 
   // "The tree" is the checked-out commit plus the working tree: a suite that rewrites a
   // source file mid-run moves the tree without moving HEAD, so both are sampled.
   const treeBefore = await sampleTreeState(root);
   const startedAt = new Date();
-  const execution = await executeCommand(root, argv, { timeoutMs, maxOutputBytes, env: options.env });
+  const execution = await executeCommand(root, argv, { timeoutMs, noProgressDeadlineMs, maxOutputBytes, env: options.env });
   const finishedAt = new Date();
   const treeAfter = await sampleTreeState(root);
 
@@ -201,6 +224,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     output_metrics: outputMetrics,
     timed_out: String(execution.timedOut === true),
     output_limit_exceeded: String(execution.outputLimitExceeded === true),
+    // A signal the runner did not send (someone else's SIGTERM, an OOM killer SIGKILL, a
+    // manual `kill`) is recorded here rather than folded into timed_out: the misdiagnosis
+    // this replaces was exactly that fold — an external kill recorded as a policy timeout.
+    external_kill_signal: execution.externalKillSignal ?? 'none',
     // The declared limits are recorded whether or not they were hit, so a run capped low
     // enough to matter leaves a trace even when it finished inside the cap.
     timeout_ms: String(timeoutMs),
@@ -230,6 +257,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     runCounts,
     timedOut: execution.timedOut === true,
     outputLimitExceeded: execution.outputLimitExceeded === true,
+    externalKillSignal: execution.externalKillSignal ?? null,
     headBefore,
     headAfter,
     overrides,
@@ -423,35 +451,149 @@ function sanitizeEnv(env) {
   return { env: base, removed };
 }
 
-async function executeCommand(root, argv, { timeoutMs, maxOutputBytes, env }) {
+// Streams the command through node:child_process spawn instead of buffering it whole through
+// execFile, so in-flight progress (the completed-test count, parsed off the growing stdout by
+// the same extractOutputCounts() the post-run summary uses) can be fed to the shared
+// progress-deadline kernel as it happens: a long suite stays alive while tests keep
+// completing, and is killed once progress stalls. --timeout-ms remains an independent hard
+// cap the kernel can never extend, matching the pre-existing semantics.
+//
+// On a policy kill (wall-clock, no-progress, or output-limit cause) the process group is sent
+// SIGTERM, given TERMINATION_GRACE_MS to exit, then escalated to SIGKILL. classifyTermination
+// (src/progress-deadline.js) distinguishes that from a signal verify run did not send — the
+// external-kill case that the former `error.killed === true && Boolean(error.signal)` check
+// used to fold into timed_out:true regardless of who sent the signal.
+// Exported for direct unit testing of the streaming/bounding behavior (progress extension,
+// no-progress kill independent of the wall clock, external-signal attribution) without
+// routing through a shell runner whose own signal-propagation behavior would otherwise be
+// what the test exercises. runVerificationCommand() remains the public contract.
+export function executeCommand(root, argv, { timeoutMs, noProgressDeadlineMs, maxOutputBytes, env }) {
   const sanitized = sanitizeEnv(env);
-  try {
-    const { stdout, stderr } = await execFileAsync(argv[0], argv.slice(1), {
-      cwd: root,
-      encoding: 'utf8',
-      timeout: timeoutMs,
-      maxBuffer: maxOutputBytes,
-      env: sanitized.env
-    });
-    return { stdout, stderr, exitCode: 0, signal: null, timedOut: false, envRemoved: sanitized.removed };
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`verify run could not execute ${argv[0]}: command not found`);
+  return new Promise((resolve, reject) => {
+    let child;
+    try {
+      child = spawn(argv[0], argv.slice(1), {
+        cwd: root,
+        env: sanitized.env,
+        detached: process.platform !== 'win32'
+      });
+    } catch (error) {
+      reject(wrapSpawnError(error, argv[0]));
+      return;
     }
-    // A maxBuffer overflow carries a string code and no killed/signal, so it would be
-    // rethrown by the numeric-code guard and never reach the classification below.
-    const outputLimitExceeded = error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
-    if (typeof error.code !== 'number' && !error.killed && !outputLimitExceeded) throw error;
-    return {
-      stdout: String(error.stdout ?? ''),
-      stderr: String(error.stderr ?? ''),
-      exitCode: typeof error.code === 'number' ? error.code : 1,
-      signal: error.signal ?? null,
-        timedOut: error.killed === true && Boolean(error.signal) && !outputLimitExceeded,
-      outputLimitExceeded,
-      envRemoved: sanitized.removed
+
+    const kernel = createProgressDeadline({
+      no_progress_deadline_ms: noProgressDeadlineMs,
+      max_wall_clock_ms: timeoutMs,
+      started_at: Date.now(),
+      now: () => Date.now()
+    });
+
+    let stdout = '';
+    let stderr = '';
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let outputLimitExceeded = false;
+    let policyKillCause = null;
+    let settled = false;
+    const sentSignals = [];
+    let pollTimer;
+    let escalationTimer;
+
+    const settle = (result) => {
+      if (settled) return;
+      settled = true;
+      clearInterval(pollTimer);
+      clearTimeout(escalationTimer);
+      resolve(result);
     };
+
+    child.stdout?.setEncoding('utf8');
+    child.stderr?.setEncoding('utf8');
+    child.stdout?.on('data', (chunk) => {
+      stdoutBytes += Buffer.byteLength(chunk);
+      if (Buffer.byteLength(stdout) < maxOutputBytes) stdout += chunk;
+      checkOutputLimit();
+    });
+    child.stderr?.on('data', (chunk) => {
+      stderrBytes += Buffer.byteLength(chunk);
+      if (Buffer.byteLength(stderr) < maxOutputBytes) stderr += chunk;
+      checkOutputLimit();
+    });
+
+    function checkOutputLimit() {
+      if (outputLimitExceeded || policyKillCause) return;
+      if (stdoutBytes > maxOutputBytes || stderrBytes > maxOutputBytes) {
+        outputLimitExceeded = true;
+        policyKillCause = 'output_limit_exceeded';
+        killWithGrace();
+      }
+    }
+
+    child.on('error', (error) => {
+      if (settled) return;
+      settled = true;
+      clearInterval(pollTimer);
+      clearTimeout(escalationTimer);
+      reject(wrapSpawnError(error, argv[0]));
+    });
+
+    child.on('close', (exitCode, signal) => {
+      const termination = classifyTermination({ signal, sentSignals });
+      const timedOut = policyKillCause === 'max_wall_clock_exceeded' || policyKillCause === 'no_progress_deadline_exceeded';
+      settle({
+        stdout,
+        stderr,
+        exitCode: typeof exitCode === 'number' ? exitCode : 1,
+        signal: signal ?? null,
+        timedOut,
+        outputLimitExceeded,
+        externalKillSignal: termination.kind === 'external_signal' ? termination.signal : null,
+        envRemoved: sanitized.removed
+      });
+    });
+
+    pollTimer = setInterval(() => {
+      if (settled || policyKillCause) return;
+      // The completed-test count parsed off the growing stdout so far is the monotonic
+      // progress token: node --test prints a `# tests N` / `ℹ tests N` summary block per
+      // completed describe/suite as it finishes, not only once at the very end, so this
+      // value genuinely advances while the suite is progressing.
+      const counts = extractOutputCounts(stdout);
+      if (counts?.counts && Number.isFinite(counts.counts.tests)) kernel.observe(counts.counts.tests);
+      const verdict = kernel.check();
+      if (!verdict.ok) {
+        policyKillCause = verdict.kill.code;
+        killWithGrace();
+      }
+    }, PROGRESS_POLL_INTERVAL_MS);
+    pollTimer.unref?.();
+
+    function killWithGrace() {
+      clearInterval(pollTimer);
+      sendSignal('SIGTERM');
+      escalationTimer = setTimeout(() => sendSignal('SIGKILL'), TERMINATION_GRACE_MS);
+      escalationTimer.unref?.();
+    }
+
+    function sendSignal(signal) {
+      if (!child.pid) return;
+      sentSignals.push(signal);
+      try {
+        if (process.platform !== 'win32') process.kill(-child.pid, signal);
+        else child.kill(signal);
+      } catch {
+        // ESRCH: the process already exited; nothing left to signal.
+      }
+    }
+  });
+}
+
+function wrapSpawnError(error, commandName) {
+  if (error.code === 'ENOENT') {
+    return new Error(`verify run could not execute ${commandName}: command not found`);
   }
+  return error;
 }
 
 // node --test emits a summary block whose prefix depends on the active reporter: `# tests N`
@@ -520,6 +662,7 @@ function buildRunArtifactDocument(storyId, kind, run) {
       signal: run.execution.signal,
       timed_out: run.timedOut,
       output_limit_exceeded: run.execution.outputLimitExceeded === true,
+      external_kill_signal: run.execution.externalKillSignal ?? null,
       timeout_ms: run.timeoutMs,
       max_output_bytes: run.maxOutputBytes,
       head_sha_before: run.headBefore,
@@ -637,6 +780,7 @@ export function buildRunWarnings(input) {
   const {
     treeMutated, headMoved, worktreeChanged, worktreeSampled, worktreeSamplingComplete,
     status, outputEmpty, runCounts = null, timedOut, outputLimitExceeded,
+    externalKillSignal = null,
     headBefore = null, headAfter = null, overrides,
     timeoutMs, maxOutputBytes, managedWorktreeWarning = null
   } = input;
@@ -705,6 +849,17 @@ export function buildRunWarnings(input) {
           id: 'verification_run_output_limit_exceeded',
           command_name: 'verify run',
           reason: `the command was killed after exceeding the ${maxOutputBytes}-byte output buffer; the recorded fail status is an output-volume kill, not a test failure, and the captured output is incomplete`
+        }]
+      : []),
+    // Distinct from verification_run_timed_out: this signal was not sent by `verify run`
+    // itself, so a failing status here is neither a policy timeout nor a test failure — it
+    // is whatever killed the process from outside. Folding this into timed_out is the exact
+    // misattribution this warning exists to prevent.
+    ...(externalKillSignal
+      ? [{
+          id: 'verification_run_killed_by_external_signal',
+          command_name: 'verify run',
+          reason: `the command exited on ${externalKillSignal}, a signal verify run did not send; the recorded fail status is an external kill, not a policy timeout or a test failure`
         }]
       : [])
   ];
@@ -785,6 +940,15 @@ function normalizeTimeout(value) {
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0) {
     throw new Error(`verify run --timeout-ms must be a positive number, got: ${value}`);
+  }
+  return number;
+}
+
+function normalizeNoProgressDeadline(value, timeoutMs) {
+  if (value === undefined || value === null || value === '') return timeoutMs;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) {
+    throw new Error(`verify run --no-progress-deadline-ms must be a positive number, got: ${value}`);
   }
   return number;
 }

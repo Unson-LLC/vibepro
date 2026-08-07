@@ -1,0 +1,160 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Delta since the reviewed content: only the owner budget grant (config override + tracked budget_override_approval decision doc), which touches no architecture surface. Prior conclusions re-confirmed: the design-root entry is structurally inert in reconcileDesignRoot, and the display-only boundary holds — gate evaluation runs through the separate type-based whitelist untouched by the diff.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "reviewed the full changed-path set at head e4a6f68d; risk_surfaces=gate_orchestration. Read the ac51485e diff and traced design-ssot.json consumers; verified the budget grant commit e4a6f68d touches only .vibepro/config.json budgets and the tracked decision doc; reran both story test files (pass).",
+    "evidence": "src/design-ssot.js:471-604,694-707; src/pr-manager.js gate wiring; node --test run of both story test files fully passing",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "test/pr-human-summary-uiux-intake-gate.test.js",
+      "design-ssot.json",
+      ".vibepro/config.json",
+      "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial: the budget grant commit could have altered architecture surfaces -> final: pass because it touches only budget config and a decision doc; all prior boundary conclusions hold at e4a6f68d"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+    "expected_root": null,
+    "expected_head_sha": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+    "current_head_sha": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+      "expected_root": null,
+      "expected_head_sha": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "current_head_sha": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T00:24:15.264Z",
+  "git_context": {
+    "head_sha": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+    "current_branch": "claude/sweet-spence-0193db",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T00:24:15.235Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "e4a6f68d140e8837be9f4e819f9aa55433975b8f",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "22cd5e2cb63e045834e9098e6909df8d05d1fc3011fa109a4204879c3a74a857",
+        "size": 93294
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "9c31acbd9b107cb89c0c0ecc27d31705c47ff42018f2f3450cf8608fb38c495c",
+        "size": 257209
+      },
+      {
+        "path": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+        "sha256": "64d26a52d91064bd122e927cadf4f147749d4b64c12a3a1a76f70159bf32f396",
+        "size": 1535
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+        "sha256": "a5e2eb623f1f52a0992f275205cc26ce0e13fcc95b85c2acfb4fafbf5fc4182d",
+        "size": 2945
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "7c8766e91bb8b900f4f564e41be441e8812aba84c1528977c32a5c9897fec493",
+        "size": 729578
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+        "sha256": "a551290dafb9028d0d801c8d0c3b1ca9384d4cd53ab02dd7ec1068f7cdca7ff2",
+        "size": 3784
+      },
+      {
+        "path": "test/pr-human-summary-uiux-intake-gate.test.js",
+        "sha256": "2f442053695eb175a22ac67556732fe0188b3844e132cae20a6999c78111f50f",
+        "size": 1516
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "af7c03e29c6a98f694da942b5e99ee593663c3932250fc001f9792d4e5649d88"
+  },
+  "source_fingerprint": "475c74d5c7b21d37272ba5935a20934cf8dbacaf7f74562ce8faa5320390e0b5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aa425e892b977e69f",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "aa425e892b977e69f",
+    "session_id": "c3213594-536c-47ba-89cf-d8613ecaff91:aa425e892b977e69f",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-sweet-spence-0193db/c3213594-536c-47ba-89cf-d8613ecaff91/tasks/aa425e892b977e69f.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "background subagent completed and was shut down; close recorded in lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "c3213594-536c-47ba-89cf-d8613ecaff91:aa425e892b977e69f",
+      "implementation_session_id": "c3213594-536c-47ba-89cf-d8613ecaff91",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,77 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "updated_at": "2026-08-02T14:00:57.730Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-3",
+      "verdict": "not_verifiable_by_automation",
+      "reason": "AC-3 requires the real 134k-file vibepro checkout, which adjudication automation cannot access or replay; the automated evidence covers a synthetic 30000-file fixture, and the real-checkout completion claim has no independently verifiable artifact in verification-runs",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: diagnosis 生成パス上の全ディレクトリwalker（上記8モジュール）が再帰・spread引数渡しを使わず、",
+          "AC2: サブディレクトリ1つに大量ファイル（spread上限相当）を持つtreeでも、デフォルトスタックの Node で",
+          "AC3: 実障害環境（vibepro本体checkout, 134k files）で `story diagnose --id <id> --run-graphify` が"
+        ]
+      },
+      "acceptance_scope_fingerprint": "96d0d3e6174043b6e29e015881cb807f8ee806cb85661d03143fb2ba2cf62091",
+      "recorded_at": "2026-08-02T14:00:57.726Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Judge independently ran test/architecture-profiler.test.js: the spread-argument-limit case passed, spawning a --stack-size=200 child on a 30000-file tree and asserting the profile returns — exactly the AC-2 scenario, executed rather than trusted from the record",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: diagnosis 生成パス上の全ディレクトリwalker（上記8モジュール）が再帰・spread引数渡しを使わず、",
+          "AC2: サブディレクトリ1つに大量ファイル（spread上限相当）を持つtreeでも、デフォルトスタックの Node で",
+          "AC3: 実障害環境（vibepro本体checkout, 134k files）で `story diagnose --id <id> --run-graphify` が"
+        ]
+      },
+      "acceptance_scope_fingerprint": "96d0d3e6174043b6e29e015881cb807f8ee806cb85661d03143fb2ba2cf62091",
+      "recorded_at": "2026-08-02T14:00:55.438Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "All 8 walker sources read directly: every one replaced recursion+spread with a pending-array BFS worklist preserving original filters (IGNORED_DIRS, extensions, 1MB cap, forward-slash relativePath) verbatim; flow-design keeps its ENOENT/ENOTDIR tolerance. Direct structural observation, not test inference",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3746b083fbdfa78",
+        "session_ref": "tasks/aa3746b083fbdfa78"
+      },
+      "head_commit": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: diagnosis 生成パス上の全ディレクトリwalker（上記8モジュール）が再帰・spread引数渡しを使わず、",
+          "AC2: サブディレクトリ1つに大量ファイル（spread上限相当）を持つtreeでも、デフォルトスタックの Node で",
+          "AC3: 実障害環境（vibepro本体checkout, 134k files）で `story diagnose --id <id> --run-graphify` が"
+        ]
+      },
+      "acceptance_scope_fingerprint": "96d0d3e6174043b6e29e015881cb807f8ee806cb85661d03143fb2ba2cf62091",
+      "recorded_at": "2026-08-02T14:00:53.114Z"
+    }
+  ]
+}

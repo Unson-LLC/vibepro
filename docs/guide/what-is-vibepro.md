@@ -1,32 +1,24 @@
 # What VibePro Is
 
-VibePro is a **repository-local control plane for evidence-backed, safe delivery by AI coding agents**. It does not write the product on the team's behalf. It makes the path from product intent to merge inspectable and fail-closed where proof or judgment is missing.
+VibePro is a repository-local evidence workspace for AI-assisted software development. Its CLI writes structured context under `.vibepro/` so humans and coding agents can share the same Story, Spec, verification, review, decision, trace, and PR records.
 
-The complete loop is:
+## What it does
 
-1. Story defines the product outcome and acceptance criteria.
-2. Architecture and Spec define boundaries, contracts, tests, and rollback.
-3. Code is implemented in a bounded branch or managed worktree.
-4. Verification records observable results against the current commit.
-5. Independent Agent Review inspects the diff and its evidence.
-6. Adjudication evaluates whether Spec clauses and senior judgment are actually demonstrated.
-7. Release Guard and `pr prepare` resolve the risk-adaptive Gate DAG.
-8. `pr create` creates or refreshes the PR from the current evidence.
-9. CI is imported and the PR artifact is refreshed for the current head.
-10. `execute merge` merges through the audited path.
-11. Canonical audit and usage/ROI reporting preserve what shipped, why, and at what evidence cost.
+- Initializes a local workspace and output language.
+- Captures and diagnoses Stories.
+- Writes Specs with code and test references.
+- Runs or records verification evidence tied to repository state.
+- Prepares and records role-based review evidence.
+- Records explicit decisions and trace declarations.
+- Summarizes available evidence for PR handoff.
+- Installs optional agent instructions and integrates with external Graphify context.
 
-## Human Authority
+## What it does not do
 
-Humans hold the entry and exit decisions. They decide the product intent, approve material trade-offs, and own the final release authority. Agents may implement, inspect, and propose; evidence may demonstrate; neither silently expands authority.
+VibePro does not implement application code, certify that evidence is sufficient, approve a PR, or merge code. The minimal core has no Gate DAG, blocking readiness verdict, managed execution controller, review-lifecycle accounting, delivery-efficiency budget, or automatic audit bundle.
 
-## What VibePro Does Not Do
+That boundary is intentional: VibePro preserves inspectable facts and context while leaving judgment and authority with people, repository rules, and CI.
 
-- It is not a hosted coding agent, issue tracker, or product knowledge base.
-- It does not replace tests, CI, security review, deployment observability, or engineering judgment.
-- It does not treat a generated explanation, graph, screenshot, or PR body as proof by itself.
-- It does not make every change equally expensive; gates expand according to detected risk.
+## Authority
 
-Brainbase can be an optional upstream source of product context, organizational knowledge, and Story candidates. VibePro remains the downstream execution and PR-gate layer. A repository can use VibePro without Brainbase.
-
-Continue with the [Control Loop](/guide/control-loop) or choose a role-specific path from the [home page](/).
+The installed binary's `vibepro help` output is the authoritative CLI contract. `package.json` is the version authority. The public manual describes the current beta and includes older release history, which may mention capabilities removed from the minimal core.

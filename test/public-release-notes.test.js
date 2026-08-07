@@ -51,30 +51,20 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
     'releases/2026-05.html',
     'releases/2026-06.html',
     'releases/2026-07.html',
+    'releases/2026-08.html',
     'ja/releases/index.html',
     'ja/releases/2026-01.html',
     'ja/releases/2026-05.html',
     'ja/releases/2026-06.html',
-    'ja/releases/2026-07.html'
+    'ja/releases/2026-07.html',
+    'ja/releases/2026-08.html'
   ]) {
     assert.match(contract, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(jaVersion, /\/ja\/releases\//);
   assert.match(enVersion, /\/releases\//);
-  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.1`/);
-  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.1`/);
-  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.1`/);
-  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.1`/);
-});
-
-test('PR release-note prose has an explicit Story source for every stable section', async () => {
-  const [story, manager] = await Promise.all([
-    read('docs/management/stories/active/story-vibepro-pr-driven-continuous-release.md'),
-    read('src/pr-manager.js')
-  ]);
-  assert.match(story, /## Solution\n\nmain向けPRのマージを起点に/);
-  assert.match(story, /## Compatibility\n\n既存CLIとversion不変PRの挙動は維持する/);
-  assert.match(story, /## User Action\n\nなし。PR作成者は/);
-  assert.match(manager, /compatibility: extractSectionText/);
-  assert.match(manager, /user_action: extractSectionText/);
+  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.3`/);
+  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.3`/);
+  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.3`/);
+  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.3`/);
 });

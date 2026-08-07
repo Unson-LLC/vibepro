@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "needs_changes",
+  "summary": "Single-PR shape is correct and was re-derived independently at b9ed51a3: no foreign Story lineage (src/ and bin/ diff vs merge-base is empty; 31d84833 is a verified ancestor of origin/main, so the merge is normal), and the decisive split-rejection argument was empirically confirmed by running the shipped lint against the reconstructed pre-deletion tree (exit 1, 19 violations), proving a lint-first PR would put a red required check on main. One owned defect blocks a clean pass: this branch's own merge resolution at 06450d62 left a DUPLICATE JSON key for a foreign Story's budget record in .vibepro/config.json, which is exactly the foreign-scope risk this role guards. Values are byte-identical so there is no behavioural regression today, but the branch ships a duplicated foreign-Story config block it does not own.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "duplicate-foreign-story-budget-key-from-merge-resolution",
+      "detail": ".vibepro/config.json at HEAD contains the key story-vibepro-task-atomic-repo-control-contract TWICE, at lines 309 and 487, proven with a json object_pairs_hook duplicate detector. Provenance is this branch, not upstream: the count is 1 at 3be3ed55, 2 at 06450d62 (the merge), 2 at b9ed51a3, and 1 on origin/main, so the branch's own merge resolution duplicated a FOREIGN Story's budget record. The two blocks are semantically identical so JSON.parse last-wins yields the same object and there is no gate-behaviour regression today. The hazard is that src/recipe-preflight.js round-trips config.json through JSON.stringify, so the first block will be silently dropped on the next write, and until then any edit to the block at line 309 is silently ineffective because line 487 wins. Fix: delete one of the two identical blocks."
+    },
+    {
+      "severity": "low",
+      "id": "vet-s-1-split-infeasibility-claim-overstated",
+      "detail": "The Story's third retraction argument claims VET-S-1 cannot be satisfied by either half alone. Read against VET-S-1's actual text, that is a STATE criterion, and the deletion-only half does reach that state at its own HEAD; what it lacks is the enforcement, which is VET-S-5. This does not change the verdict on PR shape because the ordering-constraint argument is independently verified and sufficient alone, and the Story itself withdraws its first argument as unverified. Recorded only so the split rationale is not treated as three verified legs when it is two."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Re-derived the single-PR verdict at b9ed51a3 from scratch. Foreign lineage: merge-base ea5e90fc, git diff --name-only ea5e90fc..HEAD -- src/ bin/ EMPTY, git merge-base --is-ancestor 31d84833 origin/main true. Split feasibility: reconstructed the pre-deletion tree with git archive ea5e90fc test/e2e into a scratchpad and imported lintE2eProductExecution against it, returning exit 1 with 19 e2e files executing no product behaviour, empirically proving a lint-first merge order lands a red required check on main. Ran the lint at HEAD (exit 0, 66 files) and npm run typecheck (exit 0). Reviewability: git diff --name-status ea5e90fc..HEAD is 45 files (10 A / 17 D / 18 M). Coupling: read the full diffs of ci.yml, package.json, the routing-profiles spec.json and three docs specs, confirming each edit removes or repoints a test_ref pointing at a deleted file. Verified via a JSON set-diff that no brainbase stories entry was lost across the reorder, which is how the duplicate foreign-Story budget key was found.",
+    "evidence": null,
+    "inputs": [
+      "scripts/lint-e2e-product-execution.mjs",
+      "CHANGELOG.md",
+      ".github/workflows/ci.yml"
+    ]
+  },
+  "judgment_delta": [
+    "Initial: inherit the prior round's PASS, treating the PR 405 merge and the docs/budget commits as benign process artifacts -> Final needs_changes. The two headline concerns cleared on evidence: foreign lineage is disproven by an empty src/bin diff plus the verified ancestor relation, and the split rejection is empirically confirmed by the lint exiting 1 with 19 violations on the reconstructed pre-deletion tree, so the single-PR shape is genuinely correct and I would have re-affirmed PASS on those grounds. The verdict changed because the new material this round is NOT benign: the merge commit 06450d62 that made the prior PASS stale is itself the defect, duplicating a foreign Story's budget block into config.json. Severity medium rather than high only because the two blocks are byte-identical."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "expected_root": null,
+    "expected_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "current_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "expected_root": null,
+      "expected_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "current_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-31T19:39:11.688Z",
+  "git_context": {
+    "head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "current_branch": "claude/vacuous-e2e-deletions",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-31T19:39:11.663Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "surface_files": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "8d075b59370cdddc7b8aae329b97a60380d2f2717e291bf1c3bd1a6f743b54ab",
+        "size": 1257
+      },
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "e8ff494b2936624b79543f46ffdbcc7fe3cacbf72b1ce6a0764fde670616e99e",
+        "size": 52067
+      },
+      {
+        "path": "scripts/lint-e2e-product-execution.mjs",
+        "sha256": "6c84ae9aab370455120838e55133d598d7c0c258c992db5d3e81a527de278fe0",
+        "size": 6792
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "68c0a18cdbe4ce6c9a43003e60e3b505af7af8c7171cb0885289565490aa2830"
+  },
+  "source_fingerprint": "6d6db01c7db2ff6852b8114dc222f98feb14b7e49038fe52f7f6aa0013ce0e01",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "afc34748b36854a40",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "afc34748b36854a40",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/afc34748b36854a40.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "returned final JSON verdict and terminated; lifecycle closed with close_reason completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "afc34748b36854a40",
+      "implementation_session_id": "70ea817c-ee56-48c0-ab7c-612da8629872",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,736 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "automatic_recommendation": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare"
+  },
+  "accepted_current_story_lineage": [],
+  "task_bound_repo_control": {
+    "eligible": false,
+    "unsafe_for_atomic_override": true,
+    "reason_code": "task_context_missing"
+  },
+  "atomic_scope": {
+    "status": "rejected",
+    "strategy": null,
+    "reason": null,
+    "review_facets": [],
+    "dependency_boundaries": [],
+    "generated_lane_ids": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "missing_review_facets": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "missing_reason_facets": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "missing_dependency_facets": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "invalid_dependency_boundaries": [],
+    "unsafe_scope_signals": [
+      {
+        "id": "mixed_repo_control_surface",
+        "unsafe_for_atomic_override": true,
+        "repo_control_files": [
+          ".github/workflows/ci.yml",
+          "package.json"
+        ],
+        "task_binding": {
+          "eligible": false,
+          "unsafe_for_atomic_override": true,
+          "reason_code": "task_context_missing"
+        },
+        "reason": "repository execution or agent-control changes remain independently releasable and cannot be absorbed by an atomic Story declaration"
+      }
+    ],
+    "unsafe_scope_reasons": [
+      "repo制御ファイルやagent設定が差分に含まれている"
+    ],
+    "review_owner_map_verified": false,
+    "verification_ready": true,
+    "current_passing_verification_count": 4,
+    "verification_evidence_refs": [
+      ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/integration.json",
+      ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/e2e.json",
+      ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/unit.json",
+      ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/verification-runs/typecheck.json"
+    ],
+    "next_actions": [
+      {
+        "type": "record_current_head_review_owners",
+        "missing_required_roles": [],
+        "roles_requiring_surface_coverage": [
+          "gate:gate_evidence"
+        ],
+        "unowned_review_facets": [
+          "repo-control",
+          "requirements-ssot",
+          "runtime-behavior",
+          "e2e-gate",
+          "misc-follow-up"
+        ],
+        "uncovered_paths": [
+          ".github/workflows/ci.yml",
+          "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+          "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+          "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+          "docs/specs/vibepro-managed-worktree-gate.md",
+          "docs/specs/vibepro-pr-ship-command.md",
+          "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md",
+          "scripts/lint-e2e-product-execution.mjs",
+          "test/e2e-product-execution-lint.test.js",
+          "test/verification-runner.test.js",
+          "package.json",
+          "test/e2e/story-vibepro-agent-runtime-adapters-acceptance.spec.ts",
+          "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts",
+          "test/e2e/story-vibepro-cli-status-honesty-main.test.js",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js",
+          "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+          "test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+          "test/e2e/story-vibepro-execute-merge-command-main.test.js",
+          "test/e2e/story-vibepro-execution-judgment-status-integrity-main.spec.ts",
+          "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+          "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+          "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+          "test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-gate-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+          "test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts",
+          "test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js",
+          "test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts",
+          "test/e2e/story-vibepro-pr-ship-command-main.spec.ts",
+          "test/e2e/story-vibepro-pr-ship-command-main.test.js",
+          "test/e2e/story-vibepro-review-status-required-only-main.spec.ts",
+          "test/e2e/story-vibepro-run-context-capsule-acceptance.spec.ts",
+          "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts",
+          "test/e2e/story-vibepro-usage-report-main.spec.ts",
+          "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts",
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/management/P4-FREEZE-HANDOFF.md",
+          "docs/management/decisions/2026-07-30-vacuous-e2e-test-elimination-budget-approval.md",
+          "docs/management/decisions/2026-07-30-vacuous-e2e-worktree-loss-and-rebuild.md",
+          "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md",
+          "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md",
+          "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-50ca0f47.md",
+          "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-d0f61f1f.md"
+        ],
+        "prepare_commands": [
+          "vibepro review prepare . --id story-vibepro-vacuous-e2e-test-elimination --stage gate --role gate_evidence"
+        ],
+        "follow_up_command": "vibepro review status . --id story-vibepro-vacuous-e2e-test-elimination",
+        "command": "vibepro review prepare . --id story-vibepro-vacuous-e2e-test-elimination --stage gate --role gate_evidence",
+        "follow_up": "vibepro review status . --id story-vibepro-vacuous-e2e-test-elimination"
+      },
+      {
+        "type": "complete_atomic_scope_declaration",
+        "target": "Story frontmatter",
+        "required_fields": [
+          "pr_scope_reason",
+          "pr_scope_review_facets",
+          "pr_scope_dependency_boundaries"
+        ]
+      },
+      {
+        "type": "split_unsafe_scope_surface",
+        "unsafe_signal_ids": [
+          "mixed_repo_control_surface"
+        ],
+        "reason": "Unsafe repo-control or foreign-lineage surfaces cannot be repaired by atomic metadata."
+      },
+      {
+        "type": "rerun_atomic_scope_decision",
+        "command": "vibepro pr prepare . --story-id story-vibepro-vacuous-e2e-test-elimination"
+      }
+    ],
+    "review_owner_map": [
+      {
+        "facet": "repo-control",
+        "changed_paths": [
+          ".github/workflows/ci.yml"
+        ],
+        "owners": [],
+        "uncovered_paths": [
+          ".github/workflows/ci.yml"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "requirements-ssot",
+        "changed_paths": [
+          "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+          "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+          "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+          "docs/specs/vibepro-managed-worktree-gate.md",
+          "docs/specs/vibepro-pr-ship-command.md",
+          "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md"
+        ],
+        "owners": [],
+        "uncovered_paths": [
+          "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+          "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+          "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+          "docs/specs/vibepro-managed-worktree-gate.md",
+          "docs/specs/vibepro-pr-ship-command.md",
+          "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "runtime-behavior",
+        "changed_paths": [
+          "scripts/lint-e2e-product-execution.mjs",
+          "test/e2e-product-execution-lint.test.js",
+          "test/verification-runner.test.js"
+        ],
+        "owners": [],
+        "uncovered_paths": [
+          "scripts/lint-e2e-product-execution.mjs",
+          "test/e2e-product-execution-lint.test.js",
+          "test/verification-runner.test.js"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "e2e-gate",
+        "changed_paths": [
+          "package.json",
+          "test/e2e/story-vibepro-agent-runtime-adapters-acceptance.spec.ts",
+          "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts",
+          "test/e2e/story-vibepro-cli-status-honesty-main.test.js",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js",
+          "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+          "test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+          "test/e2e/story-vibepro-execute-merge-command-main.test.js",
+          "test/e2e/story-vibepro-execution-judgment-status-integrity-main.spec.ts",
+          "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+          "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+          "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+          "test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-gate-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+          "test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts",
+          "test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js",
+          "test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts",
+          "test/e2e/story-vibepro-pr-ship-command-main.spec.ts",
+          "test/e2e/story-vibepro-pr-ship-command-main.test.js",
+          "test/e2e/story-vibepro-review-status-required-only-main.spec.ts",
+          "test/e2e/story-vibepro-run-context-capsule-acceptance.spec.ts",
+          "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts",
+          "test/e2e/story-vibepro-usage-report-main.spec.ts",
+          "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+        ],
+        "owners": [],
+        "uncovered_paths": [
+          "package.json",
+          "test/e2e/story-vibepro-agent-runtime-adapters-acceptance.spec.ts",
+          "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts",
+          "test/e2e/story-vibepro-cli-status-honesty-main.test.js",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js",
+          "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+          "test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+          "test/e2e/story-vibepro-execute-merge-command-main.test.js",
+          "test/e2e/story-vibepro-execution-judgment-status-integrity-main.spec.ts",
+          "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+          "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+          "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+          "test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-gate-main.spec.ts",
+          "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+          "test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts",
+          "test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js",
+          "test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts",
+          "test/e2e/story-vibepro-pr-ship-command-main.spec.ts",
+          "test/e2e/story-vibepro-pr-ship-command-main.test.js",
+          "test/e2e/story-vibepro-review-status-required-only-main.spec.ts",
+          "test/e2e/story-vibepro-run-context-capsule-acceptance.spec.ts",
+          "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts",
+          "test/e2e/story-vibepro-usage-report-main.spec.ts",
+          "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "misc-follow-up",
+        "changed_paths": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/management/P4-FREEZE-HANDOFF.md",
+          "docs/management/decisions/2026-07-30-vacuous-e2e-test-elimination-budget-approval.md",
+          "docs/management/decisions/2026-07-30-vacuous-e2e-worktree-loss-and-rebuild.md",
+          "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md",
+          "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md",
+          "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-50ca0f47.md",
+          "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-d0f61f1f.md"
+        ],
+        "owners": [],
+        "uncovered_paths": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/management/P4-FREEZE-HANDOFF.md",
+          "docs/management/decisions/2026-07-30-vacuous-e2e-test-elimination-budget-approval.md",
+          "docs/management/decisions/2026-07-30-vacuous-e2e-worktree-loss-and-rebuild.md",
+          "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md",
+          "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md",
+          "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-50ca0f47.md",
+          "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-d0f61f1f.md"
+        ],
+        "owned": false
+      }
+    ],
+    "unowned_review_facets": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "automatic_split_required": true,
+    "rejection_reasons": [
+      "pr_scope_strategy must be atomic_single_pr before Task-bound proof can authorize one atomic PR",
+      "pr_scope_reason must explain the atomic release boundary in at least 80 characters",
+      "pr_scope_dependency_boundaries must declare typed lane dependencies",
+      "typed dependency boundaries must connect every generated facet: repo-control, requirements-ssot, runtime-behavior, e2e-gate, misc-follow-up",
+      "pr_scope_review_facets must enumerate every generated lane",
+      "missing generated review facets: repo-control, requirements-ssot, runtime-behavior, e2e-gate, misc-follow-up",
+      "unsafe scope signals cannot be overridden by Story metadata",
+      "atomic scope requires a current-head reviewer owner map with every configured role passing"
+    ],
+    "source_ref": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md"
+  },
+  "rationale": [
+    "差分が 46 files あり、レビュー可能な目安 30 files を超えている",
+    "repo制御ファイルやagent設定が差分に含まれている",
+    "baseからのcommitが 33 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+    "5 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 12 changed files が一致し、6 related files を影響調査候補にした",
+    "型付きatomic scopeを不採用: pr_scope_strategy must be atomic_single_pr before Task-bound proof can authorize one atomic PR; pr_scope_reason must explain the atomic release boundary in at least 80 characters; pr_scope_dependency_boundaries must declare typed lane dependencies; typed dependency boundaries must connect every generated facet: repo-control, requirements-ssot, runtime-behavior, e2e-gate, misc-follow-up; pr_scope_review_facets must enumerate every generated lane; missing generated review facets: repo-control, requirements-ssot, runtime-behavior, e2e-gate, misc-follow-up; unsafe scope signals cannot be overridden by Story metadata; atomic scope requires a current-head reviewer owner map with every configured role passing"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5751,
+    "edge_count": 12909,
+    "matched_file_count": 12,
+    "related_file_count": 6,
+    "investigation_files": [
+      "scripts/lint-e2e-product-execution.mjs",
+      "scripts/run-e2e-ts-specs.mjs",
+      "src/cli.js",
+      "src/public-discovery-scanner.js",
+      "test/e2e-product-execution-lint.test.js",
+      "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+    ],
+    "impact_by_file": [
+      {
+        "file": "scripts/lint-e2e-product-execution.mjs",
+        "matched_nodes": [
+          "scripts_lint_e2e_product_execution_mjs",
+          "scripts_lint_e2e_product_execution_detectproductexecutionsignals",
+          "scripts_lint_e2e_product_execution_liste2etestfiles",
+          "scripts_lint_e2e_product_execution_linte2eproductexecution"
+        ],
+        "related_files": [
+          "src/public-discovery-scanner.js",
+          "test/e2e-product-execution-lint.test.js",
+          "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+        ]
+      },
+      {
+        "file": "test/e2e-product-execution-lint.test.js",
+        "matched_nodes": [
+          "test_e2e_product_execution_lint_test_js",
+          "test_e2e_product_execution_lint_test_makefixtureroot",
+          "test_e2e_product_execution_lint_test_runlint"
+        ],
+        "related_files": [
+          "scripts/lint-e2e-product-execution.mjs"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-agent-runtime-adapters-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_agent_runtime_adapters_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_execution_judgment_status_integrity_main_test_js",
+          "e2e_story_vibepro_execution_judgment_status_integrity_main_test_makemergedstoryrepo",
+          "e2e_story_vibepro_execution_judgment_status_integrity_main_test_findnode"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_guarded_run_session_contract_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_human_decision_checkpoint_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_managed_worktree_gate_main_test_js",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_git",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_readjson",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_writejson",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_makerequiredmoderepo",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_recordmanagedworktreewaiver"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_next_best_action_controller_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-run-context-capsule-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_run_context_capsule_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_safe_action_orchestrator_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_vacuous_e2e_test_elimination_acceptance_spec_ts",
+          "e2e_story_vibepro_vacuous_e2e_test_elimination_acceptance_spec_replay",
+          "e2e_story_vibepro_vacuous_e2e_test_elimination_acceptance_spec_escapefortestnamepattern"
+        ],
+        "related_files": [
+          "scripts/lint-e2e-product-execution.mjs",
+          "scripts/run-e2e-ts-specs.mjs"
+        ]
+      },
+      {
+        "file": "test/verification-runner.test.js",
+        "matched_nodes": [
+          "test_verification_runner_test_js",
+          "test_verification_runner_test_cli",
+          "test_verification_runner_test_git",
+          "test_verification_runner_test_readjson",
+          "test_verification_runner_test_evidencepath",
+          "test_verification_runner_test_runartifactpath",
+          "test_verification_runner_test_setuprepo",
+          "test_verification_runner_test_complete"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "repo-control",
+      "order": 5,
+      "title": "Repository control and agent policy",
+      "category": "repo_control",
+      "recommendation": "separate_pr",
+      "files": [
+        ".github/workflows/ci.yml"
+      ],
+      "required_gates": [
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "アプリ挙動変更とrepo制御変更が混ざっていないか",
+        "無関係なagent設定やignore規則を巻き込んでいないか"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-vacuous-e2e-test-elimination-repo-control"
+    },
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+        "docs/specs/vibepro-managed-worktree-gate.md",
+        "docs/specs/vibepro-pr-ship-command.md",
+        "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 6,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-vacuous-e2e-test-elimination-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "scripts/lint-e2e-product-execution.mjs",
+        "test/e2e-product-execution-lint.test.js",
+        "test/verification-runner.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate",
+        "E2E Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [
+        "src/cli.js",
+        "src/public-discovery-scanner.js",
+        "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+      ],
+      "suggested_branch": "feat/vibepro-vacuous-e2e-test-elimination-runtime-behavior"
+    },
+    {
+      "id": "e2e-gate",
+      "order": 30,
+      "title": "E2E and verification harness",
+      "category": "verification",
+      "recommendation": "separate_pr",
+      "files": [
+        "package.json",
+        "test/e2e/story-vibepro-agent-runtime-adapters-acceptance.spec.ts",
+        "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts",
+        "test/e2e/story-vibepro-cli-status-honesty-main.test.js",
+        "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts",
+        "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js",
+        "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+        "test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+        "test/e2e/story-vibepro-execute-merge-command-main.test.js",
+        "test/e2e/story-vibepro-execution-judgment-status-integrity-main.spec.ts",
+        "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+        "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+        "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+        "test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts",
+        "test/e2e/story-vibepro-managed-worktree-execution-dag-main.spec.ts",
+        "test/e2e/story-vibepro-managed-worktree-gate-main.spec.ts",
+        "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+        "test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts",
+        "test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js",
+        "test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts",
+        "test/e2e/story-vibepro-pr-ship-command-main.spec.ts",
+        "test/e2e/story-vibepro-pr-ship-command-main.test.js",
+        "test/e2e/story-vibepro-review-status-required-only-main.spec.ts",
+        "test/e2e/story-vibepro-run-context-capsule-acceptance.spec.ts",
+        "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts",
+        "test/e2e/story-vibepro-usage-report-main.spec.ts",
+        "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+      ],
+      "required_gates": [
+        "E2E Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "E2E harnessが失敗exit codeを握りつぶしていないか",
+        "PR Gateが変更対象のE2Eに正しくスコープされているか"
+      ],
+      "file_count": 27,
+      "graph_investigation_files": [
+        "scripts/lint-e2e-product-execution.mjs",
+        "scripts/run-e2e-ts-specs.mjs",
+        "src/cli.js"
+      ],
+      "suggested_branch": "feat/vibepro-vacuous-e2e-test-elimination-e2e-gate"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "CHANGELOG.md",
+        "design-ssot.json",
+        "docs/management/P4-FREEZE-HANDOFF.md",
+        "docs/management/decisions/2026-07-30-vacuous-e2e-test-elimination-budget-approval.md",
+        "docs/management/decisions/2026-07-30-vacuous-e2e-worktree-loss-and-rebuild.md",
+        "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md",
+        "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md",
+        "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-50ca0f47.md",
+        "docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-d0f61f1f.md"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 9,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-vacuous-e2e-test-elimination-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "repo-control",
+    "requirements-ssot",
+    "runtime-behavior",
+    "e2e-gate",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 5,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false,
+      "requires_atomic_head_validation": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "repo-control",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "git diff --check",
+          "node --test --test-reporter=tap test/spec-pipeline.test.js test/spec-diagrams.test.js test/e2e-product-execution-lint.test.js test/public-release-notes.test.js test/verification-runner.test.js test/integration/verification-runner-evidence-consumers.test.js test/traceability-usage-report.test.js test/vibepro-cli.test.js"
+        ],
+        "cumulative_checks": [],
+        "review_note": "repo-control は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "npm test -- --test-concurrency=2 --test-reporter=tap",
+          "node --test --test-reporter=tap test/spec-pipeline.test.js test/spec-diagrams.test.js test/e2e-product-execution-lint.test.js test/public-release-notes.test.js test/verification-runner.test.js test/integration/verification-runner-evidence-consumers.test.js test/traceability-usage-report.test.js test/vibepro-cli.test.js"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "e2e-gate",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test --test-reporter=tap test/spec-pipeline.test.js test/spec-diagrams.test.js test/e2e-product-execution-lint.test.js test/public-release-notes.test.js test/verification-runner.test.js test/integration/verification-runner-evidence-consumers.test.js test/traceability-usage-report.test.js test/vibepro-cli.test.js",
+          "Playwright harness smoke if runtime dependencies are already merged"
+        ],
+        "cumulative_checks": [],
+        "review_note": "e2e-gate は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "npm test -- --test-concurrency=2 --test-reporter=tap",
+        "node --test --test-reporter=tap test/spec-pipeline.test.js test/spec-diagrams.test.js test/e2e-product-execution-lint.test.js test/public-release-notes.test.js test/verification-runner.test.js test/integration/verification-runner-evidence-consumers.test.js test/traceability-usage-report.test.js test/vibepro-cli.test.js"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "repo-control",
+      "action": "Create feat/vibepro-vacuous-e2e-test-elimination-repo-control with 1 files",
+      "command": "git switch -c feat/vibepro-vacuous-e2e-test-elimination-repo-control \"<base>\" && git add .github/workflows/ci.yml"
+    },
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-vacuous-e2e-test-elimination-requirements-ssot with 6 files",
+      "command": "git switch -c feat/vibepro-vacuous-e2e-test-elimination-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md docs/features/routing-profiles-rendered-projections/02_functional_spec.md docs/specs/story-vibepro-vacuous-e2e-test-elimination.md docs/specs/vibepro-managed-worktree-gate.md docs/specs/vibepro-pr-ship-command.md docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-vacuous-e2e-test-elimination-runtime-behavior with 3 files",
+      "command": "git switch -c feat/vibepro-vacuous-e2e-test-elimination-runtime-behavior \"<base>\" && git add scripts/lint-e2e-product-execution.mjs test/e2e-product-execution-lint.test.js test/verification-runner.test.js"
+    },
+    {
+      "lane_id": "e2e-gate",
+      "action": "Create feat/vibepro-vacuous-e2e-test-elimination-e2e-gate with 27 files",
+      "command": "git switch -c feat/vibepro-vacuous-e2e-test-elimination-e2e-gate \"<base>\" && git add package.json test/e2e/story-vibepro-agent-runtime-adapters-acceptance.spec.ts test/e2e/story-vibepro-cli-status-honesty-main.spec.ts test/e2e/story-vibepro-cli-status-honesty-main.test.js test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts test/e2e/story-vibepro-execute-merge-command-main.test.js test/e2e/story-vibepro-execution-judgment-status-integrity-main.spec.ts test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts test/e2e/story-vibepro-managed-worktree-execution-dag-main.spec.ts test/e2e/story-vibepro-managed-worktree-gate-main.spec.ts test/e2e/story-vibepro-managed-worktree-gate-main.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts test/e2e/story-vibepro-pr-ship-command-main.spec.ts test/e2e/story-vibepro-pr-ship-command-main.test.js test/e2e/story-vibepro-review-status-required-only-main.spec.ts test/e2e/story-vibepro-run-context-capsule-acceptance.spec.ts test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts test/e2e/story-vibepro-usage-report-main.spec.ts test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-vacuous-e2e-test-elimination-misc-follow-up with 9 files",
+      "command": "git switch -c feat/vibepro-vacuous-e2e-test-elimination-misc-follow-up \"<base>\" && git add CHANGELOG.md design-ssot.json docs/management/P4-FREEZE-HANDOFF.md docs/management/decisions/2026-07-30-vacuous-e2e-test-elimination-budget-approval.md docs/management/decisions/2026-07-30-vacuous-e2e-worktree-loss-and-rebuild.md docs/management/decisions/2026-07-31-vacuous-e2e-discarded-e2e-observation.md docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-50ca0f47.md docs/management/decisions/2026-08-01-budget-override-story-vibepro-vacuous-e2e-test-elimination-d0f61f1f.md"
+    }
+  ]
+}

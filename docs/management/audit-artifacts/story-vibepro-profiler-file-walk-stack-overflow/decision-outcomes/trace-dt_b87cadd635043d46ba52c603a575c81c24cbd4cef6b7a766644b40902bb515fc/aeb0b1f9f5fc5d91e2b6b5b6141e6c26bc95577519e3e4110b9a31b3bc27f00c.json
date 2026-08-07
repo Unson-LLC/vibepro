@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "ledger_path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_b87cadd635043d46ba52c603a575c81c24cbd4cef6b7a766644b40902bb515fc"
+  },
+  "parent_revision_fingerprint": "5a33c1efa433c77d45f6333e0f9677e790204f9f1362adab69a7c374baa79046",
+  "revision_fingerprint": "aeb0b1f9f5fc5d91e2b6b5b6141e6c26bc95577519e3e4110b9a31b3bc27f00c",
+  "trace": {
+    "decision_trace_id": "dt_b87cadd635043d46ba52c603a575c81c24cbd4cef6b7a766644b40902bb515fc",
+    "collision_group": null,
+    "trace_source_ref": "tsr_d0334788ca836adee61eff9ec735688cdddfec6e99619ebefdb4ab20d71f4710",
+    "normalized_subject_key": "gate:judgment_axis_ux_surface",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json",
+      "native_id": "decision-1785668509550-80d4d9d5",
+      "digest": "e9d2b4da4b02b3599c3219b672eb972d6d536150cba7eb703d3e44fbc16ce7c0",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "parent_revision_fingerprint": "5a33c1efa433c77d45f6333e0f9677e790204f9f1362adab69a7c374baa79046",
+    "revision_fingerprint": "aeb0b1f9f5fc5d91e2b6b5b6141e6c26bc95577519e3e4110b9a31b3bc27f00c",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_b87cadd635043d46ba52c603a575c81c24cbd4cef6b7a766644b40902bb515fc"
+        },
+        "parent_revision_fingerprint": "ee33401f92c0e3391b918571e96aaed0436cad7afe23a67bb5bfd27ab0185521"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 409,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/409",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+        "status": "merged",
+        "merged_at": "2026-08-02T15:52:39Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

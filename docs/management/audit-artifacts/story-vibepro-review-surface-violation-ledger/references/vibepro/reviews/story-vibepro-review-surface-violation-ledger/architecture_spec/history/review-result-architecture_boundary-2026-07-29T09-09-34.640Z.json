@@ -1,0 +1,214 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Boundaries clean. Single writer: agent-review.js is the only module that appends to the ledger; pr-manager and independent-review-orchestrator are read-only consumers. Lock ownership: the ledger owns its own story-scoped .surface-violations.lock (mkdir-atomic, 30s stale reclaim) distinct from the stage-level lifecycle lock — correct scope for a story-level file, read-modify-write fully inside it so concurrent closes cannot interleave between read and append. Dependency direction acyclic: review-surface-violations.js has no imports from agent-review/pr-manager; consumers import downward. Fail-closed posture placed at the right layer: the writer records unconditionally; blocking/acknowledgement policy lives in the reader/gate layer (pr-manager), so a writer crash cannot erase and a reader cannot rewrite. The only cross-layer coupling — non-atomic ledger append vs lifecycle pointer stamp — fails in the extra-blocking-entry direction and is documented in the architecture doc and Spec residual risk.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read all 16 changed paths at depth (the 953-line unit suite: titles enumerated, ~5 load-bearing bodies read verbatim, whole file executed). risk_surfaces=core_workflow_state,gate_orchestration,review_lifecycle. Attacks: (a) append-only: grepped every writer of surface-violations.json across src/, test/, bin/; writeViolations private with one caller; appendReviewSurfaceViolation called only from recordReviewSurfaceViolationForClose in agent-review.js; no truncate/rewrite path. (b) fail-closed: readReviewSurfaceViolations 47-73: ENOENT reads clean, JSON.parse failure and non-array entries throw VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE; readReviewSurfaceViolationSummary converts only that code to a blocking summary so pr prepare cannot pass on corruption. (c) RSV-8: reconcileReviewSurfaceViolationPointers 192-227 is a real set-difference over lifecycle pointers with a distinct missing:<id> namespace; readStoryLifecyclePointers applies strict failure policy closing the one-malformed-byte bypass. (d) idempotency: dedup key checked before append (agent-review.js 1002-1004); keyed replay neither duplicates nor re-appends; unkeyed replay dies on already-closed guard. (e) executed node --test on ledger+orchestrator suites: 49/49; concurrency test fails without the mkdir lock; RSV-8 tests assert exact orphan id and kind; RSV-5 drives real pr prepare artifact. (f) locks: ledger uses story-level .surface-violations.lock with read-modify-write fully inside it; append vs lifecycle pointer stamp non-atomicity resolves fail-closed and is documented in architecture doc and Spec residual risk. Backward compat: buildReviewSurfaceIntegrityGate fails only when unacknowledged>0, so no-ledger and legacy-lifecycle repos pass; legacy counted as unevaluated_lifecycle_count so pass reason never overclaims. New gate node has incoming+outgoing edges, registered in nodes, requiredGates, collectUnresolvedRequiredGates. listExistingReviewStages filtered by REVIEW_STAGES so the lock dir cannot be mistaken for a stage. All close callers after assertRecognizedCloseReason verified migrated.",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "docs/ja/reference/cli.md",
+      "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+      "docs/reference/cli.md",
+      "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "responsibility-authority.json",
+      "src/agent-review.js",
+      "src/cli.js",
+      "src/independent-review-orchestrator.js",
+      "src/pr-manager.js",
+      "src/review-surface-violations.js",
+      "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts",
+      "test/independent-review-orchestrator.test.js",
+      "test/review-surface-violation-ledger.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial expected needs_changes (a 343-line append-only claim plus a new always-on required gate usually hides a rewrite path, a lenient-read bypass, or a backward-compat block) -> final pass because every attack landed on an explicit control exercised by an executed test: single-writer grep clean, parse path rejects rather than empties, RSV-8 is real pointer reconciliation with a separate acknowledgement namespace, strict-vs-lenient lifecycle reader split closes the one-byte bypass, gate fails only on unacknowledged entries so legacy repos are unaffected, acknowledgement route proven through the real pr prepare CLI. The expected non-atomicity between ledger append and pointer stamp resolves fail-closed and is a documented boundary, not a defect."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+    "expected_root": null,
+    "expected_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+    "current_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+      "expected_root": null,
+      "expected_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "current_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-29T09:09:34.640Z",
+  "git_context": {
+    "head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+    "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-29T09:09:34.614Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 16 file(s)",
+    "recorded_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "875ee33634a3bdbfae7ce281bfdfcb83a1afad7bdc26d692f82e687d8456612b",
+        "size": 65310
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "15c35064526ce4038d7388ab2edd6c3c5e2d40891b837858ae78aa5a18a6730c",
+        "size": 238492
+      },
+      {
+        "path": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+        "sha256": "35d88499c6061f3beba5d56ce301d3dace6fa94dc92e6326895b28efd8370dac",
+        "size": 10295
+      },
+      {
+        "path": "docs/ja/reference/cli.md",
+        "sha256": "d253ada5abf846c2293737294a7cc2f99c63331caf1452274cbdd5e9a066a645",
+        "size": 19771
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+        "sha256": "a9d2e6138f25321698d8a9ea79ee320143a97756492d156584b771045e0da59a",
+        "size": 16278
+      },
+      {
+        "path": "docs/reference/cli.md",
+        "sha256": "745554a68a09302d1ff2fb3fdb7c4873c986712097f45f2f655b361bc4246475",
+        "size": 19583
+      },
+      {
+        "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+        "sha256": "93058bfbf942d90be211e662ef84312e5b9a493209154ba34acb47a215259425",
+        "size": 10224
+      },
+      {
+        "path": "responsibility-authority.json",
+        "sha256": "e16a34b03f5afa66ba218c9f10c66e53fed1929c63b31f6551090bc04963ca13",
+        "size": 19206
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "bb775d1a8cdb85cc6a28a61fd4e68a762692ac87c5fe019194b6b6c9740c19f8",
+        "size": 200038
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "50445c6f0a52e3a34fc18bf5c4ede34aad39c5b274b168b46776f60c584fdc15",
+        "size": 252714
+      },
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "99384f07e57a98654bac41802f7a768b8a957866cfd170a8c90daf7aa5b56ffd",
+        "size": 27687
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "32f20ea56cf0803cd2ca656a7b5969aeaa839abf068b55a8a67c6e709805d495",
+        "size": 722524
+      },
+      {
+        "path": "src/review-surface-violations.js",
+        "sha256": "bd00d79e29065b3ec5765021738959c93700b6fb6b274d60cf5615efa5ea3efc",
+        "size": 16017
+      },
+      {
+        "path": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts",
+        "sha256": "0d7c12cec48b65499c08a41177831a98df56942fa951653bf8676ff47fd6884b",
+        "size": 5293
+      },
+      {
+        "path": "test/independent-review-orchestrator.test.js",
+        "sha256": "923001b79b802e518d61c5e21281ba97c3f7de61d3f4286db93847cd11762e11",
+        "size": 22505
+      },
+      {
+        "path": "test/review-surface-violation-ledger.test.js",
+        "sha256": "0e6d628c0aed602cb9cfd411836144bec7229d5b12eff8130091f04f4508dfa1",
+        "size": 47004
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c93c24247b453c16013156d87f0c54b57063aed91b6fc9255de5b2d67cf2ad35"
+  },
+  "source_fingerprint": "23af173835b098f52768e4d5759795f58cf84ac6fe6f99bf61f9cacc2d378290",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a9f6a046653563c22",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "3850f7a1-ab42-45b1-870d-95778e0dfddf",
+    "session_id": "a9f6a046653563c22",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "Reviewer subagent a9f6a046653563c22 completed and was shut down after returning its verdict; task notification received in orchestrating session 3850f7a1-ab42-45b1-870d-95778e0dfddf",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a9f6a046653563c22",
+      "implementation_session_id": "3850f7a1-ab42-45b1-870d-95778e0dfddf",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

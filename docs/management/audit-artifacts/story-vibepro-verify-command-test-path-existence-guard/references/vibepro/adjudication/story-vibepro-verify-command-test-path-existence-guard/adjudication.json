@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "updated_at": "2026-08-01T01:37:59.063Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudicator confirmed test/verification-command-test-path-guard.test.js:55 records a passing 'node --test test/delivery-efficiency-guardrail.test.js' successfully, and e2e lines 96-98 confirm via the CLI that the accepted record writes verification-evidence.json.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a605cb2f9a0942b1d",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "passing の verify record / verify run で、コマンドが名指しする repo 相対 test ファイルパスに実在しないものが含まれる場合、record は拒否され、エラーメッセージに欠損パスが列挙される。",
+          "拒否時、verification-evidence.json は書き込まれない（既存の artifact 矛盾時と同じ挙動）。",
+          "ガードは決定的である: ファイル実在チェックのみで、ランナー出力のパースや推測を行わない。",
+          "`node --test`, `npm test -- <paths>`, `npx playwright test <paths>`, `npx vitest <paths>`, `npx jest <paths>` 形式の明示ファイル引数を対象とする。",
+          "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。",
+          "実在する test パスを名指しした passing record は従来どおり受理される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f9ea882563f113252f4930fb6f6117050d34604a69d93fa22dc9dbc1a9045a07",
+      "recorded_at": "2026-08-01T01:37:59.061Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudicator confirmed glob tokens are skipped by /[*?[\\]{}]/, flag tokens by the startsWith('-') branch, and value-taking flags by VALUE_TAKING_FLAGS skip-ahead; glob (guard test 80, e2e 85), --test-name-pattern with a path-looking quoted value (92, e2e 87) and npm test with no paths (68, e2e 89) are all accepted with exit 0.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a605cb2f9a0942b1d",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "passing の verify record / verify run で、コマンドが名指しする repo 相対 test ファイルパスに実在しないものが含まれる場合、record は拒否され、エラーメッセージに欠損パスが列挙される。",
+          "拒否時、verification-evidence.json は書き込まれない（既存の artifact 矛盾時と同じ挙動）。",
+          "ガードは決定的である: ファイル実在チェックのみで、ランナー出力のパースや推測を行わない。",
+          "`node --test`, `npm test -- <paths>`, `npx playwright test <paths>`, `npx vitest <paths>`, `npx jest <paths>` 形式の明示ファイル引数を対象とする。",
+          "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。",
+          "実在する test パスを名指しした passing record は従来どおり受理される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f9ea882563f113252f4930fb6f6117050d34604a69d93fa22dc9dbc1a9045a07",
+      "recorded_at": "2026-08-01T01:37:58.544Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudicator confirmed all five command forms have dedicated rejection tests in test/verification-command-test-path-guard.test.js (node --test:35, npm test --:105, npx playwright test:120, npx vitest run:135, npx jest:149); four are re-driven through the real CLI in the e2e test lines 73-81, and the prefix regex at src/verification-evidence.js:279 covers each form.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a605cb2f9a0942b1d",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "passing の verify record / verify run で、コマンドが名指しする repo 相対 test ファイルパスに実在しないものが含まれる場合、record は拒否され、エラーメッセージに欠損パスが列挙される。",
+          "拒否時、verification-evidence.json は書き込まれない（既存の artifact 矛盾時と同じ挙動）。",
+          "ガードは決定的である: ファイル実在チェックのみで、ランナー出力のパースや推測を行わない。",
+          "`node --test`, `npm test -- <paths>`, `npx playwright test <paths>`, `npx vitest <paths>`, `npx jest <paths>` 形式の明示ファイル引数を対象とする。",
+          "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。",
+          "実在する test パスを名指しした passing record は従来どおり受理される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f9ea882563f113252f4930fb6f6117050d34604a69d93fa22dc9dbc1a9045a07",
+      "recorded_at": "2026-08-01T01:37:58.019Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudicator confirmed missingNamedTestPaths uses only existsSync on path.resolve(repoRoot, token) after pure token/regex filtering, never reading command output or exit codes; the runner call site passes a literal pass. E2E assertion on the fixed message at line 69 confirms rejection is driven by the existence check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a605cb2f9a0942b1d",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "passing の verify record / verify run で、コマンドが名指しする repo 相対 test ファイルパスに実在しないものが含まれる場合、record は拒否され、エラーメッセージに欠損パスが列挙される。",
+          "拒否時、verification-evidence.json は書き込まれない（既存の artifact 矛盾時と同じ挙動）。",
+          "ガードは決定的である: ファイル実在チェックのみで、ランナー出力のパースや推測を行わない。",
+          "`node --test`, `npm test -- <paths>`, `npx playwright test <paths>`, `npx vitest <paths>`, `npx jest <paths>` 形式の明示ファイル引数を対象とする。",
+          "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。",
+          "実在する test パスを名指しした passing record は従来どおり受理される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f9ea882563f113252f4930fb6f6117050d34604a69d93fa22dc9dbc1a9045a07",
+      "recorded_at": "2026-08-01T01:37:57.493Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudicator confirmed the guard is invoked before mkdir/writeFile of the evidence path (src/verification-evidence.js:75 vs :77-78); both test/verification-command-test-path-guard.test.js:52 and the e2e test line 65 assert verification-evidence.json is absent after rejection.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a605cb2f9a0942b1d",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "passing の verify record / verify run で、コマンドが名指しする repo 相対 test ファイルパスに実在しないものが含まれる場合、record は拒否され、エラーメッセージに欠損パスが列挙される。",
+          "拒否時、verification-evidence.json は書き込まれない（既存の artifact 矛盾時と同じ挙動）。",
+          "ガードは決定的である: ファイル実在チェックのみで、ランナー出力のパースや推測を行わない。",
+          "`node --test`, `npm test -- <paths>`, `npx playwright test <paths>`, `npx vitest <paths>`, `npx jest <paths>` 形式の明示ファイル引数を対象とする。",
+          "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。",
+          "実在する test パスを名指しした passing record は従来どおり受理される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f9ea882563f113252f4930fb6f6117050d34604a69d93fa22dc9dbc1a9045a07",
+      "recorded_at": "2026-08-01T01:37:56.973Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Independent fresh-context adjudicator confirmed: assertCommandNamedTestPathsExist at src/verification-evidence.js:288 throws listing missing paths, and test/e2e/story-vibepro-verify-command-test-path-existence-guard-main.test.js:55-61 drives the real CLI verify record and asserts nonzero exit whose stderr names the missing test/pr-manager.test.js and not the existing sibling. Noted caveat: the verify run entrypoint rests on the pre-flight call at src/verification-runner.js:146 and is covered by code reading and typecheck rather than a dedicated test.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a605cb2f9a0942b1d",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "task_id": null,
+        "acceptance_criteria": [
+          "passing の verify record / verify run で、コマンドが名指しする repo 相対 test ファイルパスに実在しないものが含まれる場合、record は拒否され、エラーメッセージに欠損パスが列挙される。",
+          "拒否時、verification-evidence.json は書き込まれない（既存の artifact 矛盾時と同じ挙動）。",
+          "ガードは決定的である: ファイル実在チェックのみで、ランナー出力のパースや推測を行わない。",
+          "`node --test`, `npm test -- <paths>`, `npx playwright test <paths>`, `npx vitest <paths>`, `npx jest <paths>` 形式の明示ファイル引数を対象とする。",
+          "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。",
+          "実在する test パスを名指しした passing record は従来どおり受理される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f9ea882563f113252f4930fb6f6117050d34604a69d93fa22dc9dbc1a9045a07",
+      "recorded_at": "2026-08-01T01:37:56.441Z"
+    }
+  ]
+}

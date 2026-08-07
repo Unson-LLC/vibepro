@@ -1,61 +1,18 @@
-# Release and Audit
+# Release Boundary
 
-## Published Package vs Current Main
+VibePro separates four kinds of proof:
 
-| Surface | Meaning | How to verify |
-| --- | --- | --- |
-| npm `latest` / `beta` | Release target: `0.2.0-beta.1` | `npm view vibepro dist-tags --json` and `vibepro version` |
-| GitHub `main` | Current source, including unreleased changes | `git rev-parse HEAD` and `CHANGELOG.md` → Unreleased |
-| This manual build | The commit shown in the footer and `vibepro-source-commit` meta tag | Compare it with GitHub `main` |
-| Local artifacts | Evidence for a specific repository, Story, and head | Inspect `.vibepro/` plus the Git head |
+1. The repository version in `package.json` identifies release source.
+2. A successful package workflow proves an npm publish attempt completed.
+3. The npm registry version, dist-tags, and `gitHead` prove what consumers install.
+4. The deployed manual's source-commit meta tag proves which documentation build is live.
 
-The package is an early beta. A reproducible install can be explicit:
+Do not treat a merged version bump as npm publication, or a successful VitePress build as live deployment. Verify each surface independently.
 
-```bash
-npm install -g vibepro@beta
-vibepro version
-```
+## Minimal-core audit boundary
 
-Do not assume that a command documented from current `main` exists in an older installed binary. The generated [CLI Reference](/reference/cli) matches the manual source commit; the running binary's `vibepro help` wins when they differ.
+VibePro keeps local evidence records, but it no longer generates a canonical audit bundle or decides whether those records are sufficient. Consumers own retention, access control, review policy, CI requirements, and final approval.
 
-## PR, CI, and Merge Freshness
+## Upgrade to 0.2.0-beta.3
 
-Verification evidence and ordinary reviews use content-surface binding by default,
-so an unrelated commit does not invalidate evidence when every inspected file is
-unchanged. `gate_evidence` and `release_risk` use the same content-surface
-default; repositories and callers can retain strict binding for a genuinely
-commit-wide high-risk role through a reasoned role policy or CLI override.
-Finalize the intended review surface, commit, record verification and independent
-review, then run `pr prepare` and `pr create`. After CI completes, import it,
-refresh preparation and the existing PR, then merge through `execute merge`.
-
-### Delivery reconciliation operations
-
-The release operator owns reconciliation until the execution state reports a
-reconciled delivery. Observe it with:
-
-```bash
-vibepro execute status . --story-id <story-id> --json
-```
-
-Exit `0` means a valid state was read; inspect its reconciliation fields to
-decide whether follow-up is required. Exit `1` is reserved for a missing or
-corrupt state; stdout remains empty on that failed query and stderr contains
-either a structured JSON error (`--json`) or an operator-facing message.
-Recover a delivered but unreconciled Story with:
-
-```bash
-vibepro execute reconcile . --story-id <story-id> --base <base-ref> --pr <url-or-number>
-```
-
-If no execution state exists yet, use `vibepro execute start` before querying it.
-Reconciliation never rolls back an observed provider delivery. Rollback is
-limited to local execution or canonical-audit persistence state: preserve the
-delivery fact, retain the failed reason and recovery command, repair the local
-or canonical artifact, then rerun `execute reconcile`.
-
-## Canonical Audit and ROI
-
-`audit replay` checks whether the shipped Story can be reconstructed from canonical artifacts. `usage report --gate-roi --subagent-roi` shows whether gates and independent reviews produced useful decisions relative to their cost. A blocked source remains blocked; it must not appear as zero activity.
-
-Cloudflare Pages deployment details belong in the [hosting reference](/reference/cloudflare-pages), not in the product model.
+This is a breaking beta cleanup. Automation calling removed commands must migrate to the command list shown by `vibepro help`. To retain the previous broad workflow temporarily, pin `vibepro@0.2.0-beta.2`.

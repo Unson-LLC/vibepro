@@ -1,0 +1,160 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Evidence freshness, reliability and head binding are sound: four runner_direct records (unit 2282/2282, e2e 89/89, integration 92/92, typecheck exit 0) all bind head_sha_before/after to HEAD a76fcc43 with identical worktree_sha256 and timed_out=false. AC-2's per-file mapping is real: all 17 deleted paths are mapped and the 11 named replacement test cases exist and are executed via --test-name-pattern. Blocked on two spec-surface defects: the Spec markdown claims comment stripping the lint does not implement, and the AC-6 clause marker cites a clause id (INV-003) that does not exist.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "At HEAD a76fcc43 read the origin/main...HEAD name-status diff, the full JSON of all four verification-run records (head_sha, worktree hashes, timed_out, mutation flags), the Story, the Spec markdown, spec.json clause ids, and the acceptance spec REPLACEMENT_COVERAGE mapping; grepped the 11 replacement test names to confirm they exist in real suites; ran the lint script directly (64 files, exit 0) and called detectProductExecutionSignals on a commented-out import to measure real behaviour. Did not run the full suite; read recorded artifacts instead.",
+    "evidence": "verification-runs/{unit,e2e,integration,typecheck}.json all head_sha=a76fcc4342d01b6409b092d807abfec0422df377, worktree_sha256_before=after=af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3, timed_out=false; node scripts/lint-e2e-product-execution.mjs -> 64 e2e test files all execute product behaviour, exit 0; detectProductExecutionSignals(commented-out import) -> ['product_import'] contradicting the Spec markdown",
+    "inputs": [
+      "scripts/lint-e2e-product-execution.mjs",
+      "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+      "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts",
+      "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+      "package.json",
+      "test/execution-state.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial judgment: deleting 17 test files must open a coverage hole and the AC-2 per-file mapping is probably a paper claim, so block was expected -> final judgment needs_changes, because the acceptance spec binds each REPLACEMENT_COVERAGE entry to a named test case, child-process executes them with --test-name-pattern and asserts fail=0 plus a pass floor, and all 11 mapped test cases were independently confirmed to exist, while the four verification records are correctly head-bound and src/ is untouched with unit 2282/2282 green; it is not a pass because the Spec markdown declares comment stripping that the lint does not implement (measured: a commented-out import raises product_import and clears the gate) and contradicts the machine-readable spec.json INV-002, and the AC-6 clause marker cites nonexistent clause id INV-003"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "expected_root": null,
+    "expected_head_sha": "a76fcc4342d01b6409b092d807abfec0422df377",
+    "current_head_sha": "a76fcc4342d01b6409b092d807abfec0422df377",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "expected_root": null,
+      "expected_head_sha": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "current_head_sha": "a76fcc4342d01b6409b092d807abfec0422df377",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T16:34:46.375Z",
+  "git_context": {
+    "head_sha": "a76fcc4342d01b6409b092d807abfec0422df377",
+    "current_branch": "claude/vacuous-e2e-deletions",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T16:34:46.343Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "a76fcc4342d01b6409b092d807abfec0422df377",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+        "sha256": "2fbe18592c3e701e80b33cc1c966e93709115f320618f8970d2dbd5024a1f981",
+        "size": 15344
+      },
+      {
+        "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+        "sha256": "5bf95b63a14e7123d552200f604625b4f062b92ff4b40b14c9c00dc1e1bd341b",
+        "size": 5428
+      },
+      {
+        "path": "package.json",
+        "sha256": "2dc0b957ef0bcf2a13676795d0c28d098742942387fd4ab42e40ac748d9e1f76",
+        "size": 1863
+      },
+      {
+        "path": "scripts/lint-e2e-product-execution.mjs",
+        "sha256": "6c84ae9aab370455120838e55133d598d7c0c258c992db5d3e81a527de278fe0",
+        "size": 6792
+      },
+      {
+        "path": "test/e2e/story-vibepro-vacuous-e2e-test-elimination-acceptance.spec.ts",
+        "sha256": "d80af4c8ee05cbea257a92238b18ff23a1c6f24a4c90a18904aad73918b63585",
+        "size": 15991
+      },
+      {
+        "path": "test/execution-state.test.js",
+        "sha256": "14cfdb891075b67ead18b6b5e221b73974d792f25dfac39a9d2223a409e0bebf",
+        "size": 89391
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "ceca72a1424d023d5ddae6542aeef8769089bfdd09a575316a2fbb408ecd8518",
+        "size": 1264113
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "18a9ea54648c88c5ef58f0a95438d40cdc45ec75ca9789115c97f81590990b86"
+  },
+  "source_fingerprint": "cee895c838b59976f410aaf848c5989f1c97c4ab79db49553edf7caf14832c75",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a6fbd6c405d4a21f5",
+    "agent_role": null,
+    "model": "opus-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "a6fbd6c405d4a21f5",
+    "session_id": "a6fbd6c405d4a21f5",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a6fbd6c405d4a21f5.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "lifecycle closed with close_reason completed at head a76fcc4342d0; subagent returned final JSON verdict and terminated",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a6fbd6c405d4a21f5",
+      "implementation_session_id": "70ea817c-ee56-48c0-ab7c-612da8629872",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "ledger_path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_0991bf7e644ccc51799d4f05e6915f950a267ba0d7e2f348bcc7221f961dfd88"
+  },
+  "parent_revision_fingerprint": "f786963909847cfd4502667722210a3cd89f4675aab6b50522e058456a71f27a",
+  "revision_fingerprint": "b9d5e834d52827bda4808a7a136f3eaa647e927bc10e3cfe91eb4d28901065fd",
+  "trace": {
+    "decision_trace_id": "dt_0991bf7e644ccc51799d4f05e6915f950a267ba0d7e2f348bcc7221f961dfd88",
+    "collision_group": null,
+    "trace_source_ref": "tsr_6ea4ec652095483d25610d14bcbb1b8ba1a3498abe5eb0a371cdbad45bcb5966",
+    "normalized_subject_key": "gate:definition_of_done",
+    "source_identity": {
+      "source_kind": "gate_outcome",
+      "source_ref": ".vibepro/gate-outcomes/ledger.json",
+      "native_id": "story-vibepro-progress-heartbeat-policy-kernel|gate:definition_of_done|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z",
+      "digest": "0a328addee4532e11e4dd54d75cd0d8ea1c48e859f45f206b691fe4e28b67432",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+    "parent_revision_fingerprint": "f786963909847cfd4502667722210a3cd89f4675aab6b50522e058456a71f27a",
+    "revision_fingerprint": "b9d5e834d52827bda4808a7a136f3eaa647e927bc10e3cfe91eb4d28901065fd",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_0991bf7e644ccc51799d4f05e6915f950a267ba0d7e2f348bcc7221f961dfd88"
+        },
+        "parent_revision_fingerprint": "3b257e9c742a174f5aa26f9dc6cdc5953444126d2ebdfa752c4ebef949c9222c"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "observed",
+      "value": {
+        "gate_id": "gate:definition_of_done"
+      },
+      "provenance": [
+        {
+          "source_kind": "gate_outcome",
+          "source_ref": ".vibepro/gate-outcomes/ledger.json",
+          "source_head_sha": null,
+          "source_digest": "0a328addee4532e11e4dd54d75cd0d8ea1c48e859f45f206b691fe4e28b67432",
+          "native_id": "story-vibepro-progress-heartbeat-policy-kernel|gate:definition_of_done|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z"
+        }
+      ]
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "schema_version": "0.1.0",
+        "entry_key": "story-vibepro-progress-heartbeat-policy-kernel|gate:definition_of_done|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "gate_id": "gate:definition_of_done",
+        "gate_type": "definition_of_done_gate",
+        "previous_status": "needs_evidence",
+        "resolved_status": "passed",
+        "outcome": "unclassified",
+        "classification": "ambiguous_resolution_surface",
+        "overridden": false,
+        "evidence_refs": [],
+        "decision_refs": [],
+        "previous_prepare_created_at": "2026-08-04T04:39:36.885Z",
+        "resolved_at": "2026-08-04T04:40:18.259Z",
+        "git": {
+          "base_ref": "main",
+          "head_ref": "HEAD",
+          "head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+          "changed_files": [
+            "design-ssot.json",
+            "docs/architecture/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "docs/ja/reference/cli.md",
+            "docs/management/stories/active/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "docs/reference/cli.md",
+            "docs/specs/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "src/cli.js",
+            "src/codex-subagent-runtime-adapter.js",
+            "src/graphify-adapter.js",
+            "src/progress-deadline.js",
+            "src/verification-evidence.js",
+            "src/verification-runner.js",
+            "test/e2e/story-vibepro-progress-heartbeat-policy-kernel-main.test.js",
+            "test/graphify-adapter.test.js",
+            "test/progress-deadline.test.js",
+            "test/verification-runner.test.js"
+          ]
+        }
+      },
+      "provenance": [
+        {
+          "source_kind": "gate_outcome",
+          "source_ref": ".vibepro/gate-outcomes/ledger.json",
+          "source_head_sha": null,
+          "source_digest": "0a328addee4532e11e4dd54d75cd0d8ea1c48e859f45f206b691fe4e28b67432",
+          "native_id": "story-vibepro-progress-heartbeat-policy-kernel|gate:definition_of_done|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 408,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/408",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "bc722efef60c61c4ff4c58a93321e294a92c571d",
+        "status": "merged",
+        "merged_at": "2026-08-04T04:40:27Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "created_at": "2026-07-30T13:17:49.218Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADR不要: >",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADR不要: >"
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "5 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-30T13:17:44.913Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "branch": "claude/practical-khayyam-9a9d9a",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "28420edf62f07139ff45aedbbd1fef70d50f5f23",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

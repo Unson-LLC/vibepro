@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-governance-rebaseline",
+  "created_at": "2026-08-04T14:01:21.947Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 7 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/adjudication/target-model-rebaseline-cards.md, docs/architecture/target-model-rebaseline-proposal.md, docs/architecture/target-model.json, docs/architecture/vibepro-target-model-governance-rebaseline.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "8 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 7,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5,
+        "waiver": 1,
+        "intake_not_applicable": 1
+      },
+      "by_status": {
+        "accepted": 7
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+          "expected_root": null,
+          "expected_head_sha": "d291352e5b2ce30ccc05542c88dbc1570e386ce0",
+          "current_head_sha": "d291352e5b2ce30ccc05542c88dbc1570e386ce0",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785844518932-35ba64aa",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_data_state",
+        "source_status": "needs_evidence",
+        "summary": "data_state: 永続データのmigrationは不要(追加フィールドのみ・欠落はnull degrade)",
+        "reason": "migration_plan: 永続スキーマ変更は docs/architecture/target-model.json への model_version と governance の追加、および conformance/delta artifact への model.version・previous_model_version・model_version_changed の追加のみで、いずれも既存キーを保ったままの追加である。既存の target-model を持つ利用リポジトリには model_version が無いが、loadTargetModel は欠落を null へ degrade するため migration 作業を要求しない。rollback_plan: 追加フィールドを削除すれば従来の target-model と出力スキーマに戻る。modules[].paths へ追加した5件も当該行を戻せば孤児として再計上されるだけで、データ破壊は起きない。idempotency_test: rebaseline proposal は同一入力に対して generated_at 以外が完全一致することを deep equality テストで固定しており、再実行は冪等である。conformance/delta は derive-only で毎回再計算するため再実行で状態が積み上がらない。query_semantics_test: 既存consumerである senior-gap judgment の conformance_summary 読み取り経路(conformance?.summary ?? null)と pr prepare shadow stage の挙動は既存テスト(architecture-conformance-delta-shadow-stage.test.js)で維持を確認済み。previous_model_version の読み取りは delta.json 欠落・破損時に null へ degrade し、初回計測を誤って model_version_changed=true としない。",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/verification-runs/integration.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-target-model-governance-rebaseline/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline",
+            "expected_root": null,
+            "expected_head_sha": "d291352e5b2ce30ccc05542c88dbc1570e386ce0",
+            "current_head_sha": "d291352e5b2ce30ccc05542c88dbc1570e386ce0",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "d291352e5b2ce30ccc05542c88dbc1570e386ce0",
+          "current_branch": "codex/story-vibepro-target-model-governance-rebaseline",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-04T11:55:18.925Z"
+        },
+        "recorded_at": "2026-08-04T11:55:18.933Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-04T14:01:18.354Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-governance-rebaseline/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "branch": "codex/story-vibepro-target-model-governance-rebaseline",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "72b0fed991ec25e9e42a21c48d7e7e49cc992387",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

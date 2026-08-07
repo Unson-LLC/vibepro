@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+  "updated_at": "2026-08-03T06:39:13.123Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The diff touches only the verification stage array; test VC-002 iterates listCheckpointStages() asserting pr.gate_ids === null and no other stage includes the id, executed live (judge reran, 2/2 pass); repo-wide grep confirms no other reference outside this story's files.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`listCheckpointStages()` が返す `verification` stage の `gate_ids` に",
+          "`verification` 以外の checkpoint stage（story / implementation-start / test-plan /"
+        ]
+      },
+      "acceptance_scope_fingerprint": "3cc6db70788c651d0bc4db445ef8ddd47ec29a4119d400aae2fb8965fe9f4359",
+      "recorded_at": "2026-08-03T06:39:13.119Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "The diff adds exactly one line inserting gate:uiux_intake_judgment immediately after gate:pr_route_classification in CHECKPOINTS.verification.gate_ids; test VC-001 asserts intakeIndex === routeIndex + 1 against live listCheckpointStages() output and the judge independently reran the file (2/2 pass). Grounded in the diff and a live rerun, no inferential leap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`listCheckpointStages()` が返す `verification` stage の `gate_ids` に",
+          "`verification` 以外の checkpoint stage（story / implementation-start / test-plan /"
+        ]
+      },
+      "acceptance_scope_fingerprint": "3cc6db70788c651d0bc4db445ef8ddd47ec29a4119d400aae2fb8965fe9f4359",
+      "recorded_at": "2026-08-03T06:39:11.399Z"
+    }
+  ]
+}

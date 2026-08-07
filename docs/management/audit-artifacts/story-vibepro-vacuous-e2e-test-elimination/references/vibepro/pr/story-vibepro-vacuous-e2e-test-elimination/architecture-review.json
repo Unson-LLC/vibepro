@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "created_at": "2026-08-02T01:44:07.799Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-vacuous-e2e-test-elimination.md, docs/features/routing-profiles-rendered-projections/02_functional_spec.md, docs/specs/vibepro-managed-worktree-gate.md, docs/specs/vibepro-pr-ship-command.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-02T01:44:02.445Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "branch": "claude/vacuous-e2e-deletions",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "5626ddb592359a3673e823a490cfa93facd64905",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

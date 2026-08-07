@@ -1,0 +1,648 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "updated_at": "2026-07-29T10:08:36.400Z",
+  "events": [
+    {
+      "event_id": "d7b8abf8-0a05-43c9-85d1-401355c48818",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story is not a token match. It records a measured incident, names three distinct structural defects (no close-time snapshot, detection by accident, erasure on re-run), and derives nine acceptance criteria that each carry an explicit falsification step. The reason key weighs three alternatives, including the one already measured to fail, and states compatibility, rollback and scope. I checked that the implemented mechanism answers the stated intent rather than a narrower proxy: the close computes the fact instead of relying on self-report, and the record survives re-runs by construction.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:57.104Z"
+    },
+    {
+      "event_id": "2be0a4ae-c230-4cc4-9588-46ab0ac00bd0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The current reality claim is that close records no close-time snapshot and that violations wash out through review record overwriting a fixed path. I confirmed both premises against the code and the tests reproduce them against a real git working tree created per test with real commits and real CLI invocations. One honest caveat I verified: the e2e spec is a child-process wrapper that reruns the unit suite and matches its stdout, so it adds process-level execution rather than an independent scenario. The unit suite itself is the substantive replay, and it exercises the flow rather than asserting about it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:57.509Z"
+    },
+    {
+      "event_id": "646377f9-a03e-4592-9ce4-10a9cdbab83b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Spec doc states INV-001 through INV-004 and C-001 through C-006 as machine-checkable contracts, and I spot-checked that each maps to a real assertion rather than a title: the append-only invariant is proven by a byte-identical survivor comparison, the derived-id invariant by an unchanged recorded_at on replay, the type-separation invariant by a post-close commit producing zero entries. The invariants also hold structurally, since the module exposes no erase path and writeViolations has a single append-only caller.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:57.908Z"
+    },
+    {
+      "event_id": "84a56fcc-e8ad-447b-8998-76a524350036",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change states its boundary and honours it. Non Goals restrict detection to the window between start and the operation that closes the lifecycle, and explicitly exclude adjudication-time detection, retroactive extraction of past stories, and the three sibling child stories. I confirmed the code matches: detection runs only in the close and record-close transitions. The architecture doc also names the surface digest exclusion of the vibepro directory as a boundary and routes around it via pointer reconciliation. The cited decision record concerns gate:bug_physics_triage, so the boundary reasoning rests on the Story and architecture doc, which do carry it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:58.311Z"
+    },
+    {
+      "event_id": "7e01b9cd-2101-492d-9774-fccfb3ca6024",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure modes are examined as behaviour, not listed. I verified negative-path tests for a malformed ledger, a structurally invalid ledger, a well-formed empty rewrite, unreadable lifecycle pointers, a timeout close, an unknown close reason, and a close with no recorded start snapshot. Each asserts the blocking outcome rather than absence of a crash. The change also declines to overclaim: four residual risks are stated as open, including endpoint sampling and directory-level erasure, and the gate reason text refuses to call an unevaluated lifecycle clean.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:58.710Z"
+    },
+    {
+      "event_id": "a15c89a4-b00c-4145-80a8-65504ac530a6",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "E-1 through E-4 are runner_direct records at this exact head with matching before and after head shas and identical worktree hashes, so nothing moved during the runs. I did not take them on trust: I reran the ledger unit file myself at this head and observed 31 of 31 passing. The typecheck record is honestly annotated as proving the command did not fail rather than how much it checked, which is the correct characterisation of node --check over the module set.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:59.116Z"
+    },
+    {
+      "event_id": "b68277a1-a48c-4fa4-87d6-18e2d3d4bb85",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I checked the compatibility question the new required gate raises. In pr prepare the agent review summary is always produced (pr-manager.js:6108), and an absent ledger reads clean, so pre-existing stories with no reviews get a passed gate rather than a new block; the blocking needs_evidence branch fires only when the summary was never generated, which is a genuine unread state and not a routine one. Lifecycle entries gain fields and lose none, the CLI gains a subcommand without changing existing ones, and the ledger lives in its own file so review result artifacts keep their prior shape, which a regression test asserts.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:59.512Z"
+    },
+    {
+      "event_id": "5173445c-626c-4c5a-9d37-51a519b1dc80",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I examined the lifecycle links rather than the generic evidence list. No deadlock is possible: the lock waits with a bounded retry, throws a named error at the timeout, releases in a finally block, and reclaims a stale lock directory. Evidence loss is addressed by ordering as well as locking, since the ledger append deliberately precedes the lifecycle write so a later failure leaves a recorded violation rather than a silent one, and orphaned pointers are reported. The remaining narrow window is that the stale reclamation could break mutual exclusion if an append stalled beyond the timeout, and only in-process concurrency is tested.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:14:59.928Z"
+    },
+    {
+      "event_id": "0b775a75-8bcc-4834-844d-bc670fe08491",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is fifteen files but a single intent. One new module carries the whole ledger concern in 343 lines, the two close paths each gain the same short recording block, one gate function and two DAG edges expose it, and one CLI subcommand reads it; the rest is tests and the Story, architecture and Spec docs that give a reviewer the entry point. Nothing unrelated rides along. A reviewer can hold the whole change as one judgment, so accepting a follow-up rather than splitting is the right call here.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:15:00.337Z"
+    },
+    {
+      "event_id": "76398026-9d32-42e9-8c35-e2f9fb90d919",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This mode is the central risk of the design, since treating corrupt content as empty would restore the erase path the module exists to remove, and it is handled deliberately. Malformed JSON and a non-array entries field both raise the same typed code, an absent file is distinguished and reads clean, appending over a corrupt ledger throws instead of overwriting, the summary reports readable false and counts one blocking violation, and the CLI exits 2 while naming the reason. I confirmed each of these by reading the reader and by my own passing run of the parse_failure test.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:15:00.738Z"
+    },
+    {
+      "event_id": "31122704-2145-40c3-90b3-7cdf2a022eb9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The misleading-green risk is addressed in the direction that matters. A gate built with no summary returns a blocking needs_evidence and states that this is not a clean result, rather than passing on a file nobody read. Lifecycles that predate detection are counted as unevaluated and named in the pass reason so a pass never asserts absence of violations it never checked. Acknowledgement never deletes, and erasing an already acknowledged entry blocks again under a separate id so the old approval cannot carry over. A regression test also pins that recorded review results keep their prior shape.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:15:01.149Z"
+    },
+    {
+      "event_id": "0364e9ab-af46-40cf-8553-478dcac5843a",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I checked for new or stale states and found none. The lifecycle status vocabulary is unchanged, the close reason set stays closed and now rejects unknown values instead of coercing them to completed, and the existing terminalization branches are untouched apart from the snapshot write that precedes them. The regression test asserts the prior shape of the stage summary, including running_count zero and stale_count zero on a clean round and an unchanged effective status downgrade. Post-close changes remain staleness and do not enter the violation flow, which a dedicated test proves.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a5190c1db048b144c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a5190c1db048b144c"
+      },
+      "head_commit": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+      "recorded_at": "2026-07-29T09:15:01.543Z"
+    },
+    {
+      "event_id": "e8de155b-f94c-4a5c-9d0b-30fceb4b9271",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story carries 9 numbered acceptance criteria, each with its own explicit falsification procedure, plus a reason key covering alternatives, compatibility, rollback and boundary. Intent is grounded in a specific measured incident (round 6 of the enumeration-coverage Story) and names the three structural defects it addresses. Two rejected alternatives are recorded together with why they failed in practice, one of them observed rather than hypothesised. This is a real intent statement, not a token match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:31.488Z"
+    },
+    {
+      "event_id": "9559dec6-a65b-4052-919f-e3f2bf8b8b13",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanically needs_evidence, but current reality is genuinely examined. The Background states what was actually observed rather than a hypothetical, and the closing section enumerates four gaps the change does NOT close: the .vibepro exclusion that hides ledger self-edits, endpoint-only sampling that misses a revert-in-place, cooperative tampering across ledger plus lifecycle, and directory-level deletion. Evidence E-1 (integration 200/200 at this head) exercises the downstream runtime consumers of the touched modules.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:31.871Z"
+    },
+    {
+      "event_id": "bd267afa-87e3-4645-8f17-da947d5b984f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The central invariant, that a recorded violation cannot be removed, is enforced by module surface rather than convention: I confirmed src/review-surface-violations.js exports no delete or update function and its only write path appends under a lock. Test :172 asserts a prior entry survives a full clean round byte-identical, and :247 asserts acknowledgement leaves total_count at 1 so clearing the gate never clears the record. Spec and architecture docs are both in the diff and track INV-001 through INV-004.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:32.258Z"
+    },
+    {
+      "event_id": "16effb18-46fd-4582-bc37-82fc68faf2e9",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundaries are stated and the code matches them. Non Goals fence off CEA-S-1, S-2 and S-4 plus retroactive extraction. The detection window is start to the operation that closes the lifecycle: record --agent-closed is inside it (agent-review.js:477-488), while a record merely attaching to an already-closed lifecycle is outside. detectReviewSurfaceMutation fires only on close_reason completed, matching the documented limit and its stated rationale. E-1 confirms the neighbouring runtime paths still execute at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:32.650Z"
+    },
+    {
+      "event_id": "f5e9aa99-4eaf-418e-9892-a7e4e1dd8b10",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanically unmatched, but failure modes are examined concretely and I watched each of these tests pass: a malformed ledger is rejected rather than read as empty (:478), a non-completed close cannot smuggle a review result through (:405), a mistyped close reason is rejected rather than coerced to completed (:714), unreadable lifecycle pointers block rather than read as agreement (:631), erasing an already-acknowledged entry blocks again (:601), and a racing append does not drop the other record (:689).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:33.037Z"
+    },
+    {
+      "event_id": "7cff7ac4-d4e8-4f34-b3ea-cf008419c184",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence exists in substance: the unit suite builds a real temp git repo per test, runs the real CLI for init and pr prepare, and re-reads the produced pr-prepare.json and gate DAG (:288), which is artifact replay rather than an assertion about it. Worth recording that the e2e spec is a thin wrapper re-running that same unit suite in a child process and regex-matching its stdout, so its force comes from the child exit code; it adds clean-process re-execution rather than an independent layer. The underlying replay is real.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:33.434Z"
+    },
+    {
+      "event_id": "37c123ee-0c6a-4058-a52f-7ca01c5dba24",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Additive only. New lifecycle fields, one new gate node, and a read-only review violations subcommand; no existing field is removed or redefined. An absent ledger reads clean (test :432), so existing stories do not newly block. I confirmed both story-review-dir scans filter on isDirectory plus a known stage name (agent-review.js:3769 and :3790), so the new file and its lock dir do not disturb existing readers. The gate is required and returns needs_evidence when never read, which is deliberate fail-closed behaviour.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:33.821Z"
+    },
+    {
+      "event_id": "fa7d521b-ec42-4488-82ff-2e2a0d8a6ba7",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I verified the load-bearing claims rather than accepting them. Version skew: surface-violations.json is referenced only by the new module and its two importers, and both story-review-dir enumerations filter isDirectory plus a known stage name (agent-review.js:3769, :3790), so an older binary neither reads nor trips over the ledger or its lock dir and degrades cleanly to pre-ledger behaviour. The stored object is additive, reads clean when absent (:432) and fails closed when corrupt (:478). No migration, schema or dependency change; the set reverts atomically.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:34.211Z"
+    },
+    {
+      "event_id": "95dea821-bcae-43ac-bfb9-c781e91d6b7f",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I checked the new concurrency primitive for deadlock and evidence loss. withDirectoryLock (src/review-surface-violations.js:155-182) uses atomic mkdir, reclaims a lock older than 30s, throws after a 30s wait instead of blocking forever, and releases in finally, including when the inner read throws on an unreadable ledger. The append runs before the lifecycle write (agent-review.js:897-900), so a close failing afterwards still leaves the observed mutation recorded, which is the correct direction. Test :689 confirms no record is dropped under a race.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:34.596Z"
+    },
+    {
+      "event_id": "4e097fc2-b996-4e6c-8ea1-6f7ea7269cf3",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The bundle reads as one contract end to end: a single new module plus the four call sites that each touch it for the same reason, namely record the close-time snapshot, append the typed entry, expose gate:review_surface_integrity, and expose a read-only CLI view. Splitting would leave a gate reading a ledger no writer maintains, as the split_resolution decision states. The only off-theme element is the 4-line npm dist-tag pin, which is trivially reviewable and repairs main CI. Large but coherent for one reviewer.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:34.975Z"
+    },
+    {
+      "event_id": "c2645d38-a3e4-4aba-96b4-aaf02a910779",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I verified both claims. The pin now matches docs/reference/version-history.md:7-8 and its ja mirror, both at 0.2.0-beta.2, and I ran test/public-release-notes.test.js at this head and it passes, so the commit realigns a test with already-published registry state rather than initiating a release. The release operator path is owned by the release story spec, whose Operations section I read: it documents rollout via post-merge-release.yml, rollback via npm deprecate plus dist-tag repoint plus revert-before-rerun, and observability. This PR adds no operator action. The hardcoded pin will need realignment at the next release, but that is pre-existing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:35.360Z"
+    },
+    {
+      "event_id": "08f24610-8942-4fba-a948-cb050ddd426b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Specifically handled rather than assumed away. readReviewSurfaceViolations (:56-64) rejects malformed JSON and a non-array entries with a typed error instead of returning empty, which is the crux, since reading corrupt as empty would restore the erase path the module exists to close. The summary layer converts that error into a blocking violation (:299-313) rather than crashing pr prepare (agent-review.js:1051-1056), and the unreadable state remains acknowledgeable so it is not a dead end (:728). Test :478 proves the close over a corrupt ledger throws.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:35.748Z"
+    },
+    {
+      "event_id": "864f4c27-a4b0-4179-a61c-4a7002e31d62",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The misleading-green paths are closed explicitly. When the review summary was never generated the gate returns needs_evidence rather than not_generated, precisely because not_generated is not treated as blocking and would be indistinguishable from a pass (pr-manager.js:14181-14198, test :681). Acknowledgement never deletes: total_count stays 1 after an accepted decision (:247). Test :516 asserts recorded review results and lifecycle statuses keep their prior shape, so existing evidence artifacts are not reshaped by this change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:36.146Z"
+    },
+    {
+      "event_id": "c15b647a-9d83-460f-890c-ff59ec0a6b48",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new workflow state is introduced; status still resolves to closed or replaced (agent-review.js:960) and the additions are annotations on the entry. The over-green case is handled by typing surface_detection as evaluated versus skipped_missing_snapshot (:934-936), which the summary separates into unevaluated_lifecycle_count so the gate reason refuses to claim no violations for lifecycles predating detection (pr-manager.js:14247-14249). Test :374 confirms a post-close unrelated commit leaves no stale entry.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "recorded_at": "2026-07-29T09:49:36.541Z"
+    },
+    {
+      "event_id": "d2cf4108-2b9d-49d4-ae3d-92065ff06819",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unchanged by this head; the delta is test-only. The Story carries 9 numbered acceptance criteria, each with its own falsification procedure, plus a reason key covering alternatives, compatibility, rollback and boundary. Intent is grounded in a specific measured incident (round 6 of the enumeration-coverage Story) and names the three structural defects it addresses. Two rejected alternatives are recorded with why they failed in practice, one observed rather than hypothesised. A real intent statement, not a token match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:30.752Z"
+    },
+    {
+      "event_id": "8dc94701-2e48-459b-ab55-d9b5ad9d912c",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanically needs_evidence, but current reality is genuinely examined. The Background states what was actually observed, and the closing section enumerates four gaps the change does NOT close: the .vibepro exclusion that hides ledger self-edits, endpoint-only sampling that misses a revert-in-place, cooperative tampering across ledger plus lifecycle, and directory-level deletion. Evidence E-1 (integration 200/200, runner_direct at 42a4d181) exercises the downstream runtime consumers of the touched modules.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:31.181Z"
+    },
+    {
+      "event_id": "94b2fdae-d364-4221-a345-f14b07dd0ecb",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The central invariant, that a recorded violation cannot be removed, is enforced by module surface rather than convention: I confirmed src/review-surface-violations.js exports no delete or update function and its only write path appends under a lock. Test :172 asserts a prior entry survives a full clean round byte-identical, and :247 asserts acknowledgement leaves total_count at 1, so clearing the gate never clears the record. Spec and architecture docs are in the diff and track INV-001 through INV-004. Unchanged at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:31.615Z"
+    },
+    {
+      "event_id": "12228218-41da-46a7-89d3-0ffe9cc3827d",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundaries are stated and the code matches. Non Goals fence off CEA-S-1, S-2 and S-4 plus retroactive extraction. The detection window runs from start to the operation that closes the lifecycle: record --agent-closed is inside it (agent-review.js:477-488), while a record merely attaching to an already-closed lifecycle is outside. detectReviewSurfaceMutation fires only on close_reason completed, matching the documented limit. E-1 at 42a4d181 confirms neighbouring runtime paths still execute.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:32.071Z"
+    },
+    {
+      "event_id": "8502cfec-76b9-4de9-9f0c-7b3d2241ac4f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanically unmatched, but failure modes are examined concretely and I watched each of these pass: a malformed ledger is rejected rather than read as empty (:478), a non-completed close cannot smuggle a review result through (:405), a mistyped close reason is rejected rather than coerced (:714), unreadable lifecycle pointers block rather than read as agreement (:631), erasing an already-acknowledged entry blocks again (:601), and a racing append does not drop the other record (:689). The source under test is unchanged at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:32.514Z"
+    },
+    {
+      "event_id": "5923c21c-7802-4bc3-9676-e6654a2f7a5c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new commit confirms rather than undermines my earlier read: the reporter regex was the brittle, non-load-bearing part. The wrapper guarantee is that execFileAsync rejects on a non-zero child exit, and all 9 wrapper tests await that promise, so any inner failure fails them all; that guard, the not-ok check and the pass floor of 23 are untouched. Widening to accept either reporter summary marker removes a false red on CI Node 22 tap output without admitting a false green. Substantive replay still lives in the unit suite (:288 real pr prepare).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:32.920Z"
+    },
+    {
+      "event_id": "558c5a2a-d065-44e2-bfd5-6e70ab164979",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Additive only, and this head changes no shipped code. New lifecycle fields, one new gate node, and a read-only review violations subcommand; no existing field is removed or redefined. An absent ledger reads clean (test :432), so existing stories do not newly block. I confirmed both story-review-dir scans filter on isDirectory plus a known stage name (agent-review.js:3769 and :3790), so the new file and its lock dir do not disturb existing readers. The gate is required and fails closed when never read, by design.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:33.330Z"
+    },
+    {
+      "event_id": "5acc22b6-496c-4366-8ecc-05643f91bcc5",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I verified the load-bearing claims rather than accepting them. Version skew: surface-violations.json is referenced only by the new module and its two importers, and both story-review-dir enumerations filter isDirectory plus a known stage name (agent-review.js:3769, :3790), so an older binary neither reads nor trips over the ledger or its lock dir and degrades cleanly to pre-ledger behaviour. The stored object is additive, reads clean when absent (:432) and fails closed when corrupt (:478). No migration or schema change; the set still reverts atomically with the two test commits.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:33.726Z"
+    },
+    {
+      "event_id": "dfc533c0-9020-437a-9b1d-caf1f33cb272",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I checked the concurrency primitive for deadlock and evidence loss. withDirectoryLock (src/review-surface-violations.js:155-182) uses atomic mkdir, reclaims a lock older than 30s, throws after a 30s wait instead of blocking forever, and releases in finally, including when the inner read throws on an unreadable ledger. The append runs before the lifecycle write (agent-review.js:897-900), so a close failing afterwards still leaves the observed mutation recorded, the correct direction. Test :689 confirms no record is dropped under a race.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:34.132Z"
+    },
+    {
+      "event_id": "a8785075-00a0-442e-8b06-696c345a35e5",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The bundle reads as one contract: a single new module plus the four call sites that each touch it for the same reason, namely record the close snapshot, append the typed entry, expose the gate, and expose a read-only CLI view. Splitting would leave a gate reading a ledger no writer maintains. There are now two off-theme test-hygiene commits, the npm dist-tag pin and this reporter widening, together 8 changed lines; both are trivially reviewable and each repairs a red CI signal rather than altering behaviour. Still coherent for one reviewer.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:34.525Z"
+    },
+    {
+      "event_id": "eec96d87-72e4-42f0-96c2-5a7f14eb6259",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "I verified both claims earlier: the pin matches docs/reference/version-history.md:7-8 and its ja mirror at 0.2.0-beta.2, and I ran that test at the prior head where it passed, so it realigns with already-published registry state rather than initiating a release. The release operator path is owned by the release story spec, whose Operations section documents rollout via post-merge-release.yml, rollback via npm deprecate plus dist-tag repoint plus revert-before-rerun, and observability. This head adds only a test-reporter fix, so still no operator action and no release-note obligation.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:34.929Z"
+    },
+    {
+      "event_id": "92414c76-7b03-4491-a61e-927c68b657b0",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Specifically handled rather than assumed away. readReviewSurfaceViolations (:56-64) rejects malformed JSON and a non-array entries with a typed error instead of returning empty, which is the crux, since reading corrupt as empty would restore the erase path the module exists to close. The summary layer converts that error into a blocking violation (:299-313) rather than crashing pr prepare (agent-review.js:1051-1056), and the unreadable state stays acknowledgeable so it is not a dead end (:728). Test :478 proves the close over a corrupt ledger throws.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:35.408Z"
+    },
+    {
+      "event_id": "77d9e6d7-17ec-48f4-ae64-7e3fbdd38ab2",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The misleading-green paths are closed explicitly. When the review summary was never generated the gate returns needs_evidence rather than not_generated, precisely because not_generated is not treated as blocking and would be indistinguishable from a pass (pr-manager.js:14181-14198, test :681). Acknowledgement never deletes: total_count stays 1 after an accepted decision (:247). Test :516 asserts recorded review results and lifecycle statuses keep their prior shape, so existing evidence artifacts are not reshaped by this change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:35.990Z"
+    },
+    {
+      "event_id": "73bd3ea1-6343-489f-8f78-4080d9304d88",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new workflow state is introduced; status still resolves to closed or replaced (agent-review.js:960) and the additions are annotations on the entry. The over-green case is handled by typing surface_detection as evaluated versus skipped_missing_snapshot (:934-936), which the summary separates into unevaluated_lifecycle_count so the gate reason refuses to claim no violations for lifecycles predating detection (pr-manager.js:14247-14249). Test :374 confirms a post-close unrelated commit leaves no stale entry.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "recorded_at": "2026-07-29T10:08:36.398Z"
+    }
+  ]
+}

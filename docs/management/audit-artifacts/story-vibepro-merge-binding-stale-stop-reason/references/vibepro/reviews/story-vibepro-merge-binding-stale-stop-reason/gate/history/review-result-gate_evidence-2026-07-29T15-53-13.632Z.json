@@ -1,0 +1,162 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Differential re-review at the new head: prior pass verdict holds. The two commits after 5e11a57f are metadata-only (design-ssot.json registration and one parent_design frontmatter line); no source, test, spec, or evidence content changed, so the reviewed change and its recorded gate evidence remain valid.",
+  "findings": [
+    {
+      "severity": "minor",
+      "id": "unit-integration-evidence-head-lag",
+      "detail": "unit.json and integration.json record head_sha 51d8b7c2 while head is two metadata commits past 5e11a57f; every intervening commit leaves src/merge-manager.js and the unit test file unchanged"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "unit-integration-evidence-head-lag",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "content-surface freshness policy applies; the lag is design-lineage metadata only, not drift",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Ran git log --oneline 5e11a57f..HEAD and git diff 5e11a57f..HEAD (stat, name-only, full story diff): exactly two files changed — design-ssot.json (+16/-1) and the story doc (+1 parent_design line). src/merge-manager.js, both test files, and spec.json untouched. Prior review had inspected applyDecisionOutcomeBinding, both call sites, GDO-S-5, the e2e acceptance spec, spec.json clauses, and verification artifacts.",
+    "evidence": null,
+    "inputs": [
+      "src/merge-manager.js",
+      "test/gate-outcome-ledger-central-promotion.test.js",
+      "test/e2e/story-vibepro-merge-binding-stale-stop-reason-main.spec.ts",
+      "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that the head move invalidated the evidence content surface; the diff proves the delta is design-lineage metadata only, so under content-surface freshness the previously verified evidence and pass verdict carry forward without an evidence rerun"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+    "expected_root": null,
+    "expected_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+    "current_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+      "expected_root": null,
+      "expected_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "current_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-29T15:53:13.632Z",
+  "git_context": {
+    "head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+    "current_branch": "claude/nice-raman-8e6b75",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-29T15:53:13.522Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "2ede077a2caf00394ec9fb15b9104057d90a4a816aa5f2964dbb296a88ca2bf7",
+        "size": 239024
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+        "sha256": "94aa0e75e703862e5e2709ce204b0c1e65a410246d32bdab45397fbb7bde0a2e",
+        "size": 2761
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "b21f40ee91911a9e761bec340f4db20935c34dba1de72396131318de99460255",
+        "size": 82556
+      },
+      {
+        "path": "test/e2e/story-vibepro-merge-binding-stale-stop-reason-main.spec.ts",
+        "sha256": "d0087e7682216a4dc2b1b72aec7771f1e61159f909d9e05d9525dac9b5c430fb",
+        "size": 5001
+      },
+      {
+        "path": "test/gate-outcome-ledger-central-promotion.test.js",
+        "sha256": "ebc31a648fc8661849dd66fcd0b864417814a1d53ba2d014b588ff1a22616bab",
+        "size": 18772
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8ac54c655049ccee501b787f4b01e3ddb330a7e1b941da13fe4f22d50705d97d"
+  },
+  "source_fingerprint": "b4f9c3bf6d8c0968dfc415adec59423d7bf0513faa892a199ee0d4f035f25d1f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a4533ff32fca52386-r2",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a4533ff32fca52386-r2",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-nice-raman-8e6b75/79c30178-41a4-4dfc-a5f3-ef8ef090f171/tasks/a4533ff32fca52386.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close recorded with close-reason completed for a4533ff32fca52386-r2",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a4533ff32fca52386-r2",
+      "implementation_session_id": "79c30178-41a4-4dfc-a5f3-ef8ef090f171",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,1812 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-08-04T12:38:55.467Z",
+  "model": {
+    "path": "docs/architecture/target-model.json",
+    "version": 1,
+    "status": "adjudicated",
+    "governance_present": true
+  },
+  "ranking": {
+    "consumer_edge_weight": 2,
+    "dependency_edge_weight": 1,
+    "note": "候補モジュールのスコアは (被import元モジュールのedge数 × consumer_edge_weight) + (import先モジュールのedge数 × dependency_edge_weight)。同点はモジュール名の辞書順。allowed_dependencies が \"*\" のdispatcherモジュールは所有シグナルにならないため候補から除外する。",
+    "excluded_dispatcher_modules": [
+      "cli"
+    ]
+  },
+  "summary": {
+    "orphan_count": 23,
+    "orphan_with_candidate_count": 17,
+    "orphan_without_candidate_count": 6,
+    "orphan_cluster_count": 15,
+    "undeclared_dependency_count": 41,
+    "declare_candidate_count": 22,
+    "resolve_count": 19
+  },
+  "orphan_assignments": [
+    {
+      "file": "src/agent-completion-inbox.js",
+      "candidates": [],
+      "orphan_neighbours": [
+        "src/codex-runtime-bridge.js",
+        "src/codex-subagent-runtime-adapter.js"
+      ],
+      "recommendation": {
+        "action": "human_adjudication",
+        "reason": "モジュール割当済みファイルとのimportが無く、既存モジュールへの機械的な割当根拠がない"
+      }
+    },
+    {
+      "file": "src/atomic-file.js",
+      "candidates": [],
+      "orphan_neighbours": [
+        "src/decision-outcome-ledger.js",
+        "src/outcome-manager.js"
+      ],
+      "recommendation": {
+        "action": "human_adjudication",
+        "reason": "モジュール割当済みファイルとのimportが無く、既存モジュールへの機械的な割当根拠がない"
+      }
+    },
+    {
+      "file": "src/budget-override-authority.js",
+      "candidates": [
+        {
+          "module": "reporting",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/delivery-efficiency-guardrail.js -> src/budget-override-authority.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "workspace-infra",
+              "to_module": "reporting",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "workspace-infra",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/decision-records.js -> src/budget-override-authority.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "reporting",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "human_adjudication",
+        "module": null,
+        "reason": "最高スコアが複数モジュールで同点 (reporting, workspace-infra)"
+      }
+    },
+    {
+      "file": "src/canonical-persistence.js",
+      "candidates": [
+        {
+          "module": "workspace-infra",
+          "score": 4,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 2,
+          "evidence": [
+            "src/canonical-persistence.js -> src/managed-command-executor.js",
+            "src/canonical-persistence.js -> src/story-id.js",
+            "src/merge-manager.js -> src/canonical-persistence.js"
+          ],
+          "induced_dependencies": []
+        }
+      ],
+      "orphan_neighbours": [
+        "src/outcome-manager.js"
+      ],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "workspace-infra",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/codex-runtime-bridge.js",
+      "candidates": [
+        {
+          "module": "run-session",
+          "score": 3,
+          "consumer_edge_count": 0,
+          "dependency_edge_count": 3,
+          "evidence": [
+            "src/codex-runtime-bridge.js -> src/agent-runtime-adapter.js",
+            "src/codex-runtime-bridge.js -> src/agent-runtime-connectors.js",
+            "src/codex-runtime-bridge.js -> src/guarded-run-session.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "cli",
+              "to_module": "run-session",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [
+        "src/agent-completion-inbox.js",
+        "src/codex-subagent-runtime-adapter.js"
+      ],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "run-session",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/codex-runtime-output-contract.js",
+      "candidates": [],
+      "orphan_neighbours": [
+        "src/codex-subagent-host-worker.js"
+      ],
+      "recommendation": {
+        "action": "human_adjudication",
+        "reason": "モジュール割当済みファイルとのimportが無く、既存モジュールへの機械的な割当根拠がない"
+      }
+    },
+    {
+      "file": "src/codex-subagent-host-worker.js",
+      "candidates": [],
+      "orphan_neighbours": [
+        "src/codex-runtime-output-contract.js"
+      ],
+      "recommendation": {
+        "action": "human_adjudication",
+        "reason": "モジュール割当済みファイルとのimportが無く、既存モジュールへの機械的な割当根拠がない"
+      }
+    },
+    {
+      "file": "src/codex-subagent-host.js",
+      "candidates": [],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "human_adjudication",
+        "reason": "モジュール割当済みファイルとのimportが無く、既存モジュールへの機械的な割当根拠がない"
+      }
+    },
+    {
+      "file": "src/codex-subagent-runtime-adapter.js",
+      "candidates": [],
+      "orphan_neighbours": [
+        "src/agent-completion-inbox.js",
+        "src/codex-runtime-bridge.js",
+        "src/progress-deadline.js"
+      ],
+      "recommendation": {
+        "action": "human_adjudication",
+        "reason": "モジュール割当済みファイルとのimportが無く、既存モジュールへの機械的な割当根拠がない"
+      }
+    },
+    {
+      "file": "src/decision-outcome-ledger.js",
+      "candidates": [
+        {
+          "module": "gate-pr",
+          "score": 6,
+          "consumer_edge_count": 3,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/canonical-audit.js -> src/decision-outcome-ledger.js",
+            "src/pr-artifact-budget.js -> src/decision-outcome-ledger.js",
+            "src/pr-manager.js -> src/decision-outcome-ledger.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "reporting",
+              "to_module": "gate-pr",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "reporting",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/usage-report.js -> src/decision-outcome-ledger.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "reporting",
+              "edge_count": 3,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "reporting",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "workspace-infra",
+          "score": 1,
+          "consumer_edge_count": 0,
+          "dependency_edge_count": 1,
+          "evidence": [
+            "src/decision-outcome-ledger.js -> src/workspace.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "workspace-infra",
+              "edge_count": 3,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "reporting",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [
+        "src/atomic-file.js",
+        "src/outcome-manager.js"
+      ],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "gate-pr",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/dispatch-identity.js",
+      "candidates": [
+        {
+          "module": "run-session",
+          "score": 6,
+          "consumer_edge_count": 3,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/agent-runtime-adapter.js -> src/dispatch-identity.js",
+            "src/guarded-run-session.js -> src/dispatch-identity.js",
+            "src/independent-review-orchestrator.js -> src/dispatch-identity.js"
+          ],
+          "induced_dependencies": []
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "run-session",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/merge-gate-authorization.js",
+      "candidates": [
+        {
+          "module": "workspace-infra",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/execution-state.js -> src/merge-gate-authorization.js",
+            "src/merge-manager.js -> src/merge-gate-authorization.js"
+          ],
+          "induced_dependencies": []
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "workspace-infra",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/merge-public-projection.js",
+      "candidates": [
+        {
+          "module": "reporting",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/html-report.js -> src/merge-public-projection.js",
+            "src/usage-report.js -> src/merge-public-projection.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "reporting",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "reporting",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "gate-pr",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/canonical-audit.js -> src/merge-public-projection.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "reporting",
+              "to_module": "gate-pr",
+              "edge_count": 2,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "gate-pr",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "workspace-infra",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/merge-manager.js -> src/merge-public-projection.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "reporting",
+              "to_module": "workspace-infra",
+              "edge_count": 2,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "reporting",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/outcome-manager.js",
+      "candidates": [
+        {
+          "module": "workspace-infra",
+          "score": 6,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 4,
+          "evidence": [
+            "src/outcome-manager.js -> src/artifact-routing.js",
+            "src/outcome-manager.js -> src/managed-command-executor.js",
+            "src/outcome-manager.js -> src/story-id.js",
+            "src/outcome-manager.js -> src/workspace.js",
+            "src/merge-manager.js -> src/outcome-manager.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "cli",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "gate-pr",
+              "edge_count": 2,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "gate-pr",
+          "score": 2,
+          "consumer_edge_count": 0,
+          "dependency_edge_count": 2,
+          "evidence": [
+            "src/outcome-manager.js -> src/canonical-audit.js",
+            "src/outcome-manager.js -> src/content-binding.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "cli",
+              "to_module": "gate-pr",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "gate-pr",
+              "to_module": "workspace-infra",
+              "edge_count": 4,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "gate-pr",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [
+        "src/atomic-file.js",
+        "src/canonical-persistence.js",
+        "src/decision-outcome-ledger.js"
+      ],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "workspace-infra",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/process-record-store.js",
+      "candidates": [
+        {
+          "module": "workspace-infra",
+          "score": 2,
+          "consumer_edge_count": 0,
+          "dependency_edge_count": 2,
+          "evidence": [
+            "src/process-record-store.js -> src/story-id.js",
+            "src/process-record-store.js -> src/workspace.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "cli",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "workspace-infra",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/progress-deadline.js",
+      "candidates": [
+        {
+          "module": "graph",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/graphify-adapter.js -> src/progress-deadline.js"
+          ],
+          "induced_dependencies": []
+        }
+      ],
+      "orphan_neighbours": [
+        "src/codex-subagent-runtime-adapter.js",
+        "src/verification-runner.js"
+      ],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "graph",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/reconciliation-action.js",
+      "candidates": [
+        {
+          "module": "reporting",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/html-report.js -> src/reconciliation-action.js",
+            "src/usage-report.js -> src/reconciliation-action.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "reporting",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "reporting",
+              "edge_count": 2,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "workspace-infra",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/execution-state.js -> src/reconciliation-action.js",
+            "src/merge-manager.js -> src/reconciliation-action.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "reporting",
+              "to_module": "workspace-infra",
+              "edge_count": 2,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "gate-pr",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/canonical-audit.js -> src/reconciliation-action.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "reporting",
+              "to_module": "gate-pr",
+              "edge_count": 2,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "gate-pr",
+              "edge_count": 2,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "human_adjudication",
+        "module": null,
+        "reason": "最高スコアが複数モジュールで同点 (reporting, workspace-infra)"
+      }
+    },
+    {
+      "file": "src/review-inspection-inputs.js",
+      "candidates": [
+        {
+          "module": "gate-pr",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/pr-manager.js -> src/review-inspection-inputs.js",
+            "src/validation-sequencing.js -> src/review-inspection-inputs.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "review",
+              "to_module": "gate-pr",
+              "edge_count": 2,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "review",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/agent-review.js -> src/review-inspection-inputs.js",
+            "src/review-repair.js -> src/review-inspection-inputs.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "review",
+              "edge_count": 2,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "human_adjudication",
+        "module": null,
+        "reason": "最高スコアが複数モジュールで同点 (gate-pr, review)"
+      }
+    },
+    {
+      "file": "src/review-surface-violations.js",
+      "candidates": [
+        {
+          "module": "gate-pr",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/pr-manager.js -> src/review-surface-violations.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "review",
+              "to_module": "gate-pr",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "review",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/agent-review.js -> src/review-surface-violations.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "gate-pr",
+              "to_module": "review",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "human_adjudication",
+        "module": null,
+        "reason": "最高スコアが複数モジュールで同点 (gate-pr, review)"
+      }
+    },
+    {
+      "file": "src/scan-ignored-dirs.js",
+      "candidates": [
+        {
+          "module": "scanners",
+          "score": 4,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/code-quality-scanner.js -> src/scan-ignored-dirs.js",
+            "src/database-access-scanner.js -> src/scan-ignored-dirs.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "architecture",
+              "to_module": "scanners",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": false,
+              "creates_new_violation": true
+            }
+          ]
+        },
+        {
+          "module": "architecture",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/architecture-profiler.js -> src/scan-ignored-dirs.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "scanners",
+              "to_module": "architecture",
+              "edge_count": 2,
+              "allowed": false,
+              "pair_already_present": false,
+              "creates_new_violation": true
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "human_adjudication",
+        "module": "scanners",
+        "reason": "割当により新規の未宣言依存ペアが発生する (architecture->scanners)"
+      }
+    },
+    {
+      "file": "src/story-transaction-lock.js",
+      "candidates": [
+        {
+          "module": "workspace-infra",
+          "score": 5,
+          "consumer_edge_count": 2,
+          "dependency_edge_count": 1,
+          "evidence": [
+            "src/story-transaction-lock.js -> src/workspace.js",
+            "src/execution-state.js -> src/story-transaction-lock.js",
+            "src/merge-manager.js -> src/story-transaction-lock.js"
+          ],
+          "induced_dependencies": []
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "workspace-infra",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/task-bound-repo-control.js",
+      "candidates": [
+        {
+          "module": "gate-pr",
+          "score": 2,
+          "consumer_edge_count": 1,
+          "dependency_edge_count": 0,
+          "evidence": [
+            "src/pr-manager.js -> src/task-bound-repo-control.js"
+          ],
+          "induced_dependencies": []
+        }
+      ],
+      "orphan_neighbours": [],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "gate-pr",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    },
+    {
+      "file": "src/verification-runner.js",
+      "candidates": [
+        {
+          "module": "workspace-infra",
+          "score": 2,
+          "consumer_edge_count": 0,
+          "dependency_edge_count": 2,
+          "evidence": [
+            "src/verification-runner.js -> src/artifact-routing.js",
+            "src/verification-runner.js -> src/workspace.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "cli",
+              "to_module": "workspace-infra",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "workspace-infra",
+              "to_module": "evidence",
+              "edge_count": 1,
+              "allowed": false,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        },
+        {
+          "module": "evidence",
+          "score": 1,
+          "consumer_edge_count": 0,
+          "dependency_edge_count": 1,
+          "evidence": [
+            "src/verification-runner.js -> src/verification-evidence.js"
+          ],
+          "induced_dependencies": [
+            {
+              "from_module": "cli",
+              "to_module": "evidence",
+              "edge_count": 1,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            },
+            {
+              "from_module": "evidence",
+              "to_module": "workspace-infra",
+              "edge_count": 2,
+              "allowed": true,
+              "pair_already_present": true,
+              "creates_new_violation": false
+            }
+          ]
+        }
+      ],
+      "orphan_neighbours": [
+        "src/progress-deadline.js"
+      ],
+      "recommendation": {
+        "action": "machine_maintainable_assign",
+        "module": "workspace-infra",
+        "reason": "単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない"
+      }
+    }
+  ],
+  "orphan_clusters": [
+    {
+      "id": "orphan_cluster:src/agent-completion-inbox.js",
+      "members": [
+        "src/agent-completion-inbox.js",
+        "src/codex-runtime-bridge.js",
+        "src/codex-subagent-runtime-adapter.js",
+        "src/progress-deadline.js",
+        "src/verification-runner.js"
+      ],
+      "member_count": 5,
+      "internal_edge_count": 5,
+      "module_touchpoints": [
+        "cli",
+        "evidence",
+        "graph",
+        "run-session",
+        "workspace-infra"
+      ],
+      "new_module_candidate": true,
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "orphan_cluster:src/atomic-file.js",
+      "members": [
+        "src/atomic-file.js",
+        "src/canonical-persistence.js",
+        "src/decision-outcome-ledger.js",
+        "src/outcome-manager.js"
+      ],
+      "member_count": 4,
+      "internal_edge_count": 4,
+      "module_touchpoints": [
+        "cli",
+        "gate-pr",
+        "reporting",
+        "workspace-infra"
+      ],
+      "new_module_candidate": true,
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "orphan_cluster:src/codex-runtime-output-contract.js",
+      "members": [
+        "src/codex-runtime-output-contract.js",
+        "src/codex-subagent-host-worker.js"
+      ],
+      "member_count": 2,
+      "internal_edge_count": 1,
+      "module_touchpoints": [],
+      "new_module_candidate": true,
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "orphan_cluster:src/budget-override-authority.js",
+      "members": [
+        "src/budget-override-authority.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "reporting",
+        "workspace-infra"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/codex-subagent-host.js",
+      "members": [
+        "src/codex-subagent-host.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "cli"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/dispatch-identity.js",
+      "members": [
+        "src/dispatch-identity.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "run-session"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/merge-gate-authorization.js",
+      "members": [
+        "src/merge-gate-authorization.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "workspace-infra"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/merge-public-projection.js",
+      "members": [
+        "src/merge-public-projection.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "gate-pr",
+        "reporting",
+        "workspace-infra"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/process-record-store.js",
+      "members": [
+        "src/process-record-store.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "cli",
+        "workspace-infra"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/reconciliation-action.js",
+      "members": [
+        "src/reconciliation-action.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "gate-pr",
+        "reporting",
+        "workspace-infra"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/review-inspection-inputs.js",
+      "members": [
+        "src/review-inspection-inputs.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "gate-pr",
+        "review"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/review-surface-violations.js",
+      "members": [
+        "src/review-surface-violations.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "gate-pr",
+        "review"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/scan-ignored-dirs.js",
+      "members": [
+        "src/scan-ignored-dirs.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "architecture",
+        "scanners"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/story-transaction-lock.js",
+      "members": [
+        "src/story-transaction-lock.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "workspace-infra"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    },
+    {
+      "id": "orphan_cluster:src/task-bound-repo-control.js",
+      "members": [
+        "src/task-bound-repo-control.js"
+      ],
+      "member_count": 1,
+      "internal_edge_count": 0,
+      "module_touchpoints": [
+        "gate-pr"
+      ],
+      "new_module_candidate": false,
+      "authority": "machine_maintainable"
+    }
+  ],
+  "dependency_triage": [
+    {
+      "id": "undeclared_dependency:workspace-infra->gate-pr",
+      "from_module": "workspace-infra",
+      "to_module": "gate-pr",
+      "edge_count": 6,
+      "rule_id": "R-001",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-001: workspace-infra は他のどのモジュールにも依存しない。宣言では解消できない逆転依存であり、コード側で解消する",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:gate-pr->uiux-design",
+      "from_module": "gate-pr",
+      "to_module": "uiux-design",
+      "edge_count": 4,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:gate-pr->scanners",
+      "from_module": "gate-pr",
+      "to_module": "scanners",
+      "edge_count": 3,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:review->gate-pr",
+      "from_module": "review",
+      "to_module": "gate-pr",
+      "edge_count": 3,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (gate-pr -> review) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:review->reporting",
+      "from_module": "review",
+      "to_module": "reporting",
+      "edge_count": 3,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (reporting -> review) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:diagnosis->architecture",
+      "from_module": "diagnosis",
+      "to_module": "architecture",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:diagnosis->evidence",
+      "from_module": "diagnosis",
+      "to_module": "evidence",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:diagnosis->spec",
+      "from_module": "diagnosis",
+      "to_module": "spec",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:evidence->gate-pr",
+      "from_module": "evidence",
+      "to_module": "gate-pr",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (gate-pr -> evidence) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:gate-pr->architecture",
+      "from_module": "gate-pr",
+      "to_module": "architecture",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:story->reporting",
+      "from_module": "story",
+      "to_module": "reporting",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (reporting -> story) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:story->task",
+      "from_module": "story",
+      "to_module": "task",
+      "edge_count": 2,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (task -> story) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:workspace-infra->reporting",
+      "from_module": "workspace-infra",
+      "to_module": "reporting",
+      "edge_count": 2,
+      "rule_id": "R-001",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-001: workspace-infra は他のどのモジュールにも依存しない。宣言では解消できない逆転依存であり、コード側で解消する",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:workspace-infra->review",
+      "from_module": "workspace-infra",
+      "to_module": "review",
+      "edge_count": 2,
+      "rule_id": "R-001",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-001: workspace-infra は他のどのモジュールにも依存しない。宣言では解消できない逆転依存であり、コード側で解消する",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:architecture->gate-pr",
+      "from_module": "architecture",
+      "to_module": "gate-pr",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:diagnosis->cli",
+      "from_module": "diagnosis",
+      "to_module": "cli",
+      "edge_count": 1,
+      "rule_id": "R-002",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-002: cli 以外のモジュールは cli に依存しない。宣言では解消できない",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:diagnosis->gate-pr",
+      "from_module": "diagnosis",
+      "to_module": "gate-pr",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (gate-pr -> diagnosis) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:diagnosis->task",
+      "from_module": "diagnosis",
+      "to_module": "task",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:evidence->run-session",
+      "from_module": "evidence",
+      "to_module": "run-session",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (run-session -> evidence) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:gate-pr->cli",
+      "from_module": "gate-pr",
+      "to_module": "cli",
+      "edge_count": 1,
+      "rule_id": "R-002",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-002: cli 以外のモジュールは cli に依存しない。宣言では解消できない",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:reporting->scanners",
+      "from_module": "reporting",
+      "to_module": "scanners",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:review->diagnosis",
+      "from_module": "review",
+      "to_module": "diagnosis",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:review->run-session",
+      "from_module": "review",
+      "to_module": "run-session",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:run-session->gate-pr",
+      "from_module": "run-session",
+      "to_module": "gate-pr",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:run-session->review",
+      "from_module": "run-session",
+      "to_module": "review",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:scanners->evidence",
+      "from_module": "scanners",
+      "to_module": "evidence",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:scanners->graph",
+      "from_module": "scanners",
+      "to_module": "graph",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:scanners->skills",
+      "from_module": "scanners",
+      "to_module": "skills",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:spec->diagnosis",
+      "from_module": "spec",
+      "to_module": "diagnosis",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:spec->evidence",
+      "from_module": "spec",
+      "to_module": "evidence",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:spec->gate-pr",
+      "from_module": "spec",
+      "to_module": "gate-pr",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (gate-pr -> spec) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:story->architecture",
+      "from_module": "story",
+      "to_module": "architecture",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:story->cli",
+      "from_module": "story",
+      "to_module": "cli",
+      "edge_count": 1,
+      "rule_id": "R-002",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-002: cli 以外のモジュールは cli に依存しない。宣言では解消できない",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:story->diagnosis",
+      "from_module": "story",
+      "to_module": "diagnosis",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (diagnosis -> story) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:story->gate-pr",
+      "from_module": "story",
+      "to_module": "gate-pr",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "逆向き (gate-pr -> story) が既に allowed_dependencies に宣言済みであり、この依存を宣言すると宣言済みの循環になる",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:story->run-session",
+      "from_module": "story",
+      "to_module": "run-session",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:story->uiux-design",
+      "from_module": "story",
+      "to_module": "uiux-design",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:uiux-design->graph",
+      "from_module": "uiux-design",
+      "to_module": "graph",
+      "edge_count": 1,
+      "rule_id": "R-004",
+      "reverse_declared": false,
+      "classification": "declare_candidate",
+      "reason": "R-004: rules に抵触しないため宣言による合法化が可能。ただし新規依存の宣言は人間承認が必要",
+      "authority": "human_adjudicated"
+    },
+    {
+      "id": "undeclared_dependency:workspace-infra->cli",
+      "from_module": "workspace-infra",
+      "to_module": "cli",
+      "edge_count": 1,
+      "rule_id": "R-001",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-001: workspace-infra は他のどのモジュールにも依存しない。宣言では解消できない逆転依存であり、コード側で解消する",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:workspace-infra->evidence",
+      "from_module": "workspace-infra",
+      "to_module": "evidence",
+      "edge_count": 1,
+      "rule_id": "R-001",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-001: workspace-infra は他のどのモジュールにも依存しない。宣言では解消できない逆転依存であり、コード側で解消する",
+      "authority": "code_change"
+    },
+    {
+      "id": "undeclared_dependency:workspace-infra->run-session",
+      "from_module": "workspace-infra",
+      "to_module": "run-session",
+      "edge_count": 1,
+      "rule_id": "R-001",
+      "reverse_declared": true,
+      "classification": "resolve",
+      "reason": "R-001: workspace-infra は他のどのモジュールにも依存しない。宣言では解消できない逆転依存であり、コード側で解消する",
+      "authority": "code_change"
+    }
+  ],
+  "human_adjudication_required": [
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:architecture->gate-pr",
+      "subject": "architecture -> gate-pr (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:diagnosis->architecture",
+      "subject": "diagnosis -> architecture (2 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:diagnosis->evidence",
+      "subject": "diagnosis -> evidence (2 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:diagnosis->spec",
+      "subject": "diagnosis -> spec (2 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:diagnosis->task",
+      "subject": "diagnosis -> task (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:gate-pr->architecture",
+      "subject": "gate-pr -> architecture (2 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:gate-pr->scanners",
+      "subject": "gate-pr -> scanners (3 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:gate-pr->uiux-design",
+      "subject": "gate-pr -> uiux-design (4 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:reporting->scanners",
+      "subject": "reporting -> scanners (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:review->diagnosis",
+      "subject": "review -> diagnosis (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:review->run-session",
+      "subject": "review -> run-session (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:run-session->gate-pr",
+      "subject": "run-session -> gate-pr (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:run-session->review",
+      "subject": "run-session -> review (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:scanners->evidence",
+      "subject": "scanners -> evidence (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:scanners->graph",
+      "subject": "scanners -> graph (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:scanners->skills",
+      "subject": "scanners -> skills (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:spec->diagnosis",
+      "subject": "spec -> diagnosis (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:spec->evidence",
+      "subject": "spec -> evidence (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:story->architecture",
+      "subject": "story -> architecture (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:story->run-session",
+      "subject": "story -> run-session (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:story->uiux-design",
+      "subject": "story -> uiux-design (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_allowed_dependency",
+      "id": "undeclared_dependency:uiux-design->graph",
+      "subject": "uiux-design -> graph (1 edges)",
+      "question": "この依存を allowed_dependencies へ宣言して合法化するか、コード側で解消するか"
+    },
+    {
+      "kind": "new_module_candidate",
+      "id": "orphan_cluster:src/agent-completion-inbox.js",
+      "subject": "src/agent-completion-inbox.js, src/codex-runtime-bridge.js, src/codex-subagent-runtime-adapter.js, src/progress-deadline.js, src/verification-runner.js",
+      "question": "このクラスタを新モジュールとして新設するか、既存モジュールへ吸収するか"
+    },
+    {
+      "kind": "new_module_candidate",
+      "id": "orphan_cluster:src/atomic-file.js",
+      "subject": "src/atomic-file.js, src/canonical-persistence.js, src/decision-outcome-ledger.js, src/outcome-manager.js",
+      "question": "このクラスタを新モジュールとして新設するか、既存モジュールへ吸収するか"
+    },
+    {
+      "kind": "new_module_candidate",
+      "id": "orphan_cluster:src/codex-runtime-output-contract.js",
+      "subject": "src/codex-runtime-output-contract.js, src/codex-subagent-host-worker.js",
+      "question": "このクラスタを新モジュールとして新設するか、既存モジュールへ吸収するか"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:diagnosis->cli",
+      "subject": "diagnosis -> cli (1 edges, R-002)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:gate-pr->cli",
+      "subject": "gate-pr -> cli (1 edges, R-002)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:story->cli",
+      "subject": "story -> cli (1 edges, R-002)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:workspace-infra->cli",
+      "subject": "workspace-infra -> cli (1 edges, R-001)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:workspace-infra->evidence",
+      "subject": "workspace-infra -> evidence (1 edges, R-001)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:workspace-infra->gate-pr",
+      "subject": "workspace-infra -> gate-pr (6 edges, R-001)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:workspace-infra->reporting",
+      "subject": "workspace-infra -> reporting (2 edges, R-001)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:workspace-infra->review",
+      "subject": "workspace-infra -> review (2 edges, R-001)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    },
+    {
+      "kind": "rule_inversion",
+      "id": "undeclared_dependency:workspace-infra->run-session",
+      "subject": "workspace-infra -> run-session (1 edges, R-001)",
+      "question": "逆転依存をいつ・どの順序で解消するか（rules を緩める選択肢を含む）"
+    }
+  ]
+}

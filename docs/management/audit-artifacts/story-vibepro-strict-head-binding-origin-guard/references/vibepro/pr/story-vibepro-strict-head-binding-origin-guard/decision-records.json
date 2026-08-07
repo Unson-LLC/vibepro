@@ -1,0 +1,398 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-strict-head-binding-origin-guard",
+  "updated_at": "2026-08-03T13:02:57.243Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+      "expected_root": null,
+      "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785762177242-607c90fb",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope is one reviewable unit: single origin-guard contract change across story/spec/impl/tests/docs",
+      "reason": "scope_reviewed: a single reviewer can read this diff as one coherent judgment — the strict HEAD binding origin guard (issue #411). All 21 files serve that one contract: authorization in resolveReviewFreshnessPolicy, the shared final-review-target predicate, origin reporting and migration warnings in pr prepare, matching regression/e2e tests, and en/ja documentation. The review_owner_map is covered by the recorded gate-stage reviews (gate_evidence, release_risk) with closed lifecycles. Splitting per the 4-lane plan would break spec anchors and produce non-shippable partial lanes.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "expected_root": null,
+          "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "current_branch": "claude/strict-head-binding-origin",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T13:02:57.232Z"
+      },
+      "recorded_at": "2026-08-03T13:02:57.243Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785759031577-a6d9d7a9",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Artifact policy: only tracked .vibepro/config.json (story registration) is committed",
+      "reason": "The PR commits only .vibepro/config.json, which is the tracked story-registration config (brainbase.stories[] entry and current_story_id for this story) merged union-style with origin/main. All diagnostic .vibepro artifacts (spec, evidence, reviews, pr-prepare outputs) are gitignored and not part of the diff; the PR body will state this artifact policy explicitly.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "expected_root": null,
+          "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "current_branch": "claude/strict-head-binding-origin",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T12:10:31.565Z"
+      },
+      "recorded_at": "2026-08-03T12:10:31.579Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785759030307-f01a4be7",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled-scope justification: one PR for the origin guard contract change",
+      "reason": "PR scope is a single contract change: authorization of strict HEAD binding origins in review record, its dispatch/reporting surfaces, tests, and documentation. The 20-file surface is cohesive (same feature, same revert unit); splitting would break gate anchors and reviewability rather than improve it.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "expected_root": null,
+          "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "current_branch": "claude/strict-head-binding-origin",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T12:10:30.299Z"
+      },
+      "recorded_at": "2026-08-03T12:10:30.308Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785759028406-c0293e8c",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Reject lane split: single atomic intent (issue #411 strict HEAD binding origin guard)",
+      "reason": "Bundled scope is intentional: all 4 suggested lanes (requirements-ssot, runtime-behavior, e2e-gate, docs follow-up) are one atomic intent — the strict HEAD binding origin guard for issue #411. Story/Spec/Architecture define the guard, the runtime lane implements it, the e2e lane proves its acceptance criteria, and the docs lane documents the same contract. Split lanes would individually fail gates (spec without implementation anchors, e2e without the guard) and none is independently shippable or revertable; one PR preserves atomic revert of the contract change.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "expected_root": null,
+          "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "current_branch": "claude/strict-head-binding-origin",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T12:10:28.395Z"
+      },
+      "recorded_at": "2026-08-03T12:10:28.407Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+        "expected_root": null,
+        "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785762177242-607c90fb",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope is one reviewable unit: single origin-guard contract change across story/spec/impl/tests/docs",
+      "reason": "scope_reviewed: a single reviewer can read this diff as one coherent judgment — the strict HEAD binding origin guard (issue #411). All 21 files serve that one contract: authorization in resolveReviewFreshnessPolicy, the shared final-review-target predicate, origin reporting and migration warnings in pr prepare, matching regression/e2e tests, and en/ja documentation. The review_owner_map is covered by the recorded gate-stage reviews (gate_evidence, release_risk) with closed lifecycles. Splitting per the 4-lane plan would break spec anchors and produce non-shippable partial lanes.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-strict-head-origin",
+          "expected_root": null,
+          "expected_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "current_head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+        "current_branch": "claude/strict-head-binding-origin",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T13:02:57.232Z"
+      },
+      "recorded_at": "2026-08-03T13:02:57.243Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.json"
+}

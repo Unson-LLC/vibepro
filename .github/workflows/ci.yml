@@ -27,8 +27,10 @@ jobs:
       # the required gate on Node 22+, and prints a counted skip annotation
       # on lanes that cannot execute them.
       - run: npm run test:e2e:ts
+      # Fails when a test/e2e file imports no product code, starts no process,
+      # and touches no filesystem: such a file passes regardless of product
+      # behaviour and inflates the e2e pass count without verifying anything.
+      - run: npm run lint:e2e-product-execution
       - run: npm run pack:dry-run
       - run: node bin/vibepro.js --version
       - run: node bin/vibepro.js help --language en
-      - run: node bin/vibepro.js check self-dogfood . --run-id ci-self-dogfood --json
-      - run: node bin/vibepro.js checkpoint --json

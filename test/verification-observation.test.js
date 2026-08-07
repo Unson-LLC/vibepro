@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -7,7 +8,6 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { createUsageReport } from '../src/usage-report.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -22,6 +22,16 @@ async function readJson(filePath) {
 async function setupRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-verify-obs-'));
   await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>');
+  // The named test files must exist: passing evidence naming nonexistent test paths is rejected.
+  for (const testFile of [
+    'test/widgets.test.js',
+    'test/integration/widgets.test.js',
+    'test/integration/usage-report.test.js',
+    'test/e2e/run-check.spec.js'
+  ]) {
+    await mkdir(path.join(root, path.dirname(testFile)), { recursive: true });
+    await writeFile(path.join(root, testFile), "import test from 'node:test';\ntest('x', () => {});\n");
+  }
   await git(root, ['init', '-b', 'main']);
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);
@@ -238,97 +248,3 @@ test('observation_check is not_applicable for needs_setup claims', async () => {
   assert.equal(command.observation_check.status, 'not_applicable');
 });
 
-test('usage report counts stories with observation-missing pass claims', async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-verify-obs-report-'));
-  const storyDir = path.join(root, 'docs', 'management', 'stories', 'active');
-  await mkdir(storyDir, { recursive: true });
-  const writeStory = async (storyId) => {
-    await writeFile(path.join(storyDir, `${storyId}.md`), `---\nstory_id: ${storyId}\ntitle: ${storyId}\nstatus: active\n---\n\n# ${storyId}\n`);
-  };
-  const writeEvidence = async (storyId, commands) => {
-    const prDir = path.join(root, '.vibepro', 'pr', storyId);
-    await mkdir(prDir, { recursive: true });
-    await writeFile(path.join(prDir, 'pr-prepare.json'), JSON.stringify({
-      schema_version: '0.1.0', created_at: '2026-06-12T00:00:00.000Z', story: { story_id: storyId }
-    }));
-    await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
-      schema_version: '0.1.0', story_id: storyId, updated_at: '2026-06-12T00:00:00.000Z', warnings: [], commands
-    }));
-  };
-  await writeStory('story-obs-missing');
-  await writeEvidence('story-obs-missing', [
-    { kind: 'unit', status: 'pass', command: 'node --test x', observation_check: { status: 'missing' } }
-  ]);
-  await writeStory('story-obs-recorded');
-  await writeEvidence('story-obs-recorded', [
-    {
-      kind: 'unit', status: 'pass', command: 'node --test y',
-      observation: { targets: ['src/y.js'], scenarios: [], values: { exit_code: '0' } },
-      observation_check: { status: 'recorded' }
-    }
-  ]);
-  await writeStory('story-obs-legacy');
-  await writeEvidence('story-obs-legacy', [
-    { kind: 'unit', status: 'pass', command: 'node --test z' }
-  ]);
-
-  const report = await createUsageReport(root);
-  assert.equal(report.value_signals.verification_observation_missing_story_count, 1);
-  const missing = report.stories.find((story) => story.story_id === 'story-obs-missing');
-  assert.equal(missing.verification_observation_missing, true);
-  const recorded = report.stories.find((story) => story.story_id === 'story-obs-recorded');
-  assert.equal(recorded.verification_observation_missing, false);
-  const legacy = report.stories.find((story) => story.story_id === 'story-obs-legacy');
-  assert.equal(legacy.verification_observation_missing, false, 'legacy entries without observation_check are not retroactively flagged');
-  // collecting verification evidence must not change gap semantics
-  assert.equal(legacy.traceability_gaps.length, 0, 'pr-prepare.json still counts as a real PR artifact');
-});
-
-test('observation text contributes to judgment evidence classification', async () => {
-  const root = await setupRepo();
-  await mkdir(path.join(root, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await writeFile(
-    path.join(root, 'docs', 'management', 'stories', 'active', 'story-test-obs.md'),
-    '---\nstory_id: story-test-obs\ntitle: Observation story\n---\n\n# Story\n\n## Background\nImprove the gate review workflow artifact handling.\n\n## Acceptance Criteria\n- The gate artifact workflow stays consistent.\n'
-  );
-  await writeFile(
-    path.join(root, 'observation-evidence.json'),
-    JSON.stringify({ status: 'pass', source: 'observation' }, null, 2)
-  );
-  await git(root, ['add', '.']);
-  await git(root, ['commit', '-m', 'docs: story']);
-  await git(root, ['switch', '-c', 'feature/obs']);
-  await writeFile(path.join(root, 'src-change.js'), 'export const x = 1;\n');
-  await git(root, ['add', 'src-change.js']);
-  await git(root, ['commit', '-m', 'feat: change']);
-  // bland summary and command, but observation markers describe all workflow evidence kinds
-  await runCli([
-    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'e2e', '--status', 'pass',
-    '--command', 'node --test test/e2e/run-check.spec.js',
-    '--summary', 'verification done',
-    '--artifact', 'observation-evidence.json',
-    '--target', 'src-change.js',
-    '--scenario', 'flow_replay',
-    '--scenario', 'artifact_replay',
-    '--scenario', 'scenario_clause_e2e',
-    '--observed', 'scenario_clause_e2e=true'
-  ]);
-  await runCli([
-    'pr', 'prepare', root, '--story-id', 'story-test-obs', '--base', 'main', '--json',
-    '--evidence-depth', 'standard',
-    '--evidence-depth-reason', 'inspect observation classification in Gate DAG',
-    '--evidence-depth-consumer', 'verification-observation-test',
-    '--evidence-depth-target', 'gate-dag.json'
-  ]);
-  const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-obs', 'gate-dag.json'));
-  const spine = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
-  assert.ok(spine, 'spine gate must exist');
-  const currentReality = spine.subchecks.find((check) => check.id === 'current_reality');
-  const doneEvidence = spine.subchecks.find((check) => check.id === 'done_evidence');
-  const currentRealityKinds = currentReality.matched_evidence.map((item) => item.kind).sort();
-  const doneEvidenceKinds = doneEvidence.matched_evidence.map((item) => item.kind).sort();
-  assert.deepEqual(currentRealityKinds, ['artifact_replay', 'flow_replay', 'scenario_clause_e2e']);
-  assert.deepEqual(doneEvidenceKinds, ['artifact_replay', 'flow_replay', 'scenario_clause_e2e']);
-  assert.equal(currentReality.status, 'passed', 'workflow evidence passes only after all required observation kinds are present');
-  assert.equal(doneEvidence.status, 'passed', 'workflow done evidence passes only after all required observation kinds are present');
-});

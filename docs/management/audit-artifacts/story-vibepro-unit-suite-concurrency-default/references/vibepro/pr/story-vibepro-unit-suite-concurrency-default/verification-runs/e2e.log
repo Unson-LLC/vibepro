@@ -1,0 +1,161 @@
+
+> vibepro@0.2.0-beta.2 test:e2e:ts
+> node scripts/run-e2e-ts-specs.mjs
+
+e2e-ts-specs: running 28 spec file(s) on v23.11.0
+(node:42512) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-agent-runtime-adapters AC-1 through AC-7 and S-002 acceptance replay (282223.7515ms)
+(node:42530) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-artifact-output-routing ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 ac:9 ac:10 ac:11 scenario:1 configured to resolved to migration_planned remains read-only on the production CLI path (13419.254375ms)
+✔ story-vibepro-artifact-output-routing ac:2 ac:7 scenario:2 human CLI output is readable and migration remains dry-run only (5083.041709ms)
+✔ story-vibepro-artifact-output-routing ac:8 ac:10 scenario:3 migrate without dry-run fails clearly and changes nothing (3191.911292ms)
+(node:42532) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ ASR-E2E-001 replays the complete atomic review workflow contract (777038.643042ms)
+(node:42536) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed correction, and requires linked independent re-adjudication (87282.898584ms)
+(node:42538) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ CDI-S-9 production Codex worker survives the monitor boundary and a successor drains its durable completion (22402.21125ms)
+✔ CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and a successor closes the Inbox review (7692.1ms)
+(node:42539) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ delivery reconciliation workflow replays managed and external merge authority (321496.784625ms)
+✔ delivery reconciliation workflow keeps recovery state and current evidence authority (161120.754625ms)
+✔ delivery reconciliation workflow denies stale or missing authority before provider operations (31557.080041ms)
+✔ delivery reconciliation workflow projects both axes into operator handoff surfaces (6759.886ms)
+✔ shipped VibePro binary executes the public merge JSON contract (3493.127833ms)
+✔ execute merge early return carries its lock-bound persisted CAS baseline (1567.315417ms)
+✔ every execute merge exit shares the lock-bound persisted CAS baseline finalizer (6.961375ms)
+✔ S-011 S-012 S-013 AC-10 shipped VibePro binary preserves observed delivery and reconciles exact identity after execution-state synchronization fails (30624.234709ms)
+✔ S-011 shipped VibePro binary persists local recovery when canonical follow-up persistence fails (21487.989667ms)
+✔ public execute dispatcher keeps rollback damage separate from the delivery handoff (602.991917ms)
+✔ public execute dispatcher preserves operator state on recovery CAS conflict (432.167917ms)
+(node:42540) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ DIJ-CONTRACT-011 DIJ-AP-002 DIJ-SCENARIO-004 status and story plan point first-run stories to pre-architecture diagnosis (4735.462917ms)
+✔ DIJ-CONTRACT-001 DIJ-CONTRACT-003 DIJ-CONTRACT-004 DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and evidence artifacts (3949.381459ms)
+✔ DIJ-CONTRACT-002 DIJ-CONTRACT-005 DIJ-SCENARIO-001 DIJ-SCENARIO-005 explicit phase flags select design-input and pre-implementation diagnosis (6039.584125ms)
+✔ ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-INV-002 DIJ-AP-001 DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 DIJ-SCENARIO-008 pr prepare separates design-input and pre-implementation judgment artifacts (39508.432ms)
+✔ DIJ-SCENARIO-009 active blocker waiver stays visible as accepted followup across Gate DAG and PR UX artifacts (22664.657792ms)
+✔ DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate (26484.555167ms)
+✔ ac-8 DIJ-CONTRACT-011 DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR (13.100375ms)
+(node:42541) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-guarded-run-session-contract acceptance and scenario replay (280376.1405ms)
+(node:42542) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-human-decision-checkpoint AC-1 through AC-7 and S-001 acceptance replay (286039.714167ms)
+(node:42543) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ AC-3 S-001 actual lifecycle boundaries reconcile deterministic keys after crash before checkpoint (8911.451417ms)
+✔ AC-4 actual lifecycle recording preserves needs_changes and block verdicts (8685.851542ms)
+✔ story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 S-002 S-003 scenario_clause_e2e workflow_state_transition production composer preserves parallel pass, needs_changes, block, same-session rejection, and restart (17086.602208ms)
+(node:42546) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:1 AC:2 a successful rebinding removes the stale failure reason and reconciles (5.798959ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:2 AC:3 other reconciliation reasons keep reconciliation_required and a delivery stop_reason (1.045584ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:3 a stop_reason owned by another code path is never touched (1.634083ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:4 S-001 failure behavior is unchanged: a failed binding still flags reconciliation (0.505583ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:5 S-001 the failed-then-successful sequence is idempotent across repeated reruns (0.548208ms)
+✔ story-vibepro-merge-binding-stale-stop-reason S-002 denied merge gate authorization still fails closed (inherited behavior unchanged) (0.255667ms)
+(node:44662) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-7 ac-8 S-001 authorization contract replay (1.804416ms)
+✔ story-vibepro-merge-waiver-propagation ac-4 ac-5 ac-6 S-002 production wiring and audit fixture replay (120.828667ms)
+(node:47582) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-next-best-action-controller acceptance flow replay (290513.211875ms)
+(node:95459) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ scenario:S-001 public guarded Run composes production owners for available-provider commit, review, repair, and final prepare (198795.171792ms)
+✔ scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route (513.064541ms)
+✔ scenario:S-002 typed stop and resume matrix executes independently of unit imports (8.024208ms)
+✔ scenario:S-004 public guarded Run CLI persists runtime, decision, and verification stops through pr_ready (26217.816209ms)
+✔ scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical (108.134042ms)
+(node:27500) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-pr-body-path-links acceptance coverage (4.493209ms)
+(node:29987) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-review-dispatch-preflight-dag acceptance coverage replays generated VibePro artifacts (20890.457916ms)
+✔ story-vibepro-review-dispatch-preflight-dag acceptance covers dispatch preflight failure modes (187753.173417ms)
+(node:34408) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ VRR-E2E-001 replays terminal replacement and fail-closed recovery artifacts (290373.279875ms)
+(node:47855) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-review-surface-violation-ledger RSV-1 close records the close-time head and surface digest (204112.206583ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-2 S-001 a mid-review surface change becomes a violation entry (0.680333ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-3 INV-003 a later clean round never removes the earlier violation (0.739125ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-4 replayed closes do not duplicate the record (1.556458ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-5 C-001 pr prepare blocks and only a decision record clears it (17.269916ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-6 S-002 INV-004 stale stays separate from violation and the review workflow state machine is unchanged (0.3755ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-7 legacy artifacts read clean, a corrupt ledger fails closed, and the evidence lifecycle is unchanged (2.65825ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-8 RSV-9 the erase paths are recorded, not silently allowed (0.383458ms)
+✔ story-vibepro-review-surface-violation-ledger acceptance suite is fully green (4.898625ms)
+(node:90475) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ public sequence help exposes phase order and terminal dispositions (11.962625ms)
+✔ AC-1 high-risk work receives a boundary-specific preflight plan (6213.998084ms)
+✔ AC-2 preflight review is advisory and cannot satisfy final review (4.300041ms)
+✔ AC-3 code freeze requires targeted validation and preflight disposition (0.232542ms)
+✔ AC-4 exact frozen binding reuses expensive verification (12.152542ms)
+✔ AC-5 documentation changes invalidate only downstream phases (0.9065ms)
+✔ AC-6 unclassified mutations fail closed (0.129042ms)
+✔ AC-7 final review must bind to current HEAD (36.33475ms)
+✔ AC-8 imported current-head CI is reusable expensive verification (85876.936ms)
+✔ AC-9 S-001 acceptance matrix executes without failures (24330.797125ms)
+(node:98126) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-routing-profiles-rendered-projections ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 ac:9 ac:10 ac:11 ac:12 ac:13 ac:14 scenario:1 scenario:2 scenario:3 scenario:4 replays the routed artifact lifecycle (117.601333ms)
+✔ story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout runs the CLI lifecycle for feature and governance packets (108176.227125ms)
+✔ story-vibepro-routing-profiles-rendered-projections S-005 S-006 scenario_clause_e2e evidence_lifecycle_regression workflow_state_regression preserves optional lineage and user-fingerprint fallback (4471.406833ms)
+(node:41171) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-run-context-capsule AC-1 through AC-7 and S-001 acceptance artifact replay (15001.269833ms)
+(node:45973) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-safe-action-orchestrator ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 S-008 acceptance and scenario replay (211484.098625ms)
+(node:82822) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ summary-first and explicit drill-down contracts replay end to end (68.151875ms)
+(node:169) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-1 S-001 unrelated main advance does not stale an unchanged branch review (98059.133125ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-2 unchanged surfaces remain reusable after rebase or merge (0.649875ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-3 S-002 only the role with changed lineage or release impact becomes stale (0.081958ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-4 unresolved changed files fail closed (0.180125ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-5 gate and release roles use surface-aware freshness (0.097334ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-6 dirty inspection provenance and lifecycle regressions remain green (0.330209ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-7 S-003 explicit strict HEAD compatibility remains enforced (11.868708ms)
+✔ story-vibepro-surface-aware-agent-review-freshness AC-8 contract integration and E2E matrix completes without failures (4.120292ms)
+(node:4900) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare (320369.15625ms)
+(node:8154) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-task-scoped-pr-acceptance ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 S-002 replays the production Task-scoped PR integration (286881.896875ms)
+(node:15625) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13 (364475.739792ms)
+(node:35643) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-vacuous-e2e-test-elimination ac:2 VET-S-2 every removed file maps to a representative behavioural test case that exists and passes (98052.280708ms)
+✔ story-vibepro-vacuous-e2e-test-elimination ac:3 S-001 the execution-state merged -> agent_review derivation is executed, not asserted about (6.508584ms)
+✔ story-vibepro-vacuous-e2e-test-elimination ac:4 S-002 the managed-worktree bypassed branch is reached through an accepted waiver decision record (0.804583ms)
+✔ story-vibepro-vacuous-e2e-test-elimination ac:6 INV-001 the .spec.ts gate still fails closed on an empty spec set after the deletions (4.263583ms)
+✔ story-vibepro-vacuous-e2e-test-elimination ac:1 VET-S-1 no file under test/e2e executes zero product behaviour (106.363ms)
+✔ story-vibepro-vacuous-e2e-test-elimination ac:5 VET-S-5 the lint detects a vacuous file and fails closed when it cannot scan (68.294917ms)
+✔ story-vibepro-vacuous-e2e-test-elimination the Acceptance Criteria section parses to exactly the six VET criteria (77.280334ms)
+ℹ tests 92
+ℹ suites 0
+ℹ pass 92
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 778809.632791

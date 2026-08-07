@@ -1,0 +1,15 @@
+✔ integration e2e: cli conformance is dry-run by default and strict only via --strict (43.6745ms)
+✔ integration e2e: cli conformance writes json and markdown artifacts (7.288541ms)
+✔ TMG-S-2: model_version is read, surfaced on conformance output, and optional (42.193792ms)
+✔ TMG-S-2: malformed model_version fails loudly instead of degrading to unversioned (12.849541ms)
+✔ TMG-S-4: cli writes proposal artifacts and an optional committed snapshot (16.958666ms)
+✔ TMG-S-1/S-8: the repository target model declares the governance three-way split and a model version (2.212042ms)
+✔ TMG-S-7: adjudication cards stay pending, hold at most 5 questions, and each carries a recommendation (2.3535ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 498.23425

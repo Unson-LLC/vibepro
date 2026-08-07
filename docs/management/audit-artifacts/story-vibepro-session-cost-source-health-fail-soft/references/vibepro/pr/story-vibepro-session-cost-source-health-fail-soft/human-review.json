@@ -1,0 +1,169 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+  "created_at": "2026-07-30T03:17:47.597Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 5 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-session-cost-source-health-fail-soft.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-session-cost-source-health-fail-soft.md, docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+          "current_head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785378537548-182a442a",
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:design_ssot_reconciliation",
+        "source_status": "needs_review",
+        "summary": "Register the Story as root and Architecture/Spec as required children",
+        "reason": "These three documents are the current bounded design lineage for this behavior and do not replace broader repository architecture authorities",
+        "reviewer": "codex",
+        "artifact": ".vibepro/design-ssot/story-vibepro-session-cost-source-health-fail-soft.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+            "actual_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+            "expected_root": null,
+            "expected_head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+            "current_head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+          "current_branch": "codex/story-vibepro-session-cost-source-health-fail-soft",
+          "dirty": true,
+          "status_fingerprint": "M design-ssot.json",
+          "recorded_at": "2026-07-30T02:28:57.540Z"
+        },
+        "recorded_at": "2026-07-30T02:28:57.548Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-30T03:17:45.485Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/.codex/worktrees/6c87/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/6c87/vibepro/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/6c87/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+      "branch": "codex/story-vibepro-session-cost-source-health-fail-soft",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "dbcbaf818e895f6e252912926e25e2121ede371e",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

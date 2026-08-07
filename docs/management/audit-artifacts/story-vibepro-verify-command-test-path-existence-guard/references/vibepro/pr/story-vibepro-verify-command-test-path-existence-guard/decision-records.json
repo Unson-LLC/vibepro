@@ -1,0 +1,935 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "updated_at": "2026-08-01T01:52:38.064Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+      "expected_root": null,
+      "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785549158063-0b0fd461",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "Accepted: no operator release note required for this internal-tooling guard",
+      "reason": "Owner sato_keigo approved on 2026-07-31 (Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl) that the process-improvement PRs #400/#401/#402 may apply owner waivers to close gates, on the explicit condition that CI must be green. This record is written by the closure agent as a RELAYED receipt of that approval; the closure agent did not observe the owner prompt first-hand. CI is green on the current HEAD 5a0e056a (CodeQL, analyze, test (20), test (22) all pass) and is not waived. Item content: the independent judge flagged that nothing in the diff tells operators that previously-working recording commands may now be rejected -- no release note, no opt-out flag -- and that the Story's rollback is developer-side. Accepted: VibePro's verify record/run are internal agent-facing tooling in this repository, the rejection message names the exact missing paths and is self-explanatory at the point of failure, and rollback is a single guard-call removal. Operator-facing release communication is deferred to the repository's normal release-notes step rather than treated as a merge blocker.",
+      "reviewer": "sato_keigo",
+      "artifact": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "current_branch": null,
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-01T01:52:38.056Z"
+      },
+      "recorded_at": "2026-08-01T01:52:38.064Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785549156867-16b670fe",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:public_contract",
+      "source_status": null,
+      "summary": "Accepted: strict test-path guard is an intentional hard-fail contract break with no override flag",
+      "reason": "Owner sato_keigo approved on 2026-07-31 (Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl) that the process-improvement PRs #400/#401/#402 may apply owner waivers to close gates, on the explicit condition that CI must be green. This record is written by the closure agent as a RELAYED receipt of that approval; the closure agent did not observe the owner prompt first-hand. CI is green on the current HEAD 5a0e056a (CodeQL, analyze, test (20), test (22) all pass) and is not waived. Item content: the independent judge flagged that this makes previously-accepted 'verify record' input hard-fail with no override flag, and that a command whose test paths are relative to a subpackage cwd rather than repo root would be rejected with no escape hatch. Accepted as intended behavior: the whole purpose of this Story is to stop false-green evidence from being recorded, and an override flag would reintroduce exactly the hole being closed. The failure direction is fail-closed (a blocked recording, never a false green), and the guard is scoped to tokens ending in .test.*/.spec.* so the blast radius is bounded. If a downstream subpackage-relative usage actually surfaces, it is a follow-up Story, not a reason to ship an escape hatch now.",
+      "reviewer": "sato_keigo",
+      "artifact": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "current_branch": null,
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-01T01:52:36.859Z"
+      },
+      "recorded_at": "2026-08-01T01:52:36.868Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785549124325-ff3331a7",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "Accepted: no operator release note required for this internal-tooling guard",
+      "reason": "Owner sato_keigo approved on 2026-07-31 (Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl) that the process-improvement PRs #400/#401/#402 may apply owner waivers to close gates, on the explicit condition that CI must be green. This record is written by the closure agent as a RELAYED receipt of that approval; the closure agent did not observe the owner prompt first-hand. CI is green on the current HEAD 5a0e056a (CodeQL, analyze, test (20), test (22) all pass) and is not waived. Item content: the independent judge flagged that nothing in the diff tells operators that previously-working recording commands may now be rejected -- no release note, no opt-out flag -- and that the Story's rollback is developer-side. Accepted: VibePro's verify record/run are internal agent-facing tooling in this repository, the rejection message names the exact missing paths and is self-explanatory at the point of failure, and rollback is a single guard-call removal. Operator-facing release communication is deferred to the repository's normal release-notes step rather than treated as a merge blocker.",
+      "reviewer": "sato_keigo",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "current_branch": null,
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-01T01:52:04.316Z"
+      },
+      "recorded_at": "2026-08-01T01:52:04.325Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785549122661-bea6067b",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:public_contract",
+      "source_status": null,
+      "summary": "Accepted: strict test-path guard is an intentional hard-fail contract break with no override flag",
+      "reason": "Owner sato_keigo approved on 2026-07-31 (Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl) that the process-improvement PRs #400/#401/#402 may apply owner waivers to close gates, on the explicit condition that CI must be green. This record is written by the closure agent as a RELAYED receipt of that approval; the closure agent did not observe the owner prompt first-hand. CI is green on the current HEAD 5a0e056a (CodeQL, analyze, test (20), test (22) all pass) and is not waived. Item content: the independent judge flagged that this makes previously-accepted 'verify record' input hard-fail with no override flag, and that a command whose test paths are relative to a subpackage cwd rather than repo root would be rejected with no escape hatch. Accepted as intended behavior: the whole purpose of this Story is to stop false-green evidence from being recorded, and an override flag would reintroduce exactly the hole being closed. The failure direction is fail-closed (a blocked recording, never a false green), and the guard is scoped to tokens ending in .test.*/.spec.* so the blast radius is bounded. If a downstream subpackage-relative usage actually surfaces, it is a follow-up Story, not a reason to ship an escape hatch now.",
+      "reviewer": "sato_keigo",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "current_branch": null,
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-01T01:52:02.653Z"
+      },
+      "recorded_at": "2026-08-01T01:52:02.662Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785407913185-11a60603",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": null,
+      "summary": "design lineage reviewed: root change is the story itself; spec child is current",
+      "reason": "root_only_change: the root design doc change IS this story's own authored content (inherited-behavior declarations added during gate closure); the linked spec child .vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json was written from the same content at the same head and its clauses INV-001/INV-002/S-001 match the story ACs one-to-one, verified by the traceability clause coverage (6 mapped, 0 unmapped). frontmatter_gap: the spec child artifact is CLI-generated JSON whose story_id field binds it to this root; parent_design is not emitted by vibepro spec write and adding it by hand would violate the generated-artifact policy.",
+      "reviewer": null,
+      "artifact": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "21d56e07f805e0696445ce1aa30d3d20cfcdf2b2",
+          "current_head_sha": "21d56e07f805e0696445ce1aa30d3d20cfcdf2b2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "21d56e07f805e0696445ce1aa30d3d20cfcdf2b2",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:38:33.176Z"
+      },
+      "recorded_at": "2026-07-30T10:38:33.186Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785407376963-03ed5f0c",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_note and rollback_instruction documented in the story doc; operator path self-describing",
+      "reason": "release_note: this is an internal CLI gate tightening — verify record/run now rejects passing evidence naming nonexistent test paths, with the operator action fully self-describing (the error lists the exact missing paths and the fix is to name real test files or rerun); rollback_instruction: remove the single [REDACTED:a2b5ade6379a] call in src/verification-evidence.js and the pre-flight call in src/verification-runner.js as documented in the story reason block; observability_evidence: rejections surface as CLI errors, no persisted state or deployment change.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "current_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:29:36.955Z"
+      },
+      "recorded_at": "2026-07-30T10:29:36.964Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785407375660-2b613ccc",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed by gate_evidence reviewer; review_owner_map single-owner",
+      "reason": "scope_reviewed: the gate_evidence reviewer (lifecycle 54b1cda1, separate session) read the full 19-file diff as one judgment and passed it; review_owner_map: single owner — implementing session f7977f8c with independent reviewer af8bf5f7628aba642 and adjudicator ace59617b8c0845fd; decision_record: bundled-scope justification already accepted under gate:pr_scope_judgment (guard and its fixture fallout cannot land separately without a red intermediate state).",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "current_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:29:35.650Z"
+      },
+      "recorded_at": "2026-07-30T10:29:35.661Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785407374385-436b76b1",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "contract_doc traceability: spec clauses INV-001/INV-002 document the contract change and compatibility",
+      "reason": "contract_doc: the public contract change (passing verification records naming nonexistent test paths are rejected) is specified in .vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json clauses INV-001/INV-002 with code_refs and test_refs; compatibility for previously valid inputs (globs, --test-name-pattern values, pathless commands, failing records, existing paths) is regression-tested by INV-002 tests and re-verified runner_direct at head e416d297. No CLI flag, output schema, or config surface changed.",
+      "reviewer": null,
+      "artifact": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "current_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:29:34.365Z"
+      },
+      "recorded_at": "2026-07-30T10:29:34.385Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785405792561-4c285fb1",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "bundled scope accepted: guard and fixture fallout are one intent",
+      "reason": "Bundled scope is intentional.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "current_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:03:12.555Z"
+      },
+      "recorded_at": "2026-07-30T10:03:12.562Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785405781867-a01c4037",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:requirement",
+      "source_status": null,
+      "summary": "inherited behavior S-001 is stated in the Story doc",
+      "reason": "The one structured inherited_behavior declaration (S-001) is stated in the Story doc Inherited Behavior section: kind/command compatibility checks, artifact cross-check contradictions, and shell-substitution rejection are unchanged/existing; verify run additionally rejects nonexistent named test paths pre-flight.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "current_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:03:01.855Z"
+      },
+      "recorded_at": "2026-07-30T10:03:01.868Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785405780705-3119739b",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "only repo-conventional tracked .vibepro artifacts are committed",
+      "reason": "Committed .vibepro files are limited to repo-conventional tracked artifacts: .vibepro/config.json (story registration, required for self-dogfood) and .vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json (final Spec, tracked for every prior story). No diagnostic run artifacts are committed.",
+      "reviewer": null,
+      "artifact": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "current_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:03:00.697Z"
+      },
+      "recorded_at": "2026-07-30T10:03:00.706Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785405779551-6acf579f",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "no green split exists; bundled scope justified",
+      "reason": "Same bundled-scope justification as gate:pr_scope_judgment: guard and its fixture fallout cannot land separately without a red intermediate state; no clean-branch split keeps both commits green.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "current_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:02:59.544Z"
+      },
+      "recorded_at": "2026-07-30T10:02:59.552Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785405778380-5cdc8062",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "bundled scope accepted: guard and fixture fallout are one intent",
+      "reason": "Bundled scope is intentional: the guard (src/verification-evidence.js, src/verification-runner.js) and the fixture updates across 12 test files are mutually dependent — the guard fails 35 fixtures without them, and the fixtures are meaningless without the guard. Splitting would leave either commit red.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "current_head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0ad4a2bc0313b738f2c0cd1d2a4ae311bbc154a5",
+        "current_branch": "claude/agitated-borg-94e2f6",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T10:02:58.371Z"
+      },
+      "recorded_at": "2026-07-30T10:02:58.381Z"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "open": 0,
+    "by_type": {
+      "needs_review": 13
+    },
+    "by_status": {
+      "accepted": 13
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+        "expected_root": null,
+        "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785549158063-0b0fd461",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "Accepted: no operator release note required for this internal-tooling guard",
+      "reason": "Owner sato_keigo approved on 2026-07-31 (Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl) that the process-improvement PRs #400/#401/#402 may apply owner waivers to close gates, on the explicit condition that CI must be green. This record is written by the closure agent as a RELAYED receipt of that approval; the closure agent did not observe the owner prompt first-hand. CI is green on the current HEAD 5a0e056a (CodeQL, analyze, test (20), test (22) all pass) and is not waived. Item content: the independent judge flagged that nothing in the diff tells operators that previously-working recording commands may now be rejected -- no release note, no opt-out flag -- and that the Story's rollback is developer-side. Accepted: VibePro's verify record/run are internal agent-facing tooling in this repository, the rejection message names the exact missing paths and is self-explanatory at the point of failure, and rollback is a single guard-call removal. Operator-facing release communication is deferred to the repository's normal release-notes step rather than treated as a merge blocker.",
+      "reviewer": "sato_keigo",
+      "artifact": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+        "current_branch": null,
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-01T01:52:38.056Z"
+      },
+      "recorded_at": "2026-08-01T01:52:38.064Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json"
+}

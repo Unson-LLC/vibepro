@@ -1,9 +1,36 @@
 {
   "schema_version": "0.1.0",
+  "model_version": 2,
   "status": "adjudicated",
   "adjudicated_by": "sato_keigo",
   "adjudicated_at": "2026-07-22",
-  "note": "to-beモデルの正本。改訂は人間の裁定(ADR/Story)でのみ行う。自動生成・自動改訂を禁止する。rules[]は佐藤裁定済み(2026-07-22)の規範であり、これのみ人間裁定の対象。modules/allowed_dependenciesの具体的な分割詳細はrulesの範囲内での機械保守(hotspot優先順位付けによる漸進的な違反解消等)の対象。",
+  "note": "to-beモデルの正本。改訂権限の区分は governance を正とする(旧noteの『自動改訂を禁止』と『rulesの範囲内での機械保守の対象』の同居による解釈揺れは governance の三分法で解消済み)。rules[]は佐藤裁定済み(2026-07-22)の規範。model_version は人間裁定による改訂でのみ増える。",
+  "governance": {
+    "adjudicated_by": "sato_keigo",
+    "adjudicated_at": "2026-08-04",
+    "criterion": "その操作がこのモデルの表す規範を緩めうるなら human_adjudicated、緩めえないなら machine_maintainable。人間が承認した裁定結果の反映のみ machine_projection。",
+    "machine_maintainable": [
+      "既存モジュールへの孤児ファイルの割当 (modules[].paths への追加)",
+      "一致ファイルが存在しなくなった paths パターンの除去",
+      "rules[] の範囲内での分割詳細の保守 (hotspot優先順位付けによる漸進的な違反解消等)",
+      "rebaseline proposal・裁定カードの生成",
+      "意味を変えない構造的追加 (既存値を保ったままのフィールド追加)"
+    ],
+    "human_adjudicated": [
+      "rules[] 本文の変更・追加・削除",
+      "モジュールの新設・削除・responsibility の変更",
+      "allowed_dependencies への新規依存の宣言 (R-004)",
+      "budgets.file_line_baseline の引き上げ・default_max_file_lines の変更 (R-003)",
+      "scope_roots の変更",
+      "status / adjudicated_by の変更"
+    ],
+    "machine_projection": [
+      "人間が承認した裁定結果の target-model への反映",
+      "承認された改訂に伴う model_version のインクリメント"
+    ],
+    "model_version_policy": "model_version は human_adjudicated な改訂が反映されたときにのみ +1 する。machine_maintainable な保守では増やさない。",
+    "design_root": "docs/architecture/vibepro-target-model-governance-rebaseline.md"
+  },
   "rules": [
     {
       "id": "R-001",
@@ -62,14 +89,16 @@
         "src/git-fingerprint.js",
         "src/git-identity.js",
         "src/checkpoint-manager.js",
-        "src/execution-state.js",
         "src/managed-worktree.js",
-        "src/managed-worktree-gate.js",
-        "src/merge-manager.js",
         "src/codex-manager.js",
         "src/run-lineage.js",
         "src/language.js",
-        "src/decision-records.js"
+        "src/decision-records.js",
+        "src/story-id.js",
+        "src/managed-command-executor.js",
+        "src/atomic-file.js",
+        "src/process-record-store.js",
+        "src/story-transaction-lock.js"
       ]
     },
     {
@@ -110,7 +139,8 @@
         "src/architecture-readiness.js",
         "src/architecture-profiler.js",
         "src/architecture-conformance.js",
-        "src/code-topology-provider.js"
+        "src/architecture-conformance-delta.js",
+        "src/architecture-rebaseline-proposal.js"
       ]
     },
     {
@@ -118,8 +148,7 @@
       "responsibility": "Specの保存・検証・drift検知",
       "paths": [
         "src/spec-*",
-        "src/pre-spec-readiness.js",
-        "src/recipe-preflight.js"
+        "src/pre-spec-readiness.js"
       ]
     },
     {
@@ -128,8 +157,8 @@
       "paths": [
         "src/verification-evidence.js",
         "src/evidence-*",
+        "src/docs-only-change.js",
         "src/ci-evidence.js",
-        "src/explore-evidence.js",
         "src/performance-evidence.js",
         "src/performance-measurer.js",
         "src/coverage-report.js",
@@ -139,13 +168,12 @@
     },
     {
       "name": "review",
-      "responsibility": "agent review・裁定・修復ループ",
+      "responsibility": "agent review（軽量レビュー1周: prepare/record/summary）",
       "paths": [
         "src/agent-review.js",
-        "src/review-repair.js",
-        "src/review-finding-repair-loop.js",
-        "src/adjudication.js",
-        "src/responsibility-authority.js"
+        "src/review-inspection-inputs.js",
+        "src/review-surface-violations.js",
+        "src/dispatch-identity.js"
       ]
     },
     {
@@ -153,19 +181,15 @@
       "responsibility": "Gate DAG・PR準備・senior判断・監査",
       "paths": [
         "src/pr-manager.js",
-        "src/senior-gap-judgment.js",
-        "src/gate-outcome-ledger.js",
-        "src/canonical-audit.js",
         "src/pr-artifact-budget.js",
         "src/traceability.js",
-        "src/change-risk-classifier.js",
-        "src/authorization-scoring.js",
         "src/validation-sequencing.js",
         "src/playbook-exporter.js",
         "src/report-store.js",
         "src/report-validator.js",
         "src/report-fingerprint.js",
-        "src/content-binding.js"
+        "src/content-binding.js",
+        "src/reconciliation-action.js"
       ]
     },
     {
@@ -181,8 +205,21 @@
         "src/agent-runtime-adapter.js",
         "src/agent-runtime-connectors.js",
         "src/independent-review-orchestrator.js",
-        "src/session-learning.js",
-        "src/run-context-capsule.js"
+        "src/session-learning.js"
+      ]
+    },
+    {
+      "name": "agent-runtime",
+      "responsibility": "外部agentプロセスの起動・出力契約・完了通知・進捗期限",
+      "paths": [
+        "src/codex-subagent-host.js",
+        "src/codex-subagent-host-worker.js",
+        "src/codex-subagent-runtime-adapter.js",
+        "src/codex-runtime-bridge.js",
+        "src/codex-runtime-output-contract.js",
+        "src/agent-completion-inbox.js",
+        "src/progress-deadline.js",
+        "src/verification-runner.js"
       ]
     },
     {
@@ -200,7 +237,6 @@
         "src/network-contract-scanner.js",
         "src/oss-readiness-scanner.js",
         "src/public-discovery-scanner.js",
-        "src/regression-risk-scanner.js",
         "src/self-dogfood-scanner.js",
         "src/static-site-scanner.js",
         "src/terminal-link-scanner.js",
@@ -217,7 +253,6 @@
         "src/requirement-consistency.js",
         "src/refactoring-delta-reporter.js",
         "src/refactoring-opportunity-generator.js",
-        "src/diagram-requirement-resolver.js",
         "src/agent-harness-map.js"
       ]
     },
@@ -235,8 +270,6 @@
       "responsibility": "人間向けレポートと利用状況集計",
       "paths": [
         "src/html-report.js",
-        "src/usage-report.js",
-        "src/session-efficiency-audit.js",
         "src/delivery-efficiency-guardrail.js"
       ]
     },
@@ -254,7 +287,10 @@
     ],
     "story": [
       "workspace-infra",
-      "graph"
+      "graph",
+      "architecture",
+      "run-session",
+      "uiux-design"
     ],
     "task": [
       "workspace-infra",
@@ -262,11 +298,14 @@
     ],
     "architecture": [
       "workspace-infra",
-      "graph"
+      "graph",
+      "gate-pr"
     ],
     "spec": [
       "workspace-infra",
-      "story"
+      "story",
+      "diagnosis",
+      "evidence"
     ],
     "evidence": [
       "workspace-infra",
@@ -275,7 +314,9 @@
     "review": [
       "workspace-infra",
       "evidence",
-      "story"
+      "story",
+      "diagnosis",
+      "run-session"
     ],
     "gate-pr": [
       "workspace-infra",
@@ -286,26 +327,43 @@
       "evidence",
       "review",
       "diagnosis",
-      "reporting"
+      "reporting",
+      "uiux-design",
+      "scanners",
+      "architecture"
     ],
     "run-session": [
       "workspace-infra",
       "task",
-      "evidence"
+      "evidence",
+      "agent-runtime",
+      "gate-pr",
+      "review"
+    ],
+    "agent-runtime": [
+      "workspace-infra"
     ],
     "scanners": [
-      "workspace-infra"
+      "workspace-infra",
+      "evidence",
+      "graph",
+      "skills"
     ],
     "diagnosis": [
       "workspace-infra",
       "graph",
       "story",
-      "scanners"
+      "scanners",
+      "architecture",
+      "evidence",
+      "spec",
+      "task"
     ],
     "uiux-design": [
       "workspace-infra",
       "scanners",
-      "evidence"
+      "evidence",
+      "graph"
     ],
     "reporting": [
       "workspace-infra",
@@ -313,7 +371,8 @@
       "evidence",
       "gate-pr",
       "review",
-      "diagnosis"
+      "diagnosis",
+      "scanners"
     ],
     "skills": [
       "workspace-infra"

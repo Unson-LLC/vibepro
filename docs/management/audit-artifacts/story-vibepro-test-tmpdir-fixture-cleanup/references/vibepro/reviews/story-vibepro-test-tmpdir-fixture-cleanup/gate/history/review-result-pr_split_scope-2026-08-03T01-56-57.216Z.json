@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Differential: the guard fix and the two budget commits remain within this story's single intent; a full-branch config diff confirms only this story's budget key was ever added or changed; decision docs match the standard tooling pattern",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Enumerated all branch commits; per-commit stat and full diffs of the fix and budget commits; filtered branch-wide config diff for story keys",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/config.json",
+      "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-9a99e7cb.md"
+    ]
+  },
+  "judgment_delta": [
+    "single-intent judgment extends to the fix and governance commits with no cross-story leakage"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "current_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+      "current_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T01:56:57.216Z",
+  "git_context": {
+    "head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T01:56:57.193Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "4b6b73d48a732ddf00d4566cf84d221fa96e0c16",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "f9614985ced3d6b68fa7fad8e567d33a83fb38c941262ee26337835ed7caf0df",
+        "size": 95448
+      },
+      {
+        "path": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-9a99e7cb.md",
+        "sha256": "2cb9d2c36f647e5c77eed459534de98b2f0470496f83d8bb81ee4f9ceae847d1",
+        "size": 1572
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "648a0095c6ce0c22deff79590aa2892dbfd6d5208a3a290d8fbd3d827835c586"
+  },
+  "source_fingerprint": "6b56037bf1deee7a7d74e7a2dbdfdc30a65caf0e7ae8ca422e1fbf08343e62b9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a261e1e648f7b5782",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a261e1e648f7b5782",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/verdict-pr_split_scope-r2.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a261e1e648f7b5782",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

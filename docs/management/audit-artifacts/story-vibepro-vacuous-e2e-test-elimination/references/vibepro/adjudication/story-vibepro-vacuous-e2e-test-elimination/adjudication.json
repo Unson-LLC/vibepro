@@ -1,0 +1,320 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "updated_at": "2026-08-01T17:05:56.332Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Called the product function directly: listE2eTsSpecs(repoRoot) from scripts/run-e2e-ts-specs.mjs returns 28 spec.ts files at HEAD after the 17 deletions, matching 'ls test/e2e/*.spec.ts | wc -l' = 28, so spec count > 0 and the gate is not a no-op. I also confirmed the fail-closed side is intact rather than assumed: runE2eTsSpecs returns 1 with '::error::No test/e2e/*.spec.ts files were found ... silent no-op' when pointed at a rootDir with no specs, and the spawn injection proves it never launches a child in that case. npm script test:e2e:ts still routes through this runner.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "7ee1035e2da17c6647c8879f3920a9dfb0e6b3d41b014fe28ef8f0220c74fb5c",
+      "recorded_at": "2026-08-01T17:05:56.330Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Executed the lint against real planted inputs in temp sandboxes (no repo edits), covering both halves of the clause. Detection: a planted file of exactly the removed shape (literal asserted against a regex built from that literal) -> rc=1 and the file is named in the error; still rc=1 when mixed with a real file; still rc=1 when planted in a NESTED subdirectory (listE2eTestFiles walks the tree). Unscannable: missing test/e2e -> rc=1 'Could not scan'; chmod 000 directory -> rc=1 EACCES; empty-but-present directory -> rc=1 'would be a silent no-op'. Every failure path is fail-closed and none returns 0. The lint is wired into CI at .github/workflows/ci.yml:33 via 'npm run lint:e2e-product-execution', so the check is enforced and not merely available.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "7ee1035e2da17c6647c8879f3920a9dfb0e6b3d41b014fe28ef8f0220c74fb5c",
+      "recorded_at": "2026-08-01T17:05:55.822Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Verified by mutation. src/managed-worktree-gate.js:32 'const bypass = findAcceptedManagedWorktreeBypass(decisionRecords)' feeds the status:'bypassed' return at line 51-57. Via an ESM load hook I forced 'const bypass = null' and re-ran test/e2e/story-vibepro-managed-worktree-gate-main.test.js: the ac:5 accepted-waiver case FAILED (pass 3 fail 1) while the other three still passed, so that case uniquely covers the bypassed branch. Unmutated it passes 4/4. The test reaches the branch through the real path the clause names: runCli 'decision record --type waiver --status accepted --source gate:managed_worktree' against a real git repo, then asserts gate.status==='bypassed', gate.decision_id===waiver.decision_id and the reason carrying the recorded justification; a sibling case proves status 'open' does NOT bypass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "7ee1035e2da17c6647c8879f3920a9dfb0e6b3d41b014fe28ef8f0220c74fb5c",
+      "recorded_at": "2026-08-01T17:05:43.481Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Verified by mutation, not by reading. src/execution-state.js:780 holds 'if (agentReviewSatisfied || (merged && !hasExplicitDelivery))'. Using an ESM load hook (no repo edits) I rewrote that line to 'if (agentReviewSatisfied)' and re-ran test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js: S-001 FAILED (pass 2 fail 1). Inverse mutation to 'if (agentReviewSatisfied || merged)' (guard dropped) made S-003 FAIL. So the test pins both sides of the exact derivation, positive and negative. Unmutated the file passes 3/3, and it really imports getExecutionStatus from ../../src/execution-state.js and drives it against a real git repo with a real pr-merge.json artifact.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "7ee1035e2da17c6647c8879f3920a9dfb0e6b3d41b014fe28ef8f0220c74fb5c",
+      "recorded_at": "2026-08-01T17:05:42.881Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Re-derived independently. (1) Exhaustiveness: I extracted REMOVED_VACUOUS_FILES from the spec and compared it set-wise to 'git diff --diff-filter=D merge-base..HEAD -- test/e2e' -> both are 17 and the sets are IDENTICAL (0 in git unlisted, 0 listed not in git); every one of the 17 appears in REPLACEMENT_COVERAGE, 0 unmapped. (2) Named cases exist and pass: I ran all 13 distinct mapped cases myself outside the spec via --test-name-pattern across test/cli-status-honesty.test.js (5 pass), engineering-judgment-activation-precision (1), managed-worktree-policy-resync (1), traceability-usage-report (1), execution-state (1), vibepro-cli.test.js (5 pass, named individually) plus the two rewritten e2e files (7 pass) - all fail 0, skipped 0. (3) Product execution: every mapped suite imports ../src/* or drives runCli. (4) I falsified the drift-detection mechanism: a renamed/bogus mapped name makes node print only the FILE entry ('pass 1') and NOT the test name, so the spec's stdout.includes(testName) assertion fails loudly; the weaker 'passed >= expected.length' floor alone would not catch it, but it is not the load-bearing check. Clause is at representative-case granularity per the recorded Superseded re-scope and the 7 losing slugs are disclosed, so no AC-level equivalence is being claimed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "7ee1035e2da17c6647c8879f3920a9dfb0e6b3d41b014fe28ef8f0220c74fb5c",
+      "recorded_at": "2026-08-01T17:05:42.267Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Independently re-derived, not read from records. I wrote my own Node scan over all 70 files in test/e2e applying the clause's own definition (src-path import OR process start OR fs access), deliberately stricter than the lint's widened product_import signal: 0 files lack all three. Separately ran scripts/lint-e2e-product-execution.mjs at HEAD 55131e55 -> exit 0, '70 e2e test file(s) all execute product behaviour'. The reported count equals the file count actually walked, so it is not a constant.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-p4-vacuous-e2e-r2",
+        "session_ref": null
+      },
+      "head_commit": "55131e5527227d09070a66e42cf0e0058abf3a19",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "7ee1035e2da17c6647c8879f3920a9dfb0e6b3d41b014fe28ef8f0220c74fb5c",
+      "recorded_at": "2026-08-01T17:05:21.641Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Acceptance spec :261 calls the real listE2eTsSpecs, asserts non-empty and self-inclusion, then mutation-checks runE2eTsSpecs against an empty dir with a spawn that throws: status 1 and a silent no-op log. Recorded e2e run 89/89 at HEAD. The ac:6 marker now cites INV-001, which exists in spec.json.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "bb2e70d1f922a540bec0f70d140f68c30f822cdac487843dba78cf63038874b4",
+      "recorded_at": "2026-07-30T19:14:05.817Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "lintE2eProductExecution returns 1 on readdir failure (:105-110), unreadable file (:124-127), empty file set (:113-116) and zero-signal files (:131-146). The acceptance spec injects the exact removed shape and an ENOENT readdir and asserts exit 1 both times; LINT cases ran green in the recorded integration run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "bb2e70d1f922a540bec0f70d140f68c30f822cdac487843dba78cf63038874b4",
+      "recorded_at": "2026-07-30T19:14:05.304Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "story-vibepro-managed-worktree-gate-main.test.js:110 records an accepted waiver via runCli in a real required-mode repo, calls buildManagedWorktreeGate and asserts status=bypassed with the recorded decision_id and reason; :146 is the open-waiver negative asserting block with no decision_id. Recorded unit run at HEAD is 2282/2282.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "bb2e70d1f922a540bec0f70d140f68c30f822cdac487843dba78cf63038874b4",
+      "recorded_at": "2026-07-30T19:14:04.774Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "story-vibepro-execution-judgment-status-integrity-main.test.js:9 imports getExecutionStatus from src/execution-state.js, builds a real git repo and merged pr-merge.json with no delivery block, asserts agent_review_recorded/pr_created become passed, plus the S-003 negative where explicit delivery must not infer agent review. Adjudicator ran it: 3/3 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "bb2e70d1f922a540bec0f70d140f68c30f822cdac487843dba78cf63038874b4",
+      "recorded_at": "2026-07-30T19:14:04.223Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "not_demonstrated",
+      "reason": "All 17 removed paths are mapped to named cases that really exist, and the spec executes them with fail-0, name-present and pass-floor assertions. But each removed file is covered by ONE representative case while the removed files claimed whole AC sets (evidence-user-fingerprint 7 ACs, keyword-gate 4 ACs). CHANGELOG itself concedes 7 Story slugs now replay as uncovered. Existence of behavioural coverage is proven; 'the corresponding Story ACs are verified elsewhere' is proven only representatively.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "bb2e70d1f922a540bec0f70d140f68c30f822cdac487843dba78cf63038874b4",
+      "recorded_at": "2026-07-30T19:14:03.699Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Lint exits 0 with 64 files all executing product behaviour. The adjudicator independently re-ran detectProductExecutionSignals over all 64 files with comments stripped: 0 files lose all signals, so no file clears the gate only via a commented-out import. The 17 deleted files at origin/main import only node:test and node:assert.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9749efd27afe6119",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a9749efd27afe6119.output"
+      },
+      "head_commit": "5f0bc6c3aceedb42a0afa3d04767d7f86acdfd49",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "task_id": null,
+        "acceptance_criteria": [
+          "VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。",
+          "VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。",
+          "VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。",
+          "VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。",
+          "VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。",
+          "VET-S-6: `scripts/run-e2e-ts-specs.mjs` の `.spec.ts` gateは削除後も有効なまま(spec数 > 0)である。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "bb2e70d1f922a540bec0f70d140f68c30f822cdac487843dba78cf63038874b4",
+      "recorded_at": "2026-07-30T19:14:03.187Z"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+✔ RML-S-1: promotion moves all local entries into an empty central ledger (258.467958ms)
+✔ RML-S-2: re-running promotion dedupes by entry_key and does not grow the ledger (2.919625ms)
+✔ RML-S-2: existing central entry is kept when a duplicate key is promoted (0.678875ms)
+✔ RML-S-3: empty/absent local ledger yields no_entries and writes nothing (0.081416ms)
+✔ GDO-S-2/GDO-S-3: delivery binding requires every local outcome to be promoted or deduplicated (6.381875ms)
+✔ GDO-S-5: a successful rebinding clears stale binding-failure reconciliation flags (4.530167ms)
+✔ GDO-S-4: stories without local decision outcomes do not invent a binding failure (0.169542ms)
+✔ RML-S-6: corrupt central ledger fails the promotion and is not overwritten (0.2525ms)
+✔ RML-S-6: central promotion rejects incompatible envelopes and malformed entries (0.602625ms)
+✔ GDL-S-7 promotion source rejects malformed entries across the complete local ledger (361.705125ms)
+✔ GDO-S-2 malformed local entries fail promotion instead of producing a bound count (1.816834ms)
+✔ RML-S-5: serialization is deterministic regardless of input order (8.262834ms)
+✔ summarizeGateRoi counts missing outcome as unclassified and exposes the total (0.265666ms)
+✔ collectPromotableGateOutcomeEntries filters the local ledger by story_id (23.251208ms)
+✔ GDL-S-7 promotion source distinguishes absent, genuine empty, parse, schema, model, and shape states (16.844584ms)
+✔ GDL-S-7 known v1 and v2 ledgers remain readable as legacy empty promotion sources (113.417584ms)
+✔ RML-S-4: usage report --gate-roi reads the central ledger with explicit gaps (2321.913583ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5875.629292

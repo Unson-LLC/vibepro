@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "decision_id": "decision-1785675195837-6ac4f22a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the full diff main...HEAD (4 commits, 7 files, ~125 insertions) was reviewed as one judgment by the pr_split_scope review subagent (verdict pass, recorded in review-result-pr_split_scope.json): npm-script concurrency pin + timeout constant + their regression tests + story/CHANGELOG/config registration, no unrelated riders. review_owner_map: a single reviewer owns the whole surface — runtime changes are one script line (package.json) and one constant (src/verification-runner.js), both owned by the VibePro core CLI surface; tests and docs follow the same ownership. related_file_blast_radius: repo-wide grep confirmed no other node --test call sites need the pin (CI delegates to npm test) and DEFAULT_TIMEOUT_MS is not shared with other modules (managed-command-executor.js and code-topology-provider.js constants are separate subsystems). decision_record: the bundled-scope justification is recorded against gate:pr_scope_judgment and gate:split_resolution with the story doc as artifact; split is not chosen because each runtime line must land with the regression test that guards it.",
+      "artifact": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T12:53:33.047Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:config_or_agent_policy|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "decision_id": "decision-1785675194594-331b8ba8",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "public_contract: the change does not break external users, CLI/API, configuration, output format, or the PR body contract. Reviewable old/new expectation: package.json scripts.test old 'node --test' -> new 'node --test --test-concurrency=2' (same command surface, same exit codes, same TAP output; only scheduling parallelism changes), and src/verification-runner.js DEFAULT_TIMEOUT_MS old 1800000 -> new 7200000 (permissive-only: every run that previously finished still finishes; explicit --timeout-ms behavior unchanged; the effective value is visible as run.timeout_ms in every run artifact). Compatibility evidence: the command-form gate (src/verification-evidence.js) is byte-identical to main, verified by the gate_evidence review and by adjudication AC-2 (function-level call [REDACTED:1e71daeda117]('unit','npm test','pass') does not throw); all three CI workflows invoke npm test unchanged with 5-9 minute historical durations against 90-360 minute budgets (release_risk review, gh run history). CHANGELOG.md Unreleased documents both old/new values, operator action (none), and rollback (revert one line each). story_spec_traceability: AC-1..AC-5 adjudicated demonstrated at head 583f69fc.",
+      "artifact": "CHANGELOG.md",
+      "activation_candidates": [
+        "pr_route:config_or_agent_policy",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T12:53:33.047Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "decision_id": "decision-1785687335938-72dd5958",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "Response to release_risk finding release-risk-margin-claim-vs-observed-duration. The freshly recorded unit run at head 7db9956d took duration_ms=5171317 (86.2 minutes) on this heavily loaded dev host, so the documented '~2x over 56-minute worst case' phrasing understates the observed worst case; the real margin at 7200000 ms is ~1.4x. The ceiling itself remains correct: (a) the run passed with timed_out=false well inside the default; (b) the escalating local measurements (28/43/56/86 min) are all from a dev host under load average 14-38, while the CI consumers of npm test run on unloaded GH runners measured at ~9 minutes pre-change (gh run 30755351517) against 90-360 minute job budgets; (c) DEFAULT_TIMEOUT_MS is a hang-detection backstop, not a performance target, and --timeout-ms override remains available for pathological hosts. The doc phrasing correction (margin wording in story/spec/architecture) is a bounded documentation follow-up that does not change the constant or any behavior; also covers release-risk-ci-timeout-budget-not-named with the one-time post-merge timing spot-check of npm-publish.yml / post-merge-release.yml noted as operator guidance.",
+      "artifact": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+      "activation_candidates": [],
+      "activation_precision_status": "no_signal",
+      "recorded_at": "2026-08-02T18:42:47.990Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+  "updated_at": "2026-08-03T07:55:53.827Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "git show confirms both pinning test files existed on origin/main and are absent from HEAD; repo-wide grep finds the removed export names only in the new story e2e test, asserting their absence rather than referencing them as live exports.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "task_id": null,
+        "acceptance_criteria": [
+          "src/pr-manager.js に上記関数の定義・参照が残らず、`renderPrGateSummary` / `buildHumanEvidenceDigest` はモジュールからexportされない。",
+          "liveな呼び出し元を持つ共用helper（`collectSuppressedJudgmentAxes` / `buildHumanSplitDigest` / `formatHumanGateSummary` / `summarizePrGateReason` / `isUnresolvedGateStatus` / `collectContractDocFiles` / `collectCapabilityFiles` / `buildPrimaryReviewAreas` / `formatPrStoryLabel` / `buildScopeDecisionNote` / `summarizeBlockerWaiverMissingFields`）は削除されず、既存テストが通る。",
+          "pr prepare が生成する pr-body.md のconcise契約（セクション順序・禁止文字列・20KB上限）は変化しない（既存の contract テストがそのまま通ることで担保）。",
+          "削除された2 export を参照するテストは残らない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f07d693fcb004d5fb0f0e26c7341dbec4b5250d696f0b01facce446300db161b",
+      "recorded_at": "2026-08-03T07:55:53.824Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "The pre-existing concise-body contract tests are untouched by the diff and recorded passing in E-1 at the current head; the story ac:3 e2e additionally replays a real pr prepare flow and asserts section order, banned strings, and the 20KB ceiling, re-run directly and passing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "task_id": null,
+        "acceptance_criteria": [
+          "src/pr-manager.js に上記関数の定義・参照が残らず、`renderPrGateSummary` / `buildHumanEvidenceDigest` はモジュールからexportされない。",
+          "liveな呼び出し元を持つ共用helper（`collectSuppressedJudgmentAxes` / `buildHumanSplitDigest` / `formatHumanGateSummary` / `summarizePrGateReason` / `isUnresolvedGateStatus` / `collectContractDocFiles` / `collectCapabilityFiles` / `buildPrimaryReviewAreas` / `formatPrStoryLabel` / `buildScopeDecisionNote` / `summarizeBlockerWaiverMissingFields`）は削除されず、既存テストが通る。",
+          "pr prepare が生成する pr-body.md のconcise契約（セクション順序・禁止文字列・20KB上限）は変化しない（既存の contract テストがそのまま通ることで担保）。",
+          "削除された2 export を参照するテストは残らない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f07d693fcb004d5fb0f0e26c7341dbec4b5250d696f0b01facce446300db161b",
+      "recorded_at": "2026-08-03T07:55:52.383Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "All 11 named shared helpers still have exactly one definition and call sites beyond the definition line (grep-verified 2-12 occurrences each); ac:2 e2e assertion re-ran and passed; full-suite record E-1 (2416/2416) is at the identical head sha.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "task_id": null,
+        "acceptance_criteria": [
+          "src/pr-manager.js に上記関数の定義・参照が残らず、`renderPrGateSummary` / `buildHumanEvidenceDigest` はモジュールからexportされない。",
+          "liveな呼び出し元を持つ共用helper（`collectSuppressedJudgmentAxes` / `buildHumanSplitDigest` / `formatHumanGateSummary` / `summarizePrGateReason` / `isUnresolvedGateStatus` / `collectContractDocFiles` / `collectCapabilityFiles` / `buildPrimaryReviewAreas` / `formatPrStoryLabel` / `buildScopeDecisionNote` / `summarizeBlockerWaiverMissingFields`）は削除されず、既存テストが通る。",
+          "pr prepare が生成する pr-body.md のconcise契約（セクション順序・禁止文字列・20KB上限）は変化しない（既存の contract テストがそのまま通ることで担保）。",
+          "削除された2 export を参照するテストは残らない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f07d693fcb004d5fb0f0e26c7341dbec4b5250d696f0b01facce446300db161b",
+      "recorded_at": "2026-08-03T07:55:50.974Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "grep across src/pr-manager.js finds zero remaining definitions or references to the dead chain; diff shows the entire chain (-471 lines) deleted at f44165f2; the ac:1 e2e assertions (exports undefined) re-ran and passed at the exact recorded head. No inferential leap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "task_id": null,
+        "acceptance_criteria": [
+          "src/pr-manager.js に上記関数の定義・参照が残らず、`renderPrGateSummary` / `buildHumanEvidenceDigest` はモジュールからexportされない。",
+          "liveな呼び出し元を持つ共用helper（`collectSuppressedJudgmentAxes` / `buildHumanSplitDigest` / `formatHumanGateSummary` / `summarizePrGateReason` / `isUnresolvedGateStatus` / `collectContractDocFiles` / `collectCapabilityFiles` / `buildPrimaryReviewAreas` / `formatPrStoryLabel` / `buildScopeDecisionNote` / `summarizeBlockerWaiverMissingFields`）は削除されず、既存テストが通る。",
+          "pr prepare が生成する pr-body.md のconcise契約（セクション順序・禁止文字列・20KB上限）は変化しない（既存の contract テストがそのまま通ることで担保）。",
+          "削除された2 export を参照するテストは残らない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "f07d693fcb004d5fb0f0e26c7341dbec4b5250d696f0b01facce446300db161b",
+      "recorded_at": "2026-08-03T07:55:44.437Z"
+    }
+  ]
+}

@@ -1,12 +1,11 @@
 import { createHash } from 'node:crypto';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { preparePullRequest } from './pr-manager.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { readNarrative, REPORT_KINDS } from './report-store.js';
-import { getWorkspaceDir } from './workspace.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,33 +25,34 @@ export async function buildReportFingerprint(repoRoot, options = {}) {
   throw new Error(`Unsupported report kind: ${kind}`);
 }
 
+// Fingerprint == the identity of the evidence state a pr-body.md was (or will
+// be) generated from. It is a read of the persisted `pr prepare` output, not
+// a recomputation — recomputing here would let the fingerprint silently
+// diverge from the pr-body.md actually shipped in the PR. If `pr prepare`
+// has never run for this story, that is an error, not an empty fingerprint.
 async function buildPrBodyFingerprint(root, options) {
   const storyId = options.storyId;
-  const prepare = await preparePullRequest(root, {
-    storyId,
-    baseRef: options.baseRef ?? null,
-    taskId: options.taskId ?? null,
-    groupId: options.groupId ?? null,
-    branchName: options.branchName ?? null,
-    allowExtraFiles: true
-  });
+  const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
+  const preparation = await readPrPrepare(jsonPath, storyId);
 
-  const preparation = prepare?.preparation ?? null;
   const previousNarrative = await readNarrative(root, storyId, 'pr-body');
   const inferredSpec = await readInferredSpec(root, storyId);
   const drift = await readDrift(root, storyId);
-  const findings = await readLatestFindings(root, preparation?.latest_story_run);
 
   const fingerprint = {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     kind: 'pr-body',
     story_id: storyId,
     generated_at: new Date().toISOString(),
-    story: preparation?.story ?? null,
-    pr_context: extractPrContextSummary(preparation),
-    file_groups: summarizeFileGroups(preparation?.file_groups),
-    gate_dag: summarizeGateDag(preparation?.pr_context?.gate_dag),
-    requirement_consistency: summarizeRequirement(preparation?.pr_context?.requirement_consistency),
+    source_artifact: toRelative(root, jsonPath),
+    story: preparation.story ?? null,
+    git: summarizeGit(preparation.git),
+    spec: preparation.spec ?? null,
+    spec_drift: preparation.spec_drift ?? null,
+    story_source: preparation.story_source ?? null,
+    traceability: summarizeTraceability(preparation.traceability),
+    verification: summarizeVerification(preparation.verification),
+    review: summarizeReview(preparation.review),
     inferred_spec: inferredSpec ? {
       story_id: inferredSpec.story_id,
       clauses: (inferredSpec.clauses ?? []).map((clause) => ({
@@ -72,13 +72,11 @@ async function buildPrBodyFingerprint(root, options) {
         title: item.title
       }))
     } : null,
-    findings: findings.map((finding) => ({
-      id: finding.id,
-      title: finding.title,
-      severity: finding.severity ?? null,
-      type: finding.type ?? null
-    })),
-    numerical_truth: buildNumericalTruth({ preparation, drift, requirementConsistency: preparation?.pr_context?.requirement_consistency }),
+    // No story-diagnose findings pipeline exists in the minimal core; kept as
+    // an empty, typed array (not silently omitted) so narrative citations to
+    // finding_ids fail validation instead of matching nothing.
+    findings: [],
+    numerical_truth: buildNumericalTruth({ preparation, drift }),
     previous_narrative: previousNarrative,
     schema_for_your_output: await readJson(path.join(__dirname, 'report-pr-body-schema.json')),
     instructions: options.includeInstructions
@@ -89,89 +87,86 @@ async function buildPrBodyFingerprint(root, options) {
   return fingerprint;
 }
 
-function extractPrContextSummary(preparation) {
-  if (!preparation) return null;
-  const ctx = preparation.pr_context ?? {};
-  return {
-    story_source_path: ctx.story_source?.path ?? null,
-    acceptance_scope: ctx.acceptance_scope ? {
-      source: ctx.acceptance_scope.source ?? null,
-      story_id: ctx.acceptance_scope.story_id ?? null,
-      task_id: ctx.acceptance_scope.task_id ?? null,
-      acceptance_criteria: Array.isArray(ctx.acceptance_scope.acceptance_criteria)
-        ? [...ctx.acceptance_scope.acceptance_criteria]
-        : []
-    } : null,
-    architecture_decision: ctx.architecture_decision ?? null,
-    change_summary: ctx.change_summary ?? [],
-    review_points: ctx.review_points ?? [],
-    risks: ctx.risks ?? [],
-    verification_commands: (ctx.verification_commands ?? []).map((entry) => ({
-      command: entry.command,
-      reason: entry.reason
-    }))
-  };
-}
-
-function summarizeFileGroups(fileGroups) {
-  if (!fileGroups) return null;
-  const summary = {};
-  for (const [key, value] of Object.entries(fileGroups)) {
-    summary[key] = {
-      count: value.count,
-      files: (value.files ?? []).slice(0, 12)
-    };
-  }
-  return summary;
-}
-
-function summarizeGateDag(gateDag) {
-  if (!gateDag) return null;
-  return {
-    overall_status: gateDag.overall_status ?? null,
-    nodes: (gateDag.nodes ?? []).map((node) => ({
-      id: node.id,
-      type: node.type,
-      status: node.status,
-      required: node.required ?? null,
-      reason: node.reason ?? null
-    }))
-  };
-}
-
-function summarizeRequirement(requirement) {
-  if (!requirement) return null;
-  return {
-    status: requirement.status,
-    summary: requirement.summary,
-    invariants: (requirement.invariants ?? []).map((entry) => ({ id: entry.id, text: entry.text })),
-    contradictions: (requirement.contradictions ?? []).map((entry) => ({ id: entry.id, title: entry.title })),
-    scenario_gaps: (requirement.scenario_gaps ?? []).map((entry) => ({ id: entry.id, title: entry.title }))
-  };
-}
-
-async function readLatestFindings(root, latestStoryRun) {
-  const evidencePath = latestStoryRun?.artifacts?.evidence;
-  if (!evidencePath) return [];
+async function readPrPrepare(jsonPath, storyId) {
+  let raw;
   try {
-    const evidence = JSON.parse(await readFile(path.resolve(root, evidencePath), 'utf8'));
-    return Array.isArray(evidence.findings) ? evidence.findings.slice(0, 40) : [];
-  } catch {
-    return [];
+    raw = await readFile(jsonPath, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw new Error(
+        `report fingerprint --kind pr-body: no pr-prepare.json found for story "${storyId}" at ${jsonPath}. `
+        + 'Run `pr prepare` for this story before requesting a fingerprint.'
+      );
+    }
+    throw new Error(`report fingerprint --kind pr-body: failed to read ${jsonPath}: ${error.message}`);
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`report fingerprint --kind pr-body: ${jsonPath} is not valid JSON: ${error.message}`);
   }
 }
 
-function buildNumericalTruth({ preparation, drift, requirementConsistency }) {
+function summarizeGit(git) {
+  if (!git) return null;
+  return {
+    current_branch: git.current_branch ?? null,
+    head_sha: git.head_sha ?? null,
+    base_ref: git.base_ref ?? null,
+    changed_files_count: git.changed_files?.length ?? 0,
+    changed_files: (git.changed_files ?? []).slice(0, 100).map((entry) => ({ status: entry.status, path: entry.path }))
+  };
+}
+
+function summarizeTraceability(traceability) {
+  if (!traceability) return null;
+  return {
+    acceptance_criteria: (traceability.acceptance_criteria ?? []).map((clause) => ({
+      id: clause.id,
+      status: clause.status,
+      text: clause.text
+    })),
+    summary: traceability.summary ?? null
+  };
+}
+
+function summarizeVerification(verification) {
+  if (!verification) return { recorded: false, commands: [] };
+  return {
+    recorded: verification.recorded ?? false,
+    updated_at: verification.updated_at ?? null,
+    commands: (verification.commands ?? []).map((command) => ({
+      kind: command.kind,
+      status: command.status,
+      command: command.command ?? null
+    }))
+  };
+}
+
+function summarizeReview(review) {
+  if (!review) return { recorded: false, status: null };
+  return {
+    recorded: review.recorded ?? false,
+    status: review.status ?? null,
+    summary: review.summary ?? null
+  };
+}
+
+function buildNumericalTruth({ preparation, drift }) {
   const driftItems = drift?.items ?? [];
   return {
     changed_files_count: preparation?.git?.changed_files?.length ?? 0,
     drift_total_count: driftItems.length,
     drift_high_count: driftItems.filter((item) => item.severity === 'high').length,
-    requirement_invariant_count: requirementConsistency?.summary?.invariant_count ?? 0,
-    requirement_contradiction_count: requirementConsistency?.summary?.contradiction_count ?? 0,
+    // The requirement-consistency gate is removed from the minimal core
+    // (docs/management/REBUILD.md); these are structurally 0 rather than
+    // silently omitted, since narrative citations against them still exist
+    // in the schema.
+    requirement_invariant_count: 0,
+    requirement_contradiction_count: 0,
     acceptance_criteria_count:
-      preparation?.pr_context?.acceptance_scope?.acceptance_criteria?.length
-      ?? preparation?.pr_context?.story_source?.acceptance_criteria?.length
+      preparation?.story_source?.acceptance_criteria_count
+      ?? preparation?.traceability?.summary?.acceptance_criteria_count
       ?? 0
   };
 }
@@ -179,7 +174,8 @@ function buildNumericalTruth({ preparation, drift, requirementConsistency }) {
 function buildInputsDigest(fingerprint) {
   return {
     story_sha: sha256(fingerprint.story),
-    pr_context_sha: sha256(fingerprint.pr_context),
+    git_sha: sha256(fingerprint.git),
+    traceability_sha: sha256(fingerprint.traceability),
     drift_sha: sha256(fingerprint.drift),
     spec_sha: sha256(fingerprint.inferred_spec)
   };
@@ -195,5 +191,7 @@ async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
-// re-export utility for tests
-export { getWorkspaceDir };
+function toRelative(root, absolutePath) {
+  const relative = path.relative(root, absolutePath);
+  return relative.startsWith('..') ? absolutePath : relative;
+}

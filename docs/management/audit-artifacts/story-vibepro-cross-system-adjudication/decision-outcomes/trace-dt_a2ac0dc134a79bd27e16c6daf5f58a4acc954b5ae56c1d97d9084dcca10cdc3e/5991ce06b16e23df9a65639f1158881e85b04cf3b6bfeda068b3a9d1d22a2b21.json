@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cross-system-adjudication",
+  "ledger_path": ".vibepro/pr/story-vibepro-cross-system-adjudication/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e"
+  },
+  "parent_revision_fingerprint": "55d12a274ac8334aaf079ffb872d5564b1e239421db5f6cd90ce799613620f33",
+  "revision_fingerprint": "5991ce06b16e23df9a65639f1158881e85b04cf3b6bfeda068b3a9d1d22a2b21",
+  "trace": {
+    "decision_trace_id": "dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e",
+    "collision_group": null,
+    "trace_source_ref": "tsr_2ea6f8ba7f76732fdbefc2d0a167f5e08c9623414a8db05d1c807a93d2a5016c",
+    "normalized_subject_key": "gate:vibepro_artifact_policy",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-cross-system-adjudication/decision-records.json",
+      "native_id": "decision-1785694502043-ca600cd7",
+      "digest": "374965de0062c91b54ed2ce1a966a57f7ad59244093ad72baf50f2c90384c1c5",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "0e867b366dab194896633b5cb0ab4a5ddaad8899",
+    "parent_revision_fingerprint": "55d12a274ac8334aaf079ffb872d5564b1e239421db5f6cd90ce799613620f33",
+    "revision_fingerprint": "5991ce06b16e23df9a65639f1158881e85b04cf3b6bfeda068b3a9d1d22a2b21",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e"
+        },
+        "parent_revision_fingerprint": "2e550aa46b2c4f97a769fb9de576144c9a9469a2872b05355cead1b6717b9dcc"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 413,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/413",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
+        "status": "merged_externally",
+        "merged_at": "2026-08-03T02:20:37Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-cross-system-adjudication/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

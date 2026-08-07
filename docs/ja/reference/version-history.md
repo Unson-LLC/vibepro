@@ -1,24 +1,22 @@
 # バージョンとリリースチャネル
 
-package versionの正本は `package.json` で、installed binaryは `vibepro version` で表示します。
+source versionの正本は `package.json` で、installed binaryは `vibepro version` で表示します。
 
-| Channel | 現在値 | Authority |
+| Channel | このrelease後の期待値 | 正本 |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.1` | release workflow完了後の公開registry state |
-| npm `beta` | `0.2.0-beta.1` | release workflow完了後の公開registry state |
-| Repository `main` | `0.2.0-beta.1` のrelease source | Git commitと `CHANGELOG.md` |
-| Manual build | footer / metaのsource commit | deployed build artifact |
+| npm `latest` | `0.2.0-beta.3` | liveなnpm registry dist-tag |
+| npm `beta` | `0.2.0-beta.3` | liveなnpm registry dist-tag |
+| Repository `main` | `0.2.0-beta.3` release source | Git commitと `package.json` |
+| Manual build | footer/metaのsource commit | deployed VitePress artifact |
 
-## Unreleasedのmanual-visible capability
+## 0.2.0-beta.3
 
-- 独立review lifecycleとadjudicationを含むrisk-adaptive Gate DAG
-- PR作成から監査済みmergeまでのmanaged execution
-- CI evidence import、existing PR refresh、canonical audit replay、cost / ROI report
-- Journey、UI/UX intake / map、VibePro-native Design System、visual / responsive / a11y evidence、design modernization
-- bounded summary / readiness viewと明示的なresponsibility / authority contract
+再構築した最小コアを公開し、npm README、VitePressの入口、generated CLI reference、CIをその契約に揃えます。これはbeta段階のbreaking changeで、再構築時に削除したcommandや自動control-plane機構に互換aliasはありません。
 
-公開betaは `npm install -g vibepro@beta` で明示的に導入できます。installed helpとこのmanualが異なる場合は、実行中binaryのcontractが優先です。境界は[リリースと監査](/ja/guide/release-and-audit)とrepositoryの `CHANGELOG.md` を参照してください。
+## 0.2.0-beta.2
 
-何が変わったかは[リリースノート](/ja/releases/)で、正式公開版とPR由来の開発マイルストーンを分けて確認できます。
+直前の公開betaは、より広いevidence gateとmanaged workflowを含みます。移行時間が必要な場合だけpinしてください。これは現在の最小コア方針を表しません。
 
-`0.1.0-alpha.0` ではOSS公開用package形、phase checkpoint、Story / Spec review flow、public discovery documentationを追加しました。
+manualとinstalled versionが異なる場合は、installed binaryのhelp出力を優先してください。
+
+公開と開発の時系列は[リリースノート](/ja/releases/)で確認できます。

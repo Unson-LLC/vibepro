@@ -13,18 +13,21 @@ test('public manual states the current positioning and human authority boundary'
     readFile(path.join(root, 'docs/ja/guide/what-is-vibepro.md'), 'utf8')
   ]);
 
-  assert.match(english, /Make the product journey visible/);
-  assert.match(english, /Humans hold the entry and exit decisions/);
-  assert.match(japanese, /プロダクトジャーニーを可視化する/);
-  assert.match(japanese, /人間が入口と出口を握ります/);
-  assert.match(englishOverview, /repository-local control plane/);
-  assert.match(japaneseOverview, /リポジトリローカル制御基盤/);
+  assert.match(english, /Keep AI coding context traceable/);
+  assert.match(english, /Human reviewers and repository policy remain responsible/);
+  assert.match(japanese, /AIコーディングの文脈を追跡可能にする/);
+  assert.match(japanese, /人間のreviewerと対象リポジトリのpolicy/);
+  assert.match(englishOverview, /repository-local evidence workspace/);
+  assert.match(japaneseOverview, /リポジトリローカル証跡ワークスペース/);
   for (const overview of [englishOverview, japaneseOverview]) {
     assert.match(overview, /Story/);
-    assert.match(overview, /Architecture/);
     assert.match(overview, /Spec/);
-    assert.match(overview, /adjudicat/i);
-    assert.match(overview, /execute merge/);
+    assert.match(overview, /verification|検証/i);
+    assert.match(overview, /review/i);
+    assert.match(overview, /PR/);
+    assert.match(overview, /no Gate DAG|Gate DAG.*ありません/i);
+    assert.match(overview, /approve a PR|PRを承認/i);
+    assert.match(overview, /merge/i);
   }
 });
 

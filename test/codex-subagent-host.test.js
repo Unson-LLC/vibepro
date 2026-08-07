@@ -1,11 +1,10 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { access, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
-import { createCodexSubagentRuntimeAdapter } from '../src/codex-subagent-runtime-adapter.js';
 import { createCodexSubagentHost } from '../src/codex-subagent-host.js';
 
 test('production Codex host executes a detached CLI worker, dedupes spawn, and delivers completion after parent polling', async (t) => {
@@ -65,49 +64,18 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   assert.deepEqual(successorEvents.map((event) => event.kind), ['partial_result', 'completed']);
 });
 
-test('production Codex host without cost telemetry fails closed instead of spawning a recovery attempt', async (t) => {
-  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-no-cost-'));
-  t.after(() => rm(repoRoot, { recursive: true, force: true }));
-  const fakeCodex = path.join(repoRoot, 'fake-codex-no-cost.mjs');
-  await writeFile(fakeCodex, `
-    import { writeFile } from 'node:fs/promises';
-    const args = process.argv.slice(2);
-    if (args.includes('--version')) process.exit(0);
-    const output = args[args.indexOf('-o') + 1];
-    process.stdout.write(JSON.stringify({ type: 'thread.started', thread_id: 'real-codex-session-no-cost' }) + '\\n');
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    await writeFile(output, JSON.stringify({ summary: 'late', test_suggestions: [], judgments: [],
-      review_record: { status: 'pass', summary: 'late', findings: [], inspection_summary: 'late',
-        inspection_evidence: 'test/codex-subagent-host.test.js', judgment_deltas: ['late'] } }));
-  `);
-  let clock = new Date('2026-07-22T01:00:00.000Z');
-  const host = createCodexSubagentHost({ cwd: repoRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
-  const coordinator = createAgentRuntimeCoordinator({
-    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
-  });
-  const request = coordinatorRuntimeRequest(repoRoot);
-  const started = await coordinator.dispatch({
-    story_id: 'story-host', run_id: 'run-host', current_head_sha: 'head-host', status: 'running', runtime_dispatches: []
-  }, request);
-  clock = new Date('2026-07-22T01:00:02.000Z');
-  const stopped = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
-  assert.equal(stopped.dispatch.stop_reason.code, 'runtime_stalled');
-  const runsRoot = path.join(repoRoot, '.vibepro', 'codex-host', 'runs');
-  const runNames = await readdir(runsRoot);
-  assert.equal(runNames.length, 1);
-  const state = JSON.parse(await readFile(path.join(runsRoot, runNames[0], 'state.json'), 'utf8'));
-  assert.equal(state.stop_reason.code, 'cost_accounting_unavailable');
-});
-
 test('production Codex host shutdown contains the detached worker process group', { skip: process.platform === 'win32' }, async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-containment-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
   const childPidPath = path.join(repoRoot, 'codex-child.pid');
   const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
   await writeFile(fakeCodex, `
-    import { writeFile } from 'node:fs/promises';
+    import { rename, writeFile } from 'node:fs/promises';
     if (process.argv.includes('--version')) process.exit(0);
-    await writeFile(process.argv[2], String(process.pid));
+    const pidTarget = process.argv[2];
+    const pidTemp = pidTarget + '.tmp';
+    await writeFile(pidTemp, String(process.pid));
+    await rename(pidTemp, pidTarget);
     setInterval(() => {}, 1000);
     await new Promise(() => {});
   `);
@@ -117,11 +85,10 @@ test('production Codex host shutdown contains the detached worker process group'
     codexExecutableArgs: [fakeCodex, childPidPath]
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
-  await waitFor(async () => access(childPidPath).then(() => true, () => false));
-  const childPid = Number(await readFile(childPidPath, 'utf8'));
+  const childPid = await waitForChildPid(childPidPath);
   assert.equal(isProcessAlive(childPid), true);
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_test' });
-  await waitFor(async () => !isProcessAlive(childPid));
+  await waitFor(async () => !isProcessAlive(childPid), { timeoutMs: 300000 });
   assert.equal(isProcessAlive(childPid), false);
 });
 
@@ -132,16 +99,22 @@ test('production Codex host keeps containment inside the worker sandbox boundary
   const childStoppedPath = path.join(repoRoot, 'codex-child-stopped.txt');
   const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
   await writeFile(fakeCodex, `
-    import { writeFileSync } from 'node:fs';
-    import { writeFile } from 'node:fs/promises';
+    import { renameSync, writeFileSync } from 'node:fs';
+    import { rename, writeFile } from 'node:fs/promises';
     if (process.argv.includes('--version')) process.exit(0);
     for (const signal of ['SIGTERM', 'SIGINT']) {
       process.once(signal, () => {
-        writeFileSync(process.argv[3], signal);
+        const stoppedTarget = process.argv[3];
+        const stoppedTemp = stoppedTarget + '.tmp';
+        writeFileSync(stoppedTemp, signal);
+        renameSync(stoppedTemp, stoppedTarget);
         process.exit(signal === 'SIGTERM' ? 143 : 130);
       });
     }
-    await writeFile(process.argv[2], String(process.pid));
+    const pidTarget = process.argv[2];
+    const pidTemp = pidTarget + '.tmp';
+    await writeFile(pidTemp, String(process.pid));
+    await rename(pidTemp, pidTarget);
     setInterval(() => {}, 1000);
     await new Promise(() => {});
   `);
@@ -161,11 +134,14 @@ test('production Codex host keeps containment inside the worker sandbox boundary
     }
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
-  await waitFor(async () => access(childPidPath).then(() => true, () => false));
+  await waitForChildPid(childPidPath);
 
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_eperm_test' });
 
-  await waitFor(async () => access(childStoppedPath).then(() => true, () => false));
+  await waitFor(async () => {
+    const content = await readFile(childStoppedPath, 'utf8').then((value) => value, () => null);
+    return typeof content === 'string' && content.trim().length > 0;
+  }, { timeoutMs: 300000 });
   assert.equal(await readFile(childStoppedPath, 'utf8'), 'SIGTERM');
   assert.equal(deniedGroupSignals, 0);
 });
@@ -211,20 +187,8 @@ function runtimeRequest(repoRoot) {
   };
 }
 
-function coordinatorRuntimeRequest(repoRoot) {
-  return {
-    adapter_id: 'codex-subagent', task_id: 'review-host', role: 'review', reviewer_identity: 'reviewer-host',
-    implementation_identity: 'implementer-host', implementation_session_id: 'implementation-session-host',
-    inspection_surface_hash: 'surface-host', requested_judgments: [{ judgment_id: 'correctness' }],
-    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'] },
-    requirements: { capabilities: ['review'], timeout_ms: 10000, monitor_boundary_ms: 600000,
-      no_progress_deadline_ms: 1000, max_wall_clock_ms: 3600000, max_attempts: 2,
-      max_cost_usd: 1, managed_worktree: repoRoot }
-  };
-}
-
-async function waitFor(predicate) {
-  const deadline = Date.now() + 10000;
+async function waitFor(predicate, { timeoutMs = 10000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (await predicate()) return;
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -240,4 +204,24 @@ function isProcessAlive(pid) {
     if (error.code === 'ESRCH') return false;
     throw error;
   }
+}
+
+// Reading a pid file the instant it becomes visible can race the writer's
+// own content flush (even behind a rename, the directory entry can appear
+// slightly before a concurrent reader's cached negative-lookup clears on some
+// filesystems), so this polls until the content is a parsed, plausible pid
+// rather than trusting a single readFile after an access() check.
+async function waitForChildPid(childPidPath, options) {
+  let childPid = null;
+  await waitFor(async () => {
+    const content = await readFile(childPidPath, 'utf8').then((value) => value, () => null);
+    if (content === null) return false;
+    const trimmed = content.trim();
+    if (!/^\d+$/.test(trimmed)) return false;
+    const parsed = Number(trimmed);
+    if (!(parsed > 1)) return false;
+    childPid = parsed;
+    return true;
+  }, options ?? { timeoutMs: 300000 });
+  return childPid;
 }

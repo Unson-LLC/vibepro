@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "ledger_path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_f794072f256be26d46597332b6d7786eed32fdec581e497ceb8a5dc8fa3daadf"
+  },
+  "parent_revision_fingerprint": "0babe1b0f298c52d977f3aa6e308cae26a3fcac231177c665b106994f70e38a6",
+  "revision_fingerprint": "f116232ed06eb4bccfd77c8aafee2b1847bebdf02b13ad6a7ab511d55fde3089",
+  "trace": {
+    "decision_trace_id": "dt_f794072f256be26d46597332b6d7786eed32fdec581e497ceb8a5dc8fa3daadf",
+    "collision_group": null,
+    "trace_source_ref": "tsr_b670e4445b66352d3b521d59df181360b29e888a4b169d7995d9195c9c69d667",
+    "normalized_subject_key": "gate:split_resolution",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/decision-records.json",
+      "native_id": "decision-1785420191730-2b7b0a1b",
+      "digest": "1741824ee905bd05f6763c97ec1ddd508d613e5e6870a1a39f619e0a5e9a32f1",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "parent_revision_fingerprint": "0babe1b0f298c52d977f3aa6e308cae26a3fcac231177c665b106994f70e38a6",
+    "revision_fingerprint": "f116232ed06eb4bccfd77c8aafee2b1847bebdf02b13ad6a7ab511d55fde3089",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_f794072f256be26d46597332b6d7786eed32fdec581e497ceb8a5dc8fa3daadf"
+        },
+        "parent_revision_fingerprint": "94e271756e729ca1edd0229dbdb06d7f3eea0174fe0fd0b01ac2ebbca8935582"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 404,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/404",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "a6ab8b0e0891d89b928e34c072684f2beb74c5b9",
+        "status": "merged",
+        "merged_at": "2026-07-30T19:56:24Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

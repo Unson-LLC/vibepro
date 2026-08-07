@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Differential re-review of enforcement fix 417c3124: two pattern-matching insertions wire the gate into blocking_gates/pr_create_allowed; no other gate's critical rule or waiver_required path touched; adjacent suites 34/34, unit 9/9, e2e 4/4.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed 94186fc5..417c3124; read collectUnresolvedRequiredGates and isCriticalUnresolvedGate insertions verifying every pre-existing line byte-identical; grepped waiver_required/pr_create_allowed call sites confirming untouched; read UIJ-SCENARIO-008/009 and e2e ac:1 enforcement-surface assertions; read coordinator unit/e2e rerun logs.",
+    "evidence": null,
+    "inputs": [
+      "src/pr-manager.js",
+      "test/uiux-intake-judgment-gate.test.js",
+      "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Blast-radius reassessment after the gate became genuinely blocking: no new collateral risk; fix matches sibling gate patterns (split_resolution/deploy_verification shapes)."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "expected_root": null,
+    "expected_head_sha": "417c312402865f983c8ae133a9a312a688d3440e",
+    "current_head_sha": "417c312402865f983c8ae133a9a312a688d3440e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "417c312402865f983c8ae133a9a312a688d3440e",
+      "current_head_sha": "417c312402865f983c8ae133a9a312a688d3440e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T18:07:54.173Z",
+  "git_context": {
+    "head_sha": "417c312402865f983c8ae133a9a312a688d3440e",
+    "current_branch": "claude/sweet-chatelet-c1b354",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T18:07:54.133Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "417c312402865f983c8ae133a9a312a688d3440e",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "94ac5447114a4ad2a6889bb8ec3b04b767afd7ecf512ed5dc050ca9323899f76",
+        "size": 733807
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js",
+        "sha256": "e986901d85e7f64a8ee5f5803204ada1f095483ffa5a1a038217017c399b4d3f",
+        "size": 6221
+      },
+      {
+        "path": "test/uiux-intake-judgment-gate.test.js",
+        "sha256": "ae98701515a2142b4d241bddb8d7ac4ffa0305669017e5f45212305e550bcba9",
+        "size": 8371
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b75d9f1c64bd1d421d27c54a7a84d823ef0f9a241cc42e1b16682cfe21550177"
+  },
+  "source_fingerprint": "d67df43b65be9005ff44d9e25582f3c2368ba583c3027e553108466dd97eb5ab",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a4f9c1c0687ca018d",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a4f9c1c0687ca018d",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a4f9c1c0687ca018d",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

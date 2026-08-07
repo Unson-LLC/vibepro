@@ -5,12 +5,11 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 
-const DECISION_TYPES = new Set(['needs_review', 'noise', 'waiver', 'secret_exposure']);
+const DECISION_TYPES = new Set(['needs_review', 'noise', 'waiver', 'secret_exposure', 'intake_not_applicable']);
 const DECISION_STATUSES = new Set(['open', 'accepted', 'rejected', 'superseded']);
 const SECRET_ACTIONS = new Set(['redacted', 'rotated', 'revoked', 'false_positive']);
 const SECRET_PATTERNS = [
@@ -34,6 +33,9 @@ export async function recordDecision(repoRoot, options = {}) {
   }
   if (type === 'noise' && !options.reason) {
     throw new Error('decision record --type noise requires --reason <text>');
+  }
+  if (type === 'intake_not_applicable' && !options.reason) {
+    throw new Error('decision record --type intake_not_applicable requires --reason <text> stating why UI/UX intake does not apply to this story');
   }
   if (type === 'secret_exposure') {
     if (!SECRET_ACTIONS.has(options.secretAction)) {
@@ -98,10 +100,6 @@ export async function recordDecision(repoRoot, options = {}) {
     ]
   };
   await writeJsonAtomic(evidencePath, next);
-  await refreshActiveRunContextCapsule(root, {
-    storyId,
-    reason: 'decision_recorded'
-  });
   return {
     decision,
     records: next,
@@ -340,3 +338,4 @@ async function gitOptional(repoRoot, args) {
     return '';
   }
 }
+

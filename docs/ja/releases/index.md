@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | PRマージ後のcontinuous release |
 | 2026-07-16 | [`0.2.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.0) | npm `latest` / `beta` | release workflow完了後の現在の公開beta |
 | 2026-06-07 | [`0.1.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.1.0-beta.0) | npm | 以前の公開beta |
@@ -213,3 +214,127 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:395:start -->
 - [PR #395](https://github.com/Unson-LLC/vibepro/pull/395) — [2026-07](/ja/releases/2026-07): story-vibepro-runner-direct-evidence - 先行Storyで『441/441で再実行した』という真の主張ですら、artifactが前回と同一内容のためgit上で検証不能になり3ラウンド連続で指摘された。head_shaを手で足す対処をしたが、根本は実行した者と記録する者が同一であること
 <!-- vibepro-release-index-pr:395:end -->
+
+<!-- vibepro-release-index-pr:396:start -->
+- [PR #396](https://github.com/Unson-LLC/vibepro/pull/396) — [2026-07](/ja/releases/2026-07): story-vibepro-release-0-2-0-beta-2 - runner-direct evidence (PR #395) を含む #356〜#395 の約20PR分が npm 未公開のまま main に滞留している
+<!-- vibepro-release-index-pr:396:end -->
+
+<!-- vibepro-release-index-pr:397:start -->
+- [PR #397](https://github.com/Unson-LLC/vibepro/pull/397) — [2026-07](/ja/releases/2026-07): story-vibepro-review-surface-violation-ledger - 先行 Story の round 6 で、実装エージェントがレビュー実行中にツリーを変更した。lifecycle は start 時の head_sha しか記録しないため機械検出されず、レビュアーが git status を偶然見て発見した。違反は stale と同じ failed 表示になり、レビュー再実行で痕跡ごと消えた
+<!-- vibepro-release-index-pr:397:end -->
+
+<!-- vibepro-release-index-pr:398:start -->
+- [PR #398](https://github.com/Unson-LLC/vibepro/pull/398) — [2026-07](/ja/releases/2026-07): story-vibepro-merge-binding-stale-stop-reason - Clear stale decision-outcome-binding failure flags when rebinding succeeds
+<!-- vibepro-release-index-pr:398:end -->
+
+<!-- vibepro-release-index-pr:399:start -->
+- [PR #399](https://github.com/Unson-LLC/vibepro/pull/399) — [2026-07](/ja/releases/2026-07): fix: keep session-cost available on corrupt process metadata
+<!-- vibepro-release-index-pr:399:end -->
+
+<!-- vibepro-release-index-pr:403:start -->
+- [PR #403](https://github.com/Unson-LLC/vibepro/pull/403) — [2026-07](/ja/releases/2026-07): story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
+<!-- vibepro-release-index-pr:403:end -->
+
+<!-- vibepro-release-index-pr:404:start -->
+- [PR #404](https://github.com/Unson-LLC/vibepro/pull/404) — [2026-07](/ja/releases/2026-07): story-vibepro-task-atomic-repo-control-contract - Taskが同一HEADを要求するworkflowとruntimeを現行split policyが強制分離する矛盾を解消する
+<!-- vibepro-release-index-pr:404:end -->
+
+<!-- vibepro-release-index-pr:405:start -->
+- [PR #405](https://github.com/Unson-LLC/vibepro/pull/405) — [2026-07](/ja/releases/2026-07): fix: recover terminal review replacement lifecycle
+<!-- vibepro-release-index-pr:405:end -->
+
+<!-- vibepro-release-index-pr:401:start -->
+- [PR #401](https://github.com/Unson-LLC/vibepro/pull/401) — [2026-08](/ja/releases/2026-08): story-vibepro-verify-command-test-path-existence-guard - verify record/runのコマンドが名指しするtest fileパスの実在を検証する
+<!-- vibepro-release-index-pr:401:end -->
+
+<!-- vibepro-release-index-pr:406:start -->
+- [PR #406](https://github.com/Unson-LLC/vibepro/pull/406) — [2026-08](/ja/releases/2026-08): story-vibepro-budget-grant-tracked-decision-doc - budget grant を diff でレビュー可能にする: decision record --source budget:delivery_efficiency:* が tracked decision document を必ず書く
+<!-- vibepro-release-index-pr:406:end -->
+
+<!-- vibepro-release-index-pr:407:start -->
+- [PR #407](https://github.com/Unson-LLC/vibepro/pull/407) — [2026-08](/ja/releases/2026-08): story-vibepro-vacuous-e2e-test-elimination - test/e2e配下に、テスト内で定義した文字列リテラルを同じ文字列由来の正規表現でassert.matchするだけの、構造上失敗しないテストが19ファイル存在する
+<!-- vibepro-release-index-pr:407:end -->
+
+<!-- vibepro-release-index-pr:409:start -->
+- [PR #409](https://github.com/Unson-LLC/vibepro/pull/409) — [2026-08](/ja/releases/2026-08): story-vibepro-profiler-file-walk-stack-overflow - architecture-profiler のファイル走査を反復処理化し、大規模treeでの "Maximum call stack size exceeded" を解消する
+<!-- vibepro-release-index-pr:409:end -->
+
+<!-- vibepro-release-index-pr:412:start -->
+- [PR #412](https://github.com/Unson-LLC/vibepro/pull/412) — [2026-08](/ja/releases/2026-08): story-vibepro-unit-suite-concurrency-default - unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する
+<!-- vibepro-release-index-pr:412:end -->
+
+<!-- vibepro-release-index-pr:415:start -->
+- [PR #415](https://github.com/Unson-LLC/vibepro/pull/415) — [2026-08](/ja/releases/2026-08): story-vibepro-codex-host-containment-test-load-tolerance - test/codex-subagent-host.test.js の containment テストが load average 20-35 の full suite 実行時のみ condition timeout でフレークする
+<!-- vibepro-release-index-pr:415:end -->
+
+<!-- vibepro-release-index-pr:416:start -->
+- [PR #416](https://github.com/Unson-LLC/vibepro/pull/416) — [2026-08](/ja/releases/2026-08): story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
+<!-- vibepro-release-index-pr:416:end -->
+
+<!-- vibepro-release-index-pr:413:start -->
+- [PR #413](https://github.com/Unson-LLC/vibepro/pull/413) — [2026-08](/ja/releases/2026-08): story-vibepro-cross-system-adjudication - Cross-system adjudication requires a different model family than the implementer
+<!-- vibepro-release-index-pr:413:end -->
+
+<!-- vibepro-release-index-pr:417:start -->
+- [PR #417](https://github.com/Unson-LLC/vibepro/pull/417) — [2026-08](/ja/releases/2026-08): story-vibepro-test-tmpdir-fixture-cleanup - テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構
+<!-- vibepro-release-index-pr:417:end -->
+
+<!-- vibepro-release-index-pr:418:start -->
+- [PR #418](https://github.com/Unson-LLC/vibepro/pull/418) — [2026-08](/ja/releases/2026-08): story-vibepro-verification-checkpoint-uiux-intake-gate - verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する
+<!-- vibepro-release-index-pr:418:end -->
+
+<!-- vibepro-release-index-pr:419:start -->
+- [PR #419](https://github.com/Unson-LLC/vibepro/pull/419) — [2026-08](/ja/releases/2026-08): story-vibepro-pr-human-summary-dead-chain-removal - 死んだ人間向けPRサマリーレンダラーチェーンを削除する
+<!-- vibepro-release-index-pr:419:end -->
+
+<!-- vibepro-release-index-pr:420:start -->
+- [PR #420](https://github.com/Unson-LLC/vibepro/pull/420) — [2026-08](/ja/releases/2026-08): story-vibepro-strict-head-binding-origin-guard - strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する
+<!-- vibepro-release-index-pr:420:end -->
+
+<!-- vibepro-release-index-pr:414:start -->
+- [PR #414](https://github.com/Unson-LLC/vibepro/pull/414) — [2026-08](/ja/releases/2026-08): story-vibepro-uiux-intake-judgment-gate - uiux intakeのSkill発火 + 判断記録gate
+<!-- vibepro-release-index-pr:414:end -->
+
+<!-- vibepro-release-index-pr:408:start -->
+- [PR #408](https://github.com/Unson-LLC/vibepro/pull/408) — [2026-08](/ja/releases/2026-08): story-vibepro-progress-heartbeat-policy-kernel - src配下37箇所の長時間実行バウンドのうち理想形を満たすのはevaluateProgressBounds 1箇所のみ。バウンド皆無の子プロセスと進捗シグナル破棄サイトを正本kernelへ寄せたい
+<!-- vibepro-release-index-pr:408:end -->
+
+<!-- vibepro-release-index-pr:421:start -->
+- [PR #421](https://github.com/Unson-LLC/vibepro/pull/421) — [2026-08](/ja/releases/2026-08): story-vibepro-conformance-delta-ledger - conformance delta ledger — base/head差分でアーキテクチャ逸脱を再現可能に観測する
+<!-- vibepro-release-index-pr:421:end -->
+
+<!-- vibepro-release-index-pr:422:start -->
+- [PR #422](https://github.com/Unson-LLC/vibepro/pull/422) — [2026-08](/ja/releases/2026-08): fix: iterative pr-manager walkFiles + exclude .claude from repo scanners
+<!-- vibepro-release-index-pr:422:end -->
+
+<!-- vibepro-release-index-pr:424:start -->
+- [PR #424](https://github.com/Unson-LLC/vibepro/pull/424) — [2026-08](/ja/releases/2026-08): story-vibepro-target-model-governance-rebaseline - target model governance rebaseline — 誰がモデルを変えてよいかを三分法で確定し、再baseline案と裁定カードを機械生成する
+<!-- vibepro-release-index-pr:424:end -->
+
+<!-- vibepro-release-index-pr:427:start -->
+- [PR #427](https://github.com/Unson-LLC/vibepro/pull/427) — [2026-08](/ja/releases/2026-08): story-vibepro-target-model-projection-v2 - target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる
+<!-- vibepro-release-index-pr:427:end -->
+
+<!-- vibepro-release-index-pr:428:start -->
+- [PR #428](https://github.com/Unson-LLC/vibepro/pull/428) — [2026-08](/ja/releases/2026-08): story-vibepro-dependency-cycle-scc-reduction - dependency_cycle の SCC 縮約 — 69,490件の単純閉路列挙を「1つのSCC + 20の相互依存ペア」へ畳み、ratchet gate を載せられる粒度にする
+<!-- vibepro-release-index-pr:428:end -->
+
+<!-- vibepro-release-index-pr:429:start -->
+- [PR #429](https://github.com/Unson-LLC/vibepro/pull/429) — [2026-08](/ja/releases/2026-08): refactor: 縮小リファクタ Slice 1 — 診断/UIUX/architecture/performanceスキャナ群を削除
+<!-- vibepro-release-index-pr:429:end -->
+
+<!-- vibepro-release-index-pr:430:start -->
+- [PR #430](https://github.com/Unson-LLC/vibepro/pull/430) — [2026-08](/ja/releases/2026-08): refactor: 縮小リファクタ Slice 2 — 実行エンジン本体（execute/gate/adjudicate/outcome/checkpoint）を削除
+<!-- vibepro-release-index-pr:430:end -->
+
+<!-- vibepro-release-index-pr:431:start -->
+- [PR #431](https://github.com/Unson-LLC/vibepro/pull/431) — [2026-08](/ja/releases/2026-08): refactor: 縮小リファクタ Slice 3 — delivery-efficiency予算全系を削除
+<!-- vibepro-release-index-pr:431:end -->
+
+<!-- vibepro-release-index-pr:432:start -->
+- [PR #432](https://github.com/Unson-LLC/vibepro/pull/432) — [2026-08](/ja/releases/2026-08): refactor: 縮小リファクタ Slice 4 — run-context-capsuleスナップショット機構を削除（計画の実測更新込み）
+<!-- vibepro-release-index-pr:432:end -->
+
+<!-- vibepro-release-index-pr:435:start -->
+- [PR #435](https://github.com/Unson-LLC/vibepro/pull/435) — [2026-08](/ja/releases/2026-08): feat: v-nextフォローアップ — report fingerprint再設計とstory_source/AC対応マップのpr prepare再統合
+<!-- vibepro-release-index-pr:435:end -->

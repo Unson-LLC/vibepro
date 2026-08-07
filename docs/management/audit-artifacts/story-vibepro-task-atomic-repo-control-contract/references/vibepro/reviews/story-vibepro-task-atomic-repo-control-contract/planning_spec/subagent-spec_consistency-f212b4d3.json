@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "summary": "HEAD f212b4d3da8d3509ca0aa46b589518a03c5cbaedで、Story、Architecture、Accepted Spec、実装、pre-fixで失敗する回帰テストは整合している。Task-bound repo-control例外はexact path coverage、完全typed schema、dependency connectivityに限定され、missing/legacy/malformed/uncovered/disconnected経路はfail-closed、Story atomic metadata・review ownership・verification・Gate authorityは迂回されない。",
+  "findings": [],
+  "inspection_summary": "cleanなcurrent HEADを固定し、Story TAR-S-1〜S-6、ArchitectureのDecision/Evidence/Security/Compatibility、文書Spec、Accepted spec.jsonのC-001/C-002/INV-001〜INV-004、src/task-bound-repo-control.js、src/pr-manager.jsのTask load・scope・artifact summary経路、unit/CLI/E2E fixture、split-plan、verification evidenceを照合した。現行fingerprintのStory/Code/Test/Architecture digestはAccepted Specと全一致し、driftは全4カテゴリ0。regression_guardではfocused TAR 10/10とartifact-budget 10/10を現行HEADで再実行し、既存current-HEAD証跡のunit 313/313、integration 10/10、E2E、typecheck、buildも確認した。path_surface_coverageではpositive、no-Task、legacy untyped、malformed JSON/schema、unknown dependency、uncovered extra workflow、disconnected group、config-only、strict target、atomic authority不足、scope signal、split plan、Gate artifact、routed Gate summaryを検査した。",
+  "inspection_evidence": "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md; docs/architecture/story-vibepro-task-atomic-repo-control-contract.md; docs/specs/story-vibepro-task-atomic-repo-control-contract.md; .vibepro/spec/story-vibepro-task-atomic-repo-control-contract/spec.json; .vibepro/spec/story-vibepro-task-atomic-repo-control-contract/drift.json; .vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json; .vibepro/pr/story-vibepro-task-atomic-repo-control-contract/split-plan.json; src/task-bound-repo-control.js:1-137; src/pr-manager.js:640-676,828-839,15725-15868; test/task-bound-repo-control.test.js; test/vibepro-cli.test.js:20587-20880; test/pr-artifact-size-budget.test.js:215-255; test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts:9-51; test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts:13-90; focused TAR transcript 10/10 pass; focused artifact-budget transcript 10/10 pass",
+  "inspection_inputs": [
+    "git rev-parse HEAD => f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "git status --short --branch => clean",
+    "planning_spec/review-request-spec_consistency.md mandatory regression_guard and path_surface_coverage lenses",
+    "vibepro spec fingerprint . --id story-vibepro-task-atomic-repo-control-contract --include-instructions",
+    "current fingerprint inputs_digest == Accepted spec.json inputs_digest",
+    "drift.json => clean; spec_code_drift=0, spec_test_drift=0, code_test_drift=0, spec_pr_drift=0",
+    "node --test --test-name-pattern TAR- test/task-bound-repo-control.test.js test/vibepro-cli.test.js test/integration/verification-runner-evidence-consumers.test.js => 10/10 pass",
+    "node --test test/pr-artifact-size-budget.test.js => 10/10 pass",
+    "verification-evidence.json => current HEAD, dirty=false, unit 313/313, integration 10/10, E2E pass, typecheck pass, build pass",
+    "split-plan.json => five declared lanes; missing_review_facets=[]; missing_dependency_facets=[]",
+    "pre-fix fixtures: malformed/incomplete Task graph, glob/basename path, extra workflow, disconnected group, legacy untyped group, strict-target extra file, config-only exception, no-Task repo-control, missing atomic authority, stale gate-dag.summary.json",
+    "source outputs: mixed_repo_control_surface reason code/proof, split-plan atomic_scope rejection and next actions, configured Task state path and repair/rerun error, canonical Gate DAG versus stale PR-local summary"
+  ],
+  "judgment_delta": [
+    "初期懸念: current HEADの追加修正がTARのAccepted Spec外のbehaviorを持ち込み、planning contractまたは別artifact surfaceを未検証にする可能性。最終判断: fingerprint digestはAccepted Specと完全一致しdriftは0。追加修正はcanonical Gate DAGが外部routeされた際のstale PR-local summaryを削除する既存artifact-budget invariantの補修で、TARのTask eligibility条件は変更せず、INV-003のGate authority非迂回を支える。具体的fixtureはpre-fix実装ならstale summaryが残って失敗する。",
+    "初期懸念: happy pathのみでatomic例外を許可し、legacy/fallback/failure pathsが退行する可能性。最終判断: focused TAR 10/10がpositive proofに加えmalformed schema、disconnected、legacy、strict target、config-only、no-Taskをpublic CLIまたはpure evaluatorで実行し、Accepted Specのfail-closedと互換性契約を満たす。",
+    "初期懸念: source判定だけが正しくても利用者が読むscope/split/Gate出力に矛盾が残る可能性。最終判断: CLI testsはmachine-readable proof、unsafe reason、atomic rejectionをassertし、E2E sourceとcurrent-HEAD証跡はPR artifact・Gate lifecycle・parse/schema failureを再生するため、path_surface_coverageを満たす。"
+  ]
+}

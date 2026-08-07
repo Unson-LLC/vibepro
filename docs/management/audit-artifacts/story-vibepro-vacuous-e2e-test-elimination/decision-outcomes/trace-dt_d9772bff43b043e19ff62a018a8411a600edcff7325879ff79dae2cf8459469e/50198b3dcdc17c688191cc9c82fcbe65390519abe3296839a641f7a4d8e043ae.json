@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "ledger_path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_d9772bff43b043e19ff62a018a8411a600edcff7325879ff79dae2cf8459469e"
+  },
+  "parent_revision_fingerprint": "19fba1e37c1cb0cafecbed1c682b47b6a1af0ee6334a0075deaa9693695c1666",
+  "revision_fingerprint": "50198b3dcdc17c688191cc9c82fcbe65390519abe3296839a641f7a4d8e043ae",
+  "trace": {
+    "decision_trace_id": "dt_d9772bff43b043e19ff62a018a8411a600edcff7325879ff79dae2cf8459469e",
+    "collision_group": null,
+    "trace_source_ref": "tsr_0b7cf558d647df75f86ac1c7b8d5d104d4fc7d32a563e656a2db2c9fa2cc78e9",
+    "normalized_subject_key": "finding:no-durable-pre-re-record-snapshot-for-drop-detection",
+    "source_identity": {
+      "source_kind": "finding_disposition",
+      "source_ref": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-result-gate_evidence.json",
+      "native_id": "no-durable-pre-re-record-snapshot-for-drop-detection",
+      "digest": "dee8eda1e3c57efa85e07225e4f13bf0a683f4f635e59405e272901b6bb4d94e",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "parent_revision_fingerprint": "19fba1e37c1cb0cafecbed1c682b47b6a1af0ee6334a0075deaa9693695c1666",
+    "revision_fingerprint": "50198b3dcdc17c688191cc9c82fcbe65390519abe3296839a641f7a4d8e043ae",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_d9772bff43b043e19ff62a018a8411a600edcff7325879ff79dae2cf8459469e"
+        },
+        "parent_revision_fingerprint": "9e421247a4eaf8b2b734078a111f369e73182e65000e36f68a3ea991b5e2a932"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "no-durable-pre-re-record-snapshot-for-drop-detection",
+        "disposition": "accepted",
+        "resolved_by": [
+          "superseded, the pre-re-record targets and scenarios are durably embedded in pr-prepare.json at .pr_context.verification_evidence.commands[], which made a byte-level drop-detection diff possible"
+        ],
+        "reason": null,
+        "inferred_from_resolution": true
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-result-gate_evidence.json",
+          "source_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "source_digest": "dee8eda1e3c57efa85e07225e4f13bf0a683f4f635e59405e272901b6bb4d94e",
+          "native_id": "no-durable-pre-re-record-snapshot-for-drop-detection"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "no-durable-pre-re-record-snapshot-for-drop-detection",
+        "disposition": "accepted",
+        "resolved_by": [
+          "superseded, the pre-re-record targets and scenarios are durably embedded in pr-prepare.json at .pr_context.verification_evidence.commands[], which made a byte-level drop-detection diff possible"
+        ],
+        "reason": null,
+        "inferred_from_resolution": true
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-result-gate_evidence.json",
+          "source_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "source_digest": "dee8eda1e3c57efa85e07225e4f13bf0a683f4f635e59405e272901b6bb4d94e",
+          "native_id": "no-durable-pre-re-record-snapshot-for-drop-detection"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 407,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/407",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8dc2c3d65ec9acd7936a0cbdb07b4009242d1ff3",
+        "status": "merged",
+        "merged_at": "2026-08-02T01:44:24Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

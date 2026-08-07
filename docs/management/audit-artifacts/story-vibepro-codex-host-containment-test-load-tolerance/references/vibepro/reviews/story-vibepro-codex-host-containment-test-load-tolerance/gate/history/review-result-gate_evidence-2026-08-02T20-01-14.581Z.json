@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Evidence head-bound and fresh; full-suite 2380/2380 pass; diff matches spec clauses S-001..S-005/INV exactly; AC1-AC6 verified; escalation behavior unchanged; fixtures atomic; no sibling race patterns; no injection",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verification artifacts head binding, spec clauses vs AC1-AC6, full diff across src/test, isolated targeted run 5/5, sibling pattern grep",
+    "evidence": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/gate_evidence-round2.json",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-evidence.json",
+      ".vibepro/spec/story-vibepro-codex-host-containment-test-load-tolerance/spec.json",
+      "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+      "src/codex-subagent-host.js",
+      "src/codex-subagent-host-worker.js",
+      "test/codex-subagent-host.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "staleness and escalation-timing concerns -> pass because evidence postdates HEAD and diff shows only pid resolution interleaved between untouched escalation steps"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+    "expected_root": null,
+    "expected_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+    "current_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+      "expected_root": null,
+      "expected_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "current_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T20:01:14.581Z",
+  "git_context": {
+    "head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+    "current_branch": "claude/relaxed-moser-327f0c",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T20:01:14.419Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+        "sha256": "39e68f847601981e286314d10d1da9da0131e220e34e5a5b83907bb6fd6f9e51",
+        "size": 7588
+      },
+      {
+        "path": "src/codex-subagent-host-worker.js",
+        "sha256": "e218ce31b7bc169ef53766e549a69e6140e62a7557d3576a44754864ac1a456e",
+        "size": 10605
+      },
+      {
+        "path": "src/codex-subagent-host.js",
+        "sha256": "ef5358b94e79929f49ea30af8424fcda906865bb104e34c72ba829442cac88e1",
+        "size": 17331
+      },
+      {
+        "path": "test/codex-subagent-host.test.js",
+        "sha256": "4e8d6ccafc6d3accf016c40b1d4ce973ccae3d6b638bc454430879c8b74b4da9",
+        "size": 15719
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "ef745e233f7c8088adba3de2d6f504f404ac02a9d18139515b574e6e59b30680"
+  },
+  "source_fingerprint": "64175cb1d0c39712a733fea9bc106b589e3f5ffe6aa7012fbb409ac6aa95d0f7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a1473f27148722619",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "a1473f27148722619",
+    "session_id": "a1473f27148722619",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-relaxed-moser-327f0c/6a8a8a45-063a-41b1-a350-a830268fbb31/tasks/a1473f27148722619.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/gate_evidence-round2.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a1473f27148722619",
+      "implementation_session_id": "6a8a8a45-063a-41b1-a350-a830268fbb31",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

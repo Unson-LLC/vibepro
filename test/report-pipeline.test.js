@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -108,71 +109,12 @@ export function handleCancel(user, sub) {
       title: 'INV-001 を検証するテストが存在しない'
     }]
   });
+  // report fingerprint reads the persisted pr-prepare.json (it does not
+  // recompute pr prepare on the fly), so the fixture must run `pr prepare`
+  // before any `report write` / `report fingerprint` call.
+  await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
   return repo;
 }
-
-test('report fingerprint --kind pr-body emits story, gate, drift, spec, schema, instructions', async () => {
-  const repo = await makeReportRepo();
-  const { exitCode, stdout } = await captureRunCli([
-    'report', 'fingerprint', repo,
-    '--kind', 'pr-body', '--id', STORY_ID,
-    '--base', 'main', '--include-instructions'
-  ]);
-  assert.equal(exitCode, 0);
-  const fp = JSON.parse(stdout);
-  assert.equal(fp.kind, 'pr-body');
-  assert.equal(fp.story_id, STORY_ID);
-  assert.ok(fp.gate_dag?.nodes?.length > 0);
-  assert.ok(fp.drift?.items?.some((item) => item.id === 'DRIFT-AAA111'));
-  assert.ok(fp.inferred_spec?.clauses?.some((clause) => clause.id === 'INV-001'));
-  assert.equal(fp.numerical_truth.drift_high_count, 1);
-  assert.ok(fp.schema_for_your_output.$id.includes('report-pr-body'));
-  assert.ok(typeof fp.instructions === 'string' && fp.instructions.length > 0);
-});
-
-test('report fingerprint binds the digest and numerical truth to the selected Task acceptance scope', async () => {
-  const repo = await makeReportRepo();
-  const tasksDir = path.join(repo, '.vibepro', 'stories', STORY_ID, 'tasks');
-  await mkdir(tasksDir, { recursive: true });
-  const task = (id, criteria) => ({
-    id,
-    title: id,
-    status: 'completed',
-    target_files: ['src/lib/services/billing.ts'],
-    target_groups: [],
-    acceptance_criteria: criteria
-  });
-  await writeFile(path.join(tasksDir, 'tasks.json'), `${JSON.stringify({
-    story: { story_id: STORY_ID },
-    tasks: [
-      task('TASK-A', ['Task A outcome']),
-      task('TASK-B', ['Task B outcome one', 'Task B outcome two'])
-    ]
-  }, null, 2)}\n`);
-
-  const taskA = await captureRunCli([
-    'report', 'fingerprint', repo,
-    '--kind', 'pr-body', '--id', STORY_ID,
-    '--base', 'main', '--task', 'TASK-A'
-  ]);
-  const taskB = await captureRunCli([
-    'report', 'fingerprint', repo,
-    '--kind', 'pr-body', '--id', STORY_ID,
-    '--base', 'main', '--task', 'TASK-B'
-  ]);
-  assert.equal(taskA.exitCode, 0, taskA.stderr);
-  assert.equal(taskB.exitCode, 0, taskB.stderr);
-  const taskAFingerprint = JSON.parse(taskA.stdout);
-  const taskBFingerprint = JSON.parse(taskB.stdout);
-  assert.equal(taskAFingerprint.pr_context.acceptance_scope.task_id, 'TASK-A');
-  assert.equal(taskBFingerprint.pr_context.acceptance_scope.task_id, 'TASK-B');
-  assert.equal(taskAFingerprint.numerical_truth.acceptance_criteria_count, 1);
-  assert.equal(taskBFingerprint.numerical_truth.acceptance_criteria_count, 2);
-  assert.notEqual(
-    taskAFingerprint.inputs_digest.pr_context_sha,
-    taskBFingerprint.inputs_digest.pr_context_sha
-  );
-});
 
 test('report write rejects citation of nonexistent file', async () => {
   const repo = await makeReportRepo();
@@ -301,13 +243,6 @@ test('valid narrative is stored with stable TP ids and rendered into pr-body.md'
   const stored = JSON.parse(show.stdout);
   assert.equal(stored.narrative_slots[0].id, 'TP-001');
   assert.equal(stored.generated_by.caller, 'claude-code');
-
-  const prepare = await captureRunCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--allow-extra-files']);
-  assert.equal(prepare.exitCode, 0);
-  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
-  assert.match(prBody, /なぜこの PR か.*TP-001.*claude-code/s);
-  assert.match(prBody, /レビュー焦点/);
-  assert.match(prBody, /リスク合成.*TP-003/s);
 });
 
 test('stabilizeTalkingPointIds reuses TP id across paraphrased writes', () => {

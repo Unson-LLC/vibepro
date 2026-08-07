@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-unit-suite-concurrency-default",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "needs_changes",
+  "summary": "Content-wise coherent single intent, but the auto-generated split-plan at this HEAD recommends split_by_lane (mixed_repo_control_surface: package.json), atomic-scope frontmatter fields are absent, and the review owner map was unverified at evaluation time",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "pr-split-scope-automatic-split-required",
+      "detail": " split-plan.json at HEAD sets status=split_recommended, automatic_split_required=true, 4 lanes"
+    },
+    {
+      "severity": "high",
+      "id": "pr-split-scope-unsafe-repo-control-surface",
+      "detail": " package.json flagged as independently releasable repo-control surface; task_binding reason_code=task_context_missing"
+    },
+    {
+      "severity": "medium",
+      "id": "pr-split-scope-missing-frontmatter-declaration",
+      "detail": " story frontmatter lacks pr_scope_reason / pr_scope_review_facets / pr_scope_dependency_boundaries"
+    },
+    {
+      "severity": "low",
+      "id": "pr-split-scope-unowned-review-facets",
+      "detail": " review_owner_map facets owners empty at evaluation time"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the full HEAD diff (10 files) including package.json, src/verification-runner.js, both test files, CHANGELOG.md, design-ssot.json, .vibepro/config.json, story frontmatter, spec doc; cross-checked verification-runs/unit.json (head_sha matches HEAD, timeout_ms=7200000) and split-plan.json + pr-prepare.json",
+    "evidence": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/split-plan.json; pr-prepare.json; verification-runs/unit.json",
+    "inputs": [
+      "package.json",
+      "src/verification-runner.js",
+      "test/full-suite-command-form.test.js",
+      "test/verification-runner.test.js",
+      "CHANGELOG.md",
+      "design-ssot.json",
+      ".vibepro/config.json",
+      "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/specs/story-vibepro-unit-suite-concurrency-default.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial: docs additions look like reasonable single-intent expansion -> final needs_changes: the repo's own split-plan generated at this HEAD mechanically rejects atomic single-PR scope and story frontmatter lacks the atomic-scope declaration fields"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "expected_root": null,
+    "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "expected_root": null,
+      "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T16:12:37.636Z",
+  "git_context": {
+    "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "current_branch": "claude/awesome-tereshkova-ee0e2d",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T16:12:37.521Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "3eb6972e87eb68f167b2ce006ce49372c65f7b708e31353449e91166285cfbd5",
+        "size": 90000
+      },
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "c50ba2678acf1a275f0e3f084488ef660de650aa5031c9fe66afad9754754e2c",
+        "size": 58897
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "3d54ea578b32aeacfef62a442e1e8afacebb0af8eba3dd794d4287b68f146647",
+        "size": 254888
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "c2c2d751ca74b245ed1aa77dcb60c3680d41c977f55650c7c2c2eeeae19cc5e0",
+        "size": 4326
+      },
+      {
+        "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "97c888a5b9744cf59f467635ce0634534c2155b5fe5049fbca126e4c39b2da5c",
+        "size": 2997
+      },
+      {
+        "path": "package.json",
+        "sha256": "cd3431b6cf01296462df08106683ba3cdbaeb8c5740e9bc4ad4af04996697d77",
+        "size": 1884
+      },
+      {
+        "path": "src/verification-runner.js",
+        "sha256": "edf9effce88c5fd10e2676ad03ef9c24f30be0e35aa7e39b681bf8e99c7c0556",
+        "size": 38529
+      },
+      {
+        "path": "test/full-suite-command-form.test.js",
+        "sha256": "af653604b8fe6b5425238449fe92f029e6fd8721e10f3fb8a30d99c55e3d42eb",
+        "size": 1337
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "7678e173d86884f79bc6dccadeef69e0819c5e1f45ce40eee4b0b1bb59464d08",
+        "size": 61824
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "59c94c7f4cbabd23d6870a71415e3c40995cd27348f95cfa950643aa359c3629"
+  },
+  "source_fingerprint": "8fe0283a0fb6d289f7cfaa4bbb108224df3c6c71606e02af6d69b0f0961da07c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a706751830ca86a3a",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "a706751830ca86a3a",
+    "session_id": "a706751830ca86a3a",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-awesome-tereshkova-ee0e2d/b72589e7-17b5-460f-8581-06932845d285/tasks/a706751830ca86a3a.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-unit-suite-concurrency-default/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent a706751830ca86a3a returned its verdict JSON and stopped",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a706751830ca86a3a",
+      "implementation_session_id": "b72589e7-17b5-460f-8581-06932845d285",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

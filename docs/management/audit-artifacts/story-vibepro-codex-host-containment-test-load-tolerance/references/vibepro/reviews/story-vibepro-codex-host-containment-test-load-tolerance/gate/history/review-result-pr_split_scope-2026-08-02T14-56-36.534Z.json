@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "needs_changes",
+  "summary": "Scope/size fine (5 files, test-only + lineage registration) but AC3 unsubstantiated: 60000ms deadline still timed out (~62.7-63.0s) in two targeted runs under host load ~132; plus undisclosed design-ssot.json normalization drift",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed HEAD a8324cf1 vs merge-base 37418424 across 5 files; read Story and impact scope; ran the target test file twice under real load; checked load and concurrent suites; scanned review artifacts for injection",
+    "evidence": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round1.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+      "test/codex-subagent-host.test.js",
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md"
+    ]
+  },
+  "judgment_delta": [
+    "small test-only change likely pass -> needs_changes because AC3 not demonstrated under observed load and design-ssot normalization drift undisclosed"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+    "expected_root": null,
+    "expected_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+    "current_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+      "expected_root": null,
+      "expected_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+      "current_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T14:56:36.534Z",
+  "git_context": {
+    "head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+    "current_branch": "claude/relaxed-moser-327f0c",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T14:56:36.474Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "cab709a647c920983a8afac32e8108965484ef2e3ef8eee7a39f56d0e87861d8",
+        "size": 89992
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "25f4487f02354ccb8ff4e554307d86f909d7a02afb43e68459a0974f21c8ff7a",
+        "size": 254438
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+        "sha256": "e94d54b07da2d7017e8dd3814f7fea59fddfe29e160ebdc1e786fc38d6bca843",
+        "size": 4126
+      },
+      {
+        "path": "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md",
+        "sha256": "3c12c3395ec8632cf38a385c63eeea313a30e98bc18cf1c2fc951c2c352e9d21",
+        "size": 1592
+      },
+      {
+        "path": "test/codex-subagent-host.test.js",
+        "sha256": "cc3358e5c068f3a687a27c685f1769b7381a6950959c14615f91c6903407e3f9",
+        "size": 14516
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e66a06ae36a80a860dc2a4fcf13771fbd611faa512583e08c6971b8fa43117de"
+  },
+  "source_fingerprint": "488a1ac7bbc0d642c2c08ab621c77a49fda2d2146a410714f585506b84c42bc8",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a43bbfb02c855ba7b",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "a43bbfb02c855ba7b",
+    "session_id": "a43bbfb02c855ba7b",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-relaxed-moser-327f0c/6a8a8a45-063a-41b1-a350-a830268fbb31/tasks/a43bbfb02c855ba7b.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round1.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a43bbfb02c855ba7b",
+      "implementation_session_id": "6a8a8a45-063a-41b1-a350-a830268fbb31",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

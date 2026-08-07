@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "head_sha": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+  "agent_id": "tar_planning_architecture_v2",
+  "role": "regression_risk",
+  "stage": "architecture_spec",
+  "summary": "Positive Task-bound proof and all specified legacy, malformed, disconnected, uncovered, config-only, no-Task, and strict-target regression paths pass. The final Story-only metadata change closes generated lane coverage while preserving fail-closed reviewer ownership.",
+  "findings": [],
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+  ],
+  "inspection_evidence": [
+    "unit 6/6 pass",
+    "targeted CLI 7/7 pass",
+    "Story E2E 1/1 pass",
+    "verification evidence strict-head bound to 88ee82e547be027358652c2c0a8b3f1926dc4dab",
+    "split plan has complete five-lane metadata and remains fail-closed pending current-head reviewer owner map",
+    "git diff --check pass and worktree clean"
+  ]
+}

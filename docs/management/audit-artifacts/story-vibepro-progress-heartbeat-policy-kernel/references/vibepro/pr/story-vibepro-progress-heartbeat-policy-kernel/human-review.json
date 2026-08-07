@@ -1,0 +1,171 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "created_at": "2026-08-04T04:40:18.259Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 12 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-progress-heartbeat-policy-kernel.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-progress-heartbeat-policy-kernel.md)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "intake_not_applicable": 1,
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+          "expected_root": null,
+          "expected_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+          "current_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785818342570-30b4986d",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "type": "intake_not_applicable",
+        "status": "accepted",
+        "source": null,
+        "source_status": null,
+        "summary": "UI/UX intake does not apply: runtime process-bounding kernel with no UI surface",
+        "reason": "This story changes CLI runtime process management (progress-deadline kernel, graphify subprocess bounds, verification-runner streaming/kill attribution). It introduces no UI screens, journeys, or user-facing visual surfaces; the only user-visible change is an optional CLI flag and evidence fields, covered by the public_contract axis and CLI reference docs. UI/UX intake judgment is therefore not applicable.",
+        "reviewer": null,
+        "artifact": null,
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788",
+            "expected_root": null,
+            "expected_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+            "current_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+          "current_branch": "claude/hopeful-williamson-545788",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-04T04:39:02.564Z"
+        },
+        "recorded_at": "2026-08-04T04:39:02.571Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-04T04:40:14.894Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/hopeful-williamson-545788/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "branch": "claude/hopeful-williamson-545788",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "e5120b15fa066ad856fa525196198553d9cfea9d",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

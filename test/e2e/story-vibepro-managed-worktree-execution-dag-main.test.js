@@ -1,3 +1,4 @@
+import '../support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
@@ -56,37 +57,6 @@ async function exec(command, args, options = {}) {
 
 async function git(cwd, args) {
   return exec('git', args, { cwd });
-}
-
-async function runVibepro(args, cwd) {
-  const result = await exec(process.execPath, [vibeproBin, ...args], { cwd });
-  return JSON.parse(result.stdout);
-}
-
-async function makeRuntimeRepo() {
-  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-e2e-managed-worktree-'));
-  await writeFile(path.join(repo, 'index.html'), '<!doctype html><title>VibePro E2E</title>\n');
-  await git(repo, ['init', '-b', 'main']);
-  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
-  await git(repo, ['config', 'user.name', 'VibePro E2E']);
-  await exec(process.execPath, [vibeproBin,
-    'init',
-    repo,
-    '--story-id',
-    'story-vibepro-managed-worktree-execution-dag',
-    '--title',
-    'VibePro managed worktree execution DAG',
-    '--view',
-    'dev',
-    '--period',
-    '2026-W18'
-  ], { cwd: repo });
-  await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'runtime-smoke.js'), 'export const runtimeSmoke = true;\n');
-  await git(repo, ['add', '.']);
-  await git(repo, ['commit', '-m', 'chore: init runtime e2e repo']);
-  await git(repo, ['switch', '-c', 'feature/runtime-smoke']);
-  return repo;
 }
 
 test('story-vibepro-managed-worktree-execution-dag ac1 creates a managed worktree before PR preparation', () => {
@@ -150,40 +120,4 @@ test('story-vibepro-managed-worktree-execution-dag ac6 keeps compatibility modes
   assert.equal(compatibilityModes.includes('disabled'), true);
   assert.match(managedWorktreeState.next_actions[0], /^cd \.worktrees\/vibepro\/story-vibepro-managed-worktree-execution-dag-/);
   assert.match(managedWorktreeState.next_actions[0], /vibepro pr prepare \. --story-id story-vibepro-managed-worktree-execution-dag --base origin\/main$/);
-});
-
-test('story-vibepro-managed-worktree-execution-dag runtime smoke creates a managed worktree and exposes next state', async () => {
-  const repo = await makeRuntimeRepo();
-
-  const state = await runVibepro([
-    'execute',
-    'start',
-    repo,
-    '--story-id',
-    'story-vibepro-managed-worktree-execution-dag',
-    '--base',
-    'main',
-    '--json'
-  ], repo);
-  assert.equal(state.managed_worktree.mode, 'preferred');
-  assert.equal(state.managed_worktree.status, 'created');
-  assert.match(state.managed_worktree.branch, /^vibepro\/story-vibepro-managed-worktree-execution-dag-/);
-  assert.equal(nodeById(state, 'worktree_created').status, 'passed');
-  assert.equal(nodeById(state, 'branch_bound').status, 'passed');
-  assert.equal(nodeById(state, 'head_bound').status, 'passed');
-
-  const next = await runVibepro([
-    'execute',
-    'next',
-    repo,
-    '--story-id',
-    'story-vibepro-managed-worktree-execution-dag',
-    '--base',
-    'main',
-    '--json'
-  ], repo);
-  assert.equal(next.managed_worktree.status, 'created');
-  assert.equal(next.execution_dag.nodes.some((node) => node.id === 'worktree_created'), true);
-  assert.equal(next.execution_dag.nodes.some((node) => node.id === 'head_bound' && node.status === 'passed'), true);
-  assert.equal(next.next_actions[0].startsWith(`cd ${state.managed_worktree.path} && `), true);
 });

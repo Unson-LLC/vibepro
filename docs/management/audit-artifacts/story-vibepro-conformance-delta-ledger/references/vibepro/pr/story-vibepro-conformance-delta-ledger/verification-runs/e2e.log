@@ -1,0 +1,16 @@
+✔ CDL-S-7: pr prepare via CLI wires the conformance delta runner and produces a passed info-only gate node (2676.426792ms)
+✔ CDL-S-7: gate:architecture_delta never contributes to needs_verification / block regardless of its status (2341.883042ms)
+✔ CDL-S-8: the shadow stage never causes an unrelated gate to regress, isolated from injection alone (3313.995083ms)
+✔ CDL-S-8: a docs-only commit re-run recomputes the delta without creating recorded evidence for this stage (4111.571125ms)
+✔ preparePullRequest without an injected conformanceDelta option falls back to an inconclusive info node, never throws (2070.948583ms)
+✔ story-vibepro-pr-route-gate-dag ac1 ac2 ac6 executes docs-only route classification and PR body contract (3268.797208ms)
+✔ story-vibepro-pr-route-gate-dag ac3 executes mirror and release routes with source and CI gates (6713.55825ms)
+✔ story-vibepro-pr-route-gate-dag ac4 ac5 executes artifact and split gates before and after decisions (7484.481542ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17676.875292

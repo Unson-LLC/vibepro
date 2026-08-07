@@ -1,0 +1,10 @@
+✔ story-vibepro-verification-checkpoint-uiux-intake-gate verification checkpoint blocks on gate:uiux_intake_judgment alongside its sibling route gates (AC-1) (1.420875ms)
+✔ story-vibepro-verification-checkpoint-uiux-intake-gate no other checkpoint stage gained gate:uiux_intake_judgment (AC-2) (1.083416ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 416.002958

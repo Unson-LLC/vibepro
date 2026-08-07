@@ -1,0 +1,268 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "updated_at": "2026-08-04T04:39:01.339Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "executeCommand parses streamed stdout for completion counts calling kernel.observe on each new count; timedOut true only for the two policy-kill causes; external_signal leaves timedOut false and populates externalKillSignal. e2e AC5 spawns a real child streaming past a 500ms no-progress deadline (timedOut false, elapsed over 500ms) and a second child self-delivering SIGTERM (timedOut false, externalKillSignal SIGTERM). Judge ran it directly; passes.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelは構造化causeを発行する: `check()` が `no_progress` / `hard_cap`（wall_clock・cost・attempts別）を固定優先順位の構造化causeとして返し、`classifyTermination` が `external_signal`（policyが送っていないsignal）を policy kill と区別して帰属する。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "0845a460ea2b71debda010f385e4071edbcca8a77fd0ef49c527f66f75f14b9f",
+      "recorded_at": "2026-08-04T04:39:01.338Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "runProcess spawns a real child, observes cumulative output bytes as progress, sends SIGTERM to the process group on kernel kill, escalates to SIGKILL after grace, records stopReason, enforces maxOutputBytes truncation with an explicit marker. e2e AC4 spawns a real child ignoring SIGTERM and overflowing the cap, asserting stopReason.code, policy_kill, SIGKILL, stdoutTruncated. Judge ran it as part of the 5/5 e2e pass. Real subprocess behavior.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelは構造化causeを発行する: `check()` が `no_progress` / `hard_cap`（wall_clock・cost・attempts別）を固定優先順位の構造化causeとして返し、`classifyTermination` が `external_signal`（policyが送っていないsignal）を policy kill と区別して帰属する。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "0845a460ea2b71debda010f385e4071edbcca8a77fd0ef49c527f66f75f14b9f",
+      "recorded_at": "2026-08-04T04:39:00.830Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "evaluateProgressBounds constructs a kernel per call, replays events via observe with at timestamps, and returns null or stalled(verdict.kill.code) preserving the prior public shape. Judge ran the CDI-S-5 suites directly: 32/32 pass. e2e AC3 drives adapter start/reconcile end to end asserting the stalled shape and host.shutdown count.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelは構造化causeを発行する: `check()` が `no_progress` / `hard_cap`（wall_clock・cost・attempts別）を固定優先順位の構造化causeとして返し、`classifyTermination` が `external_signal`（policyが送っていないsignal）を policy kill と区別して帰属する。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "0845a460ea2b71debda010f385e4071edbcca8a77fd0ef49c527f66f75f14b9f",
+      "recorded_at": "2026-08-04T04:39:00.318Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Corrected AC2 text states check() returns no_progress and hard-cap causes while classifyTermination separately attributes external_signal vs policy_kill. check() returns exactly the five codes in fixed precedence with no external_signal notion; classifyTermination compares signal against sentSignals. The e2e AC2 test exercises both halves directly (three check() calls plus two classifyTermination() calls). Judge ran both test files; all pass. Direct non-inferential match between the corrected wording and the code split.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelは構造化causeを発行する: `check()` が `no_progress` / `hard_cap`（wall_clock・cost・attempts別）を固定優先順位の構造化causeとして返し、`classifyTermination` が `external_signal`（policyが送っていないsignal）を policy kill と区別して帰属する。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "0845a460ea2b71debda010f385e4071edbcca8a77fd0ef49c527f66f75f14b9f",
+      "recorded_at": "2026-08-04T04:38:59.815Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "observe() dedupes on String(progressValue) via a Set and only advances lastProgressAtMs on a first-seen token. Unit test and e2e AC1 exercise re-observing the same token returning false with check() still firing no_progress_deadline_exceeded. Judge ran both files directly; both pass. No inferential leap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelは構造化causeを発行する: `check()` が `no_progress` / `hard_cap`（wall_clock・cost・attempts別）を固定優先順位の構造化causeとして返し、`classifyTermination` が `external_signal`（policyが送っていないsignal）を policy kill と区別して帰属する。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "0845a460ea2b71debda010f385e4071edbcca8a77fd0ef49c527f66f75f14b9f",
+      "recorded_at": "2026-08-04T04:38:59.291Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "executeCommand parses streamed stdout for completion counts calling kernel.observe on each new count; timedOut true only for the two policy-kill causes; external_signal leaves timedOut false and populates externalKillSignal. e2e AC5 spawns a real child streaming past a 500ms no-progress deadline (timedOut false, elapsed over 500ms) and a second child self-delivering SIGTERM (timedOut false, externalKillSignal SIGTERM). Judge ran it directly; passes.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelの `check()` は `no_progress` / `hard_cap`（wall_clock・cost・attempts別）/ `external_signal` を区別した構造化causeを返す。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d7933682674d29d12626f03ac4a4896bc072e7f750c4890fd3b9f6e5790a6a95",
+      "recorded_at": "2026-08-04T04:35:37.182Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "runProcess spawns a real child, observes cumulative output bytes as progress, sends SIGTERM to the process group on kernel kill, escalates to SIGKILL after grace, records stopReason, enforces maxOutputBytes truncation with an explicit marker. e2e AC4 spawns a real child ignoring SIGTERM and overflowing the cap, asserting stopReason.code, policy_kill, SIGKILL, stdoutTruncated. Judge ran it as part of the 5/5 e2e pass. Real subprocess behavior.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelの `check()` は `no_progress` / `hard_cap`（wall_clock・cost・attempts別）/ `external_signal` を区別した構造化causeを返す。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d7933682674d29d12626f03ac4a4896bc072e7f750c4890fd3b9f6e5790a6a95",
+      "recorded_at": "2026-08-04T04:35:36.670Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "evaluateProgressBounds constructs a kernel per call, replays events via observe with at timestamps, and returns null or stalled(verdict.kill.code) preserving the prior public shape. Judge ran the CDI-S-5 suites directly: 32/32 pass. e2e AC3 drives adapter start/reconcile end to end asserting the stalled shape and host.shutdown count.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelの `check()` は `no_progress` / `hard_cap`（wall_clock・cost・attempts別）/ `external_signal` を区別した構造化causeを返す。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d7933682674d29d12626f03ac4a4896bc072e7f750c4890fd3b9f6e5790a6a95",
+      "recorded_at": "2026-08-04T04:35:36.136Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Corrected AC2 text states check() returns no_progress and hard-cap causes while classifyTermination separately attributes external_signal vs policy_kill. check() returns exactly the five codes in fixed precedence with no external_signal notion; classifyTermination compares signal against sentSignals. The e2e AC2 test exercises both halves directly (three check() calls plus two classifyTermination() calls). Judge ran both test files; all pass. Direct non-inferential match between the corrected wording and the code split.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelの `check()` は `no_progress` / `hard_cap`（wall_clock・cost・attempts別）/ `external_signal` を区別した構造化causeを返す。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d7933682674d29d12626f03ac4a4896bc072e7f750c4890fd3b9f6e5790a6a95",
+      "recorded_at": "2026-08-04T04:35:35.637Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "observe() dedupes on String(progressValue) via a Set and only advances lastProgressAtMs on a first-seen token. Unit test and e2e AC1 exercise re-observing the same token returning false with check() still firing no_progress_deadline_exceeded. Judge ran both files directly; both pass. No inferential leap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。",
+          "AC2: kernelの `check()` は `no_progress` / `hard_cap`（wall_clock・cost・attempts別）/ `external_signal` を区別した構造化causeを返す。",
+          "AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。",
+          "AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。",
+          "AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d7933682674d29d12626f03ac4a4896bc072e7f750c4890fd3b9f6e5790a6a95",
+      "recorded_at": "2026-08-04T04:35:35.137Z"
+    }
+  ]
+}

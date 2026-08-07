@@ -1,0 +1,222 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "All six runtime contracts hold at 1ea3d5db. Every close-path caller tolerates the new fields (no destructuring or strict shape validation; orchestrator isStop keys off a status field the close result never had). review violations parses --id/--json, errors on missing --id, exits 2 only on unacknowledged entries; review close stays exit 0 when it records a violation, matching Spec C-002. gate:review_surface_integrity is spelled from a single exported constant everywhere, has both edges outside the fast-lane ternary, is registered in nodes/requiredGates/collectUnresolvedRequiredGates, and reaches execution_gate.blocking_gates via the failed-status fallthrough with a remediation command whose every flag and enum exists in the CLI. VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE is dispatched on error.code at its single catch site with no bare catch swallowing it. runtimeStopCloseReason can only emit timeout or manual_shutdown, both recognized, so the orchestrator can never trip assertRecognizedCloseReason. The one real runtime weakness - the mkdir lock stale reclaim is check-then-act - fails closed rather than corrupting (a raced-away entry resurfaces as a blocking missing:<id> reconciliation violation) and 240 concurrent appends against a pre-planted stale lock lost nothing. Two low findings, neither a contract break.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "stale-lock-reclaim-toctou",
+      "detail": "withDirectoryLock stale reclaim is check-then-act and the finally-rm deletes whatever directory is at the lock path, so two waiters racing a stale lock can both enter the read-modify-write and drop one entry; fails closed via pointer reconciliation (blocking missing:<id> violation) but the emitted detail then wrongly accuses ledger tampering; fix is an atomic rename-based reclaim plus a holder token checked before the finally-rm"
+    },
+    {
+      "severity": "low",
+      "id": "violations-cli-no-workspace-precondition",
+      "detail": "review violations calls readers directly without requireStoryId or assertInitializedWorkspace; missing --id errors without naming the flag, and an uninitialized workspace reports readable true with zero violations and exit 0, a positive claim the gate path itself refuses to make"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "stale-lock-reclaim-toctou",
+      "disposition": "deferred",
+      "resolved_by": [],
+      "reason": "fail-closed impact bounded by pointer reconciliation; empirically unreproducible in 240 probed concurrent appends; fix (atomic rename reclaim + holder token) is a focused follow-up outside this frozen review surface",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "violations-cli-no-workspace-precondition",
+      "disposition": "deferred",
+      "resolved_by": [],
+      "reason": "CLI ergonomics gap with no downstream dependency (gate path asserts initialization via pr prepare); follow-up alongside the reporting-only replay finding from the gate-stage review",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=core_workflow_state,gate_orchestration,review_lifecycle. src/review-surface-violations.js read in full (343 lines, line by line: lock loop, append idempotency, reconcile, summarize, unreadable summary, atomic write). src/agent-review.js: complete close path 870-1024 and record-side close 455-549 read in source, plus findLifecycleEntry, buildSyntheticLifecycleEntryFromReviewResult, readStoryLifecyclePointers, assertRecognizedCloseReason; every lifecycle-close write site enumerated by grep. src/pr-manager.js: full gate builder 14150-14252, both node arrays, edge array, collectUnresolvedRequiredGates, isUnresolvedGateStatus, isCriticalUnresolvedGate, buildPrPrepareGateStatus/buildExecutionGateStatus, remediation fallthrough. src/cli.js: review close block and new violations block plus exit-code convention grep. src/independent-review-orchestrator.js: close boundary, runRole, closeStoppedLifecycle/runtimeStopCloseReason, isStop. src/artifact-routing.js and src/decision-records.js read to confirm path resolution and acknowledgement command enums. Spec and architecture docs checked against behavior. Probes: rendered close summary for violation/no-violation/legacy-shaped results; lock race probe with pre-planted 120s-stale lock, 2 and 6 concurrent appenders, 40 iterations each: 0 lost entries; live state probe on this story: readable true, 3 evaluated lifecycles, 0 violations. Targeted run: node --test on ledger+orchestrator suites 49/49 pass.",
+    "evidence": "git rev-parse HEAD = 1ea3d5db1a83eb19b2312b045a223f80ed3862d4, worktree clean, no repo writes. Contract 1: agent-review.js:969-977 adds fields alongside pre-existing ones; cli.js:2036-2041 reads only result.lifecycle.story_id; orchestrator :456/:466 passes result through once() into a JSON journal and checks only isStop (:536 tests value?.status, absent from close result); grep for strict shape validation across src/ and test/ returned nothing. Contract 2: cli.js violations branch exitCode = unacknowledged_count > 0 ? 2 : 0; close returns exitCode 0 unconditionally per Spec C-002 (docs/specs/...md:81-89); exit 2 documented at architecture doc :55 and Spec :158. Contract 3: gate id single source review-surface-violations.js:29; edges pr-manager.js:11715-11716 outside fast-lane ternary ending :11714; node registered :11570/:11764; type :15404; failed status caught by fallthrough :15601 reaching execution_gate.blocking_gates :2814; remediation decision record --type needs_review --status accepted valid per decision-records.js:13-14 wired at cli.js:2341-2355. Contract 4: single throw site :68-73 sets error.code; single catch agent-review.js:1054 rethrows other codes; sole caller pr-manager.js:6108 unwrapped. Contract 5: lock probe 240 appends 0 losses; TOCTOU window real but fail-closed via pointer reconciliation :192-218. Contract 6: runtimeStopCloseReason returns only timeout|manual_shutdown; non-stop close passes no reason coerced to completed; all three in REVIEW_CLOSE_REASONS agent-review.js:4058. Targeted run 49/49 pass 28.1s.",
+    "inputs": [
+      "src/review-surface-violations.js",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "src/independent-review-orchestrator.js",
+      "test/review-surface-violation-ledger.test.js",
+      "test/independent-review-orchestrator.test.js",
+      "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+      "docs/reference/cli.md",
+      "src/artifact-routing.js",
+      "src/decision-records.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial expected at least one needs_changes-grade break, with the 30s stale-lock reclaim as prime suspect for silent record loss and the new required gate as prime suspect for newly blocking unrelated PRs -> final pass because (a) the reclaim TOCTOU failure mode is fail-closed: the lifecycle pointer lives in a different file, so a raced-away entry reappears as a blocking missing:<id> reconciliation violation, and 240 probed concurrent appends lost nothing; (b) the blocking needs_evidence branch of buildReviewSurfaceIntegrityGate is unreachable in pr prepare since summarizeAgentReviewsForPr returns null only for a falsy storyId and buildPrContext always has one, so zero-review stories pass; (c) both close write paths, the CLI, and the full orchestrator stop-reason enumeration were checked against the recognized set rather than assumed."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+    "expected_root": null,
+    "expected_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "current_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+      "expected_root": null,
+      "expected_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "current_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-29T10:04:07.624Z",
+  "git_context": {
+    "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-29T10:04:07.600Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 13 file(s)",
+    "recorded_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+        "sha256": "35d88499c6061f3beba5d56ce301d3dace6fa94dc92e6326895b28efd8370dac",
+        "size": 10295
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+        "sha256": "a9d2e6138f25321698d8a9ea79ee320143a97756492d156584b771045e0da59a",
+        "size": 16278
+      },
+      {
+        "path": "docs/reference/cli.md",
+        "sha256": "745554a68a09302d1ff2fb3fdb7c4873c986712097f45f2f655b361bc4246475",
+        "size": 19583
+      },
+      {
+        "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+        "sha256": "93058bfbf942d90be211e662ef84312e5b9a493209154ba34acb47a215259425",
+        "size": 10224
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "bb775d1a8cdb85cc6a28a61fd4e68a762692ac87c5fe019194b6b6c9740c19f8",
+        "size": 200038
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "20f3f125253bdd71bce5533a6361df8f637edee8339ccb5b203235caa2f30cd2",
+        "size": 49523
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "50445c6f0a52e3a34fc18bf5c4ede34aad39c5b274b168b46776f60c584fdc15",
+        "size": 252714
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "050489ff7501154e09c64dd64ed4207383e676267e48280dbf16333f3cd0db84",
+        "size": 12017
+      },
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "99384f07e57a98654bac41802f7a768b8a957866cfd170a8c90daf7aa5b56ffd",
+        "size": 27687
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "32f20ea56cf0803cd2ca656a7b5969aeaa839abf068b55a8a67c6e709805d495",
+        "size": 722524
+      },
+      {
+        "path": "src/review-surface-violations.js",
+        "sha256": "bd00d79e29065b3ec5765021738959c93700b6fb6b274d60cf5615efa5ea3efc",
+        "size": 16017
+      },
+      {
+        "path": "test/independent-review-orchestrator.test.js",
+        "sha256": "923001b79b802e518d61c5e21281ba97c3f7de61d3f4286db93847cd11762e11",
+        "size": 22505
+      },
+      {
+        "path": "test/review-surface-violation-ledger.test.js",
+        "sha256": "0e6d628c0aed602cb9cfd411836144bec7229d5b12eff8130091f04f4508dfa1",
+        "size": 47004
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b813f6c2e123f77e3750dd9708c7372b12d3f3d0c6d96ff491102498ca38aa99"
+  },
+  "source_fingerprint": "db0aa80c629310a55445403f19eb6cddd7fa865a87e592e3a31b6b264b529c74",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "addb689254e63607c",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "3850f7a1-ab42-45b1-870d-95778e0dfddf",
+    "session_id": "addb689254e63607c",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/transcripts/reviewer-addb689254e63607c.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "Reviewer subagent addb689254e63607c completed and was shut down after returning its verdict; task notification received in orchestrating session 3850f7a1-ab42-45b1-870d-95778e0dfddf",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "addb689254e63607c",
+      "implementation_session_id": "3850f7a1-ab42-45b1-870d-95778e0dfddf",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,198 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Evidence fresh and honest at head e416d297: all three records runner_direct with clean-tree fingerprints and content-binding hashes re-verified byte-for-byte; unit log shows all 10 guard tests including the npx jest form; e2e replays S-001 AC-1..6 through the CLI; observations do not overstate coverage. Four carried-over low-severity documented-scope findings.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "out-of-repo-paths-silently-skipped",
+      "detail": "missingNamedTestPaths continues silently for absolute or ..-escaping paths; scoped out by INV-002/story boundary but the skip is silent rather than a recorded warning"
+    },
+    {
+      "severity": "low",
+      "id": "extension-scoped-guard",
+      "detail": "only .test/.spec test-file extensions are checked; nonexistent plain .js paths bypass the guard (documented scope)"
+    },
+    {
+      "severity": "low",
+      "id": "e2e-single-mega-test-count",
+      "detail": "e2e reports tests=1 with counts_trivial warning because all six ACs live in one test; surfaced not silent"
+    },
+    {
+      "severity": "low",
+      "id": "managed-worktree-locality-needs-review",
+      "detail": "records carry non-blocking managed_worktree_locality needs_review warning (no execute start state for this checkout)"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "e2e-single-mega-test-count",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "warning transparent on the record; content verified substantive",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "extension-scoped-guard",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "deterministic scoping is an explicit acceptance criterion",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "managed-worktree-locality-needs-review",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "non-blocking preferred-mode warning; head SHAs match",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "out-of-repo-paths-silently-skipped",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "documented repo-relative boundary in Story reason; follow-up candidate",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewer read the review request, verification-evidence.json and all three run logs, the guard implementation and pre-flight, both test files, story and spec; re-hashed the four content-binding surface files and confirmed sha256 equality at head e416d297; probed quoting/flag-value/glob/URL/out-of-repo/status bypasses.",
+    "evidence": null,
+    "inputs": [
+      "src/verification-evidence.js",
+      "src/verification-runner.js",
+      "test/verification-command-test-path-guard.test.js",
+      "test/e2e/story-vibepro-verify-command-test-path-existence-guard-main.test.js",
+      "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: the delta jest claim might again be evidence-without-execution and records stale against e416d297 -> final pass because all records were re-run runner_direct at exactly e416d297, the unit log lists the passing jest rejection test among 46/46, and content-binding hashes match the worktree byte-for-byte"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+    "expected_root": null,
+    "expected_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+    "current_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+      "expected_root": null,
+      "expected_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+      "current_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T10:26:28.146Z",
+  "git_context": {
+    "head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+    "current_branch": "claude/agitated-borg-94e2f6",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T10:26:28.122Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+        "sha256": "8c355eb60560c59f204a7a36e2440e845d62983356aab2d76ef086455eed6813",
+        "size": 3969
+      },
+      {
+        "path": "src/verification-evidence.js",
+        "sha256": "71d067134cbe2ce986f62d02bdfc5ab77935d2860f8e1adea1b4e18f0019d6a7",
+        "size": 41053
+      },
+      {
+        "path": "src/verification-runner.js",
+        "sha256": "830365660f199cbb77753b9f979232485d8fb48eaa4689bece313b5201c16ee1",
+        "size": 38247
+      },
+      {
+        "path": "test/e2e/story-vibepro-verify-command-test-path-existence-guard-main.test.js",
+        "sha256": "b509c600620e5bc658a6ad1c114b753f17b4322723bf6f563cf29e1252ab6eef",
+        "size": 5083
+      },
+      {
+        "path": "test/verification-command-test-path-guard.test.js",
+        "sha256": "bb4b805a55d3f489a0d553a66627b9dad3b063e290a2207d8edcd6b80391ba75",
+        "size": 5791
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8974f1b263e325b1c3ae103d4d8b77c6966ec672eca83ea6bcabd6eebefd723d"
+  },
+  "source_fingerprint": "bec52a66b961289b93c686bc7659ff445d49508527466c2740d1bc8bbd52b4a3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "af8bf5f7628aba642",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "af8bf5f7628aba642",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close --close-reason completed for lifecycle 54b1cda1",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "af8bf5f7628aba642",
+      "implementation_session_id": "f7977f8c-e6da-4fd2-98d5-97a8d2b5f335",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

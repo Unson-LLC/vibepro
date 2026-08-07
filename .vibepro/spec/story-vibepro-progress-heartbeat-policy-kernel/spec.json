@@ -1,0 +1,299 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  ExternalKiller[External signal sender] --> Runner[verification runner / graphify subprocess]\n  Policy[progress-deadline policy kernel] --> Runner\n  Runner --> Evidence[verification evidence record]\n  Evidence --> Gate[Gate DAG trust decision]\n  ExternalKiller -. threat: external SIGTERM forged as timeout .-> Evidence\n  Policy -- mitigation: classifyTermination separates policy_kill from external_signal --> Evidence\n  Runner -- mitigation: external_kill_signal field + verification_run_killed_by_external_signal warning --> Evidence\n  Policy -- mitigation: timed_out only for max_wall_clock_exceeded / no_progress_deadline_exceeded --> Gate"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "The progress-deadline policy kernel is a pure module with an injected clock, and observe() only extends the no-progress deadline for a progress token that has not been seen before; passing an already-observed token never resets the deadline (heartbeats do not extend life, only monotonic progress does).",
+      "rationale": "A liveness heartbeat that extends deadlines lets a stuck process live forever; the original evaluateProgressBounds semantics reject duplicate checkpoint ids and only advance on new checkpoints, and the kernel must preserve exactly that.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/progress-deadline.js",
+            "anchor": "createProgressDeadline"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/progress-deadline.test.js",
+            "case": "duplicate progress values do not extend the no-progress deadline"
+          },
+          {
+            "file": "test/progress-deadline.test.js",
+            "case": "a NEW progress token extends the no-progress deadline"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/progress-deadline.js",
+            "must_contain": "createProgressDeadline"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/progress-deadline.test.js",
+            "must_cover": "duplicate progress values do not extend the no-progress deadline"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T11:30:50.131Z",
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "check() returns structured kill causes that preserve the original five codes (max_wall_clock_exceeded, max_attempts_exceeded, max_cost_exceeded, cost_accounting_unavailable, no_progress_deadline_exceeded) with the original precedence order, wall-clock/attempts/cost being independent hard caps that progress cannot extend; classifyTermination distinguishes a policy-sent signal from an external signal.",
+      "rationale": "Kill causes must remain auditable in evidence and hard caps must be a final barrier that monotonic progress cannot bypass; external and policy kills must never be conflated because that conflation caused a real misdiagnosis incident.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "no_progress / hard_cap（wall_clock・cost・attempts別）/ external_signal を区別した構造化causeを返す"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/progress-deadline.js",
+            "anchor": "classifyTermination"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/progress-deadline.test.js",
+            "case": "precedence order: wall clock beats attempts beats cost beats cost_accounting_unavailable beats no_progress"
+          },
+          {
+            "file": "test/progress-deadline.test.js",
+            "case": "max_wall_clock_exceeded is independent of progress and cannot be extended"
+          },
+          {
+            "file": "test/progress-deadline.test.js",
+            "case": "classifyTermination: a signal the policy did not send is an external kill"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/progress-deadline.js",
+            "must_contain": "classifyTermination"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/progress-deadline.test.js",
+            "must_cover": "precedence order: wall clock beats attempts beats cost"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T11:30:50.131Z",
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "inherited_behavior": {
+        "condition": "!['progress', 'partial_result', 'completed', 'failed', 'cancelled'].includes(kind",
+        "classification": "unchanged",
+        "files": [
+          "src/codex-subagent-runtime-adapter.js"
+        ]
+      },
+      "statement": "evaluateProgressBounds in the codex subagent runtime adapter delegates to the shared kernel while preserving its external return contract ({status:'stalled', message, stop_reason:{code,message,details}} or null), and the pre-existing CDI-S-5 test suites pass without semantic changes.",
+      "rationale": "The kernel extraction must leave one semantic source of truth without breaking the only site that already implemented the full ideal-form semantics.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/codex-subagent-runtime-adapter.js",
+            "anchor": "evaluateProgressBounds"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-runtime-adapter.test.js",
+            "case": "CDI-S-5 heartbeat without checkpoint cannot extend no-progress deadline"
+          },
+          {
+            "file": "test/codex-subagent-runtime-adapter.test.js",
+            "case": "CDI-S-5 duplicate checkpoint and partial judgment do not extend the no-progress deadline"
+          },
+          {
+            "file": "test/codex-subagent-runtime-adapter.test.js",
+            "case": "CDI-S-5 successor process enforces wall-clock, attempt, and cost bounds from persisted dispatch state"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/codex-subagent-runtime-adapter.js",
+            "must_contain": "createProgressDeadline"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/codex-subagent-host.test.js",
+            "must_cover": "progress"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T11:30:50.131Z",
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "A graphify update subprocess whose output stalls past the no-progress deadline, or which exceeds the wall-clock cap, is terminated with SIGTERM then escalated to SIGKILL after a grace period, the structured stop_reason is attached to the thrown error, stdout/stderr accumulation is capped with an explicit truncation marker, and a signal the policy did not send is attributed as an external kill.",
+      "rationale": "graphify update previously had no timeout and unbounded stdout accumulation, allowing story diagnose to hang forever with no attributable cause.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/graphify-adapter.js",
+            "anchor": "createProgressDeadline"
+          },
+          {
+            "file": "src/graphify-adapter.js",
+            "anchor": "GRAPHIFY_NO_PROGRESS_DEADLINE_MS"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/graphify-adapter.test.js",
+            "case": "silence past the no-progress deadline is killed with a structured cause, escalating SIGTERM to SIGKILL"
+          },
+          {
+            "file": "test/graphify-adapter.test.js",
+            "case": "wall-clock cap kills the process even while progress keeps arriving"
+          },
+          {
+            "file": "test/graphify-adapter.test.js",
+            "case": "stdout past the output cap is truncated with an explicit marker rather than growing unbounded"
+          },
+          {
+            "file": "test/graphify-adapter.test.js",
+            "case": "a signal the policy did not send is attributed as an external kill, not a policy kill"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/graphify-adapter.js",
+            "must_contain": "classifyTermination"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/graphify-adapter.test.js",
+            "must_cover": "escalating SIGTERM to SIGKILL"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T11:30:50.131Z",
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "unchanged",
+        "files": [
+          "src/verification-evidence.js"
+        ]
+      },
+      "statement": "The verification runner streams command output, feeds the parsed completed-test count into the kernel as the monotonic progress value so a suite stays alive while tests keep completing and is killed when progress stalls (independently of the wall-clock cap), and an execution killed by a signal the runner did not send is recorded with timed_out=false plus an external_kill_signal attribution instead of the previous false timed_out=true.",
+      "rationale": "The previous execFile-based runner could not observe in-flight progress and its `error.killed && signal` heuristic recorded external SIGTERMs as timeouts, which caused a real misdiagnosis incident in evidence records.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "外部SIGTERMで殺された実行は timed_out: false かつ external kill として帰属される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/verification-runner.js",
+            "anchor": "createProgressDeadline"
+          },
+          {
+            "file": "src/verification-runner.js",
+            "anchor": "external_kill_signal"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/verification-runner.test.js",
+            "case": "executeCommand: sustained streaming output extends the no-progress deadline past its own length"
+          },
+          {
+            "file": "test/verification-runner.test.js",
+            "case": "executeCommand kills a silent command on the no-progress deadline independently of the wall clock"
+          },
+          {
+            "file": "test/verification-runner.test.js",
+            "case": "executeCommand attributes a signal it did not send as an external kill, not a policy timeout"
+          },
+          {
+            "file": "test/verification-runner.test.js",
+            "case": "verify run kills a silent process on the no-progress deadline well before the wall-clock cap"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/verification-runner.js",
+            "must_contain": "external_kill_signal"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/verification-runner.test.js",
+            "must_cover": "external kill, not a policy timeout"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T11:30:50.131Z",
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
+    }
+  ],
+  "generated_at": "2026-08-02T11:48:25.231Z",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-08-02T11:38:26.516Z"
+}

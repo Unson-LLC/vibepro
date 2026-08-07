@@ -1,0 +1,14 @@
+✔ story-vibepro-dependency-cycle-scc-reduction ac:1 (DCS-S-1) SCC detection is iterative, cycle-only and deterministically ordered (74.956417ms)
+✔ story-vibepro-dependency-cycle-scc-reduction ac:2 ac:6 (DCS-S-2 / DCS-S-6) a newly introduced circular dependency is reported as one new SCC by the delta flow (1875.773792ms)
+✔ story-vibepro-dependency-cycle-scc-reduction ac:4 ac:6 (DCS-S-4 / DCS-S-6) repairing a mutual dependency is reported as resolved on its own dimension (1150.957875ms)
+✔ story-vibepro-dependency-cycle-scc-reduction ac:3 ac:5 (DCS-S-3 / DCS-S-5) the SCC violation carries actionable structure and heuristic cut candidates (545.677958ms)
+✔ story-vibepro-dependency-cycle-scc-reduction ac:7 (DCS-S-7) the retired enumerator stays exported while the flow emits only SCC ids (576.532ms)
+✔ story-vibepro-dependency-cycle-scc-reduction ac:8 (DCS-S-8) the real repository scan collapses to one SCC and leaves the other dimensions unchanged (528.8465ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4973.118292

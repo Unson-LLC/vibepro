@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "updated_at": "2026-08-04T02:01:50.006Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Re-verified at HEAD 0ea28994. Gate reason/recovery-guidance text in buildUiuxIntakeJudgmentGate byte-identical to prior inspection. Reran full story suite: 26/26 pass, including ac:4/ac:8/S-003 (waiver closure). Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "task_id": null,
+        "acceptance_criteria": [
+          "intake coverage artifact（`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` または",
+          "`intake_not_applicable` のaccepted decision record（理由必須）があれば satisfied",
+          "`gate:uiux_intake_judgment` へのwaiver decisionがあれば satisfied",
+          "どれも無ければ gate として block（fail-closedの対象は「intakeの実施」ではなく",
+          "`pr prepare` のgate DAGに `gate:uiux_intake_judgment` が常に含まれ、判断記録が",
+          "`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` が存在するstoryではgateが",
+          "`vibepro decision record --type intake_not_applicable --reason <text>` が受理され、",
+          "gate未解決時のrecovery planに、intake validate実行と intake_not_applicable decision"
+        ]
+      },
+      "acceptance_scope_fingerprint": "918ffbae1ebcf2e80b5ec76f67b7558e3842adaa2bd39e5d25a9d9889daf6137",
+      "recorded_at": "2026-08-04T02:01:50.004Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Re-verified at HEAD 0ea28994. src/decision-records.js intake_not_applicable reason-required check unaffected by this delta (only decision-records.test.js gained +1 unrelated line). Reran full story suite: 26/26 pass, including ac:3/ac:7/S-002. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "task_id": null,
+        "acceptance_criteria": [
+          "intake coverage artifact（`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` または",
+          "`intake_not_applicable` のaccepted decision record（理由必須）があれば satisfied",
+          "`gate:uiux_intake_judgment` へのwaiver decisionがあれば satisfied",
+          "どれも無ければ gate として block（fail-closedの対象は「intakeの実施」ではなく",
+          "`pr prepare` のgate DAGに `gate:uiux_intake_judgment` が常に含まれ、判断記録が",
+          "`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` が存在するstoryではgateが",
+          "`vibepro decision record --type intake_not_applicable --reason <text>` が受理され、",
+          "gate未解決時のrecovery planに、intake validate実行と intake_not_applicable decision"
+        ]
+      },
+      "acceptance_scope_fingerprint": "918ffbae1ebcf2e80b5ec76f67b7558e3842adaa2bd39e5d25a9d9889daf6137",
+      "recorded_at": "2026-08-04T02:01:47.219Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Re-verified at HEAD 0ea28994. readUiuxIntakeJudgmentContext/buildUiuxIntakeJudgmentGate byte-identical to prior inspection (confirmed via grep + direct read). Only test-file change is the scratch-tmpdir import line. Reran full story suite: 26/26 pass, including ac:2/ac:6/S-001. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "task_id": null,
+        "acceptance_criteria": [
+          "intake coverage artifact（`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` または",
+          "`intake_not_applicable` のaccepted decision record（理由必須）があれば satisfied",
+          "`gate:uiux_intake_judgment` へのwaiver decisionがあれば satisfied",
+          "どれも無ければ gate として block（fail-closedの対象は「intakeの実施」ではなく",
+          "`pr prepare` のgate DAGに `gate:uiux_intake_judgment` が常に含まれ、判断記録が",
+          "`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` が存在するstoryではgateが",
+          "`vibepro decision record --type intake_not_applicable --reason <text>` が受理され、",
+          "gate未解決時のrecovery planに、intake validate実行と intake_not_applicable decision"
+        ]
+      },
+      "acceptance_scope_fingerprint": "918ffbae1ebcf2e80b5ec76f67b7558e3842adaa2bd39e5d25a9d9889daf6137",
+      "recorded_at": "2026-08-04T02:01:43.934Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Re-verified at HEAD 0ea28994. git diff 2f6c2e67..HEAD -- src/pr-manager.js has 521 line churn but zero hits for uiux/intake; readUiuxIntakeJudgmentContext/buildUiuxIntakeJudgmentGate/DAG edges read byte-identical to prior inspection, only shifted by unrelated dead-code removal elsewhere in the file. The only story-test change is a single scratch-tmpdir import line added to each file. Reran full story suite: 26/26 pass. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "task_id": null,
+        "acceptance_criteria": [
+          "intake coverage artifact（`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` または",
+          "`intake_not_applicable` のaccepted decision record（理由必須）があれば satisfied",
+          "`gate:uiux_intake_judgment` へのwaiver decisionがあれば satisfied",
+          "どれも無ければ gate として block（fail-closedの対象は「intakeの実施」ではなく",
+          "`pr prepare` のgate DAGに `gate:uiux_intake_judgment` が常に含まれ、判断記録が",
+          "`.vibepro/uiux/<story-id>/uiux-intake-coverage.json` が存在するstoryではgateが",
+          "`vibepro decision record --type intake_not_applicable --reason <text>` が受理され、",
+          "gate未解決時のrecovery planに、intake validate実行と intake_not_applicable decision"
+        ]
+      },
+      "acceptance_scope_fingerprint": "918ffbae1ebcf2e80b5ec76f67b7558e3842adaa2bd39e5d25a9d9889daf6137",
+      "recorded_at": "2026-08-04T02:01:40.944Z"
+    }
+  ]
+}

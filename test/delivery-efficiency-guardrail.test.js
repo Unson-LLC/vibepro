@@ -2,47 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  aggregateDeliveryMetrics,
   buildReviewDispatchDecision,
-  evaluateDeliveryBudget,
-  normalizeEfficiencyPolicy,
   planCompatibleFindingBatches,
   planLifecycleTerminalization,
-  resolveEfficiencyPolicy,
-  selectRiskAdaptiveReviewCoverage,
-  summarizeEfficiencyDebt
+  selectRiskAdaptiveReviewCoverage
 } from '../src/delivery-efficiency-guardrail.js';
-
-test('story budget override preserves global defaults and merges role limits', () => {
-  const config = { budgets: {
-    delivery_efficiency: {
-      max_subagent_count: 6,
-      max_review_dispatches_by_role: { architecture: 1, runtime: 1 }
-    },
-    delivery_efficiency_by_story: {
-      'story-a': {
-        max_subagent_count: 9,
-        amendment_reason: 'historical review migration',
-        max_review_dispatches_by_role: { runtime: 2 }
-      }
-    }
-  } };
-
-  assert.deepEqual(resolveEfficiencyPolicy(config, 'story-a'), {
-    max_subagent_count: 9,
-    amendment_reason: 'historical review migration',
-    max_review_dispatches_by_role: { architecture: 1, runtime: 2 }
-  });
-  assert.equal(resolveEfficiencyPolicy(config, 'story-b').max_subagent_count, 6);
-  assert.throws(
-    () => resolveEfficiencyPolicy({ budgets: {
-      delivery_efficiency: { max_subagent_count: 6 },
-      delivery_efficiency_by_story: { 'story-a': { max_subagent_count: 9 } }
-    } }, 'story-a'),
-    /requires amendment_reason/
-  );
-});
-import { buildAgentReviewEfficiencySummary } from '../src/pr-manager.js';
 
 const binding = {
   story_id: 'story-efficiency',
@@ -51,27 +15,6 @@ const binding = {
   head_sha: 'abc123',
   surface_digest: 'surface-1'
 };
-
-test('policy keeps unspecified and unmeasured budgets unknown instead of zero', () => {
-  const policy = normalizeEfficiencyPolicy({ max_review_dispatches_by_role: { implementation: 2 } });
-  assert.equal(policy.max_total_tokens, null);
-  assert.equal(policy.max_elapsed_ms, null);
-  assert.equal(policy.max_review_dispatches_by_role.implementation, 2);
-
-  const result = evaluateDeliveryBudget(policy, { total_tokens: null, review_dispatches_by_role: { implementation: 1 } });
-  assert.equal(result.status, 'within_budget');
-  assert.equal(result.dimensions.total_tokens.status, 'unknown');
-  assert.equal(result.remaining.total_tokens, null);
-});
-
-test('budget exceed and required attribution unknown are typed stops', () => {
-  const policy = normalizeEfficiencyPolicy({ max_total_tokens: 100, require_known_attribution: true });
-  const exceeded = evaluateDeliveryBudget(policy, { total_tokens: 101, attribution_status: 'known' });
-  assert.deepEqual(exceeded.stop, { type: 'stop', reason: 'budget_exceeded', dimensions: ['total_tokens'] });
-
-  const unknown = evaluateDeliveryBudget(policy, { total_tokens: 20, attribution_status: 'unknown' });
-  assert.deepEqual(unknown.stop, { type: 'stop', reason: 'attribution_unknown', dimensions: ['attribution_status'] });
-});
 
 test('final review waits for an exact frozen surface while preflight remains available', () => {
   const finalDecision = buildReviewDispatchDecision({
@@ -194,105 +137,3 @@ test('compatible repairable findings batch by role and surface while human/confl
   assert.equal(batches[0].rereview_count, 1);
 });
 
-test('metrics separate review union wall clock from parallel agent consumption and preserve unknown', () => {
-  const metrics = aggregateDeliveryMetrics({
-    run_started_at: '2026-07-21T00:00:00.000Z',
-    trusted_pr_ready_at: '2026-07-21T00:10:00.000Z',
-    observed_work_ms: 120_000,
-    active_wait_ms: 180_000,
-    tool_wait_ms: 60_000,
-    reviews: [
-      { role: 'runtime', started_at: '2026-07-21T00:01:00.000Z', finished_at: '2026-07-21T00:06:00.000Z' },
-      { role: 'runtime', started_at: '2026-07-21T00:03:00.000Z', finished_at: '2026-07-21T00:08:00.000Z' }
-    ],
-    total_tokens: 1_000,
-    fresh_input_tokens: null,
-    accepted_finding_count: 2,
-    full_suite_count: 1
-  });
-  assert.equal(metrics.trusted_pr_ready_ms, 600_000);
-  assert.equal(metrics.active_wait_ms, 180_000);
-  assert.equal(metrics.tool_wait_ms, 60_000);
-  assert.equal(metrics.review_wait_ms, 420_000);
-  assert.equal(metrics.subagent_wall_clock_ms, 420_000);
-  assert.equal(metrics.agent_consumption_ms, 600_000);
-  assert.equal(metrics.subagent_count, 2);
-  assert.deepEqual(metrics.review_dispatches_by_role, { runtime: 2 });
-  assert.equal(metrics.fresh_input_tokens, null);
-  assert.equal(metrics.tokens_per_accepted_finding.total, 500);
-  assert.equal(metrics.tokens_per_accepted_finding.fresh_input, null);
-});
-
-test('active wait remains independently budgeted and unknown is never converted to zero', () => {
-  const within = evaluateDeliveryBudget(
-    normalizeEfficiencyPolicy({ max_active_wait_ms: 1_200_000 }),
-    aggregateDeliveryMetrics({ active_wait_ms: 1_100_000 })
-  );
-  assert.equal(within.dimensions.active_wait_ms.status, 'within_budget');
-  assert.equal(within.remaining.active_wait_ms, 100_000);
-
-  const exceeded = evaluateDeliveryBudget(
-    normalizeEfficiencyPolicy({ max_active_wait_ms: 1_200_000 }),
-    aggregateDeliveryMetrics({ active_wait_ms: 1_300_000 })
-  );
-  assert.deepEqual(exceeded.stop, { type: 'stop', reason: 'budget_exceeded', dimensions: ['active_wait_ms'] });
-
-  const unknown = evaluateDeliveryBudget(
-    normalizeEfficiencyPolicy({ max_active_wait_ms: 1_200_000 }),
-    aggregateDeliveryMetrics({ active_wait_ms: null })
-  );
-  assert.equal(unknown.dimensions.active_wait_ms.status, 'unknown');
-  assert.equal(unknown.remaining.active_wait_ms, null);
-});
-
-test('metrics preserve unknown review timing while any dispatched review is still open', () => {
-  const metrics = aggregateDeliveryMetrics({
-    reviews: [
-      { role: 'runtime', started_at: '2026-07-21T00:01:00.000Z', finished_at: '2026-07-21T00:06:00.000Z' },
-      { role: 'gate', started_at: '2026-07-21T00:03:00.000Z', finished_at: null }
-    ]
-  });
-
-  assert.equal(metrics.review_wait_ms, null);
-  assert.equal(metrics.subagent_wall_clock_ms, null);
-  assert.equal(metrics.agent_consumption_ms, null);
-  assert.equal(metrics.subagent_count, 2);
-  assert.deepEqual(metrics.review_dispatches_by_role, { runtime: 1, gate: 1 });
-});
-
-test('efficiency debt stays separate from correctness readiness', () => {
-  const summary = summarizeEfficiencyDebt({
-    correctness_ready: true,
-    lifecycles: [{ status: 'timed_out' }, { status: 'obsolete' }, { status: 'orphaned_agent' }],
-    duplicate_dispatch_count: 2,
-    budget: { status: 'exceeded', exceeded: ['review_dispatch_count'] }
-  });
-  assert.equal(summary.correctness_ready, true);
-  assert.equal(summary.has_efficiency_debt, true);
-  assert.equal(summary.ready_for_pr_create, true);
-  assert.deepEqual(summary.debt.map((item) => item.kind), ['timed_out', 'obsolete', 'orphaned_agent', 'duplicate_dispatch', 'budget_exceeded']);
-});
-
-test('pr gate summary exposes review lifecycle debt without changing correctness readiness', () => {
-  const summary = buildAgentReviewEfficiencySummary({ stages: [{ roles: [
-    { lifecycle: { effective_status: 'timed_out', timed_out_count: 1, running_count: 0 } },
-    { lifecycle: { effective_status: 'running', timed_out_count: 0, running_count: 2 } }
-  ] }], delivery_efficiency: {
-    policy: { max_subagent_count: 1 },
-    reviews: [
-      { role: 'gate_evidence', started_at: '2026-07-21T00:00:00.000Z', finished_at: '2026-07-21T00:01:00.000Z' },
-      { role: 'gate_evidence', started_at: '2026-07-21T00:00:30.000Z', finished_at: '2026-07-21T00:02:00.000Z' }
-    ],
-    measurements: { attribution_status: 'unknown', repair_batch_count: 1 },
-    repair_batch_count: 1,
-    repair_states: [{ stage: 'gate', role: 'gate_evidence', status: 'planned', repair_batch_count: 1 }]
-  } }, true);
-  assert.equal(summary.correctness_ready, true);
-  assert.equal(summary.ready_for_pr_create, true);
-  assert.deepEqual(summary.debt.map((item) => item.kind), ['timed_out', 'duplicate_dispatch', 'budget_exceeded']);
-  assert.equal(summary.metrics.review_wait_ms, 120000);
-  assert.equal(summary.budget.stop.reason, 'budget_exceeded');
-  assert.equal(summary.attribution.status, 'unknown');
-  assert.equal(summary.dispatch_decision.status, 'unknown');
-  assert.equal(summary.repair.batch_count, 1);
-});

@@ -1,0 +1,189 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-unit-suite-concurrency-default",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Docs-only re-review over already-reviewed runtime change; fresh unit/e2e/integration artifacts at head 7db9956d all pass with no timeouts; shared-surface impact of the global DEFAULT_TIMEOUT_MS is explicitly disclosed; CI risk bounded by ~9-minute pre-change npm test on GH runners vs 90-minute budgets",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "release-risk-margin-claim-vs-observed-duration",
+      "detail": " unit.json at this head shows duration_ms=5171317 (86.2min), cutting the documented ~2x margin claim (based on 56.3min) to ~1.4x observed; run still passed well inside 120min; docs should be corrected or re-justified"
+    },
+    {
+      "severity": "low",
+      "id": "release-risk-ci-timeout-budget-not-named",
+      "detail": " npm-publish.yml and post-merge-release.yml cap jobs at 90 minutes and the story compatibility statement does not name that budget; gh run 30755351517 shows pre-change npm test ~9min on a 2-vCPU GH runner so practical risk is low; one-time post-merge timing spot-check recommended"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read story/spec/architecture docs and diff; confirmed code diff matches documented owned surface; cross-checked DEFAULT_TIMEOUT_MS usage sites confirming it is the global default for every verify-run kind and that the docs disclose this; inspected all three verification-run artifacts at head 7db9956d (pass, timed_out=false, unit duration 86.2min); checked .github/workflows for npm test consumers and timeout budgets (ci.yml default ~360min; npm-publish and post-merge-release 90min); inspected gh run 30755351517 showing pre-change npm test ~9min on a standard GH runner",
+    "evidence": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json e2e.json integration.json; gh run view 30755351517",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+      "package.json",
+      "src/verification-runner.js",
+      "test/full-suite-command-form.test.js",
+      "test/verification-runner.test.js",
+      ".github/workflows/ci.yml",
+      ".github/workflows/npm-publish.yml",
+      ".github/workflows/post-merge-release.yml"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: global timeout default increase plus parallelism pin is a classic silent shared-surface release risk that could blow the 90-minute release CI budgets -> final pass: the shared-surface impact is explicitly disclosed in the docs, all current-head artifacts pass without timeout, and CI risk is bounded by ~9-minute pre-change runs on GH runners; two non-blocking findings recorded for follow-up"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "expected_root": null,
+    "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "expected_root": null,
+      "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T16:13:58.899Z",
+  "git_context": {
+    "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "current_branch": "claude/awesome-tereshkova-ee0e2d",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T16:13:58.392Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 10 file(s)",
+    "recorded_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "surface_files": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "8d075b59370cdddc7b8aae329b97a60380d2f2717e291bf1c3bd1a6f743b54ab",
+        "size": 1257
+      },
+      {
+        "path": ".github/workflows/npm-publish.yml",
+        "sha256": "a79c5346741f20e98df5b5e1771c1f092668c830ad18905f0f0107751360f5a9",
+        "size": 1289
+      },
+      {
+        "path": ".github/workflows/post-merge-release.yml",
+        "sha256": "a365b9bca0b9b2e20895036e52cd7bc25503861355c0817ef13b770e10989507",
+        "size": 5353
+      },
+      {
+        "path": "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "1a36e9b8b79f3ec0aca98593400ccd6fb72c362b94c6bc8cbd7c1c83f0fb9918",
+        "size": 1938
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "c2c2d751ca74b245ed1aa77dcb60c3680d41c977f55650c7c2c2eeeae19cc5e0",
+        "size": 4326
+      },
+      {
+        "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "97c888a5b9744cf59f467635ce0634534c2155b5fe5049fbca126e4c39b2da5c",
+        "size": 2997
+      },
+      {
+        "path": "package.json",
+        "sha256": "cd3431b6cf01296462df08106683ba3cdbaeb8c5740e9bc4ad4af04996697d77",
+        "size": 1884
+      },
+      {
+        "path": "src/verification-runner.js",
+        "sha256": "edf9effce88c5fd10e2676ad03ef9c24f30be0e35aa7e39b681bf8e99c7c0556",
+        "size": 38529
+      },
+      {
+        "path": "test/full-suite-command-form.test.js",
+        "sha256": "af653604b8fe6b5425238449fe92f029e6fd8721e10f3fb8a30d99c55e3d42eb",
+        "size": 1337
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "7678e173d86884f79bc6dccadeef69e0819c5e1f45ce40eee4b0b1bb59464d08",
+        "size": 61824
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "933ced71eca95e0b46bcee0a2fbea12fd9a66a2d7e7753c3cdf0e4cef6730a82"
+  },
+  "source_fingerprint": "ca75949d7a82efedd4ca5b53b009c527f1b921257bd2ad56b78104869e304790",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aad85dd089ca238ca",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "aad85dd089ca238ca",
+    "session_id": "aad85dd089ca238ca",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-awesome-tereshkova-ee0e2d/b72589e7-17b5-460f-8581-06932845d285/tasks/aad85dd089ca238ca.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-unit-suite-concurrency-default/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent aad85dd089ca238ca returned its verdict JSON and stopped",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "aad85dd089ca238ca",
+      "implementation_session_id": "b72589e7-17b5-460f-8581-06932845d285",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

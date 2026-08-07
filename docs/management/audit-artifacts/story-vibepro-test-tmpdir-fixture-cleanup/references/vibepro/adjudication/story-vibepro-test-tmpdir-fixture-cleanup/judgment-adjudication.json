@@ -1,0 +1,338 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "updated_at": "2026-08-03T02:36:32.555Z",
+  "events": [
+    {
+      "event_id": "da623373-fba3-449e-9789-2562c2082ae7",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc carries explicit AC1-AC5 plus a reason frontmatter covering alternatives, compatibility, rollback, and boundary; genuine intent documentation matching the diff",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:06.738Z"
+    },
+    {
+      "event_id": "e63a9455-7366-48d9-b4ac-0c6c9c042f70",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Background documents the concrete ENOSPC incident (88778 fixtures, 43/92 failures) and the spec/story traceability is real and consistent with the implementation",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:07.515Z"
+    },
+    {
+      "event_id": "e33c2ddb-4c46-49b8-9dff-5daafde1210b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-001 in the spec pointer precisely matches the actual conformance guard regex and behavior, verified by reading both",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:08.338Z"
+    },
+    {
+      "event_id": "6b95430f-df57-4897-aad8-626291368baf",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The boundary claim (src mkdtemp semantics unchanged; env-only redirection) matches the helper implementation which only sets TMPDIR/TMP/TEMP",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:09.714Z"
+    },
+    {
+      "event_id": "a9adad80-fa38-4d32-b3a7-1f7c1f9506db",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "SIGKILL/crash residue failure mode is documented and behaviorally tested by the ac:4 stale-sweep scenario, not just asserted",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:10.688Z"
+    },
+    {
+      "event_id": "f8a5d266-a483-47a8-b124-0f9643b7f9d0",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence traces to verified story/spec docs plus runner_direct verification runs with content hashes and head bindings spot-checked against git history",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:11.561Z"
+    },
+    {
+      "event_id": "cd88040b-7338-42fc-a5aa-89064561b934",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Test-infrastructure-only change; no CLI/API/config/output surface touched; release note compatibility なし consistent with the actual diff scope",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:25.283Z"
+    },
+    {
+      "event_id": "e3242605-74d3-4573-aad8-bebbec31d07f",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback is delete-helper-plus-imports with no persisted state; the helper persists nothing outside the ephemeral scratch root",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:25.882Z"
+    },
+    {
+      "event_id": "80c96023-9a76-465b-90d6-fbedd00d7d3d",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No persistent application data touched; the sweep is strictly vibepro-scratch- prefix-scoped so it cannot collide with unrelated data",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:26.793Z"
+    },
+    {
+      "event_id": "48c1e2d2-c1f6-4498-b934-d2d4d8262b4e",
+      "type": "verdict",
+      "item_id": "axis:ux_surface",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No user-facing surface exists in this change; accepted_followup is genuine non-applicability",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:28.927Z"
+    },
+    {
+      "event_id": "6d512807-f60c-4be6-85b7-dceab38f1593",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The functional change is two files plus mechanical 1-line imports; the large file list is a reviewable mechanical pattern",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:29.627Z"
+    },
+    {
+      "event_id": "e4667427-e01f-405d-ba60-9c447f3776a2",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The release note entry accurately describes the shipped mechanism with change summary, compatibility, and user action sections read directly",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:30.486Z"
+    },
+    {
+      "event_id": "b247e89c-d449-4355-9a5c-8ee7f9d8444d",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Correctly not_required; no schema or validation surface in the diff",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:31.094Z"
+    },
+    {
+      "event_id": "faed8cd2-d40b-4a67-aa2d-ab024824c0b3",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Correctly not_required; no gate/review/evidence lifecycle code paths modified",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:31.712Z"
+    },
+    {
+      "event_id": "14b8cbf5-62e9-430e-a444-58751a3d6f3b",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Covered by the e2e ac:4 stale-sweep scenario which is the actual crash-residue workflow-state risk; executed and passing",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-test-tmpdir-fixture-cleanup; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "recorded_at": "2026-08-03T02:36:32.545Z"
+    }
+  ]
+}

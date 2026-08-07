@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "The round-1 finding is genuinely repaired at 1f6c38a9. The kind=unit evidence was re-recorded as one 10-suite run whose TAP artifact independently verifies 636 tests / 636 pass / 0 fail with zero not-ok lines, and the clause-bound scenarios name suites that the responsibility contracts actually own and that the recorded command actually executed. No coverage was dropped by the supersede: all 48 subtest names from the prior unit-1f6c38a9.tap are present in the new artifact. gate:unit, gate:integration, gate:e2e, gate:failure_mode_coverage and gate:responsibility_authority are all passed in gate-dag.json at this head, with responsibility_authority reporting all 6 matched responsibilities as having current evidence. Two low-severity residuals noted, not blocking: (1) verification-evidence.json records artifact_check.status=unrecognized for the TAP, so VibePro cannot machine-verify the 636/636 claim and it is reviewer-bound this round; (2) 13 declared names across two suites were not enumerated individually as top-level TAP subtests, consistent with nested or template-literal names given 0 skipped/todo/cancelled, reported as unverified rather than silently skipped.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified the TAP artifact's own totals and failure lines; cross-checked every declared test name in the 10 recorded suite files against the TAP subtest names; diffed the superseded unit TAP against the new one for dropped coverage; read the responsibility contract definitions (docs/contracts/vibepro-responsibility-authority.json, docs/contracts/vibepro-core-responsibilities.json, responsibility-authority.json) to confirm the cited clause ids genuinely own the executed suites; confirmed gate statuses in gate-dag.json; and independently re-ran test/responsibility-authority.test.js at head (31/31 pass) with a clean worktree.",
+    "evidence": ".vibepro/evidence/unit-all-1f6c38a9.tap",
+    "inputs": [
+      "docs/contracts/vibepro-responsibility-authority.json",
+      "docs/contracts/vibepro-core-responsibilities.json",
+      "responsibility-authority.json",
+      "test/responsibility-authority.test.js",
+      "test/vibepro-cli.test.js",
+      "test/verification-runner.test.js",
+      "test/session-efficiency-audit.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that the clause ids (VIBE-RAR-001/002, VIBE-CORE-EV-001, VIBE-CORE-COST-001) might be tokens inserted only to satisfy isGenericEvidenceRequirement/hasContractEvidenceBinding -> concluded the binding is substantive, because each cited suite is listed in that contract's own applies_to/owned_surfaces (e.g. VIBE-RAR-002 -> src/execution-state.js + test/vibepro-cli.test.js; VIBE-CORE-EV-001 -> test/verification-runner.test.js, test/adjudication.test.js, test/ci-evidence-import.test.js; VIBE-CORE-COST-001 -> src/session-efficiency-audit.js, src/merge-manager.js, src/cli.js) and every one of those suites declared tests appears in the executed TAP, with the whole set re-run green and one suite reproduced independently."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "expected_root": null,
+    "expected_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "expected_root": null,
+      "expected_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-01T11:06:48.491Z",
+  "git_context": {
+    "head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "current_branch": "claude/zen-feynman-69d82a",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-08-01T11:06:48.470Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "surface_files": [
+      {
+        "path": "docs/contracts/vibepro-core-responsibilities.json",
+        "sha256": "bb2c5c63d42966c11c1d587fda451e1ed188eddbf6bd756c5ff8143ff87239e1",
+        "size": 6841
+      },
+      {
+        "path": "docs/contracts/vibepro-responsibility-authority.json",
+        "sha256": "20db8f3fe82a20268ff1f2bb49352dea6774e6c0cfd75d37cb29e93451c234fd",
+        "size": 2484
+      },
+      {
+        "path": "responsibility-authority.json",
+        "sha256": "e16a34b03f5afa66ba218c9f10c66e53fed1929c63b31f6551090bc04963ca13",
+        "size": 19206
+      },
+      {
+        "path": "test/responsibility-authority.test.js",
+        "sha256": "1ecffdb6aca2fa69db52c0947cd4ca0161988e015388ef0e42cdcee405d785fd",
+        "size": 47080
+      },
+      {
+        "path": "test/session-efficiency-audit.test.js",
+        "sha256": "3c7e239f3dffd1160a296d233bed8f1c6ad645f5b2c7fe2653ebe2a2eafbe16b",
+        "size": 73601
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "356ab56496acb37ca89d32bcef7115b690ed2c514eea15aec4f93493964c000b",
+        "size": 60327
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "deeda7f1a5316c3280703bb3808597a67ef9f8d6c1ee5f55004047c4f05286c2",
+        "size": 1284885
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "16463da05a62c4f7207de5809b7a671296dcbad04ee4df7746c3d3371afc838b"
+  },
+  "source_fingerprint": "fe465cd43b5dbc76528dda54d4572787a46c7cac9ab4f4e5c54972bce068d1a8",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aec53db25918eaabb",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/subagents/agent-aec53db25918eaabb.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -3379,6 +3379,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-uiux-intake-judgment-gate.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -3386,6 +3393,22 @@
             "kind": "spec",
             "path": "docs/specs/story-vibepro-uiux-structured-intake.md",
             "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-uiux-intake-judgment-gate.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+            "required": false,
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
@@ -3400,9 +3423,30 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-uiux-intake-judgment-gate.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-uiux-structured-intake.md",
           "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-uiux-intake-judgment-gate.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+          "required": false,
           "relationship": "implements",
           "last_reviewed_root_hash": null
         }
@@ -5033,6 +5077,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -5049,6 +5100,13 @@
         {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-gate-decision-outcome-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -5405,6 +5463,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -5448,6 +5513,13 @@
             "path": "docs/specs/vibepro-codex-detached-completion-inbox.md",
             "required": true,
             "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md",
+            "required": true,
+            "relationship": "implements",
             "last_reviewed_root_hash": null
           }
         ],
@@ -5591,6 +5663,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md",
           "required": true,
@@ -5630,6 +5709,13 @@
           "path": "docs/specs/vibepro-codex-detached-completion-inbox.md",
           "required": true,
           "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md",
+          "required": true,
+          "relationship": "implements",
           "last_reviewed_root_hash": null
         },
         {
@@ -7250,7 +7336,1082 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-review-surface-violation-ledger",
+      "title": "Review Surface Violation Ledger",
+      "root_doc": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Append-only recording of review-surface changes observed between review start and close, kept typed apart from review staleness",
+      "owned_surfaces": [
+        "vibepro review close surface snapshot recording",
+        "review surface violation ledger (.vibepro/reviews/<story-id>/surface-violations.json)",
+        "gate:review_surface_integrity"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-session-cost-source-health-fail-soft",
+      "title": "Session Cost Source Health",
+      "root_doc": "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+      "owner": "VibePro runtime cost telemetry maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "architecture",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-vacuous-e2e-test-elimination",
+      "title": "Vacuous e2e Test Elimination",
+      "root_doc": "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Structural detection that a test/e2e file executes product behaviour, and the CI lint that keeps the e2e pass count honest",
+      "owned_surfaces": [
+        "test/e2e product-execution lint",
+        "e2e pass-count trustworthiness",
+        "scripts/lint-e2e-product-execution.mjs"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-process-record-worktree-durability",
+      "title": "Process record worktree durability",
+      "root_doc": "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-review-replacement-recovery",
+      "title": "Agent Review Replacement Recovery",
+      "root_doc": "docs/architecture/story-vibepro-review-replacement-recovery.md",
+      "owner": "codex",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Terminal Agent Review lifecycle normalization and replacement authorization recovery",
+      "owned_surfaces": [
+        "Agent Review dispatch lifecycle normalization",
+        "delivery efficiency duplicate-dispatch decision",
+        "terminal review replacement authorization",
+        "review status next-action recovery commands",
+        "review repair recovery commands",
+        "PR recovery commands",
+        "bilingual parallel-dispatch coordinator recovery instructions"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-review-replacement-recovery.md",
+            "required": true,
+            "relationship": "defines",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-review-replacement-recovery.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-review-replacement-recovery.md",
+          "required": true,
+          "relationship": "defines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-review-replacement-recovery.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-task-atomic-repo-control-contract",
+      "title": "Task-bound Atomic Repo-control Contract",
+      "root_doc": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+      "owner": "codex",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+            "required": true,
+            "relationship": "defines",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+          "required": true,
+          "relationship": "defines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-verify-command-test-path-existence-guard",
+      "title": "verify command named test path existence guard",
+      "root_doc": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "owner": "VibePro verification evidence maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-verify-command-test-path-existence-guard.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": "8c355eb60560c59f204a7a36e2440e845d62983356aab2d76ef086455eed6813"
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-verify-command-test-path-existence-guard.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": "8c355eb60560c59f204a7a36e2440e845d62983356aab2d76ef086455eed6813"
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-owner-gated-budget-override",
+      "title": "Owner-gated delivery efficiency budget override authority",
+      "root_doc": "docs/management/stories/active/story-vibepro-owner-gated-budget-override.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [
+        "src/budget-override-authority.js",
+        "src/delivery-efficiency-guardrail.js",
+        "src/decision-records.js budget grant fields",
+        "src/agent-review.js budget override stops",
+        "src/pr-manager.js budget_override_unauthorized efficiency debt",
+        "src/cli.js decision record budget flags"
+      ],
+      "required_child_kinds": [
+        "architecture"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-owner-gated-budget-override.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-owner-gated-budget-override.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-test-tmpdir-fixture-cleanup",
+      "title": "Test-suite TMPDIR fixture cleanup isolation",
+      "root_doc": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "title": "diagnosis-path directory walkers iterative rewrite",
+      "root_doc": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549"
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549"
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-unit-suite-concurrency-default",
+      "title": "VibePro Unit Suite Concurrency and Verify Run Timeout Defaults",
+      "root_doc": "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "npm test full-suite concurrency pin and verify run default timeout",
+      "owned_surfaces": [
+        "package.json scripts.test concurrency pin",
+        "src/verification-runner.js DEFAULT_TIMEOUT_MS"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "title": "gate:uiux_intake_judgment human PR summary surface labels",
+      "root_doc": "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "curated human PR summary label lists in src/pr-manager.js",
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {},
+      "child_links": [],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-cross-system-adjudication",
+      "title": "Cross-system adjudication requires a different model family than the implementer",
+      "root_doc": "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-cross-system-adjudication.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-cross-system-adjudication.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-verification-checkpoint-uiux-intake-gate",
+      "title": "Verification checkpoint gate list: gate:uiux_intake_judgment",
+      "root_doc": "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "curated verification checkpoint gate_ids in src/checkpoint-manager.js",
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "title": "死んだ人間向けPRサマリーレンダラーチェーンを削除する",
+      "root_doc": "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-strict-head-binding-origin-guard",
+      "title": "Strict HEAD Binding Origin Guard",
+      "root_doc": "docs/architecture/vibepro-strict-head-binding-origin-guard.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-strict-head-binding-origin-guard.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-strict-head-binding-origin-guard.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-progress-heartbeat-policy-kernel",
+      "title": "Vibepro Progress Heartbeat Policy Kernel",
+      "root_doc": "docs/architecture/story-vibepro-progress-heartbeat-policy-kernel.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-progress-heartbeat-policy-kernel.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-progress-heartbeat-policy-kernel.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-conformance-delta-ledger",
+      "title": "Conformance Delta Ledger Architecture",
+      "root_doc": "docs/architecture/vibepro-conformance-delta-ledger.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-repo-walk-scale-and-session-worktree-exclusion",
+      "title": "repo-walk scale safety and session-worktree scan exclusion",
+      "root_doc": "docs/management/stories/active/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": "18a2201bd2220f60e71801d3546d92e203ac3894970d0991a3ba2450b4642abc"
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": "18a2201bd2220f60e71801d3546d92e203ac3894970d0991a3ba2450b4642abc"
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-target-model-governance-rebaseline",
+      "title": "Target Model Governance and Rebaseline Architecture",
+      "root_doc": "docs/architecture/vibepro-target-model-governance-rebaseline.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/target-model-rebaseline-proposal.md",
+            "required": false,
+            "relationship": "derives_from",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "required": false,
+            "relationship": "derives_from",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/target-model-rebaseline-proposal.md",
+          "required": false,
+          "relationship": "derives_from",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "required": false,
+          "relationship": "derives_from",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-dependency-cycle-scc-reduction",
+      "title": "Dependency Cycle SCC Reduction Architecture",
+      "root_doc": "docs/architecture/vibepro-dependency-cycle-scc-reduction.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-28T04:55:19.762Z"
+  "updated_at": "2026-08-04T12:36:36.510Z"
 }

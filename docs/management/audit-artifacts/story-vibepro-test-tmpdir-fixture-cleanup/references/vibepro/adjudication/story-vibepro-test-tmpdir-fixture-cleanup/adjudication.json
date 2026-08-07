@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "updated_at": "2026-08-03T02:35:53.769Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "unit.log shows a runner_direct npm test run at the fix head with tests=2391 pass=2391 fail=0; the delta to current head is additive test files and message-text edits only, verified by git diff",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし、テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない。",
+          "AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)。",
+          "AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。",
+          "AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する。",
+          "AC5: 既存テストスイートが引き続き全件パスする。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "16079c46d76e6a0c0dc27ff39b867f96a4661f461b8b704d51b11bcc21a990f2",
+      "recorded_at": "2026-08-03T02:35:53.761Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "A real vibepro-scratch- directory aged 25 hours is removed by importing the helper in a fresh child process, asserted by direct stat observation and re-executed by the adjudicator",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし、テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない。",
+          "AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)。",
+          "AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。",
+          "AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する。",
+          "AC5: 既存テストスイートが引き続き全件パスする。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "16079c46d76e6a0c0dc27ff39b867f96a4661f461b8b704d51b11bcc21a990f2",
+      "recorded_at": "2026-08-03T02:35:52.196Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "The conformance guard passes 3/3 with the widened regex; an independently reimplemented scan found zero offenders; both previously-evading files verified to import the helper at line 1; c36e9254 diff confirms the regex widening",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし、テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない。",
+          "AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)。",
+          "AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。",
+          "AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する。",
+          "AC5: 既存テストスイートが引き続き全件パスする。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "16079c46d76e6a0c0dc27ff39b867f96a4661f461b8b704d51b11bcc21a990f2",
+      "recorded_at": "2026-08-03T02:35:50.554Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The ac:2 e2e case spawns a grandchild inheriting env whose mkdtemp lands inside the parent scratch root, directly demonstrating env inheritance reaching spawned processes",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし、テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない。",
+          "AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)。",
+          "AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。",
+          "AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する。",
+          "AC5: 既存テストスイートが引き続き全件パスする。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "16079c46d76e6a0c0dc27ff39b867f96a4661f461b8b704d51b11bcc21a990f2",
+      "recorded_at": "2026-08-03T02:35:48.520Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "The e2e test spawns a real child importing the helper, mkdtemps against os.tmpdir(), and asserts via direct filesystem observation that the scratch root is absent from the real TMPDIR after exit; an adversarial corpus scan found zero test files lacking the helper import at this head",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "af3f806393f7e846c",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "f56a1f7556f28f106876338eb03508d787e0d19e",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし、テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない。",
+          "AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)。",
+          "AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。",
+          "AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する。",
+          "AC5: 既存テストスイートが引き続き全件パスする。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "16079c46d76e6a0c0dc27ff39b867f96a4661f461b8b704d51b11bcc21a990f2",
+      "recorded_at": "2026-08-03T02:35:46.848Z"
+    }
+  ]
+}

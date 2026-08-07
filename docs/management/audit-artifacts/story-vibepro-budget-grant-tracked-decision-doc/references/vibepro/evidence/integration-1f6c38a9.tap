@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: BGT-E2E-1 the CLI grant flow leaves the grantor, digest, and timestamp on the tracked diff surface
+ok 1 - BGT-E2E-1 the CLI grant flow leaves the grantor, digest, and timestamp on the tracked diff surface
+  ---
+  duration_ms: 1093.960792
+  type: 'test'
+  ...
+# Subtest: BGT-E2E-2 negative path: a gitignored document path makes the CLI grant fail with no workspace record
+ok 2 - BGT-E2E-2 negative path: a gitignored document path makes the CLI grant fail with no workspace record
+  ---
+  duration_ms: 652.851334
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1903.380834

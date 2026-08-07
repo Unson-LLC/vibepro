@@ -1,0 +1,18 @@
+✔ CDL-S-7: pr prepare via CLI wires the conformance delta runner and produces a passed info-only gate node (2496.125583ms)
+✔ CDL-S-7: gate:architecture_delta never contributes to needs_verification / block regardless of its status (2340.698ms)
+✔ CDL-S-8: the shadow stage never causes an unrelated gate to regress, isolated from injection alone (3055.624708ms)
+✔ CDL-S-8: a docs-only commit re-run recomputes the delta without creating recorded evidence for this stage (3701.400167ms)
+✔ preparePullRequest without an injected conformanceDelta option falls back to an inconclusive info node, never throws (1681.757542ms)
+✔ BGT-E2E-1 the CLI grant flow leaves the grantor, digest, and timestamp on the tracked diff surface (906.726708ms)
+✔ BGT-E2E-2 negative path: a gitignored document path makes the CLI grant fail with no workspace record (596.932ms)
+✔ runner-direct evidence is consumed by the usage report, traceability clause map, and execution state without loss (1969.194125ms)
+✔ a failing runner-direct run is recorded as failing and is not reported as a passing claim (1471.053833ms)
+✔ pr autopilot records its own executed outcome as a computed source, not as self-reported (3888.896167ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13711.667917

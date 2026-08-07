@@ -4,6 +4,147 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- **Breaking cleanup (`0.2.0-beta.3`)**: publish the rebuilt minimal core. VibePro
+  now keeps repository-local Story, Spec, verification, review, decision, trace,
+  and PR evidence without a Gate DAG, blocking readiness verdicts, managed merge,
+  lifecycle accounting, budget enforcement, or automatic audit bundles. Removed
+  commands are not compatibility aliases; automation must switch to the commands
+  shown by `vibepro help`. The npm README and public manual now describe the same
+  boundary. Rollback by pinning `vibepro@0.2.0-beta.2`.
+
+- Remove the retired `check self-dogfood` and `checkpoint` invocations from CI.
+  Type checks, the full test suite, TypeScript E2E suite, E2E structural lint,
+  package dry-run, version smoke test, and English help smoke test remain required.
+
+- Remove 11 TypeScript acceptance specs that exclusively asserted behavior from
+  the retired Gate DAG, managed execution, adjudication, UI/UX gate, and audit
+  surfaces. The retained TypeScript E2E executes the current artifact-routing CLI
+  path, and the E2E runner still fails closed when no TypeScript specs exist.
+
+- Pin the `test` npm script to `node --test --test-concurrency=2`. The suite is
+  I/O-bound and scales negatively with parallelism; `--test-concurrency=2` is
+  the measured optimum (unlimited parallelism took 28 minutes at load average
+  ~100), so `npm test` — the full-suite command the unit evidence command-form
+  gate recognizes — now runs at the optimal concurrency with no gate-logic
+  change. Operator action: none; `npm test` keeps working everywhere it did.
+  Rollback: revert the one-line script change.
+
+- Widen `verify run`'s default timeout (`DEFAULT_TIMEOUT_MS`) from 1800000 ms
+  to 7200000 ms. Measured full-suite runs (28 minutes at load ~100 unlimited;
+  56 minutes at load ~35 with `--test-concurrency=2`) left almost no margin,
+  and a timeout kill records a fail that is not a test failure. Explicit
+  `--timeout-ms` behavior is unchanged. Observability: the effective value is
+  recorded as `run.timeout_ms` in every verification run artifact. Rollback:
+  revert the one-line constant change.
+
+- Remove 17 files under `test/e2e` that imported no product code, started no
+  process, and touched no filesystem. Each asserted a locally-defined string
+  against a regex built from that same string, so no product regression could
+  fail them, yet `node --test` counted them as passing e2e tests. No product
+  coverage is lost, because they covered no product branch to begin with.
+  Where an equivalent behavioural test already exists it is named in the commit
+  (`test/cli-status-honesty.test.js`,
+  `test/engineering-judgment-activation-precision.test.js`,
+  `test/managed-worktree-policy-resync.test.js`,
+  `test/traceability-usage-report.test.js`, `test/vibepro-cli.test.js`, and the
+  real `-main.test.js` siblings); for the remainder there is nothing to
+  replace. Two files did cover branches nothing else executed, and those were
+  rewritten into behavioural tests instead of deleted.
+
+- Add `npm run lint:e2e-product-execution`
+  (`scripts/lint-e2e-product-execution.mjs`), which fails when a `test/e2e`
+  file executes no product behaviour. A file clears the lint by doing any one
+  of: `product_import` (resolving a module inside this repository — a relative
+  path, a `#subpath` import, or an `@/` alias, so reaching product code through
+  a shared test helper counts), `process_start` (starting a child process or
+  running the CLI), `filesystem_access` (reading or writing the filesystem), or
+  `browser_automation` (driving Playwright, Cypress, or Puppeteer). It scans
+  `test/e2e` recursively, so nested directories are not a blind spot. It runs
+  in CI after `npm run test:e2e:ts`.
+
+  **What it is not**: a structural tripwire, not a proof of behavioural
+  coverage. It reads module specifiers and call names, so a single unused
+  import clears it, and a file that imports product code and then still
+  asserts only its own literals will pass. It catches the accidental
+  reintroduction of the shape removed here; it does not certify that a test
+  verifies anything.
+
+- `npm run typecheck` now also parses `scripts/*.mjs`, not only `bin/vibepro.js`
+  and `src/*.js`. All eight existing scripts already parse, so no result
+  changes, but a syntax error in a `scripts/*.mjs` file is now caught in CI.
+
+- Six `test/e2e/*-acceptance.spec.ts` files asserted their nested runner's
+  output as TAP (`/# pass N/`). Node emits the spec reporter (`ℹ`) from v23, so
+  those specs failed locally on newer Node for a reason unrelated to product
+  behaviour. They now accept either format. One exact `pass 14` pin became a
+  floor, so adding a test to that contract suite is no longer an unrelated red.
+
+- **Cross-story effect** of the removals: seven Story slugs — `cli-status-honesty`,
+  `evidence-user-fingerprint`, `keyword-gate-structured-migration`,
+  `pr-ship-command`, `execute-merge-command`,
+  `engineering-judgment-activation-precision`, and `merge-delta-review-reuse` —
+  no longer have any `test/e2e/<slug>-*` file, so a replayed audit of those
+  Stories will now report uncovered acceptance criteria. (`isStoryE2eCandidate()`
+  also matches on content mentioning a Story id, so those slugs still resolve one
+  candidate file — this acceptance spec, which names them — but it carries no
+  `ac:N` marker for them, so the reported outcome is the same.) That outcome is
+  by design: the deleted files never executed product code, so the coverage they
+  reported was not real. None of the seven is registered in
+  `.vibepro/config.json`, so no active Story's gate changes.
+
+  **Operator action**: none for existing consumers; this is a repository-internal
+  test-quality gate and changes no published CLI surface, artifact schema, or
+  runtime behaviour. Contributors adding a `test/e2e` file must assert on real
+  behaviour rather than on a literal the test wrote itself.
+
+  **Observability**: the lint reports through its exit code and prints either
+  `e2e-product-execution: <n> e2e test file(s) all execute product behaviour`
+  or a `::error::` annotation naming every offending file. The reported count
+  is the directory it actually inspected, so a moved or emptied directory is
+  visible rather than silently clean. It is fail-closed on every path where it
+  cannot see its subject: an unscannable directory, an unreadable file, and an
+  empty file set are all exit 1.
+
+  **Rollback**: revert the commit. The lint is a standalone script plus one CI
+  step and one npm script; nothing reads its output as data, there is no
+  persisted state, no schema, and no migration. To disable it without a revert,
+  remove the `npm run lint:e2e-product-execution` step from
+  `.github/workflows/ci.yml`; the deletions in this change stand on their own
+  and do not depend on the lint.
+
+- **Breaking (behavior)**: a Story-local delivery-efficiency budget override
+  (`budgets.delivery_efficiency_by_story.<story-id>` in `.vibepro/config.json`) is
+  now inert unless an accepted decision record grants it. Writing
+  `amendment_reason` is no longer sufficient: the grant must name a human grantor,
+  identify the recording agent, and carry the `override_digest` VibePro computes
+  from the override itself, so approving a budget approves specific numbers and a
+  grant cannot be transplanted to another Story. An ungranted override falls back
+  to the base budget — regardless of direction — and reports why, as
+  `budget_override` on `review authorize` / dispatch stops and as
+  `budget_override_unauthorized` efficiency debt in `pr prepare`. Note that the
+  fallback is to the base policy as written, not to the stricter of the two: if
+  you used a Story override to *tighten* a limit below the base budget, the
+  ungranted override reverts to the looser base until you record the grant.
+
+  **Upgrade action**: if your repository configures `delivery_efficiency_by_story`,
+  the override stops applying on upgrade. Either record an approval with
+  `vibepro decision record --id <story-id> --type waiver --status accepted
+  --summary <text> --reason <what the human approved> --source
+  budget:delivery_efficiency:<story-id> --budget-grantor <human>
+  --budget-grantor-kind human --agent-system <system> --agent-id <id>`
+  (`--reason` and all four budget flags are required, and the recording agent
+  identity must differ from the grantor), or
+  accept the base budget. Overrides that predate this gate *inside this repository*
+  are grandfathered by content digest and keep working exactly as merged; editing
+  one changes its digest and drops it to `unauthorized`. Grandfathering does not
+  extend to consumer repositories.
+
+- Add `--budget-grantor`, `--budget-grantor-kind`, `--agent-system` and `--agent-id`
+  to `vibepro decision record` for recording a budget-override approval. All four are
+  required when the decision source is a `budget:delivery_efficiency:` grant, and a
+  grantor equal to the recording agent identity is rejected at write time: the
+  session that consumes a raised budget cannot also grant it.
+
 ## 0.2.0-beta.2 - 2026-07-29
 
 - Add `vibepro verify run`: VibePro executes the verification command itself (argv,
@@ -1057,3 +1198,654 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-docs-only-ev
 このリポジトリ内では必須の操作はない（互換性節の repo 内スキャンで確認済み）。**外部リポジトリでは2点確認が必要**。(1) `verify record --observed` を使っている場合: Spec に列挙された provenance/integrity キー26個（`run_artifact`, `stdout_sha256`, `timed_out` 等）を渡していると、このリリース以降はコマンドが失敗し記録は書かれない。既存スクリプトの `--observed` キーを Spec の一覧と照合し、該当キーは削除するか `verify run` へ移行すること（caller 提供 `--artifact` 経由の同キーはコマンドは成功するが該当キーは落ち、警告として記録される）。成果観測キー（tests / pass / fail / duration_ms / head_sha 等）はそのまま使える。(2) runner_direct 記録を既に持つ場合: 次回の `pr prepare` で gate 証跡分類が targets / scenarios 由来だけになるため、provenance パスでしか runtime_path_evidence を得ていなかった記録は spine gate（current_reality / failure_modes / done_evidence）を満たさなくなり得る。gate が unmet...
 
 <!-- vibepro-release-pr:395:end -->
+
+<!-- vibepro-release-pr:396:start -->
+## [#396](https://github.com/Unson-LLC/vibepro/pull/396) story-vibepro-release-0-2-0-beta-2 - runner-direct evidence (PR #395) を含む #356〜#395 の約20PR分が npm 未公開のまま main に滞留している
+
+- Author: @sintariran
+- Merged: 2026-07-29T07:56:26Z
+- Commit: `3b7a12bdfa193bdaa75e6fcb83b8c079c19de051`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-release-0-2-0-beta-2.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-release-0-2-0-beta-2.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:396:end -->
+
+<!-- vibepro-release-pr:397:start -->
+## [#397](https://github.com/Unson-LLC/vibepro/pull/397) story-vibepro-review-surface-violation-ledger - 先行 Story の round 6 で、実装エージェントがレビュー実行中にツリーを変更した。lifecycle は start 時の head_sha しか記録しないため機械検出されず、レビュアーが git status を偶然見て発見した。違反は stale と同じ failed 表示になり、レビュー再実行で痕跡ごと消えた
+
+- Author: @sintariran
+- Merged: 2026-07-29T10:38:00Z
+- Commit: `e3ef7b963170f8500d370f6914037009944d3e0e`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:397:end -->
+
+<!-- vibepro-release-pr:398:start -->
+## [#398](https://github.com/Unson-LLC/vibepro/pull/398) story-vibepro-merge-binding-stale-stop-reason - Clear stale decision-outcome-binding failure flags when rebinding succeeds
+
+- Author: @sintariran
+- Merged: 2026-07-29T16:13:45Z
+- Commit: `412ecdc01877941491df99cb5378d832cd67ee3c`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:398:end -->
+
+<!-- vibepro-release-pr:399:start -->
+## [#399](https://github.com/Unson-LLC/vibepro/pull/399) fix: keep session-cost available on corrupt process metadata
+
+- Author: @sintariran
+- Merged: 2026-07-30T03:26:23Z
+- Commit: `17d9e139c87eebfffa07dd658ff40d9dbefd096b`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:399:end -->
+
+<!-- vibepro-release-pr:403:start -->
+## [#403](https://github.com/Unson-LLC/vibepro/pull/403) story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
+
+- Author: @sintariran
+- Merged: 2026-07-30T13:18:00Z
+- Commit: `0d89fd8819654684ddecc61738a8ae31224be6b3`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-process-record-worktree-durability.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-process-record-worktree-durability.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:403:end -->
+
+<!-- vibepro-release-pr:404:start -->
+## [#404](https://github.com/Unson-LLC/vibepro/pull/404) story-vibepro-task-atomic-repo-control-contract - Taskが同一HEADを要求するworkflowとruntimeを現行split policyが強制分離する矛盾を解消する
+
+- Author: @sintariran
+- Merged: 2026-07-30T19:56:24Z
+- Commit: `a6ab8b0e0891d89b928e34c072684f2beb74c5b9`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:404:end -->
+
+<!-- vibepro-release-pr:405:start -->
+## [#405](https://github.com/Unson-LLC/vibepro/pull/405) fix: recover terminal review replacement lifecycle
+
+- Author: @sintariran
+- Merged: 2026-07-31T10:15:29Z
+- Commit: `31d84833cd2059843593169cc6d7aa3d804a3f07`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:405:end -->
+
+<!-- vibepro-release-pr:401:start -->
+## [#401](https://github.com/Unson-LLC/vibepro/pull/401) story-vibepro-verify-command-test-path-existence-guard - verify record/runのコマンドが名指しするtest fileパスの実在を検証する
+
+- Author: @sintariran
+- Merged: 2026-08-01T01:53:50Z
+- Commit: `344b7a3aed391b0c320c021e8b524ec58615cee4`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:401:end -->
+
+<!-- vibepro-release-pr:406:start -->
+## [#406](https://github.com/Unson-LLC/vibepro/pull/406) story-vibepro-budget-grant-tracked-decision-doc - budget grant を diff でレビュー可能にする: decision record --source budget:delivery_efficiency:* が tracked decision document を必ず書く
+
+- Author: @sintariran
+- Merged: 2026-08-01T11:44:15Z
+- Commit: `4b4b35a8eb28c962b99161d544d67031edab6e69`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md), [docs/management/stories/active/story-vibepro-budget-override-residual-findings.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-budget-override-residual-findings.md), [docs/management/stories/active/story-vibepro-owner-gated-budget-override.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-owner-gated-budget-override.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:406:end -->
+
+<!-- vibepro-release-pr:407:start -->
+## [#407](https://github.com/Unson-LLC/vibepro/pull/407) story-vibepro-vacuous-e2e-test-elimination - test/e2e配下に、テスト内で定義した文字列リテラルを同じ文字列由来の正規表現でassert.matchするだけの、構造上失敗しないテストが19ファイル存在する
+
+- Author: @sintariran
+- Merged: 2026-08-02T01:44:24Z
+- Commit: `8dc2c3d65ec9acd7936a0cbdb07b4009242d1ff3`
+
+### Change Summary
+
+当初の記載は以下のとおりで、これは撤回する。記録として残す。 &gt; 本Storyは2 PRに分けて出荷する。順序に依存関係があるため入れ替えられない。 &gt; &gt; 1. **PR 1 (e2e-gate / requirements-ssot / repo-control)**: 19件の削除・2件の実挙動テストへの書き換え・Story登録・`.vibepro/spec/` のtest_ref張り替え・`docs/specs/vibepro-pr-ship-command.md` の記述修正。VET-S-2 / VET-S-3 / VET-S-4 / VET-S-6 を満たす。 &gt; 2. **PR 2 (runtime-behavior)**: `scripts/lint-e2e-product-execution.mjs` と `test/e2e-product-execution-lint.test.js`。VET-S-1 / VET-S-5 を満たす。 &gt; &gt; lintは19件が存在する状態では失敗するため、PR 2 を先に出すとCIが赤になる。逆順(PR 1 → PR 2)は各PR単体でgreenであることを実測済み。 撤回の根拠は以下のとおり。1は未検証の観察、2と3は検証済みであり、 2と3だけで撤回の判断は成立する。 1. **分割の主動機は根拠として使えない(未検証)**: 下記 Dogfooding findings 1 は 「削除主体のlaneは...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:407:end -->
+
+<!-- vibepro-release-pr:409:start -->
+## [#409](https://github.com/Unson-LLC/vibepro/pull/409) story-vibepro-profiler-file-walk-stack-overflow - architecture-profiler のファイル走査を反復処理化し、大規模treeでの "Maximum call stack size exceeded" を解消する
+
+- Author: @sintariran
+- Merged: 2026-08-02T15:52:39Z
+- Commit: `8c52f7c65a377399b7a0514673865025fdef9712`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:409:end -->
+
+<!-- vibepro-release-pr:412:start -->
+## [#412](https://github.com/Unson-LLC/vibepro/pull/412) story-vibepro-unit-suite-concurrency-default - unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する
+
+- Author: @sintariran
+- Merged: 2026-08-02T18:56:59Z
+- Commit: `0ac8c84e8c2cde3897fa8bd705b009473aa4d4e2`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:412:end -->
+
+<!-- vibepro-release-pr:415:start -->
+## [#415](https://github.com/Unson-LLC/vibepro/pull/415) story-vibepro-codex-host-containment-test-load-tolerance - test/codex-subagent-host.test.js の containment テストが load average 20-35 の full suite 実行時のみ condition timeout でフレークする
+
+- Author: @sintariran
+- Merged: 2026-08-02T21:31:46Z
+- Commit: `e3a0560f73d49b6ccdbea82bd355d8b6bf2e6bf5`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:415:end -->
+
+<!-- vibepro-release-pr:416:start -->
+## [#416](https://github.com/Unson-LLC/vibepro/pull/416) story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
+
+- Author: @sintariran
+- Merged: 2026-08-03T01:25:38Z
+- Commit: `aa58826cd087f5db2e11511de15151b46bda4bb1`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:416:end -->
+
+<!-- vibepro-release-pr:413:start -->
+## [#413](https://github.com/Unson-LLC/vibepro/pull/413) story-vibepro-cross-system-adjudication - Cross-system adjudication requires a different model family than the implementer
+
+- Author: @sintariran
+- Merged: 2026-08-03T02:20:37Z
+- Commit: `2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-cross-system-adjudication.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-cross-system-adjudication.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:413:end -->
+
+<!-- vibepro-release-pr:417:start -->
+## [#417](https://github.com/Unson-LLC/vibepro/pull/417) story-vibepro-test-tmpdir-fixture-cleanup - テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構
+
+- Author: @sintariran
+- Merged: 2026-08-03T03:10:18Z
+- Commit: `813bd5dd2aa17f90ef4997492faf80c3936cd0bc`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:417:end -->
+
+<!-- vibepro-release-pr:418:start -->
+## [#418](https://github.com/Unson-LLC/vibepro/pull/418) story-vibepro-verification-checkpoint-uiux-intake-gate - verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する
+
+- Author: @sintariran
+- Merged: 2026-08-03T06:55:00Z
+- Commit: `2326a3c533d1e493f888f64e7eb49a4dd16abefc`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:418:end -->
+
+<!-- vibepro-release-pr:419:start -->
+## [#419](https://github.com/Unson-LLC/vibepro/pull/419) story-vibepro-pr-human-summary-dead-chain-removal - 死んだ人間向けPRサマリーレンダラーチェーンを削除する
+
+- Author: @sintariran
+- Merged: 2026-08-03T08:25:33Z
+- Commit: `52da597503d976681590f6f5362d0479d3845027`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:419:end -->
+
+<!-- vibepro-release-pr:420:start -->
+## [#420](https://github.com/Unson-LLC/vibepro/pull/420) story-vibepro-strict-head-binding-origin-guard - strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する
+
+- Author: @sintariran
+- Merged: 2026-08-03T14:46:26Z
+- Commit: `c0be2d11de8704f070b0af6e872f2ab5cbbb1518`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:420:end -->
+
+<!-- vibepro-release-pr:414:start -->
+## [#414](https://github.com/Unson-LLC/vibepro/pull/414) story-vibepro-uiux-intake-judgment-gate - uiux intakeのSkill発火 + 判断記録gate
+
+- Author: @sintariran
+- Merged: 2026-08-04T02:09:12Z
+- Commit: `a6610283e9688d1e768b588efc2eda886c2b36aa`
+
+### Change Summary
+
+「行為を強制せず、無言を禁止する」というVibePro内の確立パターン （`not_verifiable_by_automation` のaccepted decision、`not_applicable` decisionによる 正直な閉じ方、guardのbypass理由必須）に揃え、分業を次で切る: 1. **Skill側（発火判断）**: `skills/vibepro-workflow/SKILL.md` にStory受領時のintake要否 判断を追記する。UI/UX intentなら `vibepro uiux intake validate` を回し、不要と判断 したら理由付きの `intake_not_applicable` decision recordを記録する。 2. **ハーネス側（判断存在の検証）**: `pr prepare` はintake coverageそのものを要求しない。 要求するのは「intake要否の判断が記録されていること」のみ。 - intake coverage artifact（`.vibepro/uiux/&lt;story-id&gt;/uiux-intake-coverage.json` または `.vibepro/design-modernize/&lt;story-id&gt;/uiux-intake-coverage.json`）が存在すれば satisfied - `intake_not_applicable`...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:414:end -->
+
+<!-- vibepro-release-pr:408:start -->
+## [#408](https://github.com/Unson-LLC/vibepro/pull/408) story-vibepro-progress-heartbeat-policy-kernel - src配下37箇所の長時間実行バウンドのうち理想形を満たすのはevaluateProgressBounds 1箇所のみ。バウンド皆無の子プロセスと進捗シグナル破棄サイトを正本kernelへ寄せたい
+
+- Author: @sintariran
+- Merged: 2026-08-04T04:40:27Z
+- Commit: `bc722efef60c61c4ff4c58a93321e294a92c571d`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-progress-heartbeat-policy-kernel.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-progress-heartbeat-policy-kernel.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:408:end -->
+
+<!-- vibepro-release-pr:421:start -->
+## [#421](https://github.com/Unson-LLC/vibepro/pull/421) story-vibepro-conformance-delta-ledger - conformance delta ledger — base/head差分でアーキテクチャ逸脱を再現可能に観測する
+
+- Author: @sintariran
+- Merged: 2026-08-04T09:52:52Z
+- Commit: `024737dc4a9560cd0b32da30ae7037fde8dd86e0`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-conformance-delta-ledger.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-conformance-delta-ledger.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:421:end -->
+
+<!-- vibepro-release-pr:422:start -->
+## [#422](https://github.com/Unson-LLC/vibepro/pull/422) fix: iterative pr-manager walkFiles + exclude .claude from repo scanners
+
+- Author: @sintariran
+- Merged: 2026-08-04T10:27:44Z
+- Commit: `298bcc0d0e7a5ebfd614d2c33d2a1d059f7786be`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:422:end -->
+
+<!-- vibepro-release-pr:424:start -->
+## [#424](https://github.com/Unson-LLC/vibepro/pull/424) story-vibepro-target-model-governance-rebaseline - target model governance rebaseline — 誰がモデルを変えてよいかを三分法で確定し、再baseline案と裁定カードを機械生成する
+
+- Author: @sintariran
+- Merged: 2026-08-04T14:16:30Z
+- Commit: `b34a74cf8e9e5f17d4b258f8fff53473cfa4cc1b`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:424:end -->
+
+<!-- vibepro-release-pr:427:start -->
+## [#427](https://github.com/Unson-LLC/vibepro/pull/427) story-vibepro-target-model-projection-v2 - target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる
+
+- Author: @sintariran
+- Merged: 2026-08-04T17:02:28Z
+- Commit: `71bab5ec9f901dc724d07e94973979fd14a095cf`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-target-model-projection-v2.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-target-model-projection-v2.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:427:end -->
+
+<!-- vibepro-release-pr:428:start -->
+## [#428](https://github.com/Unson-LLC/vibepro/pull/428) story-vibepro-dependency-cycle-scc-reduction - dependency_cycle の SCC 縮約 — 69,490件の単純閉路列挙を「1つのSCC + 20の相互依存ペア」へ畳み、ratchet gate を載せられる粒度にする
+
+- Author: @sintariran
+- Merged: 2026-08-05T05:15:21Z
+- Commit: `718aef115e8658bcc911e758cb6a1f91a5646801`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:428:end -->
+
+<!-- vibepro-release-pr:429:start -->
+## [#429](https://github.com/Unson-LLC/vibepro/pull/429) refactor: 縮小リファクタ Slice 1 — 診断/UIUX/architecture/performanceスキャナ群を削除
+
+- Author: @sintariran
+- Merged: 2026-08-06T10:49:23Z
+- Commit: `fcb4b825098dcdc8b1781afa82f9196e16ebac91`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:429:end -->
+
+<!-- vibepro-release-pr:430:start -->
+## [#430](https://github.com/Unson-LLC/vibepro/pull/430) refactor: 縮小リファクタ Slice 2 — 実行エンジン本体（execute/gate/adjudicate/outcome/checkpoint）を削除
+
+- Author: @sintariran
+- Merged: 2026-08-06T12:47:30Z
+- Commit: `b81e78c9553b4ec8fb0c4ddc57328404cb24f25e`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:430:end -->
+
+<!-- vibepro-release-pr:431:start -->
+## [#431](https://github.com/Unson-LLC/vibepro/pull/431) refactor: 縮小リファクタ Slice 3 — delivery-efficiency予算全系を削除
+
+- Author: @sintariran
+- Merged: 2026-08-06T14:00:25Z
+- Commit: `ca1fd47bbe8ff15b36ce0cb06343fef5bd3fe7b9`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:431:end -->
+
+<!-- vibepro-release-pr:432:start -->
+## [#432](https://github.com/Unson-LLC/vibepro/pull/432) refactor: 縮小リファクタ Slice 4 — run-context-capsuleスナップショット機構を削除（計画の実測更新込み）
+
+- Author: @sintariran
+- Merged: 2026-08-06T14:55:04Z
+- Commit: `b49b07f1dfb3461b87430c74bed705fbca9826ae`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:432:end -->
+
+<!-- vibepro-release-pr:435:start -->
+## [#435](https://github.com/Unson-LLC/vibepro/pull/435) feat: v-nextフォローアップ — report fingerprint再設計とstory_source/AC対応マップのpr prepare再統合
+
+- Author: @sintariran
+- Merged: 2026-08-06T22:51:31Z
+- Commit: `f763e3f59fca9e938c8e49ca023f583a2ee3f53d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:435:end -->

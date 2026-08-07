@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "needs_changes",
+  "summary": "atomic authorityと主要repair経路は正しいが、空のacceptance_criteria経路だけ文脈付き再実行コマンドが欠落していた",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "runtime-contract-incomplete-task-repair-context",
+      "detail": "空のacceptance_criteria経路がrepo/story/task/groupを保持したshell-quoted rerunCommandをtaskPlanRepairErrorへ渡していない"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "a4983c39の差分、atomic evaluator、全taskPlanRepairError経路、shell quoting、Task state routing、Story/Architecture/Specを確認した",
+    "evidence": "HEAD a4983c39; unit 6/6, TAR-CLI-001/002 2/2, Story E2E 1/1, integration 1/1, git diff --check pass",
+    "inputs": [
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js",
+      "test/task-bound-repo-control.test.js",
+      "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Task proofのatomic authority bypassは解消したが、空acceptance criteriaの後段repair経路だけ文脈保持が欠けると判明"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "expected_root": null,
+    "expected_head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+    "current_head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "expected_root": null,
+      "expected_head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+      "current_head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T12:55:49.637Z",
+  "git_context": {
+    "head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+    "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "4b10cbcdf4d48192ca2479c733a15e4d5ad79db5e66cf84f686419ee19c80413",
+    "user_status_fingerprint_hash": "4b10cbcdf4d48192ca2479c733a15e4d5ad79db5e66cf84f686419ee19c80413",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T12:55:49.622Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "8d6b259b4101fd9057dfe35fd1cf4f7aa2d04f91610e6cf23d84b21e74edec1e",
+        "size": 724861
+      },
+      {
+        "path": "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+        "sha256": "06242e94ab723bfb216ecf833eec301610b6be42b84a2f593156d74e5fd1f7c5",
+        "size": 1389
+      },
+      {
+        "path": "test/task-bound-repo-control.test.js",
+        "sha256": "6d8a7821f33afde220f2d3d2c220b54649309317fbe56f65cb1a3c5c9479ac62",
+        "size": 7515
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "72c7aad006b63214501e6337c8c29dfadefa99392d59ea96753535a5b8c045dc",
+        "size": 1277300
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "50099c9957542ca0543cfdf3b1a18e0e3c8105a55809785237e844c667c41851"
+  },
+  "source_fingerprint": "364d79b07f2057c17537fd07cc35b877cccc4f08579ca1d96c8c010053a7de4a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "tar_planning_architecture_v2",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "tar_planning_architecture_v2",
+    "session_id": "tar_planning_architecture_v2",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "collaboration:tar_planning_architecture_v2 final review at a4983c39",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "tar_planning_architecture_v2",
+      "implementation_session_id": "codex-thread-019f9e95-3829-71d0-b47f-e057fff8d171",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

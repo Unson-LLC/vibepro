@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "updated_at": "2026-08-02T21:00:25.724Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "The new e2e test explicitly asserts Number.isInteger(childPid) && childPid > 1 on the value read from the real fixture pid file, reusing the same tmp+rename fixture pattern and waitForChildPid positive-integer-parse gate as the unit tests. No new pid-file write path was introduced; the structural elimination of the childPid=0 misread is re-confirmed through a second, independent (public-API) code path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。",
+          "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。",
+          "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。",
+          "AC4: production 変更は containment 登録レース窓（inspection で発見）の閉鎖に限定する。shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は既存挙動を保持する。",
+          "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決して、未登録のまま「封じ込め成功」を返さない。",
+          "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。`childPid = 0` の誤読が構造的に発生しない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "22cea2bdfda7d4ee11c57f32647979a8ac51adf010b120703927a942bd4c9bc6",
+      "recorded_at": "2026-08-02T21:00:25.722Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "The new e2e test's first block goes through the public createCodexSubagentHost API (no reach-into-internals): it reads codex-process.json from the real runDir after spawn and asserts codexProcess.pid === childPid before shutdown is even called (proving synchronous registration behaviorally, not just by source inspection), then asserts the process is gone after host.shutdown(). I reran this test in isolation and it passes. This strengthens the previous source-level finding with an actual behavioral replay through the public surface.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。",
+          "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。",
+          "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。",
+          "AC4: production 変更は containment 登録レース窓（inspection で発見）の閉鎖に限定する。shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は既存挙動を保持する。",
+          "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決して、未登録のまま「封じ込め成功」を返さない。",
+          "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。`childPid = 0` の誤読が構造的に発生しない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "22cea2bdfda7d4ee11c57f32647979a8ac51adf010b120703927a942bd4c9bc6",
+      "recorded_at": "2026-08-02T21:00:25.192Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "git diff d07cb290..HEAD --stat confirms the only change since the last adjudicated head is the new test/e2e file; src/codex-subagent-host.js and src/codex-subagent-host-worker.js are byte-identical to the previously-adjudicated state. The production-change-limited-to-registration-race-closure finding still holds unmodified.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。",
+          "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。",
+          "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。",
+          "AC4: production 変更は containment 登録レース窓（inspection で発見）の閉鎖に限定する。shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は既存挙動を保持する。",
+          "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決して、未登録のまま「封じ込め成功」を返さない。",
+          "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。`childPid = 0` の誤読が構造的に発生しない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "22cea2bdfda7d4ee11c57f32647979a8ac51adf010b120703927a942bd4c9bc6",
+      "recorded_at": "2026-08-02T21:00:24.674Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Independently reran both suites at HEAD 03ac374b: node --test test/codex-subagent-host.test.js = 5/5 pass; node --test test/e2e/story-vibepro-codex-host-containment-test-load-tolerance-main.test.js = 2/2 pass. Recorded verification-evidence.json now carries two verify runs at this head: kind=unit (npm test, 2382/2382 pass) and kind=e2e (2/2 pass) with AC-1..AC-6 bound observation scenarios. Both isolated and full-suite pass are demonstrated at current HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。",
+          "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。",
+          "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。",
+          "AC4: production 変更は containment 登録レース窓（inspection で発見）の閉鎖に限定する。shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は既存挙動を保持する。",
+          "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決して、未登録のまま「封じ込め成功」を返さない。",
+          "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。`childPid = 0` の誤読が構造的に発生しない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "22cea2bdfda7d4ee11c57f32647979a8ac51adf010b120703927a942bd4c9bc6",
+      "recorded_at": "2026-08-02T21:00:24.159Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "New e2e test block 2 ('succeeds well inside the widened 300000ms deadline') measures observedMs via the public API replay and asserts observedMs < 300000; I reran it in isolation (2/2 pass, ~1.7s observed in this run). Combined with the unchanged 300000ms deadlines at the 4 unit call sites and the story's documented ~63s/load-120-155 measurement basis (~4.7x margin), the deadline construction is demonstrated and now additionally corroborated by a real timing observation through the public API.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。",
+          "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。",
+          "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。",
+          "AC4: production 変更は containment 登録レース窓（inspection で発見）の閉鎖に限定する。shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は既存挙動を保持する。",
+          "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決して、未登録のまま「封じ込め成功」を返さない。",
+          "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。`childPid = 0` の誤読が構造的に発生しない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "22cea2bdfda7d4ee11c57f32647979a8ac51adf010b120703927a942bd4c9bc6",
+      "recorded_at": "2026-08-02T21:00:23.628Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Delta re-check at HEAD 03ac374b: git diff d07cb290..HEAD shows only a new file (test/e2e/.../-main.test.js) added, zero changes to existing files. waitFor(predicate, { timeoutMs = 10000 } = {}) in test/codex-subagent-host.test.js is unchanged and still directly demonstrates a caller-specified deadline with unchanged 10000ms default. Verdict stands.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "task_id": null,
+        "acceptance_criteria": [
+          "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。",
+          "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。",
+          "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。",
+          "AC4: production 変更は containment 登録レース窓（inspection で発見）の閉鎖に限定する。shutdown エスカレーションの段階・シグナル順序・sandbox EPERM fallback は既存挙動を保持する。",
+          "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決して、未登録のまま「封じ込め成功」を返さない。",
+          "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。`childPid = 0` の誤読が構造的に発生しない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "22cea2bdfda7d4ee11c57f32647979a8ac51adf010b120703927a942bd4c9bc6",
+      "recorded_at": "2026-08-02T21:00:23.118Z"
+    }
+  ]
+}
