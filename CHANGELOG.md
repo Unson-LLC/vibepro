@@ -1870,3 +1870,24 @@ Breaking beta cleanup. Removed Gate DAG, blocking readiness verdicts, managed ex
 Update to vibepro@beta and migrate automation to commands listed by vibepro help. Pin vibepro@0.2.0-beta.2 only if temporary migration time is required.
 
 <!-- vibepro-release-pr:437:end -->
+
+<!-- vibepro-release-pr:438:start -->
+## [#438](https://github.com/Unson-LLC/vibepro/pull/438) fix: v-next外部repo初適用で見つかった不具合5件を修正 (#436)
+
+- Author: @sintariran
+- Merged: 2026-08-07T06:16:59Z
+- Commit: `73b62a58f2d024f986fcf77d7dcf66faf2b9ee69`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:438:end -->

@@ -343,3 +343,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:437:start -->
 - [PR #437](https://github.com/Unson-LLC/vibepro/pull/437) — [2026-08](/releases/2026-08): release: publish minimal core beta.3
 <!-- vibepro-release-index-pr:437:end -->
+
+<!-- vibepro-release-index-pr:438:start -->
+- [PR #438](https://github.com/Unson-LLC/vibepro/pull/438) — [2026-08](/releases/2026-08): fix: v-next外部repo初適用で見つかった不具合5件を修正 (#436)
+<!-- vibepro-release-index-pr:438:end -->
