@@ -1891,3 +1891,24 @@ Update to vibepro@beta and migrate automation to commands listed by vibepro help
 なし
 
 <!-- vibepro-release-pr:438:end -->
+
+<!-- vibepro-release-pr:442:start -->
+## [#442](https://github.com/Unson-LLC/vibepro/pull/442) feat: シニアエンジニア判断DAGを追加
+
+- Author: @sintariran
+- Merged: 2026-08-07T12:10:22Z
+- Commit: `941e9ddacec2f10c56ef95c2b1a08a84d8a88519`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:442:end -->

@@ -347,3 +347,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:438:start -->
 - [PR #438](https://github.com/Unson-LLC/vibepro/pull/438) — [2026-08](/ja/releases/2026-08): fix: v-next外部repo初適用で見つかった不具合5件を修正 (#436)
 <!-- vibepro-release-index-pr:438:end -->
+
+<!-- vibepro-release-index-pr:442:start -->
+- [PR #442](https://github.com/Unson-LLC/vibepro/pull/442) — [2026-08](/ja/releases/2026-08): feat: シニアエンジニア判断DAGを追加
+<!-- vibepro-release-index-pr:442:end -->
