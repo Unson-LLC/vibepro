@@ -51,6 +51,7 @@ import {
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
+import { evaluateSeniorJudgmentRun, renderSeniorJudgmentSummary } from './senior-judgment-dag.js';
 import {
   getDecisionStatus,
   readDecisionRecordsIfExists,
@@ -177,6 +178,7 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -279,6 +281,7 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -309,7 +312,7 @@ Usage:
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace',
-  'decision', 'verify', 'review', 'guard', 'spec', 'report',
+  'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
   'workspace', 'store'
 ];
 
@@ -828,6 +831,27 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: result.unacknowledged_count > 0 ? 2 : 0, command, subcommand, result };
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'judgment') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'evaluate') {
+        const result = await evaluateSeniorJudgmentRun(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          inputPath: getOption(rest, '--input')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSeniorJudgmentSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown judgment command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
@@ -1734,34 +1758,40 @@ function renderGateCheckSummary(result, { ciMode = false } = {}) {
 }
 
 function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
-  const prPrepareCommand = `vibepro pr prepare ${shellPath(repoRoot)} --base ${baseBranch ?? '<base-branch>'}`;
+  const base = baseBranch ?? '<base-branch>';
+  const storyDiagnoseCommand = `vibepro story diagnose ${shellPath(repoRoot)} --id <story-id> --run-graphify`;
+  const verifyRecordCommand = `vibepro verify record ${shellPath(repoRoot)} --id <story-id> --kind unit --status pass --command "npm test"`;
+  const reviewPrepareCommand = `vibepro review prepare ${shellPath(repoRoot)} --id <story-id> --stage gate`;
+  const prPrepareCommand = `vibepro pr prepare ${shellPath(repoRoot)} --base ${base}`;
   return localizedText(language, {
     ja: [
       `VibePro workspaceを初期化しました: ${workspaceDir}`,
       '',
-      '.vibepro/ は診断・Story・PR gate・レビュー証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。',
+      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGやPR作成をブロックする機構は持ちません。',
       `人間向け出力言語: ${language}`,
       `base branch候補: ${baseBranch ?? '未検出。origin/main, origin/develop, main, develop など実リポジトリの既定branchを指定してください。'}`,
       '',
       '次にやること:',
       '1. README全体を読む前に、まず `vibepro help` の「基本コマンド」を確認する',
-      `2. PR前の道標を作る: ${prPrepareCommand} --story-id <story-id>`,
-      `3. LLM/agentへ渡す前に bounded view を作る: ${prPrepareCommand} --story-id <story-id> --summary-json`,
-      '4. full JSON artifactは永続正本として保存し、必要なgate id/pathだけを対象にdrill-downする',
+      `2. Storyの調査コンテキストを作る: ${storyDiagnoseCommand}`,
+      `3. 現在のgit状態で実行した検証証跡を記録する: ${verifyRecordCommand}`,
+      `4. 役割別レビュー依頼を作る: ${reviewPrepareCommand}`,
+      `5. Story + Spec有無 + 記録済み検証 + 記録済みレビューを要約したPR本文を作る: ${prPrepareCommand} --story-id <story-id>`,
       ''
     ].join('\n'),
     en: [
       `VibePro workspace initialized: ${workspaceDir}`,
       '',
-      '.vibepro/ is the workspace for diagnosis, Story, PR gate, and review evidence. It is separate from application source changes.',
+      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. It carries no Gate DAG or PR-creation-blocking machinery.',
       `Human output language: ${language}`,
       `Base branch candidate: ${baseBranch ?? 'not detected. Use the repository default such as origin/main, origin/develop, main, or develop.'}`,
       '',
       'Next steps:',
       '1. Start with `vibepro help` before reading the full README.',
-      `2. Create the PR guide: ${prPrepareCommand} --story-id <story-id>`,
-      `3. Create a bounded LLM/coding agent view before handoff: ${prPrepareCommand} --story-id <story-id> --summary-json`,
-      '4. Keep full JSON artifacts as durable evidence and drill down only by referenced gate id or path.',
+      `2. Create the Story investigation context: ${storyDiagnoseCommand}`,
+      `3. Record verification evidence for the current git state: ${verifyRecordCommand}`,
+      `4. Create the role-based review request: ${reviewPrepareCommand}`,
+      `5. Summarize Story + Spec presence + recorded verification + recorded review into a PR body: ${prPrepareCommand} --story-id <story-id>`,
       ''
     ].join('\n')
   });

@@ -138,8 +138,8 @@ export default {
 function guideSidebar(locale) {
   const prefix = locale === 'ja' ? '/ja' : '';
   const labels = locale === 'ja'
-    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', '最小コアの流れ', '機能マップ', 'リリース境界']
-    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'Minimal Core Flow', 'Feature Map', 'Release Boundary'];
+    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', '最小コアの流れ', 'シニアエンジニア判断', '機能マップ', 'リリース境界']
+    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'Minimal Core Flow', 'Senior Engineering Judgment', 'Feature Map', 'Release Boundary'];
 
   return [
     {
@@ -149,8 +149,9 @@ function guideSidebar(locale) {
         { text: labels[2], link: `${prefix}/guide/what-is-vibepro` },
         { text: labels[3], link: `${prefix}/guide/getting-started` },
         { text: labels[4], link: `${prefix}/guide/control-loop` },
-        { text: labels[5], link: `${prefix}/guide/feature-map` },
-        { text: labels[6], link: `${prefix}/guide/release-and-audit` }
+        { text: labels[5], link: `${prefix}/guide/senior-engineering-judgment` },
+        { text: labels[6], link: `${prefix}/guide/feature-map` },
+        { text: labels[7], link: `${prefix}/guide/release-and-audit` }
       ]
     }
   ];

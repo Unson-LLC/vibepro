@@ -7,6 +7,7 @@
 | プロダクト意図の保存 | `story`, `spec`, `trace` | Story、Spec、trace記録 |
 | 実行証跡の保存 | `verify` | リポジトリ状態に結びついた検証記録 |
 | 人間またはagentの判断保存 | `review`, `decision` | レビューと判断記録 |
+| シニアエンジニア判断の評価 | `judgment evaluate` | 助言型の判断DAGと上書きしない実行履歴 |
 | command guardrailの追加 | `guard` | ローカルguard設定とreport |
 | PRへの引き渡し準備 | `pr prepare`, `pr create` | PR contextと人間向け本文 |
 | coding agentの設定 | `skills`, `codex`, `harness` | 導入済みinstructionsと学習記録 |

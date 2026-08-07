@@ -1849,3 +1849,87 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-dependency-c
 なし
 
 <!-- vibepro-release-pr:435:end -->
+
+<!-- vibepro-release-pr:437:start -->
+## [#437](https://github.com/Unson-LLC/vibepro/pull/437) release: publish minimal core beta.3
+
+- Author: @sintariran
+- Merged: 2026-08-07T02:08:05Z
+- Commit: `dbc88fc74dcf7f3472556b8b4a349032fb30846e`
+
+### Change Summary
+
+Publish VibePro 0.2.0-beta.3 as the rebuilt minimal core. Align the npm README and VitePress entry pages with the current Story, Spec, verification, review, decision, trace, and PR evidence boundary. Remove retired CI commands and stale TypeScript acceptance specs.
+
+### Compatibility
+
+Breaking beta cleanup. Removed Gate DAG, blocking readiness verdicts, managed execution and merge, lifecycle accounting, budget enforcement, automatic adjudication and audit, check, and checkpoint command surfaces are not restored as aliases.
+
+### User Action
+
+Update to vibepro@beta and migrate automation to commands listed by vibepro help. Pin vibepro@0.2.0-beta.2 only if temporary migration time is required.
+
+<!-- vibepro-release-pr:437:end -->
+
+<!-- vibepro-release-pr:438:start -->
+## [#438](https://github.com/Unson-LLC/vibepro/pull/438) fix: v-next外部repo初適用で見つかった不具合5件を修正 (#436)
+
+- Author: @sintariran
+- Merged: 2026-08-07T06:16:59Z
+- Commit: `73b62a58f2d024f986fcf77d7dcf66faf2b9ee69`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:438:end -->
+
+<!-- vibepro-release-pr:442:start -->
+## [#442](https://github.com/Unson-LLC/vibepro/pull/442) feat: シニアエンジニア判断DAGを追加
+
+- Author: @sintariran
+- Merged: 2026-08-07T12:10:22Z
+- Commit: `941e9ddacec2f10c56ef95c2b1a08a84d8a88519`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:442:end -->
+
+<!-- vibepro-release-pr:443:start -->
+## [#443](https://github.com/Unson-LLC/vibepro/pull/443) fix: derive judgment mode from causal evidence
+
+- Author: @sintariran
+- Merged: 2026-08-07T14:25:44Z
+- Commit: `584ba3f413e79f58f0645306aa616abf8d87e683`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:443:end -->

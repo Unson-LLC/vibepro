@@ -196,6 +196,7 @@ function buildClauseTraceabilityItem({
   const matchedTests = tests.filter((file) => (
     clauseMatchesPathOrText({ id, text, value: file.path ?? file })
     || testContentExplicitlyTargetsClause({ id, storyId, file })
+    || testContentMentionsBacktickedIdentifier({ text, file })
   ));
   const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
     evidenceTargetsClause({ id, text, item })
@@ -270,6 +271,32 @@ function testContentExplicitlyTargetsClause({ id, storyId, file }) {
   const storyOwnedPath = normalizedPath.includes(normalizedStoryId.toLowerCase());
   return storyOwnedPath
     && new RegExp(`(^|[^a-z0-9])${escapedId}(?=$|[^a-z0-9])`, 'i').test(file.content);
+}
+
+// issue #436 item 5: AC↔test mapping was filename-heuristic-only
+// (clauseMatchesPathOrText against the test's path) plus a story-qualified
+// reference syntax (testContentExplicitlyTargetsClause). An AC phrased
+// around a concrete identifier (e.g. "`fitSlackOverview` は...しない") that a
+// test actually exercises by calling that identifier — without repeating the
+// AC id/story id anywhere, and without the identifier appearing in the test
+// file's own path — showed up as [未対応] even though a real test covered
+// it. Extend matching (deliberately narrow: no design change to draft-spec
+// handling) to also count a test as mapped when a backtick-quoted
+// identifier from the AC/clause text literally appears in the test's
+// content.
+function extractBacktickedIdentifiers(text) {
+  const matches = String(text ?? '').match(/`([A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*)`/g) ?? [];
+  return [...new Set(matches.map((match) => match.slice(1, -1)))].filter((identifier) => identifier.length >= 3);
+}
+
+function testContentMentionsBacktickedIdentifier({ text, file }) {
+  if (!file || typeof file !== 'object' || typeof file.content !== 'string') return false;
+  const identifiers = extractBacktickedIdentifiers(text);
+  if (identifiers.length === 0) return false;
+  return identifiers.some((identifier) => {
+    const escaped = identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^A-Za-z0-9_$])${escaped}(?=$|[^A-Za-z0-9_$])`).test(file.content);
+  });
 }
 
 function isStrongClauseEvidence(item) {

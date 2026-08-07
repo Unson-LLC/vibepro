@@ -15,15 +15,28 @@ const STORY_ID = 'story-vibepro-pr-driven-continuous-release';
 
 async function releaseFixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-continuous-release-e2e-'));
+  const versionHistory = [
+    '# Version History',
+    '| Channel | Version |',
+    '| --- | --- |',
+    '| npm `latest` | `0.2.0-beta.0` |',
+    '| npm `beta` | `0.2.0-beta.0` |',
+    '| Repository `main` | `0.2.0-beta.0` release source |',
+    '## 0.2.0-beta.0',
+    'Current.',
+    '## 0.1.9',
+    'Historical 0.2.0-beta.0 remains.'
+  ].join('\n') + '\n';
   const files = {
     'docs/releases/2026-07.md': '# July 2026\n',
     'docs/ja/releases/2026-07.md': '# 2026年7月\n',
     'docs/releases/index.md': '# Release Notes\n\n| Date | Version | Channel | Summary |\n| --- | --- | --- | --- |\n',
     'docs/ja/releases/index.md': '# リリースノート\n\n| 日付 | バージョン | チャンネル | 概要 |\n| --- | --- | --- | --- |\n',
-    'docs/reference/version-history.md': 'Current: 0.2.0-beta.0\n',
-    'docs/ja/reference/version-history.md': 'Current: 0.2.0-beta.0\n',
-    'docs/guide/release-and-audit.md': 'Current: 0.2.0-beta.0\n',
-    'docs/ja/guide/release-and-audit.md': 'Current: 0.2.0-beta.0\n',
+    'docs/reference/version-history.md': versionHistory,
+    'docs/ja/reference/version-history.md': versionHistory,
+    'docs/guide/release-and-audit.md': '## Upgrade to 0.2.0-beta.0\nRollback pin: `vibepro@0.1.9`. Historical 0.2.0-beta.0 remains.\n',
+    'docs/ja/guide/release-and-audit.md': '## 0.2.0-beta.0\u3078\u306eupgrade\nRollback pin: `vibepro@0.1.9`\u3002Historical 0.2.0-beta.0 remains.\n',
+    'docs/.vitepress/config.mjs': "export default {\n  softwareVersion: '0.2.0-beta.0',\n};\n",
     'CHANGELOG.md': '# Changelog\n\n## Unreleased\n'
   };
   for (const [relative, content] of Object.entries(files)) {
@@ -63,11 +76,22 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   const release = await readFile(path.join(root, 'docs/releases/2026-07.md'), 'utf8');
   const index = await readFile(path.join(root, 'docs/releases/index.md'), 'utf8');
   const changelog = await readFile(path.join(root, 'CHANGELOG.md'), 'utf8');
+  const versionHistory = await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8');
+  const upgradeGuide = await readFile(path.join(root, 'docs/guide/release-and-audit.md'), 'utf8');
+  const vitepressConfig = await readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8');
   assert.equal(release.match(/vibepro-release-pr:73:start/g)?.length, 1);
   assert.equal(changelog.match(/vibepro-release-pr:73:start/g)?.length, 1);
   assert.equal(index.match(/vibepro-release-index-pr:73:start/g)?.length, 1);
   assert.equal(index.match(/npmjs\.com\/package\/vibepro\/v\/0\.2\.0-beta\.1/g)?.length, 1);
   assert.match(release, /PR-authored release note/);
+  assert.match(versionHistory, /npm `latest` \| `0\.2\.0-beta\.1`/);
+  assert.match(versionHistory, /## 0\.2\.0-beta\.1/);
+  assert.match(versionHistory, /## 0\.1\.9/);
+  assert.match(versionHistory, /Historical 0\.2\.0-beta\.0 remains/);
+  assert.match(upgradeGuide, /## Upgrade to 0\.2\.0-beta\.1/);
+  assert.match(upgradeGuide, /vibepro@0\.1\.9/);
+  assert.match(upgradeGuide, /Historical 0\.2\.0-beta\.0 remains/);
+  assert.match(vitepressConfig, /softwareVersion: '0\.2\.0-beta\.1'/);
 
   const calls = [];
   let metadataReads = 0;
@@ -106,5 +130,6 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   assert.ok(workflow.indexOf('gh release') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm run docs:deploy/);
   assert.match(workflow, /for attempt in 1 2 3; do[\s\S]*git reset --hard origin\/main[\s\S]*post-merge-release\.mjs project[\s\S]*git push origin HEAD:main/);
+  assert.match(workflow, /git add[^\n]*docs\/\.vitepress\/config\.mjs/);
   assert.doesNotMatch(workflow, /git pull --rebase origin main/);
 });

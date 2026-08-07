@@ -42,21 +42,30 @@ export async function collectGitStatusFingerprints(repoRoot, options = {}) {
     ...USER_PATHSPEC,
     ...additionalUserExcludePaths.map((filePath) => `:(exclude,literal)${filePath}`)
   ];
-  const [statusOutput, userStatusWithoutConfig, configStatusOutput] = await Promise.all([
+  // .vibepro/config.json used to be folded back into the user fingerprint so
+  // that hand-edits to it (e.g. story registration) would count as a "user"
+  // change. That re-inclusion meant recording a review, then merely
+  // `git commit`-ing an already-present config.json edit (routine per
+  // story add / select, which requires `git add -f .vibepro/config.json`)
+  // flipped the tracked file from "dirty diff" to "clean, committed" even
+  // though its bytes never changed relative to what the review inspected —
+  // which changed the user status fingerprint hash and falsely staled every
+  // content_surface review for that story (see issue #436 item 1). Content
+  // freshness for content_surface reviews is already governed by
+  // content-binding.js's per-file surface hash of the actually-inspected
+  // files; the coarse repo-wide user fingerprint only needs to catch edits
+  // to files outside that surface, so .vibepro/ (config.json included) stays
+  // fully excluded like every other VibePro-managed path.
+  const [statusOutput, userStatusOutput] = await Promise.all([
     gitStatus(repoRoot),
-    gitStatus(repoRoot, userPathspec),
-    gitStatus(repoRoot, ['.vibepro/config.json'])
+    gitStatus(repoRoot, userPathspec)
   ]);
-  const userStatusOutput = [userStatusWithoutConfig, configStatusOutput].filter(Boolean).join('\n');
-  const [dirtyDiff, userDirtyWithoutConfig, configDirtyDiff] = await Promise.all([
+  const [dirtyDiff, userDirtyDiff] = await Promise.all([
     collectDirtyDiff(repoRoot),
-    collectDirtyDiff(repoRoot, userPathspec),
-    collectDirtyDiff(repoRoot, ['.vibepro/config.json'])
+    collectDirtyDiff(repoRoot, userPathspec)
   ]);
-  const userDirtyDiff = [userDirtyWithoutConfig, configDirtyDiff].filter(Boolean).join('\n');
   const fingerprintScope = {
-    user_excludes: userExcludePaths,
-    user_includes: ['.vibepro/config.json']
+    user_excludes: userExcludePaths
   };
   return {
     status_output: statusOutput,

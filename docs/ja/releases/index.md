@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-07 | [`0.2.0-beta.3`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.3) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | PRマージ後のcontinuous release |
 | 2026-07-16 | [`0.2.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.0) | npm `latest` / `beta` | release workflow完了後の現在の公開beta |
@@ -338,3 +339,19 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:435:start -->
 - [PR #435](https://github.com/Unson-LLC/vibepro/pull/435) — [2026-08](/ja/releases/2026-08): feat: v-nextフォローアップ — report fingerprint再設計とstory_source/AC対応マップのpr prepare再統合
 <!-- vibepro-release-index-pr:435:end -->
+
+<!-- vibepro-release-index-pr:437:start -->
+- [PR #437](https://github.com/Unson-LLC/vibepro/pull/437) — [2026-08](/ja/releases/2026-08): release: publish minimal core beta.3
+<!-- vibepro-release-index-pr:437:end -->
+
+<!-- vibepro-release-index-pr:438:start -->
+- [PR #438](https://github.com/Unson-LLC/vibepro/pull/438) — [2026-08](/ja/releases/2026-08): fix: v-next外部repo初適用で見つかった不具合5件を修正 (#436)
+<!-- vibepro-release-index-pr:438:end -->
+
+<!-- vibepro-release-index-pr:442:start -->
+- [PR #442](https://github.com/Unson-LLC/vibepro/pull/442) — [2026-08](/ja/releases/2026-08): feat: シニアエンジニア判断DAGを追加
+<!-- vibepro-release-index-pr:442:end -->
+
+<!-- vibepro-release-index-pr:443:start -->
+- [PR #443](https://github.com/Unson-LLC/vibepro/pull/443) — [2026-08](/ja/releases/2026-08): fix: derive judgment mode from causal evidence
+<!-- vibepro-release-index-pr:443:end -->

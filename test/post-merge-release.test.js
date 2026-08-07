@@ -815,24 +815,75 @@ test('PCR-CON-007 retries dist-tag verification exceptions', async () => {
   assert.deepEqual(delays, [1000, 2000]);
 });
 
-test('PCR-CON-004 projects a new published version without duplicating its index row', async () => {
+test('PCR-CON-004 projects only current published-version metadata and is idempotent', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-version-'));
-  for (const relative of [
-    'docs/ja/reference/version-history.md', 'docs/reference/version-history.md',
-    'docs/ja/guide/release-and-audit.md', 'docs/guide/release-and-audit.md'
-  ]) {
+  const files = {
+    'docs/reference/version-history.md': [
+      '# Version and Release Channels',
+      '| Channel | Version | Authority |',
+      '| --- | --- | --- |',
+      '| npm `latest` | `0.2.0-beta.0` | registry |',
+      '| npm `beta` | `0.2.0-beta.0` | registry |',
+      '| Repository `main` | `0.2.0-beta.0` release source | package |',
+      '## 0.2.0-beta.0',
+      'Current release.',
+      '## 0.1.9',
+      'Historical text mentions 0.2.0-beta.0 and must remain unchanged.'
+    ].join('\n') + '\n',
+    'docs/ja/reference/version-history.md': [
+      '# \u30d0\u30fc\u30b8\u30e7\u30f3\u3068\u30ea\u30ea\u30fc\u30b9\u30c1\u30e3\u30cd\u30eb',
+      '| Channel | Version | Authority |',
+      '| --- | --- | --- |',
+      '| npm `latest` | `0.2.0-beta.0` | registry |',
+      '| npm `beta` | `0.2.0-beta.0` | registry |',
+      '| Repository `main` | `0.2.0-beta.0` release source | package |',
+      '## 0.2.0-beta.0',
+      '\u73fe\u884crelease\u3002',
+      '## 0.1.9',
+      '\u5c65\u6b74\u306e0.2.0-beta.0\u306f\u66f8\u304d\u63db\u3048\u306a\u3044\u3002'
+    ].join('\n') + '\n',
+    'docs/guide/release-and-audit.md': '## Upgrade to 0.2.0-beta.0\nRollback with `vibepro@0.1.9`; historical 0.2.0-beta.0 text stays.\n',
+    'docs/ja/guide/release-and-audit.md': '## 0.2.0-beta.0\u3078\u306eupgrade\n`vibepro@0.1.9`\u3078rollback\u3002\u5c65\u6b74\u306e0.2.0-beta.0\u306f\u6b8b\u3059\u3002\n',
+    'docs/.vitepress/config.mjs': "export default {\n  softwareVersion: '0.2.0-beta.0',\n};\n"
+  };
+  for (const [relative, content] of Object.entries(files)) {
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
-    await writeFile(path.join(root, relative), 'current 0.2.0-beta.0\n');
+    await writeFile(path.join(root, relative), content);
   }
   for (const relative of ['docs/ja/releases/index.md', 'docs/releases/index.md']) {
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
     await writeFile(path.join(root, relative), '| Version |\n| --- |\n');
   }
   await projectPublishedVersion(root, '0.2.0-beta.0', '0.2.0-beta.1', '2026-07-18T09:00:00Z');
+  const firstProjection = Object.fromEntries(await Promise.all(
+    [...Object.keys(files), 'docs/releases/index.md', 'docs/ja/releases/index.md'].map(async (relative) => [
+      relative,
+      await readFile(path.join(root, relative), 'utf8')
+    ])
+  ));
   await projectPublishedVersion(root, '0.2.0-beta.0', '0.2.0-beta.1', '2026-07-18T09:00:00Z');
+  for (const [relative, expected] of Object.entries(firstProjection)) {
+    assert.equal(await readFile(path.join(root, relative), 'utf8'), expected, `${relative} must be idempotent`);
+  }
+
   const index = await readFile(path.join(root, 'docs/releases/index.md'), 'utf8');
   assert.equal(index.match(/0\.2\.0-beta\.1/g)?.length, 2);
   assert.doesNotMatch(index, /0\.2\.0-beta\.0/);
+  for (const locale of ['', 'ja/']) {
+    const history = await readFile(path.join(root, `docs/${locale}reference/version-history.md`), 'utf8');
+    assert.match(history, /npm `latest` \| `0\.2\.0-beta\.1`/);
+    assert.match(history, /npm `beta` \| `0\.2\.0-beta\.1`/);
+    assert.match(history, /Repository `main` \| `0\.2\.0-beta\.1` release source/);
+    assert.match(history, /## 0\.2\.0-beta\.1/);
+    assert.match(history, /## 0\.1\.9/);
+    assert.match(history, /0\.2\.0-beta\.0/);
+  }
+  assert.match(firstProjection['docs/guide/release-and-audit.md'], /## Upgrade to 0\.2\.0-beta\.1/);
+  assert.match(firstProjection['docs/guide/release-and-audit.md'], /vibepro@0\.1\.9/);
+  assert.match(firstProjection['docs/guide/release-and-audit.md'], /historical 0\.2\.0-beta\.0 text stays/);
+  assert.match(firstProjection['docs/ja/guide/release-and-audit.md'], /## 0\.2\.0-beta\.1\u3078\u306eupgrade/);
+  assert.match(firstProjection['docs/ja/guide/release-and-audit.md'], /vibepro@0\.1\.9/);
+  assert.match(firstProjection['docs/.vitepress/config.mjs'], /softwareVersion: '0\.2\.0-beta\.1'/);
 });
 
 test('post-merge docs release is not gated by an approval environment', async () => {
@@ -846,4 +897,6 @@ test('post-merge release uses the trusted default-branch workflow for fork merge
   assert.match(workflow, /ref: main[\s\S]*git checkout --detach "\$RELEASE_SHA"/);
   assert.match(workflow, /pull_request\.merged == true/);
   assert.match(workflow, /pull_request\.base\.ref == 'main'/);
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('post-merge-release.mjs project'));
+  assert.match(workflow, /git add[^\n]*docs\/\.vitepress\/config\.mjs/);
 });

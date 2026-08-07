@@ -31,6 +31,32 @@ test('public manual states the current positioning and human authority boundary'
   }
 });
 
+test('public manual explains the advisory senior engineering judgment DAG in both locales', async () => {
+  const [config, english, japanese, englishMap, japaneseMap] = await Promise.all([
+    readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8'),
+    readFile(path.join(root, 'docs/guide/senior-engineering-judgment.md'), 'utf8'),
+    readFile(path.join(root, 'docs/ja/guide/senior-engineering-judgment.md'), 'utf8'),
+    readFile(path.join(root, 'docs/guide/feature-map.md'), 'utf8'),
+    readFile(path.join(root, 'docs/ja/guide/feature-map.md'), 'utf8')
+  ]);
+
+  assert.match(config, /Senior Engineering Judgment/);
+  assert.match(config, /シニアエンジニア判断/);
+  for (const guide of [english, japanese]) {
+    assert.match(guide, /vibepro judgment evaluate/);
+    assert.match(guide, /VALUE/);
+    assert.match(guide, /SIMPLIFY/);
+    assert.match(guide, /VALIDATE/);
+    assert.match(guide, /human_ci_repository_rules/);
+    assert.match(guide, /ready_for_pr_create/);
+    assert.match(guide, /merge_allowed/);
+  }
+  assert.match(english, /advisory decision support/i);
+  assert.match(japanese, /助言型の意思決定支援/);
+  assert.match(englishMap, /`judgment evaluate`/);
+  assert.match(japaneseMap, /`judgment evaluate`/);
+});
+
 test('public build configuration excludes internal operating corpora', async () => {
   const config = await readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8');
   for (const internalPath of [
