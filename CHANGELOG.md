@@ -1912,3 +1912,24 @@ Update to vibepro@beta and migrate automation to commands listed by vibepro help
 なし
 
 <!-- vibepro-release-pr:442:end -->
+
+<!-- vibepro-release-pr:443:start -->
+## [#443](https://github.com/Unson-LLC/vibepro/pull/443) fix: derive judgment mode from causal evidence
+
+- Author: @sintariran
+- Merged: 2026-08-07T14:25:44Z
+- Commit: `584ba3f413e79f58f0645306aa616abf8d87e683`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:443:end -->

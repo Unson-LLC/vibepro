@@ -351,3 +351,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:442:start -->
 - [PR #442](https://github.com/Unson-LLC/vibepro/pull/442) — [2026-08](/ja/releases/2026-08): feat: シニアエンジニア判断DAGを追加
 <!-- vibepro-release-index-pr:442:end -->
+
+<!-- vibepro-release-index-pr:443:start -->
+- [PR #443](https://github.com/Unson-LLC/vibepro/pull/443) — [2026-08](/ja/releases/2026-08): fix: derive judgment mode from causal evidence
+<!-- vibepro-release-index-pr:443:end -->
