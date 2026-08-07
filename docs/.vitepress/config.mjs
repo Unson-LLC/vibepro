@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
-const productDescription = 'Repository-local control plane for evidence-backed, safe AI-agent delivery';
+const productDescription = 'Repository-local Story, Spec, verification, review, and PR evidence for AI coding agents';
 
 export default {
   title: 'VibePro',
@@ -25,11 +25,11 @@ export default {
   head: [
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'VibePro Manual' }],
-    ['meta', { property: 'og:title', content: 'VibePro — Evidence-backed AI delivery control plane' }],
+    ['meta', { property: 'og:title', content: 'VibePro — Traceable context for AI coding agents' }],
     ['meta', { property: 'og:description', content: productDescription }],
     ['meta', { property: 'og:image', content: `${siteUrl}/assets/vibepro-header.png` }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'VibePro — Evidence-backed AI delivery control plane' }],
+    ['meta', { name: 'twitter:title', content: 'VibePro — Traceable context for AI coding agents' }],
     ['meta', { name: 'twitter:description', content: productDescription }],
     ['meta', { name: 'twitter:image', content: `${siteUrl}/assets/vibepro-header.png` }],
     ['meta', { name: 'vibepro-source-commit', content: sourceCommit }],
@@ -39,7 +39,7 @@ export default {
       name: 'VibePro',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Linux, Windows',
-      softwareVersion: '0.1.0-beta.0',
+      softwareVersion: '0.2.0-beta.3',
       url: siteUrl,
       codeRepository: 'https://github.com/Unson-LLC/vibepro',
       license: 'https://www.apache.org/licenses/LICENSE-2.0'
@@ -102,7 +102,7 @@ export default {
       lang: 'ja-JP',
       link: '/ja/',
       title: 'VibePro',
-      description: 'AIコーディングエージェントのための意図確認とレビュー証跡',
+      description: 'AIコーディングエージェントのためのStory、Spec、検証、レビュー、PR証跡',
       themeConfig: {
         siteTitle: 'VibeProマニュアル',
         nav: [
@@ -137,91 +137,20 @@ export default {
 
 function guideSidebar(locale) {
   const prefix = locale === 'ja' ? '/ja' : '';
-  const labels =
-    locale === 'ja'
-      ? {
-          start: 'はじめに',
-          loop: '制御ループ',
-          workflows: 'ワークフロー',
-          safety: '安全と出荷',
-          overview: '概要',
-          what: 'VibeProとは',
-          gettingStarted: 'インストールと初回実行',
-          concepts: '基本概念',
-          features: '機能マップ',
-          controlLoop: '証拠付き出荷の制御ループ',
-          workflow: 'AI PRの進め方',
-          gates: 'ゲートと証跡',
-          impact: 'Impact Context連携',
-          traceability: 'Story / Spec / 追跡性',
-          agentReview: 'エージェントレビュー',
-          checks: 'Check Packs',
-          verification: '検証・判断・CI証跡',
-          execution: 'チェックポイントと実行',
-          managed: 'Managed Execution',
-          safetyModel: '安全モデル',
-          releaseAudit: 'リリースと監査'
-        }
-      : {
-          start: 'Start Here',
-          loop: 'Control Loop',
-          workflows: 'Workflows',
-          safety: 'Safety and Shipping',
-          overview: 'Overview',
-          what: 'What VibePro Is',
-          gettingStarted: 'Install and First Run',
-          concepts: 'Core Concepts',
-          features: 'Feature Map',
-          controlLoop: 'Guarded Delivery Control Loop',
-          workflow: 'AI PR Workflow',
-          gates: 'Gates and Evidence',
-          impact: 'Impact Context Integrations',
-          traceability: 'Story, Spec, and Traceability',
-          agentReview: 'Agent Review',
-          checks: 'Check Packs',
-          verification: 'Verification, Decisions, and CI',
-          execution: 'Checkpoints and Execution',
-          managed: 'Managed Execution',
-          safetyModel: 'Safety Model',
-          releaseAudit: 'Release and Audit'
-        };
+  const labels = locale === 'ja'
+    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', '最小コアの流れ', '機能マップ', 'リリース境界']
+    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'Minimal Core Flow', 'Feature Map', 'Release Boundary'];
 
   return [
     {
-      text: labels.start,
+      text: labels[0],
       items: [
-        { text: labels.overview, link: `${prefix}/` },
-        { text: labels.what, link: `${prefix}/guide/what-is-vibepro` },
-        { text: labels.gettingStarted, link: `${prefix}/guide/getting-started` },
-        { text: labels.concepts, link: `${prefix}/guide/core-concepts` },
-        { text: labels.features, link: `${prefix}/guide/feature-map` }
-      ]
-    },
-    {
-      text: labels.loop,
-      items: [
-        { text: labels.controlLoop, link: `${prefix}/guide/control-loop` },
-        { text: labels.traceability, link: `${prefix}/guide/story-spec-traceability` },
-        { text: labels.verification, link: `${prefix}/guide/verification-decisions-ci` },
-        { text: labels.agentReview, link: `${prefix}/guide/agent-review` },
-        { text: labels.gates, link: `${prefix}/guide/gates-and-evidence` }
-      ]
-    },
-    {
-      text: labels.workflows,
-      items: [
-        { text: labels.workflow, link: `${prefix}/guide/ai-pr-workflow` },
-        { text: labels.impact, link: `${prefix}/guide/graphify-impact` },
-        { text: labels.checks, link: `${prefix}/guide/check-packs` },
-        { text: labels.execution, link: `${prefix}/guide/checkpoints-and-execution` },
-        { text: labels.managed, link: `${prefix}/guide/managed-execution` }
-      ]
-    },
-    {
-      text: labels.safety,
-      items: [
-        { text: labels.safetyModel, link: `${prefix}/guide/safety-model` },
-        { text: labels.releaseAudit, link: `${prefix}/guide/release-and-audit` }
+        { text: labels[1], link: `${prefix}/` },
+        { text: labels[2], link: `${prefix}/guide/what-is-vibepro` },
+        { text: labels[3], link: `${prefix}/guide/getting-started` },
+        { text: labels[4], link: `${prefix}/guide/control-loop` },
+        { text: labels[5], link: `${prefix}/guide/feature-map` },
+        { text: labels[6], link: `${prefix}/guide/release-and-audit` }
       ]
     }
   ];
@@ -230,17 +159,18 @@ function guideSidebar(locale) {
 function releaseSidebar(locale) {
   const prefix = locale === 'ja' ? '/ja' : '';
   const labels = locale === 'ja'
-    ? ['2026年7月', '2026年6月', '2026年5月', '2026年1月']
-    : ['July 2026', 'June 2026', 'May 2026', 'January 2026'];
+    ? ['2026年8月', '2026年7月', '2026年6月', '2026年5月', '2026年1月']
+    : ['August 2026', 'July 2026', 'June 2026', 'May 2026', 'January 2026'];
   return [
     {
       text: locale === 'ja' ? 'リリースノート' : 'Release Notes',
       items: [
         { text: locale === 'ja' ? '一覧' : 'Overview', link: `${prefix}/releases/` },
-        { text: labels[0], link: `${prefix}/releases/2026-07` },
-        { text: labels[1], link: `${prefix}/releases/2026-06` },
-        { text: labels[2], link: `${prefix}/releases/2026-05` },
-        { text: labels[3], link: `${prefix}/releases/2026-01` }
+        { text: labels[0], link: `${prefix}/releases/2026-08` },
+        { text: labels[1], link: `${prefix}/releases/2026-07` },
+        { text: labels[2], link: `${prefix}/releases/2026-06` },
+        { text: labels[3], link: `${prefix}/releases/2026-05` },
+        { text: labels[4], link: `${prefix}/releases/2026-01` }
       ]
     }
   ];

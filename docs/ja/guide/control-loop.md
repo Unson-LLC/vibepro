@@ -1,69 +1,47 @@
-# 証拠付き出荷の制御ループ
+# 最小コアの流れ
 
-VibeProは出荷を、一度だけ埋めればよいchecklistではなく、current headに結びついた契約の連鎖として扱います。
+VibeProは5つの明示的な段階で文脈を残します。これらを自動のpass/fail gateには変換しません。
 
-```text
-Story → Architecture / Spec → Code → Verification
-      → Independent Review → Adjudication → Release Guard
-      → PR → CI refresh → Merge → Canonical Audit / ROI
-```
-
-## 1. 意図と設計を結ぶ
+## 1. Story
 
 ```bash
-vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify
-vibepro architecture write . --id <story-id> --input <architecture.json> --final
-vibepro spec write . --id <story-id> --input <spec.json> --final
-vibepro story diagnose . --id <story-id> --phase pre-implementation --run-graphify
+vibepro story diagnose /path/to/repo --id story-example --run-graphify
 ```
 
-Storyは成果契約、Architectureは境界とrollback、Specは機械可読なclause、code / test reference、必要diagramを所有します。GraphとJourney contextはimpact lensであり、これらのauthorityを置き換えません。
+Storyには、意図するユーザー価値または運用成果を書きます。Graphifyは任意です。
 
-## 2. 実装して挙動を証明する
+## 2. Spec
 
 ```bash
-vibepro verify record . \
-  --id <story-id> \
-  --kind build \
-  --status pass \
-  --command "npm run build" \
-  --artifact <durable-status-artifact> \
-  --scenario "production build completes" \
-  --observed "exit_code=0"
+vibepro spec readiness /path/to/repo --id story-example --base origin/main
+vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 ```
 
-statusは `pass`、`fail`、`needs_setup` です。exit code 0だけでdurable artifactや具体的観測がない記録は、完了証明ではなく補助証跡になることがあります。
+Specはacceptance clauseとcode/test参照を持てます。draftとfinalは明示的に区別します。
 
-## 3. 独立して検査する
-
-[エージェントレビュー](/ja/guide/agent-review)のprepare → separate reviewer start → inspection → lifecycle close → provenance付きrecordを実行します。Spec clauseやSenior Judgment itemに独立裁定が必要なら `adjudicate prepare` / `adjudicate record` を使います。
-
-## 4. GuardしてPRを準備する
+## 3. 検証
 
 ```bash
-vibepro guard check . --story-id <story-id>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
+vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 ```
 
-readinessの正本は `pr-prepare.json` の `gate_status` です。短いPR本文は判断briefであり、詳細証跡の代替ではありません。
+`verify run` はargv commandを実行して結果を記録します。外部で生成した証跡には `verify record` を使え、証跡の出所は区別されます。
 
-## 5. CIを更新してmergeする
+## 4. レビューと判断
 
 ```bash
-vibepro verify import-ci . --id <story-id> --pr <number>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
-vibepro execute merge . --story-id <story-id> --strategy merge
+vibepro review prepare /path/to/repo --id story-example --stage gate
+vibepro review record /path/to/repo --id story-example --stage gate \
+  --role implementation --status pass --summary "確認済み"
+vibepro decision status /path/to/repo --id story-example
 ```
 
-CI importは証跡集合を変えます。merge前にprepareとPR refreshを再実行し、artifactとPR本文をcurrent headへ揃えます。
+これらのcommandはレビューと判断の記録を残します。merge権限を与えるものではありません。
 
-## 6. 出荷結果を残す
+## 5. PRへの引き渡し
 
 ```bash
-vibepro audit replay . --story-id <story-id>
-vibepro usage report . --gate-roi --subagent-roi
+vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
 
-Canonical auditは「何が出荷されたか」「正本checkoutから再生できるか」を示します。Usage reportは出荷価値と、証跡・レビューのコストを分離します。
+`.vibepro/pr/story-example/pr-prepare.json` と生成されたPR本文を確認します。次に何が必要かは、人間とリポジトリpolicyが判断します。`pr create` は任意のGitHub CLI引き渡しであり、安全gateではありません。

@@ -4,6 +4,23 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- **Breaking cleanup (`0.2.0-beta.3`)**: publish the rebuilt minimal core. VibePro
+  now keeps repository-local Story, Spec, verification, review, decision, trace,
+  and PR evidence without a Gate DAG, blocking readiness verdicts, managed merge,
+  lifecycle accounting, budget enforcement, or automatic audit bundles. Removed
+  commands are not compatibility aliases; automation must switch to the commands
+  shown by `vibepro help`. The npm README and public manual now describe the same
+  boundary. Rollback by pinning `vibepro@0.2.0-beta.2`.
+
+- Remove the retired `check self-dogfood` and `checkpoint` invocations from CI.
+  Type checks, the full test suite, TypeScript E2E suite, E2E structural lint,
+  package dry-run, version smoke test, and English help smoke test remain required.
+
+- Remove 11 TypeScript acceptance specs that exclusively asserted behavior from
+  the retired Gate DAG, managed execution, adjudication, UI/UX gate, and audit
+  surfaces. The retained TypeScript E2E executes the current artifact-routing CLI
+  path, and the E2E runner still fails closed when no TypeScript specs exist.
+
 - Pin the `test` npm script to `node --test --test-concurrency=2`. The suite is
   I/O-bound and scales negatively with parallelism; `--test-concurrency=2` is
   the measured optimum (unlimited parallelism took 28 minutes at load average
