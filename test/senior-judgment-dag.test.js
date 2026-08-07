@@ -45,8 +45,6 @@ function createInput(overrides = {}) {
       proposed_batch: {
         id: 'batch-current',
         story_ids: ['story-senior-judgment'],
-        change_kind: 'external_value',
-        directly_addresses_constraint: true,
         source_refs: ['docs/stories/story-senior-judgment.md']
       }
     },
@@ -78,7 +76,7 @@ test('SEJ-000 portfolio history and one selected development mode precede story-
   assert.equal(result.nodes.find((node) => node.id === 'mode:validate').state, 'not_reached');
 });
 
-test('SEJ-MODE-1 verified current constraint directly addressed by the batch selects VALUE', () => {
+test('SEJ-MODE-1 verified current constraint with clean causal history selects VALUE', () => {
   const result = evaluateSeniorJudgment(createInput({
     options: [{
       id: 'fix-current-constraint',
@@ -118,8 +116,6 @@ test('SEJ-MODE-2/5 ineffective structural addition selects SIMPLIFY and prunes a
       proposed_batch: {
         id: 'batch-42',
         story_ids: ['story-senior-judgment', 'story-next-control'],
-        change_kind: 'addition',
-        directly_addresses_constraint: true,
         source_refs: ['docs/stories/story-next-control.md']
       }
     },
@@ -180,8 +176,6 @@ test('SEJ-MODE-3/4 unknown outcome selects VALIDATE without counting parallel st
       proposed_batch: {
         id: 'next-batch',
         story_ids: ['story-senior-judgment', 'story-next'],
-        change_kind: 'addition',
-        directly_addresses_constraint: true,
         source_refs: ['docs/stories/story-next.md']
       }
     },
@@ -211,6 +205,155 @@ test('SEJ-MODE-3/4 unknown outcome selects VALIDATE without counting parallel st
   assert.equal(historyNode.adopted_story_count, 4);
   assert.deepEqual(result.viable_options.map((option) => option.id), ['measure-current-outcome']);
   assert.equal(result.pruned_options.find((option) => option.id === 'ship-next-batch').reason, 'development_mode_mismatch');
+});
+
+const LEGACY_PROPOSAL_METADATA = [
+  { change_kind: 'external_value', directly_addresses_constraint: true },
+  { change_kind: 'external_value', directly_addresses_constraint: false },
+  { change_kind: 'addition', directly_addresses_constraint: true },
+  { change_kind: 'addition', directly_addresses_constraint: false },
+  { change_kind: 'simplification', directly_addresses_constraint: true },
+  { change_kind: 'simplification', directly_addresses_constraint: false },
+  { change_kind: 'validation', directly_addresses_constraint: true },
+  { change_kind: 'validation', directly_addresses_constraint: false }
+];
+
+function withLegacyProposalMetadata(developmentCycle, proposalMetadata) {
+  return {
+    ...developmentCycle,
+    proposed_batch: {
+      ...developmentCycle.proposed_batch,
+      ...proposalMetadata
+    }
+  };
+}
+
+function proposalMetadataLabel({ change_kind: changeKind, directly_addresses_constraint: directlyAddresses }) {
+  return `${changeKind}/direct=${directlyAddresses}`;
+}
+
+test('SEJ-MODE-CAUSAL-1 clean verified history selects VALUE independently of legacy proposal metadata', async (t) => {
+  for (const proposalMetadata of LEGACY_PROPOSAL_METADATA) {
+    await t.test(proposalMetadataLabel(proposalMetadata), () => {
+      const base = createInput();
+      const result = evaluateSeniorJudgment(createInput({
+        run_id: `clean-${proposalMetadata.change_kind}-${proposalMetadata.directly_addresses_constraint}`,
+        development_cycle: withLegacyProposalMetadata(base.development_cycle, proposalMetadata)
+      }));
+
+      assert.equal(result.development_mode, 'VALUE');
+    });
+  }
+
+  await t.test('VALUE mode, rather than proposal metadata, prunes candidate options', () => {
+    const base = createInput();
+    const result = evaluateSeniorJudgment(createInput({
+      run_id: 'clean-value-option-pruning',
+      development_cycle: withLegacyProposalMetadata(base.development_cycle, {
+        change_kind: 'validation',
+        directly_addresses_constraint: false
+      }),
+      options: [
+        {
+          id: 'fix-verified-constraint',
+          summary: 'Fix the verified external constraint',
+          action: 'fix',
+          addresses: [],
+          violates: [],
+          residual_risk: 'low'
+        },
+        {
+          id: 'measure-known-constraint',
+          summary: 'Measure a constraint that is already verified',
+          action: 'measure',
+          addresses: [],
+          violates: [],
+          residual_risk: 'low'
+        }
+      ]
+    }));
+
+    assert.equal(result.development_mode, 'VALUE');
+    assert.deepEqual(result.viable_options.map((option) => option.id), ['fix-verified-constraint']);
+    assert.equal(
+      result.pruned_options.find((option) => option.id === 'measure-known-constraint').reason,
+      'development_mode_mismatch'
+    );
+  });
+});
+
+test('SEJ-MODE-CAUSAL-2 ineffective structural growth selects SIMPLIFY independently of legacy proposal metadata', async (t) => {
+  for (const proposalMetadata of LEGACY_PROPOSAL_METADATA) {
+    await t.test(proposalMetadataLabel(proposalMetadata), () => {
+      const base = createInput();
+      const result = evaluateSeniorJudgment(createInput({
+        run_id: `ineffective-${proposalMetadata.change_kind}-${proposalMetadata.directly_addresses_constraint}`,
+        development_cycle: withLegacyProposalMetadata({
+          ...base.development_cycle,
+          history_boundary: {
+            kind: 'verified_external_outcome',
+            source_ref: 'analytics/release-40'
+          },
+          adopted_batches: [{
+            id: 'batch-ineffective-growth',
+            story_ids: ['story-addition'],
+            change_kind: 'addition',
+            structural_effect: 'increase',
+            external_outcome: 'unchanged',
+            source_refs: ['git/release-41', 'analytics/release-41']
+          }]
+        }, proposalMetadata)
+      }));
+
+      assert.equal(result.development_mode, 'SIMPLIFY');
+    });
+  }
+});
+
+test('SEJ-MODE-CAUSAL-3 an unverified current constraint selects VALIDATE independently of legacy proposal metadata', async (t) => {
+  for (const constraintStatus of ['hypothesized', 'unknown']) {
+    for (const proposalMetadata of LEGACY_PROPOSAL_METADATA) {
+      await t.test(`${constraintStatus}/${proposalMetadataLabel(proposalMetadata)}`, () => {
+        const base = createInput();
+        const result = evaluateSeniorJudgment(createInput({
+          run_id: `unverified-${constraintStatus}-${proposalMetadata.change_kind}-${proposalMetadata.directly_addresses_constraint}`,
+          development_cycle: withLegacyProposalMetadata({
+            ...base.development_cycle,
+            current_constraint: {
+              ...base.development_cycle.current_constraint,
+              status: constraintStatus
+            }
+          }, proposalMetadata)
+        }));
+
+        assert.equal(result.development_mode, 'VALIDATE');
+      });
+    }
+  }
+});
+
+test('SEJ-MODE-CAUSAL-4 structural growth with unknown outcome selects VALIDATE independently of legacy proposal metadata', async (t) => {
+  for (const proposalMetadata of LEGACY_PROPOSAL_METADATA) {
+    await t.test(proposalMetadataLabel(proposalMetadata), () => {
+      const base = createInput();
+      const result = evaluateSeniorJudgment(createInput({
+        run_id: `unknown-growth-${proposalMetadata.change_kind}-${proposalMetadata.directly_addresses_constraint}`,
+        development_cycle: withLegacyProposalMetadata({
+          ...base.development_cycle,
+          adopted_batches: [{
+            id: 'batch-unmeasured-growth',
+            story_ids: ['story-addition'],
+            change_kind: 'addition',
+            structural_effect: 'increase',
+            external_outcome: 'unknown',
+            source_refs: ['git/release-unknown']
+          }]
+        }, proposalMetadata)
+      }));
+
+      assert.equal(result.development_mode, 'VALIDATE');
+    });
+  }
 });
 
 function completeAxes(axes) {
