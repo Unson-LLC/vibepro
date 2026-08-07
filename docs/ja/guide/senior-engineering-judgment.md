@@ -23,17 +23,19 @@
 
 | モード | 選択条件 | 許可するoption action |
 | --- | --- | --- |
-| `VALUE` | 現在制約が確認済みで、採用済み履歴に簡素化・検証を要求する条件がない | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
-| `SIMPLIFY` | 採用済みの構造加算後に外部成果が不変・悪化した | `delete`, `consolidate`, `redesign`, `retire` |
-| `VALIDATE` | 現在制約が未確認、または構造加算後の外部成果が不明である | `measure`, `experiment` |
+| `VALUE` | 価値制約が確認済みで判断証拠が十分、かつ履歴によるoverrideがない | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
+| `SIMPLIFY` | 構造的過剰と十分な判断証拠がある、または採用済みの構造加算後に外部成果が不変・悪化した | `delete`, `consolidate`, `redesign`, `retire` |
+| `VALIDATE` | 問題、成果、または介入を選ぶための証拠が十分に確認できていない | `measure`, `experiment` |
 
 「3回加算したら停止」のような固定閾値は使いません。複数Storyを並列開発したbatchも、一つの採用判断単位です。batch内の高速並列開発は維持でき、次の評価で観測した外部成果からbatch全体を判定します。
 
-開発モード選択では、提案側の `change_kind` や `directly_addresses_constraint` を読みません。schema `0.2.0` の旧入力に両fieldが残っていても互換用メタデータとして無視します。候補actionはモードを選んだ後に初めて評価します。
+現在制約では、問題が確認済みか（`status`）、価値制約か構造的過剰か（`kind`）、介入を選べる証拠が十分か（`decision_evidence.status`）を分けます。問題が確認済みでも、解決方向まで分かっているとは限りません。
+
+開発モード選択では、提案側の `change_kind` や `directly_addresses_constraint` を読みません。入力に残っていても判断に使わないメタデータです。候補actionはモードを選んだ後に初めて評価します。
 
 ## 評価を実行する
 
-リポジトリを初期化し、schema `0.2.0` の入力を用意して実行します。
+リポジトリを初期化し、schema `0.3.0` の入力を用意して実行します。
 
 ```bash
 vibepro init .
@@ -46,7 +48,7 @@ vibepro judgment evaluate . \
 入力には次を記録します。
 
 - ゴール、観測、違和感、現在の問題設定
-- 因果的な履歴境界、その後に採用したbatch、現在の制約、提案batch
+- 因果的な履歴境界、その後に採用したbatch、現在制約の種別と判断証拠、提案batch
 - 重要度、可逆性、影響範囲
 - 9つの標準軸: `public_contract`, `rollback_sensitive`, `security_boundary`, `data_state`, `execution_topology`, `ux_surface`, `performance_semantic`, `scope_reviewability`, `release_ops`
 - 仮説、予測、現在の証拠、制約、候補option

@@ -23,11 +23,11 @@ vibepro judgment evaluate <repo> --id <story-id> --input <input.json> [--json]
 
 ## 2. 入力契約
 
-入力schema versionは `0.2.0` とする。
+入力schema versionは `0.3.0` とする。
 
 ```json
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.3.0",
   "story_id": "story-example",
   "run_id": "judgment-001",
   "parent_run_id": null,
@@ -71,9 +71,15 @@ vibepro judgment evaluate <repo> --id <story-id> --input <input.json> [--json]
       }
     ],
     "current_constraint": {
+      "kind": "structural_excess",
       "status": "verified",
       "statement": "利用者の完了率が改善していない",
-      "source_refs": ["analytics/release-43"]
+      "source_refs": ["analytics/release-43"],
+      "decision_evidence": {
+        "status": "sufficient",
+        "reason": "重複した内部制御が外部成果を改善しない生成機構を観測できた",
+        "source_refs": ["analytics/release-43", "architecture/control-inventory.json"]
+      }
     },
     "proposed_batch": {
       "id": "batch-44",
@@ -135,7 +141,9 @@ vibepro judgment evaluate <repo> --id <story-id> --input <input.json> [--json]
 - `development_cycle.adopted_batches[].change_kind`: `addition | simplification | validation | external_value`
 - `development_cycle.adopted_batches[].structural_effect`: `increase | neutral | decrease | unknown`
 - `development_cycle.adopted_batches[].external_outcome`: `improved | unchanged | regressed | unknown`
+- `development_cycle.current_constraint.kind`: `value_constraint | structural_excess`
 - `development_cycle.current_constraint.status`: `verified | hypothesized | unknown`
+- `development_cycle.current_constraint.decision_evidence.status`: `sufficient | insufficient | unknown`
 - `decision_profile.materiality`: `low | medium | high`
 - `decision_profile.reversibility`: `easy | costly | irreversible`
 - `decision_profile.blast_radius`: `local | multi_component | systemic`
@@ -160,9 +168,15 @@ hypothesis、constraintは入力エラーとする。`story_id` はCLIの `--id`
 ならない。新しい外部成果改善または簡素化ベースラインを確認した場合、呼び出し側は境界を更新し、それ以前の
 バッチを入力しない。
 
-`proposed_batch` は判断対象のID、Story、参照元だけを持つ。schema `0.2.0` の既存入力に
-`change_kind` または `directly_addresses_constraint` が残っていても互換性のため受理するが、両方とも
-開発モード選択では無視する。候補の行為はモード選択後に `options[].action` として評価する。
+`current_constraint.status` は問題が存在する確度、`kind` は現在の主問題が価値制約か構造的過剰か、
+`decision_evidence.status` は解決方向を選び安全に着手する証拠が十分かを表す。問題が確認済みでも、権限、
+baseline、計測妥当性、識別的証拠が不足していれば `decision_evidence.status` は `insufficient` または
+`unknown` とする。`decision_evidence.reason` と `source_refs` は非空でなければならない。
+
+`proposed_batch` は判断対象のID、Story、参照元だけを持つ。`change_kind` または
+`directly_addresses_constraint` が入力に残っていても受理するが、両方とも開発モード選択では無視する。
+候補の行為はモード選択後に `options[].action` として評価する。schema `0.2.0` は意味の異なる旧契約として
+拒否し、呼び出し側で `0.3.0` へ明示的に移行する。
 
 ## 3. 開発モード選択
 
@@ -172,13 +186,15 @@ hypothesis、constraintは入力エラーとする。`story_id` はCLIの `--id`
 |---|---|
 | 境界以後に、構造を増やし外部成果が `unchanged` または `regressed` だった採用済みバッチがある | `SIMPLIFY` |
 | current constraintが `verified` でない | `VALIDATE` |
+| current constraintの `decision_evidence.status` が `sufficient` でない | `VALIDATE` |
 | 構造を増やした採用済みバッチの外部成果が `unknown` | `VALIDATE` |
-| current constraintが `verified` で、上記の履歴条件に該当しない | `VALUE` |
+| current constraintが `verified`、判断証拠が `sufficient`、`kind=structural_excess` | `SIMPLIFY` |
+| current constraintが `verified`、判断証拠が `sufficient`、`kind=value_constraint` | `VALUE` |
 
 固定回数は使わない。`adopted_batches` の一項目が一つの判断単位であり、その `story_ids` が複数でも一回の
 並列バッチである。外部成果が `improved` した履歴は新しい境界であるため、入力に残っている場合は入力エラーと
-する。同じ `adopted_batches`、外部成果、`current_constraint` を与えた場合、検討中バッチのメタデータを
-変えてもモードは変わらない。
+する。同じ `adopted_batches`、外部成果、`current_constraint.kind/status`、`decision_evidence.status` を
+与えた場合、検討中バッチのメタデータを変えてもモードは変わらない。
 
 ## 4. 固定共通スパイン
 
@@ -298,13 +314,17 @@ Markdown投影は、結論、問題設定、深度、到達した軸、仮説と
 ## 12. 受け入れ基準対応テスト
 
 - `SEJ-000`: 履歴評価がゴール固定後・問題設定前、開発モード選択が問題設定後・Story内判断軸前に置かれる
-- `SEJ-MODE-1`: 確認済み制約があり、簡素化・検証を要求する履歴がなければ `VALUE` を選ぶ
+- `SEJ-MODE-1`: 確認済みの価値制約と十分な判断証拠があり、履歴overrideがなければ `VALUE` を選ぶ
+- `SEJ-MODE-EVIDENCE-1`: 確認済みの構造的過剰と十分な判断証拠があれば `SIMPLIFY` を選ぶ
+- `SEJ-MODE-EVIDENCE-2`: 問題が確認済みでも判断証拠が不足または不明なら `VALIDATE` を選ぶ
 - `SEJ-MODE-2`: 外部成果が不変または悪化した構造加算履歴は `SIMPLIFY` を選ぶ
 - `SEJ-MODE-3`: 成果未確認の構造加算履歴は `VALIDATE` を選ぶ
 - `SEJ-MODE-4`: 複数Storyを含む一つのバッチを複数回の加算として扱わない
 - `SEJ-MODE-5`: 選択されたモードに合わないoption actionを除外する
 - `SEJ-MODE-CAUSAL-1..4`: 検討中バッチの旧メタデータを総当たりで変えても、同じ履歴・外部成果・現在制約から同じモードを選ぶ
 - `SEJ-001`: invalid frameは軸を到達不能にし、`revise_problem` を返す
+- `SEJ-001b`: uncertain frameは開発モードを選ばず、`human_decision_required` を返す
+- `SEJ-SCHEMA-1..2`: schema `0.3.0` と現在制約の問題種別・判断証拠契約を検証する
 - `SEJ-002`: inactiveまたは未到達軸のinconclusiveはfan-inと推薦に影響しない
 - `SEJ-003`: currentな反証証拠は仮説枝を閉じ、同じ枝の不足predictionを残さない
 - `SEJ-003b`: 同じpredictionへのcurrentな支持・反証の競合を隠さず `inconclusive` にする

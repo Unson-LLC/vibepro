@@ -23,17 +23,19 @@ The internal fan-in only combines branches reached by this one evaluation. It is
 
 | Mode | Selected when | Permitted option actions |
 | --- | --- | --- |
-| `VALUE` | The current constraint is verified and no adopted history requires simplification or validation | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
-| `SIMPLIFY` | An adopted structural addition left the external outcome unchanged or worse | `delete`, `consolidate`, `redesign`, `retire` |
-| `VALIDATE` | The current constraint is unverified, or the external outcome after structural growth is unknown | `measure`, `experiment` |
+| `VALUE` | A value constraint is verified, decision evidence is sufficient, and no adopted history overrides the mode | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
+| `SIMPLIFY` | Structural excess is verified with sufficient decision evidence, or adopted structural growth left the external outcome unchanged or worse | `delete`, `consolidate`, `redesign`, `retire` |
+| `VALIDATE` | The problem, outcome, or evidence needed to select an intervention is not sufficiently established | `measure`, `experiment` |
 
 There is no fixed "three additions" threshold. One adopted batch is one decision unit even if it contains several Stories developed in parallel. Parallel development can continue inside a batch; the next evaluation judges the batch from its observed external outcome.
 
-Mode selection never reads proposal labels such as `change_kind` or `directly_addresses_constraint`. Older schema `0.2.0` inputs may still contain those fields, but they are inert compatibility metadata. Candidate actions are considered only after the mode has been selected.
+The current constraint separates three questions: whether the problem is verified (`status`), whether it is a value constraint or structural excess (`kind`), and whether the evidence is sufficient to choose an intervention (`decision_evidence.status`). A verified problem does not automatically mean the solution direction is known.
+
+Mode selection never reads proposal labels such as `change_kind` or `directly_addresses_constraint`. If present, those fields are inert metadata. Candidate actions are considered only after the mode has been selected.
 
 ## Run an evaluation
 
-Initialize the repository, prepare an input file using schema `0.2.0`, and run:
+Initialize the repository, prepare an input file using schema `0.3.0`, and run:
 
 ```bash
 vibepro init .
@@ -46,7 +48,7 @@ vibepro judgment evaluate . \
 The input records:
 
 - the goal, observations, contradictions, and current problem frame;
-- a causal history boundary, adopted batches after that boundary, the current constraint, and the proposed batch;
+- a causal history boundary, adopted batches after that boundary, the current constraint kind and decision evidence, and the proposed batch;
 - materiality, reversibility, and blast radius;
 - all nine standard axes: `public_contract`, `rollback_sensitive`, `security_boundary`, `data_state`, `execution_topology`, `ux_surface`, `performance_semantic`, `scope_reviewability`, and `release_ops`;
 - hypotheses, predictions, current evidence, constraints, and candidate options.

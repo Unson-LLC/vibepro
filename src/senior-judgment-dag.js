@@ -5,7 +5,7 @@ import path from 'node:path';
 import { assertArtifactWritePath, resolveArtifactRoute } from './artifact-routing.js';
 import { getWorkspaceDir } from './workspace.js';
 
-const SCHEMA_VERSION = '0.2.0';
+const SCHEMA_VERSION = '0.3.0';
 const MODEL = 'vibepro-senior-engineering-judgment-dag';
 export const STANDARD_JUDGMENT_AXES = Object.freeze([
   'public_contract',
@@ -34,6 +34,8 @@ const ALLOWED = Object.freeze({
   structuralEffect: new Set(['increase', 'neutral', 'decrease', 'unknown']),
   externalOutcome: new Set(['improved', 'unchanged', 'regressed', 'unknown']),
   constraintStatus: new Set(['verified', 'hypothesized', 'unknown']),
+  currentConstraintKind: new Set(['value_constraint', 'structural_excess']),
+  decisionEvidenceStatus: new Set(['sufficient', 'insufficient', 'unknown']),
   optionAction: new Set(['build', 'fix', 'delete', 'consolidate', 'redesign', 'retire', 'measure', 'experiment'])
 });
 
@@ -300,6 +302,9 @@ export function renderSeniorJudgmentMarkdown(result) {
     `- Development mode: **${result.development_mode ?? 'not_selected'}**`,
     `- History boundary: ${developmentCycle.history_boundary.kind} (\`${developmentCycle.history_boundary.source_ref}\`)`,
     `- Adopted batches since boundary: ${developmentCycle.adopted_batches.length}`,
+    `- Current constraint: **${developmentCycle.current_constraint.kind} / ${developmentCycle.current_constraint.status}** — ${developmentCycle.current_constraint.statement}`,
+    `- Decision evidence: **${developmentCycle.current_constraint.decision_evidence.status}** — ${developmentCycle.current_constraint.decision_evidence.reason}`,
+    `- Decision evidence sources: ${developmentCycle.current_constraint.decision_evidence.source_refs.map((sourceRef) => `\`${sourceRef}\``).join(', ')}`,
     `- Proposed batch: \`${developmentCycle.proposed_batch.id}\``,
     `- Allowed option actions: ${result.allowed_option_actions.map((action) => `\`${action}\``).join(', ') || 'none'}`,
     '',
@@ -510,10 +515,32 @@ function validateDevelopmentCycle(cycle, storyId, allIds) {
     ALLOWED.constraintStatus,
     'development_cycle.current_constraint.status'
   );
+  assertEnum(
+    cycle.current_constraint.kind,
+    ALLOWED.currentConstraintKind,
+    'development_cycle.current_constraint.kind'
+  );
   requireText(cycle.current_constraint.statement, 'development_cycle.current_constraint.statement');
   assertNonEmptyTextArray(
     cycle.current_constraint.source_refs,
     'development_cycle.current_constraint.source_refs'
+  );
+  assertPlainObject(
+    cycle.current_constraint.decision_evidence,
+    'development_cycle.current_constraint.decision_evidence'
+  );
+  assertEnum(
+    cycle.current_constraint.decision_evidence.status,
+    ALLOWED.decisionEvidenceStatus,
+    'development_cycle.current_constraint.decision_evidence.status'
+  );
+  requireText(
+    cycle.current_constraint.decision_evidence.reason,
+    'development_cycle.current_constraint.decision_evidence.reason'
+  );
+  assertNonEmptyTextArray(
+    cycle.current_constraint.decision_evidence.source_refs,
+    'development_cycle.current_constraint.decision_evidence.source_refs'
   );
 
   const proposed = cycle.proposed_batch;
@@ -684,6 +711,15 @@ function deriveDevelopmentMode(cycle) {
     };
   }
 
+  if (cycle.current_constraint.decision_evidence.status !== 'sufficient') {
+    return {
+      mode: 'VALIDATE',
+      reasons: [
+        `Decision evidence is ${cycle.current_constraint.decision_evidence.status}, not sufficient to select an intervention direction.`
+      ]
+    };
+  }
+
   const unmeasuredGrowth = cycle.adopted_batches.filter((batch) => (
     batch.structural_effect === 'increase' && batch.external_outcome === 'unknown'
   ));
@@ -696,9 +732,16 @@ function deriveDevelopmentMode(cycle) {
     };
   }
 
+  if (cycle.current_constraint.kind === 'structural_excess') {
+    return {
+      mode: 'SIMPLIFY',
+      reasons: ['Sufficient decision evidence identifies the verified current constraint as structural excess.']
+    };
+  }
+
   return {
     mode: 'VALUE',
-    reasons: ['The current constraint is verified and adopted history shows no ineffective or unmeasured structural growth.']
+    reasons: ['Sufficient decision evidence identifies the verified current constraint as a value constraint.']
   };
 }
 

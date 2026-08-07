@@ -11,7 +11,7 @@ import {
 function createInput(overrides = {}) {
   const { axes = [], ...rest } = overrides;
   return {
-    schema_version: '0.2.0',
+    schema_version: '0.3.0',
     story_id: 'story-senior-judgment',
     run_id: 'judgment-001',
     parent_run_id: null,
@@ -37,11 +37,7 @@ function createInput(overrides = {}) {
         source_ref: 'docs/stories/story-senior-judgment.md'
       },
       adopted_batches: [],
-      current_constraint: {
-        status: 'verified',
-        statement: 'The current target path blocks the declared external outcome',
-        source_refs: ['test/failure.test.js']
-      },
+      current_constraint: createCurrentConstraint(),
       proposed_batch: {
         id: 'batch-current',
         story_ids: ['story-senior-judgment'],
@@ -56,6 +52,23 @@ function createInput(overrides = {}) {
     axes: completeAxes(axes),
     constraints: [],
     options: [],
+    ...rest
+  };
+}
+
+function createCurrentConstraint(overrides = {}) {
+  const { decision_evidence: decisionEvidence, ...rest } = overrides;
+  return {
+    kind: 'value_constraint',
+    status: 'verified',
+    statement: 'The current target path blocks the declared external outcome',
+    source_refs: ['test/failure.test.js'],
+    decision_evidence: {
+      status: 'sufficient',
+      reason: 'Current evidence distinguishes the appropriate development direction',
+      source_refs: ['test/failure.test.js'],
+      ...decisionEvidence
+    },
     ...rest
   };
 }
@@ -76,7 +89,7 @@ test('SEJ-000 portfolio history and one selected development mode precede story-
   assert.equal(result.nodes.find((node) => node.id === 'mode:validate').state, 'not_reached');
 });
 
-test('SEJ-MODE-1 verified current constraint with clean causal history selects VALUE', () => {
+test('SEJ-MODE-1 verified value constraint with sufficient decision evidence selects VALUE', () => {
   const result = evaluateSeniorJudgment(createInput({
     options: [{
       id: 'fix-current-constraint',
@@ -93,7 +106,77 @@ test('SEJ-MODE-1 verified current constraint with clean causal history selects V
   assert.deepEqual(result.viable_options.map((option) => option.id), ['fix-current-constraint']);
 });
 
-test('SEJ-MODE-2/5 ineffective structural addition selects SIMPLIFY and prunes additive options', () => {
+test('SEJ-MODE-EVIDENCE-1 verified structural excess with sufficient decision evidence selects SIMPLIFY', () => {
+  const base = createInput();
+  const result = evaluateSeniorJudgment(createInput({
+    development_cycle: {
+      ...base.development_cycle,
+      current_constraint: createCurrentConstraint({
+        kind: 'structural_excess',
+        statement: 'Overlapping controls now cost more than the problem they prevent',
+        source_refs: ['metrics/control-cost.json'],
+        decision_evidence: {
+          status: 'sufficient',
+          reason: 'Current cost and dependency evidence identifies structural excess',
+          source_refs: ['metrics/control-cost.json', 'architecture/dependencies.json']
+        }
+      })
+    },
+    options: [
+      {
+        id: 'consolidate-controls',
+        summary: 'Consolidate overlapping controls',
+        action: 'consolidate',
+        addresses: [],
+        violates: [],
+        residual_risk: 'low'
+      },
+      {
+        id: 'add-control',
+        summary: 'Add another control',
+        action: 'build',
+        addresses: [],
+        violates: [],
+        residual_risk: 'medium'
+      }
+    ]
+  }));
+
+  assert.equal(result.development_mode, 'SIMPLIFY');
+  assert.deepEqual(result.viable_options.map((option) => option.id), ['consolidate-controls']);
+  assert.equal(
+    result.pruned_options.find((option) => option.id === 'add-control').reason,
+    'development_mode_mismatch'
+  );
+});
+
+test('SEJ-MODE-EVIDENCE-2 verified problem without sufficient decision evidence selects VALIDATE for both constraint kinds', async (t) => {
+  for (const kind of ['value_constraint', 'structural_excess']) {
+    for (const evidenceStatus of ['insufficient', 'unknown']) {
+      await t.test(`${kind}/${evidenceStatus}`, () => {
+        const base = createInput();
+        const result = evaluateSeniorJudgment(createInput({
+          run_id: `decision-evidence-${kind}-${evidenceStatus}`,
+          development_cycle: {
+            ...base.development_cycle,
+            current_constraint: createCurrentConstraint({
+              kind,
+              decision_evidence: {
+                status: evidenceStatus,
+                reason: 'The problem is verified, but evidence does not yet distinguish the intervention direction',
+                source_refs: ['analysis/current-problem.json']
+              }
+            })
+          }
+        }));
+
+        assert.equal(result.development_mode, 'VALIDATE');
+      });
+    }
+  }
+});
+
+test('SEJ-MODE-2/5 ineffective structural addition overrides insufficient decision evidence with SIMPLIFY', () => {
   const input = createInput({
     development_cycle: {
       history_boundary: {
@@ -108,11 +191,16 @@ test('SEJ-MODE-2/5 ineffective structural addition selects SIMPLIFY and prunes a
         external_outcome: 'unchanged',
         source_refs: ['git/release-41', 'analytics/release-41']
       }],
-      current_constraint: {
-        status: 'verified',
+      current_constraint: createCurrentConstraint({
+        kind: 'value_constraint',
         statement: 'External completion did not improve',
-        source_refs: ['analytics/release-41']
-      },
+        source_refs: ['analytics/release-41'],
+        decision_evidence: {
+          status: 'insufficient',
+          reason: 'Problem existence is verified, but the next value intervention is not',
+          source_refs: ['analytics/release-41']
+        }
+      }),
       proposed_batch: {
         id: 'batch-42',
         story_ids: ['story-senior-judgment', 'story-next-control'],
@@ -153,7 +241,7 @@ test('SEJ-MODE-2/5 ineffective structural addition selects SIMPLIFY and prunes a
   assert.ok(incompatibleOnly.next_actions.some((action) => action.type === 'design_mode_compatible_option'));
 });
 
-test('SEJ-MODE-3/4 unknown outcome selects VALIDATE without counting parallel stories as repeated additions', () => {
+test('SEJ-MODE-3/4 unknown outcome after growth selects VALIDATE without counting parallel stories as repeated additions', () => {
   const result = evaluateSeniorJudgment(createInput({
     development_cycle: {
       history_boundary: {
@@ -168,11 +256,11 @@ test('SEJ-MODE-3/4 unknown outcome selects VALIDATE without counting parallel st
         external_outcome: 'unknown',
         source_refs: ['git/parallel-batch']
       }],
-      current_constraint: {
-        status: 'verified',
+      current_constraint: createCurrentConstraint({
+        kind: 'value_constraint',
         statement: 'A current external constraint is known',
         source_refs: ['analytics/current']
-      },
+      }),
       proposed_batch: {
         id: 'next-batch',
         story_ids: ['story-senior-judgment', 'story-next'],
@@ -310,7 +398,7 @@ test('SEJ-MODE-CAUSAL-2 ineffective structural growth selects SIMPLIFY independe
   }
 });
 
-test('SEJ-MODE-CAUSAL-3 an unverified current constraint selects VALIDATE independently of legacy proposal metadata', async (t) => {
+test('SEJ-MODE-CAUSAL-3 an unverified problem selects VALIDATE independently of legacy proposal metadata', async (t) => {
   for (const constraintStatus of ['hypothesized', 'unknown']) {
     for (const proposalMetadata of LEGACY_PROPOSAL_METADATA) {
       await t.test(`${constraintStatus}/${proposalMetadataLabel(proposalMetadata)}`, () => {
@@ -406,6 +494,20 @@ test('SEJ-001 invalid problem frame short-circuits judgment axes', () => {
   assert.deepEqual(result.active_axes, []);
   assert.equal(result.advisory, true);
   assert.equal('ready_for_pr_create' in result, false);
+});
+
+test('SEJ-001b uncertain problem frame does not select a development mode', () => {
+  const result = evaluateSeniorJudgment(createInput({
+    problem_frame: {
+      status: 'uncertain',
+      statement: 'The observed symptom may have more than one generating mechanism',
+      reason: 'Current evidence cannot yet distinguish the competing problem frames'
+    }
+  }));
+
+  assert.equal(result.development_mode, null);
+  assert.equal(result.recommendation, 'human_decision_required');
+  assert.equal(result.nodes.find((node) => node.id === 'development_mode_route').state, 'not_reached');
 });
 
 test('SEJ-002 inactive axes are visible but excluded from reachable fan-in', () => {
@@ -556,6 +658,84 @@ test('SEJ-004b fan-in preserves inconclusive work when another hypothesis is con
   assert.equal(result.recommendation, 'needs_investigation');
   assert.equal(result.nodes.find((node) => node.id === 'axis:data_state:fan_in').state, 'inconclusive');
   assert.equal(result.nodes.find((node) => node.id === 'active_branch_fan_in').state, 'inconclusive');
+});
+
+test('SEJ-SCHEMA-1 schema 0.3.0 is required for the explicit mode-evidence contract', async (t) => {
+  await t.test('accepts schema 0.3.0', () => {
+    assert.doesNotThrow(() => validateSeniorJudgmentInput(createInput()));
+  });
+
+  await t.test('rejects schema 0.2.0', () => {
+    assert.throws(
+      () => validateSeniorJudgmentInput({ ...createInput(), schema_version: '0.2.0' }),
+      /Unsupported senior judgment schema_version: 0\.2\.0/
+    );
+  });
+});
+
+test('SEJ-SCHEMA-2 current constraint kind and decision evidence are mandatory and validated', async (t) => {
+  await t.test('rejects missing constraint kind', () => {
+    const input = structuredClone(createInput());
+    delete input.development_cycle.current_constraint.kind;
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.kind/
+    );
+  });
+
+  await t.test('rejects missing decision evidence', () => {
+    const input = structuredClone(createInput());
+    delete input.development_cycle.current_constraint.decision_evidence;
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.decision_evidence/
+    );
+  });
+
+  await t.test('rejects an invalid constraint kind', () => {
+    const input = structuredClone(createInput());
+    input.development_cycle.current_constraint.kind = 'feature_request';
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.kind/
+    );
+  });
+
+  await t.test('rejects an invalid decision evidence status', () => {
+    const input = structuredClone(createInput());
+    input.development_cycle.current_constraint.decision_evidence.status = 'convincing';
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.decision_evidence\.status/
+    );
+  });
+
+  await t.test('rejects an empty decision evidence reason', () => {
+    const input = structuredClone(createInput());
+    input.development_cycle.current_constraint.decision_evidence.reason = '';
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.decision_evidence\.reason/
+    );
+  });
+
+  await t.test('rejects empty decision evidence source refs', () => {
+    const input = structuredClone(createInput());
+    input.development_cycle.current_constraint.decision_evidence.source_refs = [];
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.decision_evidence\.source_refs/
+    );
+  });
+
+  await t.test('rejects a blank decision evidence source ref', () => {
+    const input = structuredClone(createInput());
+    input.development_cycle.current_constraint.decision_evidence.source_refs = [''];
+    assert.throws(
+      () => validateSeniorJudgmentInput(input),
+      /development_cycle\.current_constraint\.decision_evidence\.source_refs/
+    );
+  });
 });
 
 test('SEJ-005/006 invariant pruning affects advice and graph validation rejects cycles', () => {

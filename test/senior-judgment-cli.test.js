@@ -11,7 +11,7 @@ import { initWorkspace } from '../src/workspace.js';
 
 function createInput(overrides = {}) {
   return {
-    schema_version: '0.2.0',
+    schema_version: '0.3.0',
     story_id: 'story-senior-judgment',
     run_id: 'judgment-001',
     parent_run_id: null,
@@ -38,9 +38,15 @@ function createInput(overrides = {}) {
       },
       adopted_batches: [],
       current_constraint: {
+        kind: 'value_constraint',
         status: 'verified',
         statement: 'The current failure blocks the declared external outcome',
-        source_refs: ['test/reproduction.test.js']
+        source_refs: ['test/reproduction.test.js'],
+        decision_evidence: {
+          status: 'sufficient',
+          reason: 'The reproduction isolates the intervention direction',
+          source_refs: ['test/reproduction.test.js']
+        }
       },
       proposed_batch: {
         id: 'batch-current',
@@ -119,6 +125,8 @@ test('judgment evaluate writes immutable run evidence and review projections wit
   assert.equal('ready_for_pr_create' in current, false);
   assert.match(markdown, /Advisory recommendation: \*\*proceed\*\*/);
   assert.match(markdown, /Development mode: \*\*VALUE\*\*/);
+  assert.match(markdown, /Current constraint: \*\*value_constraint \/ verified\*\*/);
+  assert.match(markdown, /Decision evidence: \*\*sufficient\*\*/);
   assert.match(markdown, /test\/state-migration\.test\.js/);
   assert.match(markdown, /preserves every row and identifier/);
   assert.match(markdown, /Final authority remains with humans, CI, and repository rules/);
