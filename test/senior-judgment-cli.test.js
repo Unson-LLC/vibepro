@@ -45,8 +45,6 @@ function createInput(overrides = {}) {
       proposed_batch: {
         id: 'batch-current',
         story_ids: ['story-senior-judgment'],
-        change_kind: 'external_value',
-        directly_addresses_constraint: true,
         source_refs: ['docs/stories/story-senior-judgment.md']
       }
     },

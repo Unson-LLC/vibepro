@@ -300,7 +300,7 @@ export function renderSeniorJudgmentMarkdown(result) {
     `- Development mode: **${result.development_mode ?? 'not_selected'}**`,
     `- History boundary: ${developmentCycle.history_boundary.kind} (\`${developmentCycle.history_boundary.source_ref}\`)`,
     `- Adopted batches since boundary: ${developmentCycle.adopted_batches.length}`,
-    `- Proposed batch: \`${developmentCycle.proposed_batch.id}\` (${developmentCycle.proposed_batch.change_kind})`,
+    `- Proposed batch: \`${developmentCycle.proposed_batch.id}\``,
     `- Allowed option actions: ${result.allowed_option_actions.map((action) => `\`${action}\``).join(', ') || 'none'}`,
     '',
     ...modeReasons,
@@ -523,11 +523,6 @@ function validateDevelopmentCycle(cycle, storyId, allIds) {
   if (!proposed.story_ids.includes(storyId)) {
     throw new Error(`development_cycle.proposed_batch.story_ids must include story_id ${storyId}`);
   }
-  assertEnum(proposed.change_kind, ALLOWED.batchChangeKind, 'development_cycle.proposed_batch.change_kind');
-  assertBoolean(
-    proposed.directly_addresses_constraint,
-    'development_cycle.proposed_batch.directly_addresses_constraint'
-  );
   assertNonEmptyTextArray(proposed.source_refs, 'development_cycle.proposed_batch.source_refs');
 }
 
@@ -669,14 +664,6 @@ function evaluateHypothesis(axis, hypothesis, context) {
 }
 
 function deriveDevelopmentMode(cycle) {
-  const proposed = cycle.proposed_batch;
-  if (proposed.change_kind === 'simplification') {
-    return {
-      mode: 'SIMPLIFY',
-      reasons: [`Proposed batch ${proposed.id} is explicitly a simplification batch.`]
-    };
-  }
-
   const ineffectiveGrowth = cycle.adopted_batches.filter((batch) => (
     batch.structural_effect === 'increase'
     && ['unchanged', 'regressed'].includes(batch.external_outcome)
@@ -690,12 +677,6 @@ function deriveDevelopmentMode(cycle) {
     };
   }
 
-  if (proposed.change_kind === 'validation') {
-    return {
-      mode: 'VALIDATE',
-      reasons: [`Proposed batch ${proposed.id} is explicitly a validation batch.`]
-    };
-  }
   if (cycle.current_constraint.status !== 'verified') {
     return {
       mode: 'VALIDATE',
@@ -715,15 +696,9 @@ function deriveDevelopmentMode(cycle) {
     };
   }
 
-  if (proposed.directly_addresses_constraint) {
-    return {
-      mode: 'VALUE',
-      reasons: [`Proposed batch ${proposed.id} directly addresses the verified current constraint.`]
-    };
-  }
   return {
-    mode: 'VALIDATE',
-    reasons: [`Proposed batch ${proposed.id} is not yet tied directly to the verified current constraint.`]
+    mode: 'VALUE',
+    reasons: ['The current constraint is verified and adopted history shows no ineffective or unmeasured structural growth.']
   };
 }
 
@@ -1162,10 +1137,6 @@ function assertNonEmptyTextArray(value, label) {
 function assertUniqueTextArray(value, label) {
   assertNonEmptyTextArray(value, label);
   if (new Set(value).size !== value.length) throw new Error(`${label} must not contain duplicates`);
-}
-
-function assertBoolean(value, label) {
-  if (typeof value !== 'boolean') throw new Error(`${label} must be a boolean`);
 }
 
 function assertArray(value, label) {

@@ -78,8 +78,6 @@ vibepro judgment evaluate <repo> --id <story-id> --input <input.json> [--json]
     "proposed_batch": {
       "id": "batch-44",
       "story_ids": ["story-example", "story-example-parallel"],
-      "change_kind": "simplification",
-      "directly_addresses_constraint": true,
       "source_refs": ["docs/stories/story-example.md"]
     }
   },
@@ -138,7 +136,6 @@ vibepro judgment evaluate <repo> --id <story-id> --input <input.json> [--json]
 - `development_cycle.adopted_batches[].structural_effect`: `increase | neutral | decrease | unknown`
 - `development_cycle.adopted_batches[].external_outcome`: `improved | unchanged | regressed | unknown`
 - `development_cycle.current_constraint.status`: `verified | hypothesized | unknown`
-- `development_cycle.proposed_batch.change_kind`: `addition | simplification | validation | external_value`
 - `decision_profile.materiality`: `low | medium | high`
 - `decision_profile.reversibility`: `easy | costly | irreversible`
 - `decision_profile.blast_radius`: `local | multi_component | systemic`
@@ -163,23 +160,25 @@ hypothesis、constraintは入力エラーとする。`story_id` はCLIの `--id`
 ならない。新しい外部成果改善または簡素化ベースラインを確認した場合、呼び出し側は境界を更新し、それ以前の
 バッチを入力しない。
 
+`proposed_batch` は判断対象のID、Story、参照元だけを持つ。schema `0.2.0` の既存入力に
+`change_kind` または `directly_addresses_constraint` が残っていても互換性のため受理するが、両方とも
+開発モード選択では無視する。候補の行為はモード選択後に `options[].action` として評価する。
+
 ## 3. 開発モード選択
 
 `problem_frame=valid` のときだけ、次の優先順位で開発モードを一つ選ぶ。
 
 | 条件 | development_mode |
 |---|---|
-| proposed batchが `simplification` | `SIMPLIFY` |
 | 境界以後に、構造を増やし外部成果が `unchanged` または `regressed` だった採用済みバッチがある | `SIMPLIFY` |
-| proposed batchが `validation` | `VALIDATE` |
 | current constraintが `verified` でない | `VALIDATE` |
 | 構造を増やした採用済みバッチの外部成果が `unknown` | `VALIDATE` |
-| proposed batchが確認済み制約を直接扱う | `VALUE` |
-| 上記以外 | `VALIDATE` |
+| current constraintが `verified` で、上記の履歴条件に該当しない | `VALUE` |
 
 固定回数は使わない。`adopted_batches` の一項目が一つの判断単位であり、その `story_ids` が複数でも一回の
 並列バッチである。外部成果が `improved` した履歴は新しい境界であるため、入力に残っている場合は入力エラーと
-する。
+する。同じ `adopted_batches`、外部成果、`current_constraint` を与えた場合、検討中バッチのメタデータを
+変えてもモードは変わらない。
 
 ## 4. 固定共通スパイン
 
@@ -299,11 +298,12 @@ Markdown投影は、結論、問題設定、深度、到達した軸、仮説と
 ## 12. 受け入れ基準対応テスト
 
 - `SEJ-000`: 履歴評価がゴール固定後・問題設定前、開発モード選択が問題設定後・Story内判断軸前に置かれる
-- `SEJ-MODE-1`: 確認済み制約を直接閉じる提案は `VALUE` を選ぶ
+- `SEJ-MODE-1`: 確認済み制約があり、簡素化・検証を要求する履歴がなければ `VALUE` を選ぶ
 - `SEJ-MODE-2`: 外部成果が不変または悪化した構造加算履歴は `SIMPLIFY` を選ぶ
 - `SEJ-MODE-3`: 成果未確認の構造加算履歴は `VALIDATE` を選ぶ
 - `SEJ-MODE-4`: 複数Storyを含む一つのバッチを複数回の加算として扱わない
 - `SEJ-MODE-5`: 選択されたモードに合わないoption actionを除外する
+- `SEJ-MODE-CAUSAL-1..4`: 検討中バッチの旧メタデータを総当たりで変えても、同じ履歴・外部成果・現在制約から同じモードを選ぶ
 - `SEJ-001`: invalid frameは軸を到達不能にし、`revise_problem` を返す
 - `SEJ-002`: inactiveまたは未到達軸のinconclusiveはfan-inと推薦に影響しない
 - `SEJ-003`: currentな反証証拠は仮説枝を閉じ、同じ枝の不足predictionを残さない

@@ -23,11 +23,13 @@ The internal fan-in only combines branches reached by this one evaluation. It is
 
 | Mode | Selected when | Permitted option actions |
 | --- | --- | --- |
-| `VALUE` | A verified constraint is directly addressed and no stronger simplification or validation condition applies | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
-| `SIMPLIFY` | The proposed batch simplifies, or an adopted structural addition left the external outcome unchanged or worse | `delete`, `consolidate`, `redesign`, `retire` |
-| `VALIDATE` | The constraint or outcome is still uncertain, or the proposal is explicitly a validation batch | `measure`, `experiment` |
+| `VALUE` | The current constraint is verified and no adopted history requires simplification or validation | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
+| `SIMPLIFY` | An adopted structural addition left the external outcome unchanged or worse | `delete`, `consolidate`, `redesign`, `retire` |
+| `VALIDATE` | The current constraint is unverified, or the external outcome after structural growth is unknown | `measure`, `experiment` |
 
 There is no fixed "three additions" threshold. One adopted batch is one decision unit even if it contains several Stories developed in parallel. Parallel development can continue inside a batch; the next evaluation judges the batch from its observed external outcome.
+
+Mode selection never reads proposal labels such as `change_kind` or `directly_addresses_constraint`. Older schema `0.2.0` inputs may still contain those fields, but they are inert compatibility metadata. Candidate actions are considered only after the mode has been selected.
 
 ## Run an evaluation
 

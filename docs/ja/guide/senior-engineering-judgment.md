@@ -23,11 +23,13 @@
 
 | モード | 選択条件 | 許可するoption action |
 | --- | --- | --- |
-| `VALUE` | 確認済み制約を直接扱い、より優先される簡素化・検証条件がない | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
-| `SIMPLIFY` | 提案batchが簡素化、または採用済みの構造加算後に外部成果が不変・悪化した | `delete`, `consolidate`, `redesign`, `retire` |
-| `VALIDATE` | 制約や成果が未確認、または提案自体が検証batchである | `measure`, `experiment` |
+| `VALUE` | 現在制約が確認済みで、採用済み履歴に簡素化・検証を要求する条件がない | `build`, `fix`, `delete`, `consolidate`, `redesign`, `retire` |
+| `SIMPLIFY` | 採用済みの構造加算後に外部成果が不変・悪化した | `delete`, `consolidate`, `redesign`, `retire` |
+| `VALIDATE` | 現在制約が未確認、または構造加算後の外部成果が不明である | `measure`, `experiment` |
 
 「3回加算したら停止」のような固定閾値は使いません。複数Storyを並列開発したbatchも、一つの採用判断単位です。batch内の高速並列開発は維持でき、次の評価で観測した外部成果からbatch全体を判定します。
+
+開発モード選択では、提案側の `change_kind` や `directly_addresses_constraint` を読みません。schema `0.2.0` の旧入力に両fieldが残っていても互換用メタデータとして無視します。候補actionはモードを選んだ後に初めて評価します。
 
 ## 評価を実行する
 
