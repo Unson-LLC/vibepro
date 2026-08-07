@@ -9,6 +9,7 @@ License: Apache-2.0
 Start here:
 - https://vibepro.pages.dev/guide/what-is-vibepro
 - https://vibepro.pages.dev/guide/control-loop
+- https://vibepro.pages.dev/guide/senior-engineering-judgment
 - https://vibepro.pages.dev/guide/safety-model
 - https://vibepro.pages.dev/guide/release-and-audit
 - https://vibepro.pages.dev/reference/cli
@@ -16,6 +17,7 @@ Start here:
 Japanese:
 - https://vibepro.pages.dev/ja/guide/what-is-vibepro
 - https://vibepro.pages.dev/ja/guide/control-loop
+- https://vibepro.pages.dev/ja/guide/senior-engineering-judgment
 - https://vibepro.pages.dev/ja/guide/safety-model
 - https://vibepro.pages.dev/ja/guide/release-and-audit
 - https://vibepro.pages.dev/ja/reference/cli
