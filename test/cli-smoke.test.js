@@ -65,6 +65,7 @@ const SMOKE = {
   story: { setup: 'story', args: (r) => ['story', 'add', r, '--id', 'story-y', '--title', 'Y', '--view', 'dev', '--period', '2026-W18'] },
   trace: { setup: 'story', args: (r) => ['trace', 'backfill', r, '--dry-run', '--json'] },
   decision: { setup: 'story', args: (r) => ['decision', 'status', r, '--id', 'story-x'] },
+  judgment: { setup: 'story', args: (r) => ['judgment', 'evaluate', r, '--id', 'story-x'] },
   verify: { setup: 'story', args: (r) => ['verify', r] },
   review: { setup: 'story', args: (r) => ['review', 'status', r, '--id', 'story-x'] },
   guard: { setup: 'story', args: (r) => ['guard', 'status', r] },
@@ -111,4 +112,3 @@ test('CLI smoke coverage: every TOP_LEVEL_COMMANDS entry has a smoke test', () =
   const stale = [...smoked].filter((c) => !known.has(c));
   assert.deepEqual(stale, [], `these smoke entries are not real commands: ${stale.join(', ')}`);
 });
-
