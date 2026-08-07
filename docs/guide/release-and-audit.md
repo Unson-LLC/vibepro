@@ -15,4 +15,4 @@ VibePro keeps local evidence records, but it no longer generates a canonical aud
 
 ## Upgrade to 0.2.0-beta.3
 
-This is a breaking beta cleanup. Automation calling removed commands must migrate to the command list shown by `vibepro help`. To retain the previous broad workflow temporarily, pin `vibepro@0.2.0-beta.3`.
+This is a breaking beta cleanup. Automation calling removed commands must migrate to the command list shown by `vibepro help`. To retain the previous broad workflow temporarily, pin `vibepro@0.2.0-beta.2`.

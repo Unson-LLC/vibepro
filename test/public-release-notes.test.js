@@ -6,6 +6,11 @@ const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 const pullRequestNumbers = (content) => [...content.matchAll(/https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/(\d+)/g)]
   .map((match) => Number(match[1]));
+const releaseChannels = (content) => Object.fromEntries(
+  [...content.matchAll(/^\| npm `(latest|beta)` \| `([^`]+)` \|/gmu)]
+    .map((match) => [match[1], match[2]])
+);
+const softwareVersion = (config) => config.match(/softwareVersion: '([^']+)'/u)?.[1];
 
 test('VRNH-AC-001/002/004 release index separates published versions from the PR snapshot', async () => {
   for (const [path, snapshotDate] of [
@@ -63,8 +68,17 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   }
   assert.match(jaVersion, /\/ja\/releases\//);
   assert.match(enVersion, /\/releases\//);
-  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.3`/);
-  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.3`/);
-  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.3`/);
-  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.3`/);
+  const jaChannels = releaseChannels(jaVersion);
+  const enChannels = releaseChannels(enVersion);
+  assert.deepEqual(enChannels, jaChannels, 'published npm channels must match across locales');
+  assert.deepEqual(Object.keys(enChannels).sort(), ['beta', 'latest']);
+  assert.equal(enChannels.latest, enChannels.beta, 'the documented beta is also the current latest');
+  assert.equal(softwareVersion(config), enChannels.latest, 'VitePress metadata must identify the published version');
+  for (const [channel, version] of Object.entries(enChannels)) {
+    assert.match(
+      version,
+      /^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?$/u,
+      `${channel} must be SemVer`
+    );
+  }
 });
