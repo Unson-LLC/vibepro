@@ -5,7 +5,7 @@ import { resolveGraphifyArtifactFile } from './artifact-routing.js';
 import { promisify } from 'node:util';
 
 import { preparePullRequest } from './pr-manager.js';
-import { readManifest, getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { isArchived, readManifest, getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { readPreSpecReadiness, writePreSpecReadiness } from './spec-store.js';
 
 const execFileAsync = promisify(execFile);
@@ -88,23 +88,26 @@ export function renderPreSpecReadinessSummary(result) {
 }
 
 async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
-  const [manifest, graphify, currentHead] = await Promise.all([
+  const [manifest, config, graphify, currentHead] = await Promise.all([
     readManifest(repoRoot).catch(() => null),
+    readConfig(repoRoot),
     readGraphifySummary(repoRoot, storyId),
     getCurrentHead(repoRoot)
   ]);
   const latestRun = findLatestStoryRun(manifest, storyId);
-  const architectureCheck = findLatestArchitectureCheck(manifest);
   // engineering_judgment / gate_dag were part of pr-manager.js's removed Gate DAG
   // (docs/management/REBUILD.md minimal-core rebuild, Slice 6); preparePullRequest
   // no longer produces them, so this check is retired rather than left permanently
   // blocked.
   const engineeringJudgment = null;
+  // architecture_check depended on the removed `vibepro check architecture`
+  // subcommand's manifest.check_runs output; nothing writes that anymore
+  // (issue #436 item 2), so the check is retired the same way
+  // engineering_judgment above was, rather than left permanently blocked.
   const checks = [
-    buildStoryCheck(manifest, storyId),
+    buildStoryCheck(config, storyId),
     buildGraphifyCheck(graphify),
-    buildDiagnosisCheck(latestRun),
-    buildArchitectureCheck(architectureCheck)
+    buildDiagnosisCheck(latestRun)
   ];
   const failures = collectReadinessFailures({ checks });
   return {
@@ -122,7 +125,6 @@ async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
       gate_status: latestRun.gate_status ?? null,
       evidence_artifact: latestRun.artifacts?.evidence ?? null
     } : null,
-    architecture_check: architectureCheck,
     engineering_judgment: engineeringJudgment ? {
       route_type: engineeringJudgment.route_type,
       route_dag: engineeringJudgment.route_dag,
@@ -137,13 +139,33 @@ async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
   };
 }
 
-function buildStoryCheck(manifest, storyId) {
-  const found = Boolean(manifest?.stories?.[storyId] || findLatestStoryRun(manifest, storyId));
+// Story registration/selection lives in .vibepro/config.json
+// (brainbase.stories[] / brainbase.current_story_id, written by
+// `story add` / `story select`), not in vibepro-manifest.json (which only
+// tracks diagnosis run history). This check previously only consulted the
+// manifest, so a story that was added/selected but never diagnosed reported
+// story_selected: blocked even though init/story add had already accepted it
+// (issue #436 item 4).
+function buildStoryCheck(config, storyId) {
+  const stories = Array.isArray(config?.brainbase?.stories) ? config.brainbase.stories : [];
+  const story = stories.find((item) => item?.story_id === storyId);
+  const found = Boolean(story && !isArchived(story));
   return {
     id: 'story_selected',
     status: found ? 'pass' : 'blocked',
-    reason: found ? 'Story exists in VibePro workspace artifacts' : 'Story was not found in VibePro workspace artifacts'
+    reason: found
+      ? 'Story is registered in .vibepro/config.json (brainbase.stories[])'
+      : 'Story was not found in .vibepro/config.json (brainbase.stories[]); run `vibepro story add` or `vibepro story select`'
   };
+}
+
+async function readConfig(repoRoot) {
+  try {
+    return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 function buildGraphifyCheck(graphify) {
@@ -167,22 +189,6 @@ function buildDiagnosisCheck(latestRun) {
   };
 }
 
-function buildArchitectureCheck(architectureCheck) {
-  if (!architectureCheck) {
-    return {
-      id: 'architecture_check',
-      status: 'blocked',
-      reason: 'No architecture check run was found'
-    };
-  }
-  const blocking = ['fail', 'failed', 'blocked', 'needs_setup'].includes(architectureCheck.status);
-  return {
-    id: 'architecture_check',
-    status: blocking ? 'blocked' : 'pass',
-    reason: `Architecture check ${architectureCheck.run_id} status=${architectureCheck.status}`
-  };
-}
-
 function collectReadinessFailures(readiness) {
   const failures = (readiness.checks ?? []).filter((check) => check.status !== 'pass');
   if (readiness.status && readiness.status !== 'ready') {
@@ -202,9 +208,6 @@ function buildNextActions(checks, storyId) {
   }
   if (checks.some((check) => check.id === 'story_diagnosis' && check.status !== 'pass')) {
     actions.push(`Run \`vibepro story diagnose . --id ${storyId} --pre-architecture --run-graphify\`.`);
-  }
-  if (checks.some((check) => check.id === 'architecture_check' && check.status !== 'pass')) {
-    actions.push(`Run \`vibepro check architecture . --story-id ${storyId} --base <base-ref>\`.`);
   }
   if (checks.some((check) => check.id === 'engineering_judgment' && check.status !== 'pass')) {
     actions.push(`Run \`vibepro spec readiness . --id ${storyId} --base <base-ref>\` to regenerate Engineering Judgment evidence.`);
@@ -243,14 +246,6 @@ function findLatestStoryRun(manifest, storyId) {
     return manifest.runs.find((run) => run.run_id === runId && run.story_id === storyId) ?? null;
   }
   return (manifest.runs ?? []).find((run) => run.story_id === storyId) ?? null;
-}
-
-function findLatestArchitectureCheck(manifest) {
-  if (!manifest) return null;
-  const runId = manifest.latest_check_run_by_pack?.architecture;
-  return (manifest.check_runs ?? []).find((run) => run.pack_id === 'architecture' && run.run_id === runId)
-    ?? (manifest.check_runs ?? []).find((run) => run.pack_id === 'architecture')
-    ?? null;
 }
 
 async function getCurrentHead(repoRoot) {

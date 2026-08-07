@@ -226,6 +226,51 @@ test('clause map binds explicit AC and scenario ids from test content without pr
   assert.notEqual(collisionOnly.acceptance_criteria[3].status, 'mapped');
 });
 
+// issue #436 item 5: an AC phrased around a concrete function-name identifier
+// (real repro: "`fitSlackOverview` は文字列をサロゲートペアで分断しない") that a
+// test exercises by calling that identifier showed up as [未対応] because the
+// filename heuristic and the story-qualified-reference syntax both require
+// either a matching test path or a repeated AC/story id somewhere in the
+// test content — neither of which a normal unit test naturally contains.
+test('clause map matches a test that exercises a backtick-quoted identifier from the AC text', () => {
+  const map = buildTraceabilityClauseMap({
+    storyId: 'story-slack-split-surrogate-safe',
+    storyText: [
+      '## Acceptance Criteria',
+      '- `fitSlackOverview` は文字列をサロゲートペアの途中で分断しない。'
+    ].join('\n'),
+    changedFiles: [{ path: 'src/lib/slack/overview.ts' }],
+    tests: [{
+      path: 'test/overview.test.ts',
+      content: [
+        "import { fitSlackOverview } from '../src/lib/slack/overview.ts';",
+        "test('keeps surrogate pairs intact', () => {",
+        "  expect(fitSlackOverview('\\ud83d\\ude00'.repeat(50))).not.toMatch(/\\ud83d$/);",
+        '});'
+      ].join('\n')
+    }]
+  });
+
+  assert.equal(map.acceptance_criteria[0].status, 'mapped');
+  assert.deepEqual(map.acceptance_criteria[0].mapped_tests, ['test/overview.test.ts']);
+});
+
+test('clause map still requires the identifier to actually appear in test content', () => {
+  const map = buildTraceabilityClauseMap({
+    storyId: 'story-slack-split-surrogate-safe',
+    storyText: [
+      '## Acceptance Criteria',
+      '- `fitSlackOverview` は文字列をサロゲートペアの途中で分断しない。'
+    ].join('\n'),
+    tests: [{
+      path: 'test/unrelated.test.ts',
+      content: "test('unrelated behavior', () => { expect(1).toBe(1); });"
+    }]
+  });
+
+  assert.equal(map.acceptance_criteria[0].status, 'unmapped');
+});
+
 test('clause map rejects an unqualified clause id owned by another Story', () => {
   const storyId = 'story-vibepro-delivery-reconciliation-state';
   const map = buildTraceabilityClauseMap({

@@ -1133,7 +1133,14 @@ test('init and config language manage human output language', async () => {
   assert.equal(initResult.exitCode, 0);
   assert.match(initOutput, /VibePro workspace initialized/);
   assert.match(initOutput, /Human output language: en/);
-  assert.match(initOutput, /coding agent/);
+  // issue #436 item 2: the init summary used to point at removed Gate DAG
+  // surfaces ("bounded LLM/coding agent view", "--summary-json", "gate id/
+  // path drill-down"); it now names commands that actually exist in v-next.
+  assert.match(initOutput, /vibepro story diagnose/);
+  assert.match(initOutput, /vibepro verify record/);
+  assert.match(initOutput, /vibepro review prepare/);
+  assert.doesNotMatch(initOutput, /--summary-json/);
+  assert.doesNotMatch(initOutput, /drill-down/);
   let config = await readJson(path.join(repo, '.vibepro', 'config.json'));
   assert.equal(config.output.language, 'en');
 
@@ -3280,7 +3287,13 @@ test('review prepare generates stage role requests', async () => {
 	});
 
 
-test('user git fingerprint includes dirty VibePro config but ignores generated artifacts', async () => {
+// issue #436 item 1: .vibepro/config.json is CLI-managed (story add/select
+// require `git add -f .vibepro/config.json` per CLAUDE.md), so edits and
+// commits to it must never move the user fingerprint. An earlier revision
+// folded config.json back into the "user" scope, which flipped the fingerprint
+// hash the moment a routine config.json commit changed it from a dirty diff
+// to a clean, committed byte-identical file and falsely staled reviews.
+test('user git fingerprint ignores all VibePro-managed files, including config.json', async () => {
   const repo = await makeGitRepoWithStory();
   const clean = await collectGitStatusFingerprints(repo);
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -3288,10 +3301,14 @@ test('user git fingerprint includes dirty VibePro config but ignores generated a
   config.test_policy_marker = true;
   await writeJson(configPath, config);
   const configDirty = await collectGitStatusFingerprints(repo);
-  assert.equal(configDirty.user_dirty, true);
-  assert.notEqual(configDirty.user_status_fingerprint_hash, clean.user_status_fingerprint_hash);
+  assert.equal(configDirty.user_dirty, false);
+  assert.equal(configDirty.user_status_fingerprint_hash, clean.user_status_fingerprint_hash);
 
-  await git(repo, ['restore', '.vibepro/config.json']);
+  await git(repo, ['add', '-f', '.vibepro/config.json']);
+  await git(repo, ['commit', '-m', 'chore: test policy marker']);
+  const configCommitted = await collectGitStatusFingerprints(repo);
+  assert.equal(configCommitted.user_status_fingerprint_hash, clean.user_status_fingerprint_hash);
+
   await writeJson(path.join(repo, '.vibepro', 'generated-only.json'), { generated: true });
   const artifactDirty = await collectGitStatusFingerprints(repo);
   assert.equal(artifactDirty.raw_dirty, undefined);
@@ -3987,6 +4004,67 @@ test('review status keeps legacy full-fingerprint review stale when tracked Vibe
   const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
   assert.equal(role.effective_status, 'stale');
   assert.match(role.stale_reason, /dirty worktree fingerprint/);
+});
+
+// issue #436 item 1 exact repro: story add/select leaves .vibepro/config.json
+// dirty (it is only made tracked/committed with a deliberate
+// `git add -f .vibepro/config.json` later, per CLAUDE.md). Record a passing
+// content_surface review while that config.json edit is still dirty, then
+// commit only config.json (no change to the reviewed surface, index.html).
+// The review must stay pass: before the fix, the recorded user fingerprint
+// hash baked in config.json's dirty diff bytes, and committing that exact
+// content (diff -> clean) changed the hash even though nothing reviewers
+// looked at was touched, falsely staling the review.
+test('review status survives a commit that only touches an already-dirty .vibepro/config.json', async () => {
+  const repo = await makeGitRepoWithStory();
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase = config.brainbase ?? {};
+  config.brainbase.stories = config.brainbase.stories ?? [];
+  config.brainbase.stories.push({ story_id: 'story-issue-436-repro', title: 'issue #436 repro story', status: 'active' });
+  await writeJson(configPath, config);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'runtime contract reviewed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-config-commit-agent',
+    '--agent-thread-id',
+    'thread-config-commit',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const beforeCommitStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(beforeCommitStatus.result.stages[0].roles.find((item) => item.role === 'runtime_contract').effective_status, 'pass');
+
+  await git(repo, ['add', '-f', '.vibepro/config.json']);
+  await git(repo, ['commit', '-m', 'chore: register story-issue-436-repro']);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(status.exitCode, 0);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.effective_status, 'pass');
+  assert.equal(role.stale, false);
 });
 
 test('review status keeps unchanged legacy source fingerprint current with tracked VibePro manifest dirt', async () => {

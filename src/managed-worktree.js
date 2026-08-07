@@ -265,7 +265,12 @@ export async function evaluateManagedWorktreeCommandContext(repoRoot, options = 
       required: configuredMode === 'required',
       reason: configuredMode === 'disabled'
         ? 'managed worktree mode is disabled'
-        : 'no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands',
+        // `vibepro execute start` was removed with the Gate DAG / execution
+        // lifecycle machinery (docs/management/REBUILD.md minimal-core
+        // rebuild); no current CLI command creates managed worktree
+        // execution state. Point at the config knob that actually silences
+        // this instead of a command that no longer exists (issue #436 item 2).
+        : 'no managed worktree execution state is recorded for this checkout; no current VibePro command creates one, so set execution.managed_worktree to "disabled" in .vibepro/config.json unless this checkout was set up as a managed worktree by other tooling',
       command_name: options.commandName ?? null,
       repo_root: root,
       actual_root: actualRoot,

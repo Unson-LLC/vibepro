@@ -374,15 +374,13 @@ export function specReadinessMarker() {
   for (const checkId of [
     'story_selected',
     'graphify_context',
-    'story_diagnosis',
-    'architecture_check'
+    'story_diagnosis'
   ]) {
     assert.equal(checksById.get(checkId)?.status, 'pass', `${checkId} should pass`);
   }
   assert.equal(readiness.graphify.available, true);
   assert.ok(readiness.graphify.node_count > 0);
   assert.equal(typeof readiness.diagnosis.run_id, 'string');
-  assert.equal(typeof readiness.architecture_check.run_id, 'string');
 });
 
 test('spec readiness missing diagnosis action uses design-input phase', async () => {
@@ -411,6 +409,39 @@ test('spec readiness missing diagnosis action uses design-input phase', async ()
     readiness.next_actions.some((action) => action.includes(`vibepro story diagnose . --id ${STORY_ID} --pre-architecture --run-graphify`)),
     true
   );
+});
+
+// issue #436 item 4: story_selected used to only look at
+// vibepro-manifest.json (populated by `story diagnose`), never at
+// .vibepro/config.json's brainbase.stories[]/current_story_id (populated by
+// `story add` / `story select`). A story registered and selected via
+// `story add`/`story select` but never diagnosed therefore reported
+// story_selected: blocked even though the CLI had already accepted it.
+// Also exercises a story id without the `story-` prefix, which init itself
+// accepts (mana-runtime's real repro used `slack-split-surrogate-safe`).
+test('spec readiness resolves story_selected from story add/select without requiring a diagnosis run', async () => {
+  const repo = await makeSpecRepo({ readyPreSpecEvidence: false });
+  await initGitRepo(repo);
+  const extraStoryId = 'slack-split-surrogate-safe';
+  const add = await captureRunCli(['story', 'add', repo, '--id', extraStoryId, '--title', 'issue #436 repro story']);
+  assert.equal(add.exitCode, 0);
+  const select = await captureRunCli(['story', 'select', repo, '--id', extraStoryId]);
+  assert.equal(select.exitCode, 0);
+
+  const { stdout } = await captureRunCli([
+    'spec',
+    'readiness',
+    repo,
+    '--id',
+    extraStoryId,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  const readiness = JSON.parse(stdout);
+  const storySelected = readiness.checks.find((check) => check.id === 'story_selected');
+  assert.equal(storySelected.status, 'pass');
+  assert.match(storySelected.reason, /config\.json/);
 });
 
 test('spec fingerprint resolves the explicit story id instead of falling back to existing STR-001', async () => {
