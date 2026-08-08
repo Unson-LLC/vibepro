@@ -9,7 +9,13 @@ The authoritative source version is `package.json`; an installed binary reports 
 | Repository `main` | `0.2.0-beta.4` release source | Git commit and `package.json` |
 | Manual build | Source commit in footer/meta | Deployed VitePress artifact |
 
+The table identifies the current release channels. The sections below are an append-only ledger of published versions; detailed PR evidence remains in [Release Notes](/releases/).
+
 ## 0.2.0-beta.4
+
+Separates evidence that a problem exists from evidence for its solution direction in the Senior Engineering Judgment DAG. Structural excess routes to `SIMPLIFY`, value constraints to `VALUE`, and insufficient or unknown decision evidence to `VALIDATE`. This breaking beta updates the senior judgment input schema from `0.2.0` to `0.3.0`.
+
+## 0.2.0-beta.3
 
 Publishes the rebuilt minimal core and aligns the npm README, VitePress entry pages, generated CLI reference, and CI with that contract. This is a breaking beta change: commands and automatic control-plane mechanisms removed by the rebuild are not compatibility aliases.
 
