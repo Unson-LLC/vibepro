@@ -9,7 +9,13 @@ source versionの正本は `package.json` で、installed binaryは `vibepro ver
 | Repository `main` | `0.2.0-beta.4` release source | Git commitと `package.json` |
 | Manual build | footer/metaのsource commit | deployed VitePress artifact |
 
+表は現在のrelease channelを示します。以下のsectionは公開済みversionの追記専用ledgerで、PRごとの詳細な根拠は[リリースノート](/ja/releases/)に保持します。
+
 ## 0.2.0-beta.4
+
+Senior Engineering Judgment DAGで、問題の存在を示す証拠と解決方向の証拠を分離します。構造的過剰は `SIMPLIFY`、価値制約は `VALUE`、判断証拠が不足または不明な場合は `VALIDATE` へ分岐します。このbreaking betaでsenior judgment入力schemaは `0.2.0` から `0.3.0` へ更新されました。
+
+## 0.2.0-beta.3
 
 再構築した最小コアを公開し、npm README、VitePressの入口、generated CLI reference、CIをその契約に揃えます。これはbeta段階のbreaking changeで、再構築時に削除したcommandや自動control-plane機構に互換aliasはありません。
 

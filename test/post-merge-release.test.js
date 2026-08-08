@@ -815,7 +815,7 @@ test('PCR-CON-007 retries dist-tag verification exceptions', async () => {
   assert.deepEqual(delays, [1000, 2000]);
 });
 
-test('PCR-CON-004 projects only current published-version metadata and is idempotent', async () => {
+test('PCR-CON-004 appends published-version history across sequential idempotent projections', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-version-'));
   const files = {
     'docs/reference/version-history.md': [
@@ -826,7 +826,7 @@ test('PCR-CON-004 projects only current published-version metadata and is idempo
       '| npm `beta` | `0.2.0-beta.0` | registry |',
       '| Repository `main` | `0.2.0-beta.0` release source | package |',
       '## 0.2.0-beta.0',
-      'Current release.',
+      'Original English beta zero body.',
       '## 0.1.9',
       'Historical text mentions 0.2.0-beta.0 and must remain unchanged.'
     ].join('\n') + '\n',
@@ -838,7 +838,7 @@ test('PCR-CON-004 projects only current published-version metadata and is idempo
       '| npm `beta` | `0.2.0-beta.0` | registry |',
       '| Repository `main` | `0.2.0-beta.0` release source | package |',
       '## 0.2.0-beta.0',
-      '\u73fe\u884crelease\u3002',
+      '\u5143\u306ebeta zero\u672c\u6587\u3002',
       '## 0.1.9',
       '\u5c65\u6b74\u306e0.2.0-beta.0\u306f\u66f8\u304d\u63db\u3048\u306a\u3044\u3002'
     ].join('\n') + '\n',
@@ -854,36 +854,59 @@ test('PCR-CON-004 projects only current published-version metadata and is idempo
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
     await writeFile(path.join(root, relative), '| Version |\n| --- |\n');
   }
-  await projectPublishedVersion(root, '0.2.0-beta.0', '0.2.0-beta.1', '2026-07-18T09:00:00Z');
-  const firstProjection = Object.fromEntries(await Promise.all(
-    [...Object.keys(files), 'docs/releases/index.md', 'docs/ja/releases/index.md'].map(async (relative) => [
+  const projectedFiles = [...Object.keys(files), 'docs/releases/index.md', 'docs/ja/releases/index.md'];
+  const snapshot = async () => Object.fromEntries(await Promise.all(
+    projectedFiles.map(async (relative) => [
       relative,
       await readFile(path.join(root, relative), 'utf8')
     ])
   ));
+
   await projectPublishedVersion(root, '0.2.0-beta.0', '0.2.0-beta.1', '2026-07-18T09:00:00Z');
-  for (const [relative, expected] of Object.entries(firstProjection)) {
-    assert.equal(await readFile(path.join(root, relative), 'utf8'), expected, `${relative} must be idempotent`);
-  }
+  const firstProjection = await snapshot();
+  await projectPublishedVersion(root, '0.2.0-beta.0', '0.2.0-beta.1', '2026-07-18T09:00:00Z');
+  assert.deepEqual(await snapshot(), firstProjection, 'the first release replay must be byte-idempotent');
+
+  await projectPublishedVersion(root, '0.2.0-beta.1', '0.2.0-beta.2', '2026-07-19T09:00:00Z');
+  const secondProjection = await snapshot();
+  await projectPublishedVersion(root, '0.2.0-beta.1', '0.2.0-beta.2', '2026-07-19T09:00:00Z');
+  assert.deepEqual(await snapshot(), secondProjection, 'the second release replay must be byte-idempotent');
 
   const index = await readFile(path.join(root, 'docs/releases/index.md'), 'utf8');
-  assert.equal(index.match(/0\.2\.0-beta\.1/g)?.length, 2);
+  assert.equal(index.match(/\/v\/0\.2\.0-beta\.1\)/g)?.length, 1);
+  assert.equal(index.match(/\/v\/0\.2\.0-beta\.2\)/g)?.length, 1);
   assert.doesNotMatch(index, /0\.2\.0-beta\.0/);
+  const headingSequences = [];
   for (const locale of ['', 'ja/']) {
     const history = await readFile(path.join(root, `docs/${locale}reference/version-history.md`), 'utf8');
-    assert.match(history, /npm `latest` \| `0\.2\.0-beta\.1`/);
-    assert.match(history, /npm `beta` \| `0\.2\.0-beta\.1`/);
-    assert.match(history, /Repository `main` \| `0\.2\.0-beta\.1` release source/);
-    assert.match(history, /## 0\.2\.0-beta\.1/);
-    assert.match(history, /## 0\.1\.9/);
-    assert.match(history, /0\.2\.0-beta\.0/);
+    const headings = [...history.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)$/gmu)]
+      .map((match) => match[1]);
+    headingSequences.push(headings);
+    assert.deepEqual(headings, ['0.2.0-beta.2', '0.2.0-beta.1', '0.2.0-beta.0', '0.1.9']);
+    assert.equal(new Set(headings).size, headings.length, 'published headings must be unique');
+    assert.match(history, /npm `latest` \| `0\.2\.0-beta\.2`/);
+    assert.match(history, /npm `beta` \| `0\.2\.0-beta\.2`/);
+    assert.match(history, /Repository `main` \| `0\.2\.0-beta\.2` release source/);
+    assert.equal((history.match(locale ? /\u5143\u306ebeta zero\u672c\u6587\u3002/g : /Original English beta zero body\./g) ?? []).length, 1);
+    assert.equal((history.match(locale ? /\u5c65\u6b74\u306e0\.2\.0-beta\.0\u306f\u66f8\u304d\u63db\u3048\u306a\u3044\u3002/g : /Historical text mentions 0\.2\.0-beta\.0 and must remain unchanged\./g) ?? []).length, 1);
+    assert.equal((history.match(locale ? /\u3053\u306e\u516c\u958b\u7248\u306e\u5909\u66f4\u8a73\u7d30/g : /Detailed changes for this published version/g) ?? []).length, 2);
   }
-  assert.match(firstProjection['docs/guide/release-and-audit.md'], /## Upgrade to 0\.2\.0-beta\.1/);
-  assert.match(firstProjection['docs/guide/release-and-audit.md'], /vibepro@0\.1\.9/);
-  assert.match(firstProjection['docs/guide/release-and-audit.md'], /historical 0\.2\.0-beta\.0 text stays/);
-  assert.match(firstProjection['docs/ja/guide/release-and-audit.md'], /## 0\.2\.0-beta\.1\u3078\u306eupgrade/);
-  assert.match(firstProjection['docs/ja/guide/release-and-audit.md'], /vibepro@0\.1\.9/);
-  assert.match(firstProjection['docs/.vitepress/config.mjs'], /softwareVersion: '0\.2\.0-beta\.1'/);
+  assert.deepEqual(headingSequences[0], headingSequences[1], 'English and Japanese ledgers must match');
+  assert.match(secondProjection['docs/guide/release-and-audit.md'], /## Upgrade to 0\.2\.0-beta\.2/);
+  assert.match(secondProjection['docs/guide/release-and-audit.md'], /vibepro@0\.1\.9/);
+  assert.match(secondProjection['docs/guide/release-and-audit.md'], /historical 0\.2\.0-beta\.0 text stays/);
+  assert.match(secondProjection['docs/ja/guide/release-and-audit.md'], /## 0\.2\.0-beta\.2\u3078\u306eupgrade/);
+  assert.match(secondProjection['docs/ja/guide/release-and-audit.md'], /vibepro@0\.1\.9/);
+  assert.match(secondProjection['docs/.vitepress/config.mjs'], /softwareVersion: '0\.2\.0-beta\.2'/);
+
+  const jaHistoryPath = path.join(root, 'docs/ja/reference/version-history.md');
+  await writeFile(jaHistoryPath, secondProjection['docs/ja/reference/version-history.md'].replace('## 0.1.9', '## 0.1.8'));
+  const inconsistentSnapshot = await snapshot();
+  await assert.rejects(
+    projectPublishedVersion(root, '0.2.0-beta.2', '0.2.0-beta.3', '2026-07-20T09:00:00Z'),
+    /English and Japanese published-version histories must match/
+  );
+  assert.deepEqual(await snapshot(), inconsistentSnapshot, 'semantic validation failure must not write any projection');
 });
 
 test('post-merge docs release is not gated by an approval environment', async () => {
