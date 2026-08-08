@@ -360,3 +360,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:444:start -->
 - [PR #444](https://github.com/Unson-LLC/vibepro/pull/444) — [2026-08](/releases/2026-08): fix: 判断モードの証拠境界を分離
 <!-- vibepro-release-index-pr:444:end -->
+
+<!-- vibepro-release-index-pr:445:start -->
+- [PR #445](https://github.com/Unson-LLC/vibepro/pull/445) — [2026-08](/releases/2026-08): fix: release履歴を追記型に修正
+<!-- vibepro-release-index-pr:445:end -->

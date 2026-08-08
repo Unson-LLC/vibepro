@@ -1954,3 +1954,24 @@ Breaking beta change: senior judgment input schemaは0.2.0から0.3.0へ更新�
 senior judgment入力のcurrent_constraintへkindとdecision_evidenceを追加してください。kindはvalue_constraintまたはstructural_excess、decision_evidence.statusはsufficient、insufficient、unknownのいずれかです。
 
 <!-- vibepro-release-pr:444:end -->
+
+<!-- vibepro-release-pr:445:start -->
+## [#445](https://github.com/Unson-LLC/vibepro/pull/445) fix: release履歴を追記型に修正
+
+- Author: @sintariran
+- Merged: 2026-08-08T01:06:40Z
+- Commit: `5891a4cdb5fc1cb73cbd00ad3d510401a65aee1f`
+
+### Change Summary
+
+Version history now keeps published releases as an append-only ledger. This restores `0.2.0-beta.3`, corrects the `0.2.0-beta.4` summary, and validates bilingual history integrity before writing projected release documentation.
+
+### Compatibility
+
+No package or CLI compatibility change.
+
+### User Action
+
+No action required.
+
+<!-- vibepro-release-pr:445:end -->
