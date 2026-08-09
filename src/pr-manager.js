@@ -447,6 +447,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     created_at: createdAt,
     dry_run: dryRun,
     story: preparation.story,
+    development_control: boundedDevelopmentControl(preparation.development_control),
     base: baseBranch,
     head: headBranch,
     title,
@@ -622,6 +623,7 @@ export function renderPrPrepareSummary(result) {
     `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
+    ...renderDevelopmentControlLines(preparation.development_control),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];
@@ -638,8 +640,33 @@ export function renderPrCreateSummary(result) {
     `- base: ${execution.base}`,
     `- head: ${execution.head}`,
     `- pr_url: ${execution.pr_url ?? '-'}`,
+    ...renderDevelopmentControlLines(execution.development_control),
     ...(execution.warnings.length > 0 ? ['- warnings:', ...execution.warnings.map((w) => `  - ${w}`)] : []),
     ''
   ];
   return `${lines.join('\n')}\n`;
+}
+
+function boundedDevelopmentControl(control) {
+  if (!control) return null;
+  return {
+    mode: control.mode ?? null,
+    enforcement: control.enforcement ?? null,
+    intent: control.intent ?? null,
+    admission: control.admission ? {
+      status: control.admission.status ?? null,
+      allowed: control.admission.allowed === true,
+      reason: control.admission.reason ?? null
+    } : null
+  };
+}
+
+function renderDevelopmentControlLines(control) {
+  const bounded = boundedDevelopmentControl(control);
+  if (!bounded) return [];
+  return [
+    `- development control: ${bounded.mode ?? '-'} / ${bounded.enforcement ?? '-'}`,
+    `- development intent: ${bounded.intent ?? '-'}`,
+    `- development admission: ${bounded.admission?.status ?? '-'}`
+  ];
 }

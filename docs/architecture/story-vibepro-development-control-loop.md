@@ -54,6 +54,7 @@ flowchart LR
 - `SIMPLIFY`: `simplification`だけを許可する。
 - `shadow`: 判定と理由をartifactへ出すがblockしない。
 - `enforced`: Story plan、PR prepare、PR createが同じprojectionを読み、intent不一致をfail closedする。
+- Repository rolloutは`shadow`から始め、active Storyの`development_intent` backfillとstatus確認を終えてから`enforced`へ切り替える。`enforced`でprojectionが欠損した場合は`VALUE`へ推測せず`VALIDATE`としてfail closedする。
 
 ## Persistence
 

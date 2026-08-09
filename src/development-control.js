@@ -3,6 +3,8 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { findStorySource } from './requirement-consistency.js';
+
 const execFileAsync = promisify(execFile);
 
 export const DEVELOPMENT_MODES = Object.freeze(['VALUE', 'VALIDATE', 'SIMPLIFY']);
@@ -320,11 +322,14 @@ export async function getDevelopmentControlStatus(repoRoot, options = {}) {
     if (error.code !== 'ENOENT' && config.enforcement !== 'shadow') throw error;
     projection = null;
   }
-  const intent = options.intent ?? (storyId ? await readDevelopmentIntent(root, storyId) : null);
-  const mode = projection?.mode ?? 'VALUE';
   const enforcement = config.enforcement === 'shadow'
     ? 'shadow'
     : controlState?.next_enforcement ?? projection?.enforcement ?? effectiveEnforcement(config, 0);
+  const intent = options.intent ?? (storyId ? await readDevelopmentIntent(root, storyId) : null);
+  // An enforced repository without a portable or local projection has no
+  // evidence that VALUE work is safe. Route it to validation instead of
+  // silently failing open; explicit shadow remains the rollback switch.
+  const mode = projection?.mode ?? (config.enforcement === 'enforced' ? 'VALIDATE' : 'VALUE');
   return {
     schema_version: '0.1.0',
     mode,
@@ -537,14 +542,8 @@ async function readRepositoryControlConfig(root) {
 }
 
 async function readDevelopmentIntent(root, storyId) {
-  const file = path.join(root, 'docs', 'management', 'stories', 'active', `${storyId}.md`);
-  try {
-    const markdown = await readFile(file, 'utf8');
-    return markdown.match(/^development_intent:\s*([^\s#]+)/m)?.[1]?.toLowerCase() ?? null;
-  } catch (error) {
-    if (error.code === 'ENOENT') return null;
-    throw error;
-  }
+  const story = await findStorySource(root, { story_id: storyId });
+  return story.content.match(/^development_intent:\s*([^\s#]+)/m)?.[1]?.toLowerCase() ?? null;
 }
 
 async function readDevelopmentControlState(root, options = {}) {

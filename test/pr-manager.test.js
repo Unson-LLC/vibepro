@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { renderPrCreateSummary, renderPrPrepareSummary } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -108,4 +109,33 @@ test('pr prepare does not block when no story document exists', async () => {
   const body = await readFile(path.join(root, '.vibepro', 'pr', 'story-no-doc', 'pr-body.md'), 'utf8');
   assert.match(body, /no story document found/);
   assert.match(body, /no acceptance criteria found/);
+});
+
+test('PR JSON artifacts and human summaries expose the same bounded development control decision', async () => {
+  const storyId = 'story-pr-manager-control';
+  const storyDoc = STORY_DOC
+    .replaceAll('story-pr-manager-ac', storyId)
+    .replace('title: AC coverage story', 'title: Development control surface')
+    .replace('---\n\n# Story', 'development_intent: value\n---\n\n# Story');
+  const root = await setupRepo({ storyId, storyDoc });
+
+  const prepared = [];
+  const prepareResult = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json'], {
+    stdout: { write: (value) => prepared.push(String(value)) }
+  });
+  assert.equal(prepareResult.exitCode, 0);
+  const preparation = JSON.parse(prepared.join(''));
+  assert.equal(preparation.development_control.mode, 'VALUE');
+  assert.equal(preparation.development_control.admission.status, 'allowed');
+  assert.match(renderPrPrepareSummary({ preparation, artifacts: { json: 'prepare.json', pr_body: 'body.md' } }), /development control: VALUE \/ shadow/);
+
+  const created = [];
+  const createResult = await runCli([
+    'pr', 'create', root, '--story-id', storyId, '--base', 'main', '--head', 'feature/ac-coverage', '--dry-run', '--json'
+  ], { stdout: { write: (value) => created.push(String(value)) } });
+  assert.equal(createResult.exitCode, 0);
+  const execution = JSON.parse(created.join(''));
+  assert.deepEqual(Object.keys(execution.development_control).sort(), ['admission', 'enforcement', 'intent', 'mode']);
+  assert.equal(execution.development_control.admission.status, 'allowed');
+  assert.match(renderPrCreateSummary({ execution }), /development admission: allowed/);
 });

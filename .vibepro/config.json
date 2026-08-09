@@ -9,7 +9,7 @@
     "managed_worktree": "preferred"
   },
   "development_control": {
-    "enforcement": "enforced",
+    "enforcement": "shadow",
     "shadow_batches": 1,
     "baseline_commit": "6888dc6911f39744630b5132ca4874b4e675903a",
     "structural": {

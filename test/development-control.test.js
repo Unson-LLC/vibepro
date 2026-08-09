@@ -417,6 +417,56 @@ test('enforced mismatched intent blocks both PR admission entrypoints before sid
   }
 });
 
+test('development intent resolves from every supported Story source without substring collisions', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-development-story-source-'));
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await mkdir(path.join(root, 'docs', 'stories'), { recursive: true });
+  await mkdir(path.join(root, 'docs', 'management'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    development_control: { enforcement: 'enforced', shadow_batches: 0 }
+  }));
+  await writeFile(path.join(root, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
+    schema_version: '0.1.0', next_enforcement: 'enforced', completed_batches: 1,
+    projection: { mode: 'VALIDATE', enforcement: 'enforced', reasons: [] }, history: []
+  }));
+  await writeFile(path.join(root, 'docs', 'stories', 'story-alt-extra.md'), [
+    '---', 'story_id: story-alt-extra', 'development_intent: value', '---', ''
+  ].join('\n'));
+  await writeFile(path.join(root, 'docs', 'stories', 'noncanonical-name.md'), [
+    '---', 'story_id: story-alt', 'development_intent: simplification', '---', ''
+  ].join('\n'));
+
+  const status = await getDevelopmentControlStatus(root, { storyId: 'story-alt' });
+  assert.equal(status.intent, 'simplification');
+  assert.equal(status.admission.allowed, true);
+});
+
+test('enforced repositories route missing control state to VALIDATE and fail closed at admission', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-development-missing-state-'));
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await mkdir(path.join(root, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    execution: { managed_worktree: 'disabled' },
+    development_control: { enforcement: 'enforced', shadow_batches: 0 }
+  }));
+  await writeFile(path.join(root, 'docs', 'management', 'stories', 'active', 'story-value.md'), [
+    '---', 'story_id: story-value', 'development_intent: value', '---', ''
+  ].join('\n'));
+
+  const status = await getDevelopmentControlStatus(root, { storyId: 'story-value' });
+  assert.equal(status.mode, 'VALIDATE');
+  assert.equal(status.enforcement, 'enforced');
+  assert.equal(status.projection, null);
+  assert.equal(status.admission.allowed, false);
+
+  for (const operation of [preparePullRequest, createPullRequest]) {
+    await assert.rejects(
+      () => operation(root, { storyId: 'story-value', baseRef: 'main', dryRun: true }),
+      /development control blocked pr prepare/
+    );
+  }
+});
+
 test('public judgment CLI snapshots, reports status, and records an outcome receipt', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-development-cli-'));
   await mkdir(path.join(root, '.vibepro'), { recursive: true });

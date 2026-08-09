@@ -19,7 +19,7 @@ parent_design: story-vibepro-development-control-loop
 - `DCL-009`: bootstrap capはfresh input token 8,000,000、agent execution 6、repair batch 3、expensive verification 1、verification duration 2,700,000msとする。
 - `DCL-010`: modeの強さは`SIMPLIFY > VALIDATE > VALUE`とし、構造と消費の強い方を次batch判断にする。
 - `DCL-011`: `SIMPLIFY`は`simplification` intentのみ、`VALIDATE`は`validation|simplification`、`VALUE`は全intentを許可する。
-- `DCL-012`: `shadow`は不一致をartifactへ出すがcommandを止めず、`enforced`はStory plan、PR prepare、PR create admissionで不一致をfail closedする。
+- `DCL-012`: `shadow`は不一致をartifactへ出すがcommandを止めず、既存Storyへの`development_intent`移行が完了した後だけ`enforced`へ切り替える。`enforced`はStory plan、PR prepare、PR create admissionで不一致をfail closedし、portable/local stateの両方が欠損した場合は`VALIDATE`へ送る。
 - `DCL-013`: admissionはagent並列度やreview途中実行を変更しない。
 - `DCL-014`: `judgment status`、`judgment snapshot`、`judgment outcome record`を公開CLIとして提供する。
 - `DCL-015`: outcome receiptはimmutableで、`improved`だけを次baselineの候補として明示する。
