@@ -2616,6 +2616,31 @@ test('story plan creates execution priorities from the generated story map', asy
   }));
   await runCli(['story', 'derive', repo]);
 
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase = {
+    ...(config.brainbase ?? {}),
+    current_story_id: 'story-product-auth-account-access'
+  };
+  config.development_control = { enforcement: 'enforced', shadow_batches: 0 };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(repo, 'docs', 'management'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    next_enforcement: 'enforced',
+    completed_batches: 1,
+    projection: { mode: 'SIMPLIFY', enforcement: 'enforced', reasons: [] },
+    history: []
+  }));
+  const blocked = await runCli(['story', 'plan', repo, '--limit', '3'], {
+    stdout: { write: () => {} },
+    stderr: { write: () => {} }
+  });
+  assert.equal(blocked.exitCode, 1);
+
+  config.development_control.enforcement = 'shadow';
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
   let output = '';
   const result = await runCli(['story', 'plan', repo, '--limit', '3'], {
     stdout: { write: (text) => { output += text; } }
@@ -2636,6 +2661,8 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.match(output, /Spec正本を復元する/);
   const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
   assert.equal(plan.priority_stories.length <= 2, true);
+  assert.equal(plan.development_control.enforcement, 'shadow');
+  assert.equal(plan.development_control.admission.allowed, true);
   assert.equal(plan.summary.source_consistency_status, 'needs_recovery');
   assert.equal(plan.source_consistency.needs_recovery_story_count > 0, true);
   assert.equal(plan.summary.source_missing_spec_count > 0, true);

@@ -41,6 +41,9 @@ const EXPENSIVE_VERIFICATION = /(?:e2e|browser|performance|security|full_suite|i
 
 export function normalizeDevelopmentControl(config = {}) {
   const input = config.development_control ?? config;
+  if (input.enforcement !== undefined && !['shadow', 'enforced'].includes(input.enforcement)) {
+    throw new Error('development_control.enforcement must be shadow or enforced');
+  }
   return {
     ...DEFAULT_DEVELOPMENT_CONTROL,
     ...input,
@@ -202,6 +205,7 @@ export function extractConsumptionMetrics(documents = []) {
   const usageObjects = new Map();
   const verifications = new Map();
   const repairIds = new Set();
+  let anonymousUsageCount = 0;
   walk(documents, (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return;
     if (value.agent_usage && typeof value.agent_usage === 'object') {
@@ -209,7 +213,7 @@ export function extractConsumptionMetrics(documents = []) {
         ?? value.agent_usage.agent_id
         ?? value.agent_usage.session_id
         ?? value.agent_usage.call_id
-        ?? stableObjectKey(value.agent_usage);
+        ?? `anonymous:${anonymousUsageCount++}`;
       usageObjects.set(identity, value.agent_usage);
     }
     const verification = normalizeVerification(value);
@@ -291,6 +295,7 @@ export async function createDevelopmentSnapshot(repoRoot, options = {}) {
 
 export async function getDevelopmentControlStatus(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
+  const storyId = options.storyId ? validateStoryId(options.storyId) : null;
   const config = normalizeDevelopmentControl(await readRepositoryControlConfig(root));
   const controlState = await readDevelopmentControlState(root);
   const currentPath = path.join(root, '.vibepro', 'development-control', 'current.json');
@@ -300,7 +305,7 @@ export async function getDevelopmentControlStatus(repoRoot, options = {}) {
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
-  const intent = options.intent ?? (options.storyId ? await readDevelopmentIntent(root, options.storyId) : null);
+  const intent = options.intent ?? (storyId ? await readDevelopmentIntent(root, storyId) : null);
   const mode = projection?.mode ?? 'VALUE';
   const enforcement = config.enforcement === 'shadow'
     ? 'shadow'

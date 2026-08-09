@@ -26,6 +26,7 @@ import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getAgentReviewStatus } from './agent-review.js';
 import { bindStoryTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
+import { assertDevelopmentAdmission } from './development-control.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -38,6 +39,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'pr prepare');
   const language = await resolveHumanOutputLanguage(root, options);
+  const developmentControl = options.developmentControl ?? await assertDevelopmentAdmission(root, {
+    storyId,
+    commandName: 'pr prepare'
+  });
 
   const [story, git, spec, drift, verification, review] = await Promise.all([
     readStory(root, storyId),
@@ -65,7 +70,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
-    development_control: options.developmentControl ?? null,
+    development_control: developmentControl,
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().

@@ -20,6 +20,7 @@ import {
   evaluateStructuralBudget,
   extractConsumptionMetrics,
   getDevelopmentControlStatus,
+  normalizeDevelopmentControl,
   recordDevelopmentOutcome
 } from '../src/development-control.js';
 
@@ -120,6 +121,26 @@ test('canonical verification run schema is measured once even when projected twi
 
   assert.equal(metrics.expensive_verifications, 1);
   assert.equal(metrics.verification_duration_ms, 144210);
+});
+
+test('anonymous agent usages are counted conservatively instead of deduplicated by content', () => {
+  const metrics = extractConsumptionMetrics([
+    { agent_usage: { fresh_input_tokens: 100 } },
+    { agent_usage: { fresh_input_tokens: 100 } }
+  ]);
+  assert.equal(metrics.agent_executions, 2);
+  assert.equal(metrics.fresh_input_tokens, 200);
+});
+
+test('invalid enforcement configuration and unsafe status story ids fail closed', async () => {
+  assert.throws(
+    () => normalizeDevelopmentControl({ enforcement: 'enforeced' }),
+    /must be shadow or enforced/
+  );
+  await assert.rejects(
+    () => getDevelopmentControlStatus('/tmp/repo', { storyId: '../escape' }),
+    /storyId must contain/
+  );
 });
 
 test('first snapshot is shadow, the next batch is enforced, and only improved outcomes advance baseline', async () => {
@@ -283,6 +304,39 @@ test('enforced mismatched intent blocks both PR admission entrypoints before sid
   const rollbackStatus = await getDevelopmentControlStatus(root, { storyId: 'story-value' });
   assert.equal(rollbackStatus.enforcement, 'shadow');
   assert.equal(rollbackStatus.admission.allowed, true);
+
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    execution: { managed_worktree: 'disabled' },
+    development_control: { enforcement: 'enforeced', shadow_batches: 1 }
+  }));
+  for (const args of [
+    ['judgment', 'status', root, '--id', 'story-value', '--json'],
+    ['pr', 'prepare', root, '--story-id', 'story-value', '--base', 'main', '--json']
+  ]) {
+    const capture = [];
+    const result = await runCli(args, {
+      stdout: { write: (value) => capture.push(String(value)) },
+      stderr: { write: (value) => capture.push(String(value)) },
+      env: {}
+    });
+    assert.equal(result.exitCode, 1);
+    assert.match(capture.join(''), /must be shadow or enforced/);
+  }
+
+  for (const args of [
+    ['judgment', 'status', root, '--id', '../escape', '--json'],
+    ['pr', 'prepare', root, '--story-id', '../escape', '--base', 'main', '--json'],
+    ['pr', 'create', root, '--story-id', '../escape', '--base', 'main', '--json']
+  ]) {
+    const capture = [];
+    const result = await runCli(args, {
+      stdout: { write: (value) => capture.push(String(value)) },
+      stderr: { write: (value) => capture.push(String(value)) },
+      env: {}
+    });
+    assert.equal(result.exitCode, 1);
+    assert.match(capture.join(''), /storyId must contain|valid story id/);
+  }
 });
 
 test('public judgment CLI snapshots, reports status, and records an outcome receipt', async () => {
