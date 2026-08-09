@@ -53,6 +53,13 @@ import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import { evaluateSeniorJudgmentRun, renderSeniorJudgmentSummary } from './senior-judgment-dag.js';
 import {
+  assertDevelopmentAdmission,
+  createDevelopmentSnapshot,
+  getDevelopmentControlStatus,
+  recordDevelopmentOutcome,
+  renderDevelopmentControlSummary
+} from './development-control.js';
+import {
   getDecisionStatus,
   readDecisionRecordsIfExists,
   recordDecision,
@@ -179,6 +186,9 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
+  vibepro judgment status [repo] --id <story-id> [--json]
+  vibepro judgment snapshot [repo] --id <story-id> [--commit <ref>] [--baseline <ref>] [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --batch <commit> --result <improved|unchanged|regressed> [--summary <text>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -282,6 +292,9 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
+  vibepro judgment status [repo] --id <story-id> [--json]
+  vibepro judgment snapshot [repo] --id <story-id> [--commit <ref>] [--baseline <ref>] [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --batch <commit> --result <improved|unchanged|regressed> [--summary <text>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -851,6 +864,45 @@ async function dispatchCli(argv, io = {}) {
           : renderSeniorJudgmentSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'status') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const result = await getDevelopmentControlStatus(repoRoot, { storyId });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderDevelopmentControlSummary(result));
+        return { exitCode: result.admission.allowed ? 0 : 2, command, subcommand, result };
+      }
+      if (subcommand === 'snapshot') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const result = await createDevelopmentSnapshot(repoRoot, {
+          storyId,
+          commit: getOption(rest, '--commit') ?? 'HEAD',
+          baseline: getOption(rest, '--baseline')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.snapshot, null, 2)}\n`
+          : renderDevelopmentControlSummary({
+              mode: result.projection.mode,
+              enforcement: result.projection.enforcement,
+              projection: result.projection,
+              intent: null,
+              admission: { status: 'snapshot_recorded', allowed: true }
+            }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'outcome' && rest[1] === 'record') {
+        const nestedRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        const result = await recordDevelopmentOutcome(nestedRepoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          adoptedCommit: getOption(rest, '--batch') ?? getOption(rest, '--commit'),
+          result: getOption(rest, '--result'),
+          summary: getOption(rest, '--summary')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.receipt, null, 2)}\n`
+          : `Development outcome recorded: ${result.receipt.result} ${result.receipt.adopted_commit}\n`);
+        return { exitCode: 0, command, subcommand: 'outcome record', result };
+      }
       write(stderr, `Unknown judgment command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
@@ -1149,6 +1201,7 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'pr prepare'
         });
+        await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr prepare' });
         const result = await preparePullRequest(repoRoot, {
           storyId,
           taskId: getOption(rest, '--task'),
@@ -1171,6 +1224,7 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'pr create'
         });
+        await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr create' });
         const result = await createPullRequest(repoRoot, {
           storyId,
           taskId: getOption(rest, '--task'),
