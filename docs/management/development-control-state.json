@@ -1,13 +1,13 @@
 {
   "schema_version": "0.1.0",
-  "updated_at": "2026-08-09T08:59:55.526Z",
+  "updated_at": "2026-08-09T09:14:50.940Z",
   "projection": {
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-development-control-loop",
-    "adopted_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
-    "baseline_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
+    "adopted_commit": "329c1772f81ecf4f32405f2c30e9f25099142b90",
+    "baseline_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
     "baseline_source": "improved_outcome",
-    "recorded_at": "2026-08-09T08:59:49.713Z",
+    "recorded_at": "2026-08-09T09:14:46.509Z",
     "mode": "VALIDATE",
     "reasons": [
       {
@@ -32,11 +32,11 @@
         "cap_source": "bootstrap"
       }
     ],
-    "enforcement": "enforced",
-    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/8791b2dc545b86e2fbe5e897f7ff2c85e337662d.json"
+    "enforcement": "shadow",
+    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/329c1772f81ecf4f32405f2c30e9f25099142b90.json"
   },
-  "next_enforcement": "enforced",
-  "completed_batches": 4,
+  "next_enforcement": "shadow",
+  "completed_batches": 5,
   "history": [
     {
       "story_id": "story-vibepro-development-control-loop",
@@ -211,16 +211,56 @@
         "expensive_verifications": 0,
         "verification_duration_ms": 156063
       }
+    },
+    {
+      "story_id": "story-vibepro-development-control-loop",
+      "adopted_commit": "329c1772f81ecf4f32405f2c30e9f25099142b90",
+      "baseline_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
+      "recorded_at": "2026-08-09T09:14:46.509Z",
+      "enforcement": "shadow",
+      "decision": {
+        "mode": "VALIDATE",
+        "reasons": [
+          {
+            "metric": "fresh_input_tokens",
+            "status": "unknown",
+            "observed": null,
+            "cap": 8000000,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "agent_executions",
+            "status": "unknown",
+            "observed": null,
+            "cap": 6,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "repair_batches",
+            "status": "unknown",
+            "observed": null,
+            "cap": 3,
+            "cap_source": "bootstrap"
+          }
+        ]
+      },
+      "consumption": {
+        "fresh_input_tokens": null,
+        "agent_executions": null,
+        "repair_batches": null,
+        "expensive_verifications": 0,
+        "verification_duration_ms": 154799
+      }
     }
   ],
   "latest_improved_outcome": {
     "schema_version": "0.1.0",
-    "receipt_id": "story-vibepro-development-control-loop:8791b2dc545b86e2fbe5e897f7ff2c85e337662d:1786265995526",
+    "receipt_id": "story-vibepro-development-control-loop:329c1772f81ecf4f32405f2c30e9f25099142b90:1786266890940",
     "story_id": "story-vibepro-development-control-loop",
-    "adopted_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
+    "adopted_commit": "329c1772f81ecf4f32405f2c30e9f25099142b90",
     "result": "improved",
-    "summary": "Closed malformed state, manager bypass, provenance, nested surface, readiness, and Story collision gaps",
-    "recorded_at": "2026-08-09T08:59:55.526Z",
+    "summary": "Release-safe shadow rollout, fail-closed state handling, canonical Story intent resolution, and aligned PR control surfaces.",
+    "recorded_at": "2026-08-09T09:14:50.940Z",
     "baseline_eligible": true
   }
 }
