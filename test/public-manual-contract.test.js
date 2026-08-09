@@ -6,11 +6,13 @@ import test from 'node:test';
 const root = process.cwd();
 
 test('public manual states the current positioning and human authority boundary', async () => {
-  const [english, japanese, englishOverview, japaneseOverview] = await Promise.all([
+  const [english, japanese, englishOverview, japaneseOverview, englishReadme, japaneseReadme] = await Promise.all([
     readFile(path.join(root, 'docs/index.md'), 'utf8'),
     readFile(path.join(root, 'docs/ja/index.md'), 'utf8'),
     readFile(path.join(root, 'docs/guide/what-is-vibepro.md'), 'utf8'),
-    readFile(path.join(root, 'docs/ja/guide/what-is-vibepro.md'), 'utf8')
+    readFile(path.join(root, 'docs/ja/guide/what-is-vibepro.md'), 'utf8'),
+    readFile(path.join(root, 'README.md'), 'utf8'),
+    readFile(path.join(root, 'README.ja.md'), 'utf8')
   ]);
 
   assert.match(english, /Keep AI coding context traceable/);
@@ -19,6 +21,15 @@ test('public manual states the current positioning and human authority boundary'
   assert.match(japanese, /人間のreviewerと対象リポジトリのpolicy/);
   assert.match(englishOverview, /repository-local evidence workspace/);
   assert.match(japaneseOverview, /リポジトリローカル証跡ワークスペース/);
+  for (const surface of [english, japanese, englishReadme, japaneseReadme]) {
+    assert.match(surface, /Development Control Loop/);
+    assert.match(surface, /shadow/);
+    assert.match(surface, /enforced/);
+    assert.match(surface, /pr prepare/);
+    assert.match(surface, /pr create/);
+  }
+  assert.match(englishReadme, /per-Story delivery-efficiency budget enforcement/);
+  assert.match(japaneseReadme, /Story単位のdelivery-efficiency budget enforcement/);
   for (const overview of [englishOverview, japaneseOverview]) {
     assert.match(overview, /Story/);
     assert.match(overview, /Spec/);

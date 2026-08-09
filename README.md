@@ -7,7 +7,9 @@
 
 VibePro is a small, repository-local CLI for keeping the context around AI-assisted development traceable. It stores Stories, Specs, verification results, review records, decisions, and PR summaries under `.vibepro/` so humans and coding agents can inspect the same evidence.
 
-VibePro does not implement your application, decide whether a change is safe, block PR creation, or merge code for you. The minimal core deliberately removed the former Gate DAG, readiness/blocking verdicts, managed execution, lifecycle accounting, budget enforcement, and automatic audit bundles.
+VibePro does not implement your application, decide whether a change is safe, or merge code for you. The minimal core deliberately removed the former Gate DAG, readiness/blocking verdicts, managed execution, lifecycle accounting, per-Story delivery-efficiency budget enforcement, and automatic audit bundles.
+
+The replacement Development Control Loop is narrower: it measures adopted batches and constrains only the next Story intent. It starts in `shadow` mode, where mismatches stay visible without blocking work. A repository may explicitly switch it to `enforced` after migrating active Stories; only then can an intent mismatch block Story planning, `pr prepare`, or `pr create`. Human review and merge authority remain outside VibePro.
 
 ## Install
 
