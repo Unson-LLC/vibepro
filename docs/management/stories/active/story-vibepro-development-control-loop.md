@@ -27,11 +27,11 @@ VibeProは並列に高速開発できる一方、開発量・検証量・修復�
 
 - `development_intent`は`value`、`validation`、`simplification`のいずれかとしてStory planへ投影される。（Evidence: `test/development-control.test.js`）
 - 採用済みbatchについて、構造予算と消費予算を分離したimmutable snapshotを生成できる。（Evidence: `test/development-control.test.js`）
-- 構造予算はbaseline比のLOC、file count、import edge、dependency cycle、workflow-control surfaceを評価する。（Evidence: `test/development-control.test.js`）
-- 消費予算はtoken、agent execution、repair batch、expensive verification、verification durationを評価し、不明値を0として扱わない。（Evidence: `test/development-control.test.js`）
+- 構造予算はbaseline比のLOC、file count、import edge、dependency cycle、workflow-control surfaceを`evaluateStructuralBudget`で評価する。（Evidence: `test/development-control.test.js`）
+- 消費予算はtoken、agent execution、repair batch、expensive verification、verification durationを`evaluateConsumptionBudget`で評価し、不明値を0として扱わない。（Evidence: `test/development-control.test.js`）
 - 履歴が十分なら直近5件medianと20件p95からcapを導出し、不十分ならbootstrap capを使う。（Evidence: `test/development-control.test.js`）
-- `judgment status`、`judgment snapshot`、`judgment outcome record`で現在判断、採用batch固定、outcome記録を操作できる。（Evidence: `test/development-control.test.js`）
-- intent移行が完了するまではshadowで判断を記録し、移行後にStory plan、PR prepare、PR createのadmissionをenforcedへ切り替える。削除済みの旧`execute merge` commandは復活させない。（Evidence: `test/development-control.test.js`）
+- `judgment status`、`judgment snapshot`、`judgment outcome record`を`runCli`経由で操作し、現在判断、採用batch固定、outcome記録を確認できる。（Evidence: `test/development-control.test.js`）
+- intent移行が完了するまではshadowで判断を記録し、移行後に`getDevelopmentControlStatus`を共通境界としてStory plan、PR prepare、PR createのadmissionをenforcedへ切り替える。削除済みの旧`execute merge` commandは復活させない。（Evidence: `test/development-control.test.js`）
 - `SIMPLIFY`時も並列実行を禁止せず、次batchのintentだけを簡素化へ制約する。（Evidence: `test/development-control.test.js`）
 - Story単位の予算上書き、review途中停止、strict-HEAD再計測ループ、新しいGate DAG nodeを導入しない。（Evidence: `test/development-control.test.js`）
 - baselineはoutcome receiptが改善を示したbatchでのみ前進する。（Evidence: `test/development-control.test.js`）
