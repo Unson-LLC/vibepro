@@ -1,13 +1,13 @@
 {
   "schema_version": "0.1.0",
-  "updated_at": "2026-08-09T08:45:54.905Z",
+  "updated_at": "2026-08-09T08:59:55.526Z",
   "projection": {
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-development-control-loop",
-    "adopted_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
-    "baseline_commit": "045bcfe088d6cd6455703d1f3c07e398648a0ac3",
+    "adopted_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
+    "baseline_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
     "baseline_source": "improved_outcome",
-    "recorded_at": "2026-08-09T08:45:45.010Z",
+    "recorded_at": "2026-08-09T08:59:49.713Z",
     "mode": "VALIDATE",
     "reasons": [
       {
@@ -33,10 +33,10 @@
       }
     ],
     "enforcement": "enforced",
-    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/fa6ffd8f1d3b25af6ba990cd526f083159b5fceb.json"
+    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/8791b2dc545b86e2fbe5e897f7ff2c85e337662d.json"
   },
   "next_enforcement": "enforced",
-  "completed_batches": 3,
+  "completed_batches": 4,
   "history": [
     {
       "story_id": "story-vibepro-development-control-loop",
@@ -171,16 +171,56 @@
         "expensive_verifications": 0,
         "verification_duration_ms": 155155
       }
+    },
+    {
+      "story_id": "story-vibepro-development-control-loop",
+      "adopted_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
+      "baseline_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
+      "recorded_at": "2026-08-09T08:59:49.713Z",
+      "enforcement": "enforced",
+      "decision": {
+        "mode": "VALIDATE",
+        "reasons": [
+          {
+            "metric": "fresh_input_tokens",
+            "status": "unknown",
+            "observed": null,
+            "cap": 8000000,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "agent_executions",
+            "status": "unknown",
+            "observed": null,
+            "cap": 6,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "repair_batches",
+            "status": "unknown",
+            "observed": null,
+            "cap": 3,
+            "cap_source": "bootstrap"
+          }
+        ]
+      },
+      "consumption": {
+        "fresh_input_tokens": null,
+        "agent_executions": null,
+        "repair_batches": null,
+        "expensive_verifications": 0,
+        "verification_duration_ms": 156063
+      }
     }
   ],
   "latest_improved_outcome": {
     "schema_version": "0.1.0",
-    "receipt_id": "story-vibepro-development-control-loop:fa6ffd8f1d3b25af6ba990cd526f083159b5fceb:1786265154905",
+    "receipt_id": "story-vibepro-development-control-loop:8791b2dc545b86e2fbe5e897f7ff2c85e337662d:1786265995526",
     "story_id": "story-vibepro-development-control-loop",
-    "adopted_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
+    "adopted_commit": "8791b2dc545b86e2fbe5e897f7ff2c85e337662d",
     "result": "improved",
-    "summary": "Closed shared admission, validation, and conservative accounting gaps",
-    "recorded_at": "2026-08-09T08:45:54.905Z",
+    "summary": "Closed malformed state, manager bypass, provenance, nested surface, readiness, and Story collision gaps",
+    "recorded_at": "2026-08-09T08:59:55.526Z",
     "baseline_eligible": true
   }
 }
