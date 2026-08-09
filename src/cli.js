@@ -129,10 +129,15 @@ const HELP_EN = `VibePro CLI
 
 VibePro is a minimal CLI control plane for Story-driven AI development.
 Per docs/management/REBUILD.md ("最小コアのスコープ"), it no longer carries a
-Gate DAG, readiness/blocking evaluation, delivery-efficiency budgets, review
-lifecycle accounting, or auto-generated audit artifacts. It stores Story,
-Spec, verification, review, and PR evidence under .vibepro/ so humans and AI
-agents can continue with reviewable context; it does not block PR creation.
+Gate DAG, general readiness/blocking evaluation, per-Story delivery-efficiency
+budget enforcement, review lifecycle accounting, or auto-generated audit
+artifacts. It stores Story, Spec, verification, review, and PR evidence under
+.vibepro/ so humans and AI agents can continue with reviewable context.
+
+The narrower Development Control Loop starts in shadow mode. After a repository
+explicitly migrates active Stories and switches to enforced mode, an intent
+mismatch can block Story planning, pr prepare, or pr create. It does not approve
+or merge PRs; those decisions remain with humans and repository policy.
 
 Core model:
   Story defines user value and acceptance criteria.
@@ -228,11 +233,15 @@ Usage:
 const HELP_JA = `VibePro CLI
 
 VibeProは、Story起点のAI開発を進めるための最小CLI制御基盤です。
-docs/management/REBUILD.md（「最小コアのスコープ」）に従い、Gate DAG・
-readiness/blocking判定・delivery-efficiencyバジェット・review lifecycle会計・
-audit artifactの自動生成は廃止しました。Story・Spec・検証証跡・レビュー証跡・
-PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を追える形にしますが、
-PR作成をブロックする機構は持ちません。
+docs/management/REBUILD.md（「最小コアのスコープ」）に従い、Gate DAG・一般的な
+readiness/blocking判定・Story単位のdelivery-efficiency budget enforcement・
+review lifecycle会計・audit artifactの自動生成は廃止しました。Story・Spec・
+検証証跡・レビュー証跡・PR証跡を .vibepro/ に保存します。
+
+より狭いDevelopment Control Loopはshadowから開始します。active Storyの移行後、
+repositoryが明示的にenforcedへ切り替えた場合に限り、intent不一致はStory plan・
+pr prepare・pr createをblockできます。PRの承認・mergeは行わず、その権限は人間と
+repository policyに残ります。
 
 まず人間が使う基本コマンド:
   vibepro init <repo> --language ja --story-id <id> --title <title>
@@ -1823,7 +1832,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     ja: [
       `VibePro workspaceを初期化しました: ${workspaceDir}`,
       '',
-      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGやPR作成をブロックする機構は持ちません。',
+      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGは持ちません。Development Control Loopはshadowでは非blockで、移行後に明示的にenforcedへ切り替えた場合だけStory plan・pr prepare・pr createのintent不一致をblockできます。',
       `人間向け出力言語: ${language}`,
       `base branch候補: ${baseBranch ?? '未検出。origin/main, origin/develop, main, develop など実リポジトリの既定branchを指定してください。'}`,
       '',
@@ -1838,7 +1847,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     en: [
       `VibePro workspace initialized: ${workspaceDir}`,
       '',
-      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. It carries no Gate DAG or PR-creation-blocking machinery.',
+      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes and carries no Gate DAG. The Development Control Loop is non-blocking in shadow mode; only a repository that has migrated active Stories and explicitly switches to enforced mode can block an intent mismatch in Story planning, pr prepare, or pr create.',
       `Human output language: ${language}`,
       `Base branch candidate: ${baseBranch ?? 'not detected. Use the repository default such as origin/main, origin/develop, main, or develop.'}`,
       '',

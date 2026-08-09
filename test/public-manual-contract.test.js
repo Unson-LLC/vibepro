@@ -6,13 +6,16 @@ import test from 'node:test';
 const root = process.cwd();
 
 test('public manual states the current positioning and human authority boundary', async () => {
-  const [english, japanese, englishOverview, japaneseOverview, englishReadme, japaneseReadme] = await Promise.all([
+  const [english, japanese, englishOverview, japaneseOverview, englishMap, japaneseMap, englishReadme, japaneseReadme, cli] = await Promise.all([
     readFile(path.join(root, 'docs/index.md'), 'utf8'),
     readFile(path.join(root, 'docs/ja/index.md'), 'utf8'),
     readFile(path.join(root, 'docs/guide/what-is-vibepro.md'), 'utf8'),
     readFile(path.join(root, 'docs/ja/guide/what-is-vibepro.md'), 'utf8'),
+    readFile(path.join(root, 'docs/guide/feature-map.md'), 'utf8'),
+    readFile(path.join(root, 'docs/ja/guide/feature-map.md'), 'utf8'),
     readFile(path.join(root, 'README.md'), 'utf8'),
-    readFile(path.join(root, 'README.ja.md'), 'utf8')
+    readFile(path.join(root, 'README.ja.md'), 'utf8'),
+    readFile(path.join(root, 'src/cli.js'), 'utf8')
   ]);
 
   assert.match(english, /Keep AI coding context traceable/);
@@ -21,7 +24,7 @@ test('public manual states the current positioning and human authority boundary'
   assert.match(japanese, /人間のreviewerと対象リポジトリのpolicy/);
   assert.match(englishOverview, /repository-local evidence workspace/);
   assert.match(japaneseOverview, /リポジトリローカル証跡ワークスペース/);
-  for (const surface of [english, japanese, englishReadme, japaneseReadme]) {
+  for (const surface of [english, japanese, englishOverview, japaneseOverview, englishMap, japaneseMap, englishReadme, japaneseReadme, cli]) {
     assert.match(surface, /Development Control Loop/);
     assert.match(surface, /shadow/);
     assert.match(surface, /enforced/);
