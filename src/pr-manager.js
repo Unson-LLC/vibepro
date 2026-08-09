@@ -26,6 +26,7 @@ import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getAgentReviewStatus } from './agent-review.js';
 import { bindStoryTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
+import { assertDevelopmentAdmission } from './development-control.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -38,6 +39,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'pr prepare');
   const language = await resolveHumanOutputLanguage(root, options);
+  const developmentControl = await assertDevelopmentAdmission(root, {
+    storyId,
+    commandName: 'pr prepare'
+  });
 
   const [story, git, spec, drift, verification, review] = await Promise.all([
     readStory(root, storyId),
@@ -65,6 +70,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
+    development_control: developmentControl,
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -359,6 +365,18 @@ function renderPrBody(preparation) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
   }
   lines.push('');
+  lines.push('### Development control');
+  if (preparation.development_control) {
+    const control = preparation.development_control;
+    lines.push(`- mode: ${control.mode}`);
+    lines.push(`- enforcement: ${control.enforcement}`);
+    lines.push(`- intent: ${control.intent ?? '-'}`);
+    lines.push(`- admission: ${control.admission?.status ?? '-'}`);
+    lines.push(`- snapshot: ${control.projection?.snapshot_ref ?? '-'}`);
+  } else {
+    lines.push('- no development control projection');
+  }
+  lines.push('');
   lines.push('### Verification evidence');
   if (verification.recorded) {
     for (const command of verification.commands) {
@@ -429,6 +447,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     created_at: createdAt,
     dry_run: dryRun,
     story: preparation.story,
+    development_control: boundedDevelopmentControl(preparation.development_control),
     base: baseBranch,
     head: headBranch,
     title,
@@ -604,6 +623,7 @@ export function renderPrPrepareSummary(result) {
     `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
+    ...renderDevelopmentControlLines(preparation.development_control),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];
@@ -620,8 +640,33 @@ export function renderPrCreateSummary(result) {
     `- base: ${execution.base}`,
     `- head: ${execution.head}`,
     `- pr_url: ${execution.pr_url ?? '-'}`,
+    ...renderDevelopmentControlLines(execution.development_control),
     ...(execution.warnings.length > 0 ? ['- warnings:', ...execution.warnings.map((w) => `  - ${w}`)] : []),
     ''
   ];
   return `${lines.join('\n')}\n`;
+}
+
+function boundedDevelopmentControl(control) {
+  if (!control) return null;
+  return {
+    mode: control.mode ?? null,
+    enforcement: control.enforcement ?? null,
+    intent: control.intent ?? null,
+    admission: control.admission ? {
+      status: control.admission.status ?? null,
+      allowed: control.admission.allowed === true,
+      reason: control.admission.reason ?? null
+    } : null
+  };
+}
+
+function renderDevelopmentControlLines(control) {
+  const bounded = boundedDevelopmentControl(control);
+  if (!bounded) return [];
+  return [
+    `- development control: ${bounded.mode ?? '-'} / ${bounded.enforcement ?? '-'}`,
+    `- development intent: ${bounded.intent ?? '-'}`,
+    `- development admission: ${bounded.admission?.status ?? '-'}`
+  ];
 }

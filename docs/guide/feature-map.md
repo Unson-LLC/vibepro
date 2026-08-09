@@ -8,6 +8,7 @@
 | Preserve execution evidence | `verify` | Verification records tied to repository state |
 | Preserve human or agent judgment | `review`, `decision` | Review and decision records |
 | Evaluate senior engineering choices | `judgment evaluate` | Advisory decision DAG and immutable run history |
+| Control the next Story intent from adopted-batch evidence | `judgment status`, `judgment snapshot`, `judgment outcome record` | Development Control mode, immutable snapshots, and outcome history |
 | Add command guardrails | `guard` | Local guard configuration and reports |
 | Prepare a PR handoff | `pr prepare`, `pr create` | PR context and human-readable body |
 | Configure coding agents | `skills`, `codex`, `harness` | Installed instructions and learning records |
@@ -15,6 +16,6 @@
 
 ## Removed from the minimal core
 
-The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, readiness/blocking verdicts, review-lifecycle accounting, delivery-efficiency budgets, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles.
+The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, general readiness/blocking verdicts, review-lifecycle accounting, per-Story delivery-efficiency budget enforcement, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles. The narrower Development Control Loop replaces only the budget-to-next-intent feedback path; it starts in `shadow`, and explicit `enforced` mode can block an intent mismatch in Story planning, `pr prepare`, or `pr create`.
 
 Run `vibepro help --language en` for the exact commands in your installed version.

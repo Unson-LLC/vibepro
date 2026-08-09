@@ -1,0 +1,74 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-development-control-loop",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Unknown consumption attribution is represented as null and routes the next batch to VALIDATE; it is never converted to zero or a passing budget result.",
+      "rationale": "Missing telemetry must not make an unmeasured batch appear cheap.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-development-control-loop.md", "section": "Budget Model" }],
+        "code_refs": [{ "file": "src/development-control.js", "anchor": "evaluateConsumptionBudget" }],
+        "test_refs": [{ "file": "test/development-control.test.js", "case": "unknown consumption routes to VALIDATE instead of zero or pass" }]
+      }
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "An adopted batch snapshot is immutable and unique by story ID and adopted commit, while a bounded tracked state shares the current projection, up to 20 consumption summaries, and latest improved receipt across clones and worktrees.",
+      "rationale": "A later HEAD or budget amendment must not rewrite the evidence used for the original next-batch decision.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-development-control-loop.md", "section": "Persistence" }],
+        "code_refs": [{ "file": "src/development-control.js", "anchor": "createDevelopmentSnapshot" }],
+        "test_refs": [{ "file": "test/development-control.test.js", "case": "first snapshot is shadow, the next batch is enforced, and only improved outcomes advance baseline" }]
+      }
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "When structural growth reaches the configured threshold, adds a dependency cycle, or increases workflow-control surface count, Senior Judgment selects SIMPLIFY for the next batch.",
+      "rationale": "This is the missing refactoring trigger identified by the repository retrospective.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-development-control-loop.md", "section": "Structural budget" }],
+        "code_refs": [{ "file": "src/development-control.js", "anchor": "evaluateStructuralBudget" }],
+        "test_refs": [{ "file": "test/development-control.test.js", "case": "a new cycle or workflow control surface selects SIMPLIFY immediately" }]
+      }
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "VALUE permits every development intent, VALIDATE permits validation or simplification, and SIMPLIFY permits simplification; shadow reports mismatch and enforced mode blocks it.",
+      "rationale": "The controller constrains purpose without serializing or disabling parallel execution.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-development-control-loop.md", "section": "Admission Rules" }],
+        "code_refs": [{ "file": "src/development-control.js", "anchor": "evaluateDevelopmentAdmission" }],
+        "test_refs": [{ "file": "test/development-control.test.js", "case": "parallel usage is measured but admission constrains intent, not concurrency" }]
+      }
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "The public judgment CLI exposes status, immutable snapshot creation, and improved, unchanged, or regressed outcome receipt recording.",
+      "rationale": "Operators need a small inspect-record loop instead of a new Gate DAG.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-development-control-loop.md", "section": "Control Flow" }],
+        "code_refs": [{ "file": "src/cli.js", "anchor": "subcommand === 'snapshot'" }, { "file": "src/development-control.js", "anchor": "recordDevelopmentOutcome" }],
+        "test_refs": [{ "file": "test/development-control.test.js", "case": "first snapshot is shadow, the next batch is enforced, and only improved outcomes advance baseline" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  A[Adopted batch] --> M[Measure once]\n  M --> S[Immutable snapshot]\n  S --> J[Senior Judgment]\n  J --> N[Next batch admission]\n  O[Outcome receipt] --> B[Baseline candidate]\n  B --> M",
+      "entities": ["adopted batch", "snapshot", "Senior Judgment", "next batch", "outcome receipt"],
+      "rationale": "The only feedback edge crosses an adopted-batch boundary; an in-flight review is never stopped by budget measurement."
+    }
+  ]
+}

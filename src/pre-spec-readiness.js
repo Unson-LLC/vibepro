@@ -131,6 +131,7 @@ async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
       active_axes: engineeringJudgment.active_axes ?? [],
       active_axis_count: engineeringJudgment.active_axis_count ?? 0
     } : null,
+    development_control: prPrepare?.development_control ?? null,
     pr_prepare: prPrepare ? {
       created_at: prPrepare.created_at ?? null,
       artifact: prPrepare.artifact_refs?.['pr-prepare.json'] ?? `.vibepro/pr/${storyId}/pr-prepare.json`

@@ -7,7 +7,9 @@
 
 VibeProは、AI支援開発の文脈を追跡可能に保つ、小さなリポジトリローカルCLIです。Story、Spec、検証結果、レビュー記録、判断、PR要約を `.vibepro/` に保存し、人間とコーディングエージェントが同じ証跡を確認できるようにします。
 
-VibeProはアプリを実装せず、変更の安全性を判定せず、PR作成をブロックせず、コードをマージしません。最小コアへの再構築により、従来のGate DAG、readiness/blocking判定、managed execution、lifecycle会計、budget enforcement、自動audit bundleは廃止しました。
+VibeProはアプリを実装せず、変更の安全性を判定せず、コードをマージしません。最小コアへの再構築により、従来のGate DAG、readiness/blocking判定、managed execution、lifecycle会計、Story単位のdelivery-efficiency budget enforcement、自動audit bundleは廃止しました。
+
+代わりに導入するDevelopment Control Loopは、採用済みbatchを計測して次のStory intentだけを制約します。既定の`shadow`では不一致を可視化しても作業を止めません。active Storyの移行後にrepositoryが明示的に`enforced`へ切り替えた場合に限り、intent不一致がStory plan、`pr prepare`、`pr create`をblockします。人間のreviewとmerge権限はVibeProの外に残ります。
 
 ## インストール
 

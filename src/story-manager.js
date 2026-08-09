@@ -13,6 +13,7 @@ import { getJourneyStatus } from './journey-map.js';
 import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { assertDevelopmentAdmission } from './development-control.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -344,7 +345,15 @@ export async function createStoryPlan(repoRoot, options = {}) {
   const graphIndex = await readStoryPlanGraphIndex(root, config.brainbase?.current_story_id ?? 'story-default');
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
   const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
-  const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
+  const currentStoryId = config.brainbase?.current_story_id ?? config.current_story_id ?? null;
+  const developmentControl = await assertDevelopmentAdmission(root, {
+    storyId: currentStoryId,
+    commandName: 'story plan'
+  });
+  const plan = {
+    ...buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks }),
+    development_control: developmentControl
+  };
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });
   const planPath = path.join(storyDir, 'story-plan.json');
@@ -2064,9 +2073,23 @@ ${story.reasons.map((reason) => `  - ${reason}`).join('\n') || '  - -'}
 |-------|------|---------|
 ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${task.purpose} |`).join('\n')}`;
   const sourceRecoveryMap = renderSourceRecoveryMap(plan.source_recovery_map);
+  const control = plan.development_control;
+  const developmentControl = control
+    ? `## Development Control
+
+| 項目 | 内容 |
+|------|------|
+| Mode | ${control.mode} |
+| Enforcement | ${control.enforcement} |
+| Intent | ${control.intent ?? '-'} |
+| Admission | ${control.admission?.status ?? '-'} |
+| Snapshot | ${control.projection?.snapshot_ref ?? '-'} |
+
+`
+    : '';
   return `# Story実行計画
 
-## サマリー
+${developmentControl}## サマリー
 
 | 項目 | 内容 |
 |------|------|

@@ -53,6 +53,13 @@ import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import { evaluateSeniorJudgmentRun, renderSeniorJudgmentSummary } from './senior-judgment-dag.js';
 import {
+  assertDevelopmentAdmission,
+  createDevelopmentSnapshot,
+  getDevelopmentControlStatus,
+  recordDevelopmentOutcome,
+  renderDevelopmentControlSummary
+} from './development-control.js';
+import {
   getDecisionStatus,
   readDecisionRecordsIfExists,
   recordDecision,
@@ -122,10 +129,15 @@ const HELP_EN = `VibePro CLI
 
 VibePro is a minimal CLI control plane for Story-driven AI development.
 Per docs/management/REBUILD.md ("最小コアのスコープ"), it no longer carries a
-Gate DAG, readiness/blocking evaluation, delivery-efficiency budgets, review
-lifecycle accounting, or auto-generated audit artifacts. It stores Story,
-Spec, verification, review, and PR evidence under .vibepro/ so humans and AI
-agents can continue with reviewable context; it does not block PR creation.
+Gate DAG, general readiness/blocking evaluation, per-Story delivery-efficiency
+budget enforcement, review lifecycle accounting, or auto-generated audit
+artifacts. It stores Story, Spec, verification, review, and PR evidence under
+.vibepro/ so humans and AI agents can continue with reviewable context.
+
+The narrower Development Control Loop starts in shadow mode. After a repository
+explicitly migrates active Stories and switches to enforced mode, an intent
+mismatch can block Story planning, pr prepare, or pr create. It does not approve
+or merge PRs; those decisions remain with humans and repository policy.
 
 Core model:
   Story defines user value and acceptance criteria.
@@ -179,6 +191,9 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
+  vibepro judgment status [repo] --id <story-id> [--json]
+  vibepro judgment snapshot [repo] --id <story-id> [--commit <ref>] [--baseline <ref>] [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --batch <commit> --result <improved|unchanged|regressed> [--summary <text>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -218,11 +233,15 @@ Usage:
 const HELP_JA = `VibePro CLI
 
 VibeProは、Story起点のAI開発を進めるための最小CLI制御基盤です。
-docs/management/REBUILD.md（「最小コアのスコープ」）に従い、Gate DAG・
-readiness/blocking判定・delivery-efficiencyバジェット・review lifecycle会計・
-audit artifactの自動生成は廃止しました。Story・Spec・検証証跡・レビュー証跡・
-PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を追える形にしますが、
-PR作成をブロックする機構は持ちません。
+docs/management/REBUILD.md（「最小コアのスコープ」）に従い、Gate DAG・一般的な
+readiness/blocking判定・Story単位のdelivery-efficiency budget enforcement・
+review lifecycle会計・audit artifactの自動生成は廃止しました。Story・Spec・
+検証証跡・レビュー証跡・PR証跡を .vibepro/ に保存します。
+
+より狭いDevelopment Control Loopはshadowから開始します。active Storyの移行後、
+repositoryが明示的にenforcedへ切り替えた場合に限り、intent不一致はStory plan・
+pr prepare・pr createをblockできます。PRの承認・mergeは行わず、その権限は人間と
+repository policyに残ります。
 
 まず人間が使う基本コマンド:
   vibepro init <repo> --language ja --story-id <id> --title <title>
@@ -282,6 +301,9 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
+  vibepro judgment status [repo] --id <story-id> [--json]
+  vibepro judgment snapshot [repo] --id <story-id> [--commit <ref>] [--baseline <ref>] [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --batch <commit> --result <improved|unchanged|regressed> [--summary <text>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -851,6 +873,45 @@ async function dispatchCli(argv, io = {}) {
           : renderSeniorJudgmentSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'status') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const result = await getDevelopmentControlStatus(repoRoot, { storyId });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderDevelopmentControlSummary(result));
+        return { exitCode: result.admission.allowed ? 0 : 2, command, subcommand, result };
+      }
+      if (subcommand === 'snapshot') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const result = await createDevelopmentSnapshot(repoRoot, {
+          storyId,
+          commit: getOption(rest, '--commit') ?? 'HEAD',
+          baseline: getOption(rest, '--baseline')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.snapshot, null, 2)}\n`
+          : renderDevelopmentControlSummary({
+              mode: result.projection.mode,
+              enforcement: result.projection.enforcement,
+              projection: result.projection,
+              intent: null,
+              admission: { status: 'snapshot_recorded', allowed: true }
+            }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'outcome' && rest[1] === 'record') {
+        const nestedRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        const result = await recordDevelopmentOutcome(nestedRepoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          adoptedCommit: getOption(rest, '--batch') ?? getOption(rest, '--commit'),
+          result: getOption(rest, '--result'),
+          summary: getOption(rest, '--summary')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.receipt, null, 2)}\n`
+          : `Development outcome recorded: ${result.receipt.result} ${result.receipt.adopted_commit}\n`);
+        return { exitCode: 0, command, subcommand: 'outcome record', result };
+      }
       write(stderr, `Unknown judgment command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
@@ -1149,6 +1210,7 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'pr prepare'
         });
+        const developmentControl = await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr prepare' });
         const result = await preparePullRequest(repoRoot, {
           storyId,
           taskId: getOption(rest, '--task'),
@@ -1157,6 +1219,7 @@ async function dispatchCli(argv, io = {}) {
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           language: getOption(rest, '--language'),
+          developmentControl,
           env: io.env ?? process.env
         });
         write(stdout, jsonOutput
@@ -1171,6 +1234,7 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'pr create'
         });
+        const developmentControl = await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr create' });
         const result = await createPullRequest(repoRoot, {
           storyId,
           taskId: getOption(rest, '--task'),
@@ -1179,6 +1243,7 @@ async function dispatchCli(argv, io = {}) {
           prBase: getOption(rest, '--base'),
           headRef: getOption(rest, '--head-ref'),
           headBranch: getOption(rest, '--head'),
+          developmentControl,
           branchName: getOption(rest, '--branch'),
           title: getOption(rest, '--title'),
           dryRun: hasFlag(rest, '--dry-run'),
@@ -1767,7 +1832,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     ja: [
       `VibePro workspaceを初期化しました: ${workspaceDir}`,
       '',
-      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGやPR作成をブロックする機構は持ちません。',
+      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGは持ちません。Development Control Loopはshadowでは非blockで、移行後に明示的にenforcedへ切り替えた場合だけStory plan・pr prepare・pr createのintent不一致をblockできます。',
       `人間向け出力言語: ${language}`,
       `base branch候補: ${baseBranch ?? '未検出。origin/main, origin/develop, main, develop など実リポジトリの既定branchを指定してください。'}`,
       '',
@@ -1782,7 +1847,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     en: [
       `VibePro workspace initialized: ${workspaceDir}`,
       '',
-      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. It carries no Gate DAG or PR-creation-blocking machinery.',
+      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes and carries no Gate DAG. The Development Control Loop is non-blocking in shadow mode; only a repository that has migrated active Stories and explicitly switches to enforced mode can block an intent mismatch in Story planning, pr prepare, or pr create.',
       `Human output language: ${language}`,
       `Base branch candidate: ${baseBranch ?? 'not detected. Use the repository default such as origin/main, origin/develop, main, or develop.'}`,
       '',

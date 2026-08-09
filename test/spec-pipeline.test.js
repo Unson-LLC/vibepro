@@ -381,6 +381,19 @@ export function specReadinessMarker() {
   assert.equal(readiness.graphify.available, true);
   assert.ok(readiness.graphify.node_count > 0);
   assert.equal(typeof readiness.diagnosis.run_id, 'string');
+  const prPrepare = JSON.parse(await readFile(path.join(
+    repo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json'
+  ), 'utf8'));
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.equal(prPrepare.development_control.enforcement, 'shadow');
+  assert.equal(prPrepare.development_control.admission.allowed, true);
+  assert.equal(readiness.development_control.enforcement, 'shadow');
+  assert.equal(readiness.development_control.admission.allowed, true);
+  const persistedReadiness = JSON.parse(await readFile(path.join(
+    repo, '.vibepro', 'spec', STORY_ID, 'pre-spec-readiness.json'
+  ), 'utf8'));
+  assert.equal(persistedReadiness.development_control.enforcement, 'shadow');
+  assert.doesNotMatch(prBody, /no development control projection/);
 });
 
 test('spec readiness missing diagnosis action uses design-input phase', async () => {

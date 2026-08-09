@@ -30,6 +30,8 @@ features:
 
 ## 0.2.0-beta.3の境界
 
-VibeProは最小の証跡ワークスペースになりました。Gate DAG、readiness/blocking判定、managed merge execution、lifecycle会計、budget enforcement、自動audit bundleは提供しません。承認とmergeの責任は、人間のreviewerと対象リポジトリのpolicyに残ります。
+VibeProは最小の証跡ワークスペースになりました。Gate DAG、readiness/blocking判定、managed merge execution、lifecycle会計、Story単位のdelivery-efficiency budget enforcement、自動audit bundleは提供しません。承認とmergeの責任は、人間のreviewerと対象リポジトリのpolicyに残ります。
+
+より狭いDevelopment Control Loopは、採用済みbatchを計測して次のStory intentだけを制約します。既定の`shadow`は不一致を報告しても作業を止めません。active Storyの移行後にrepositoryが明示的に`enforced`を選んだ場合だけ、intent不一致によりStory plan、`pr prepare`、`pr create`をblockできます。PRの承認やmergeは行いません。
 
 [VibeProとは](/ja/guide/what-is-vibepro)で境界を、[バージョン履歴](/ja/reference/version-history)で公開packageと開発履歴の違いを確認できます。

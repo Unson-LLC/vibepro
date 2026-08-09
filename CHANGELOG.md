@@ -4,6 +4,22 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- Add the Development Control Loop in `shadow` rollout mode. It records immutable
+  structural/consumption snapshots, derives `VALUE` / `VALIDATE` / `SIMPLIFY`,
+  and projects the next-batch admission decision into Story plan and PR output
+  without reducing agent parallelism. Before changing
+  `development_control.enforcement` to `enforced`, backfill
+  `development_intent: value|validation|simplification` in every active Story and
+  confirm each with `vibepro judgment status . --id <story-id> --json`. Create an
+  initial snapshot, record its outcome after adoption, and commit
+  `docs/management/development-control-state.json` so clones share the bounded
+  projection; raw snapshots and receipts under `.vibepro/development-control/`
+  remain local audit evidence. If rollout blocks valid work, set enforcement back
+  to `shadow`. The retired `budgets.delivery_efficiency` and
+  `budgets.delivery_efficiency_by_story` overrides are not restored; migrate to
+  the repository-level policy instead. Under enforced mode, missing state routes
+  to `VALIDATE` and fails closed rather than assuming `VALUE`.
+
 - **Breaking cleanup (`0.2.0-beta.3`)**: publish the rebuilt minimal core. VibePro
   now keeps repository-local Story, Spec, verification, review, decision, trace,
   and PR evidence without a Gate DAG, blocking readiness verdicts, managed merge,
