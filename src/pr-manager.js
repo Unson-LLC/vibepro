@@ -65,6 +65,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
+    development_control: options.developmentControl ?? null,
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -357,6 +358,18 @@ function renderPrBody(preparation) {
     : '- no accepted spec found for this story');
   if (specDrift) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
+  }
+  lines.push('');
+  lines.push('### Development control');
+  if (preparation.development_control) {
+    const control = preparation.development_control;
+    lines.push(`- mode: ${control.mode}`);
+    lines.push(`- enforcement: ${control.enforcement}`);
+    lines.push(`- intent: ${control.intent ?? '-'}`);
+    lines.push(`- admission: ${control.admission?.status ?? '-'}`);
+    lines.push(`- snapshot: ${control.projection?.snapshot_ref ?? '-'}`);
+  } else {
+    lines.push('- no development control projection');
   }
   lines.push('');
   lines.push('### Verification evidence');

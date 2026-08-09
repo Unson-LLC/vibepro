@@ -28,7 +28,7 @@ flowchart LR
   J --> P["Current projection"]
   P --> N["Next Story plan"]
   P --> R["PR prepare"]
-  P --> X["Execute merge"]
+  P --> C["PR create"]
   O["Outcome receipt"] --> B["Baseline advancement"]
   B --> M
 ```
@@ -58,7 +58,7 @@ flowchart LR
 ## Persistence
 
 - batch snapshotはStory IDとadopted commitで一意にし、既存snapshotを上書きしない。
-- current projectionはcompactな派生物として更新可能にする。
+- current projection、直近20件までのconsumption summary、最新の改善receiptは`docs/management/development-control-state.json`へboundedに投影し、clone/worktree間で共有する。raw snapshotとraw receiptはlocal audit用のまま肥大化させない。
 - outcome receiptはappend-onlyとし、`improved`のreceiptがあるsnapshotだけbaseline候補にできる。
 
 ## Non Goals

@@ -1201,7 +1201,7 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'pr prepare'
         });
-        await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr prepare' });
+        const developmentControl = await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr prepare' });
         const result = await preparePullRequest(repoRoot, {
           storyId,
           taskId: getOption(rest, '--task'),
@@ -1210,6 +1210,7 @@ async function dispatchCli(argv, io = {}) {
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           language: getOption(rest, '--language'),
+          developmentControl,
           env: io.env ?? process.env
         });
         write(stdout, jsonOutput
@@ -1224,7 +1225,7 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'pr create'
         });
-        await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr create' });
+        const developmentControl = await assertDevelopmentAdmission(repoRoot, { storyId, commandName: 'pr create' });
         const result = await createPullRequest(repoRoot, {
           storyId,
           taskId: getOption(rest, '--task'),
@@ -1233,6 +1234,7 @@ async function dispatchCli(argv, io = {}) {
           prBase: getOption(rest, '--base'),
           headRef: getOption(rest, '--head-ref'),
           headBranch: getOption(rest, '--head'),
+          developmentControl,
           branchName: getOption(rest, '--branch'),
           title: getOption(rest, '--title'),
           dryRun: hasFlag(rest, '--dry-run'),

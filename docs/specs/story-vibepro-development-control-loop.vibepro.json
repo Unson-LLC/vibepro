@@ -17,7 +17,7 @@
     {
       "id": "INV-002",
       "type": "invariant",
-      "statement": "An adopted batch snapshot is immutable and unique by story ID and adopted commit, while current.json remains a replaceable compact projection.",
+      "statement": "An adopted batch snapshot is immutable and unique by story ID and adopted commit, while a bounded tracked state shares the current projection, up to 20 consumption summaries, and latest improved receipt across clones and worktrees.",
       "rationale": "A later HEAD or budget amendment must not rewrite the evidence used for the original next-batch decision.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],

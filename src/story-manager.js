@@ -2073,9 +2073,23 @@ ${story.reasons.map((reason) => `  - ${reason}`).join('\n') || '  - -'}
 |-------|------|---------|
 ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${task.purpose} |`).join('\n')}`;
   const sourceRecoveryMap = renderSourceRecoveryMap(plan.source_recovery_map);
+  const control = plan.development_control;
+  const developmentControl = control
+    ? `## Development Control
+
+| 項目 | 内容 |
+|------|------|
+| Mode | ${control.mode} |
+| Enforcement | ${control.enforcement} |
+| Intent | ${control.intent ?? '-'} |
+| Admission | ${control.admission?.status ?? '-'} |
+| Snapshot | ${control.projection?.snapshot_ref ?? '-'} |
+
+`
+    : '';
   return `# Story実行計画
 
-## サマリー
+${developmentControl}## サマリー
 
 | 項目 | 内容 |
 |------|------|

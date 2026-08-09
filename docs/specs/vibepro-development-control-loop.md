@@ -10,7 +10,7 @@ parent_design: story-vibepro-development-control-loop
 
 - `DCL-001`: Story frontmatterの`development_intent`は`value`、`validation`、`simplification`のみを受理し、Story planへdevelopment control statusとともに投影する。
 - `DCL-002`: 採用batch snapshotは`story_id + adopted_commit`で一意かつimmutableであり、同一keyへの再記録を拒否する。
-- `DCL-003`: current projectionはsnapshotへの参照、mode、理由、baseline/adopted commit、baseline source、enforcementだけを持つcompactな派生物にする。
+- `DCL-003`: current projection、直近20件までのconsumption summary、最新の改善receiptはboundedなtracked stateへ投影し、clone/worktree間で次batch判断を共有する。raw snapshot/receiptはlocal audit用とする。
 - `DCL-004`: 構造評価はLOC/import edgeの`+5% warning`・`+10% SIMPLIFY`、file countの`+3% warning`・`+5% SIMPLIFY`を既定値にする。
 - `DCL-005`: 新規dependency cycleまたはworkflow-control surfaceの純増は即時`SIMPLIFY`にする。
 - `DCL-006`: 消費評価はfresh input token、agent execution、repair batch、expensive verification、verification durationを独立に扱う。

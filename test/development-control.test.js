@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { renderStoryPlan } from '../src/story-manager.js';
 
 import {
   createDevelopmentSnapshot,
@@ -108,6 +109,19 @@ test('partially missing token attribution stays unknown while observed zero repa
   assert.equal(metrics.repair_batches, 0);
 });
 
+test('canonical verification run schema is measured once even when projected twice', () => {
+  const verification = {
+    kind: 'integration',
+    head_sha: 'a'.repeat(40),
+    observed: { run_artifact: '.vibepro/pr/story/verification-runs/integration.json', duration_ms: '144210' },
+    run: { duration_ms: 144210 }
+  };
+  const metrics = extractConsumptionMetrics([verification, { commands: [verification] }]);
+
+  assert.equal(metrics.expensive_verifications, 1);
+  assert.equal(metrics.verification_duration_ms, 144210);
+});
+
 test('first snapshot is shadow, the next batch is enforced, and only improved outcomes advance baseline', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-development-control-'));
   await mkdir(path.join(root, '.vibepro'), { recursive: true });
@@ -147,12 +161,14 @@ test('first snapshot is shadow, the next batch is enforced, and only improved ou
     storyId: 'story-test', baseline: 'base', runGit, consumption: created.snapshot.consumption
   }), /already exists/);
   const status = await getDevelopmentControlStatus(root, { storyId: 'story-test' });
-  assert.equal(status.enforcement, 'enforced');
+  assert.equal(status.enforcement, 'shadow');
   assert.equal(status.admission.allowed, true);
   const outcome = await recordDevelopmentOutcome(root, {
     storyId: 'story-test', adoptedCommit: 'b'.repeat(40), result: 'improved', summary: 'smaller'
   });
   assert.equal(outcome.receipt.baseline_eligible, true);
+  const nextBatchStatus = await getDevelopmentControlStatus(root, { storyId: 'story-test' });
+  assert.equal(nextBatchStatus.enforcement, 'enforced');
   const next = await createDevelopmentSnapshot(root, {
     storyId: 'story-test', commit: 'next', runGit, consumption: created.snapshot.consumption
   });
@@ -160,6 +176,9 @@ test('first snapshot is shadow, the next batch is enforced, and only improved ou
   assert.equal(next.snapshot.baseline_source, 'improved_outcome');
   assert.equal(next.snapshot.enforcement, 'enforced');
   assert.equal(JSON.parse(await readFile(created.snapshotPath, 'utf8')).immutable, true);
+  const portableState = JSON.parse(await readFile(path.join(root, 'docs', 'management', 'development-control-state.json'), 'utf8'));
+  assert.equal(portableState.projection.adopted_commit, 'c'.repeat(40));
+  assert.equal(portableState.history.length, 2);
 });
 
 test('historical replay distinguishes the growth trigger from slimming commits', () => {
@@ -184,11 +203,11 @@ test('historical replay distinguishes the growth trigger from slimming commits',
   assert.deepEqual(results.map((item) => [item.commit, item.decision.mode]), replay.map(([commit, , , expected]) => [commit, expected]));
 });
 
-test('structural collection ignores source-like files outside executable roots', async () => {
+test('structural collection ignores docs for code size but counts workflow and skill control surfaces', async () => {
   const calls = [];
   const runGit = async (_root, args) => {
     calls.push(args);
-    if (args[0] === 'ls-tree') return 'docs/archive.mjs\nsrc/index.js\ntest/index.test.js\n';
+    if (args[0] === 'ls-tree') return 'docs/archive.mjs\n.github/workflows/release.yml\nskills/vibepro-workflow/SKILL.md\nsrc/index.js\ntest/index.test.js\n';
     if (args[0] === 'grep') return 'HEAD:src/index.js:1:export const value = 1;\n';
     if (args[0] === 'rev-parse') return `${'d'.repeat(40)}\n`;
     throw new Error(`unexpected git args: ${args.join(' ')}`);
@@ -200,6 +219,62 @@ test('structural collection ignores source-like files outside executable roots',
   assert.ok(grepCall.includes('src'));
   assert.ok(grepCall.includes('test'));
   assert.ok(!grepCall.includes('docs'));
+  assert.equal(metrics.workflow_control_surfaces, 2);
+});
+
+test('snapshot and outcome path identifiers reject traversal and abbreviated commits', async () => {
+  await assert.rejects(
+    () => createDevelopmentSnapshot('/tmp/repo', { storyId: '../escape' }),
+    /storyId must contain only/
+  );
+  await assert.rejects(
+    () => recordDevelopmentOutcome('/tmp/repo', { storyId: 'story-safe', adoptedCommit: '../escape', result: 'improved' }),
+    /full commit SHA/
+  );
+});
+
+test('Story plan markdown exposes the development control decision', () => {
+  const markdown = renderStoryPlan({
+    generated_at: '2026-08-09T00:00:00Z',
+    development_control: {
+      mode: 'SIMPLIFY', enforcement: 'enforced', intent: 'simplification',
+      admission: { status: 'allowed' }, projection: { snapshot_ref: '.vibepro/development-control/snapshot.json' }
+    },
+    summary: { story_count: 0, coverage_status: 'complete', coverage_ratio: 1, uncovered_files: 0 },
+    questions: [], priority_stories: [], task_candidates: [], next_commands: [],
+    source_recovery_map: {}, source_alignment_findings: {}
+  });
+
+  assert.match(markdown, /## Development Control/);
+  assert.match(markdown, /SIMPLIFY/);
+  assert.match(markdown, /simplification/);
+  assert.match(markdown, /allowed/);
+});
+
+test('enforced mismatched intent blocks both PR admission entrypoints before side effects', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-development-admission-'));
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await mkdir(path.join(root, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    execution: { managed_worktree: 'disabled' },
+    development_control: { enforcement: 'enforced', shadow_batches: 1 }
+  }));
+  await writeFile(path.join(root, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
+    schema_version: '0.1.0', next_enforcement: 'enforced', completed_batches: 1,
+    projection: { mode: 'SIMPLIFY', enforcement: 'shadow', reasons: [] }, history: []
+  }));
+  await writeFile(path.join(root, 'docs', 'management', 'stories', 'active', 'story-value.md'), '---\ndevelopment_intent: value\n---\n');
+
+  for (const subcommand of ['prepare', 'create']) {
+    const capture = [];
+    const result = await runCli(['pr', subcommand, root, '--story-id', 'story-value', '--base', 'main'], {
+      stdout: { write: (value) => capture.push(String(value)) },
+      stderr: { write: (value) => capture.push(String(value)) },
+      env: {}
+    });
+    assert.equal(result.exitCode, 1);
+    assert.match(capture.join(''), /development control blocked pr/);
+  }
 });
 
 test('public judgment CLI snapshots, reports status, and records an outcome receipt', async () => {
@@ -238,7 +313,14 @@ test('public judgment CLI snapshots, reports status, and records an outcome rece
     stdout: statusOutput.stream, stderr: statusOutput.stream, env: {}
   });
   assert.equal(status.exitCode, 0);
-  assert.equal(JSON.parse(statusOutput.chunks.join('')).enforcement, 'enforced');
+  assert.equal(JSON.parse(statusOutput.chunks.join('')).enforcement, 'shadow');
+
+  const prepareOutput = capture();
+  const prepare = await runCli([
+    'pr', 'prepare', root, '--story-id', 'story-cli', '--base', baseline.trim(), '--head', 'HEAD', '--json'
+  ], { stdout: prepareOutput.stream, stderr: prepareOutput.stream, env: {} });
+  assert.equal(prepare.exitCode, 0);
+  assert.equal(JSON.parse(prepareOutput.chunks.join('')).development_control.enforcement, 'shadow');
 
   const outcomeOutput = capture();
   const outcome = await runCli([
@@ -246,4 +328,10 @@ test('public judgment CLI snapshots, reports status, and records an outcome rece
   ], { stdout: outcomeOutput.stream, stderr: outcomeOutput.stream, env: {} });
   assert.equal(outcome.exitCode, 0);
   assert.equal(JSON.parse(outcomeOutput.chunks.join('')).baseline_eligible, true);
+
+  const nextStatusOutput = capture();
+  await runCli(['judgment', 'status', root, '--id', 'story-cli', '--json'], {
+    stdout: nextStatusOutput.stream, stderr: nextStatusOutput.stream, env: {}
+  });
+  assert.equal(JSON.parse(nextStatusOutput.chunks.join('')).enforcement, 'enforced');
 });

@@ -163,7 +163,8 @@ export function evaluateDevelopmentAdmission({ mode = 'VALUE', intent, enforceme
 export async function collectStructuralMetrics(repoRoot, ref = 'HEAD', options = {}) {
   const runGit = options.runGit ?? git;
   const filesOutput = await runGit(repoRoot, ['ls-tree', '-r', '--name-only', ref]);
-  const sourceFiles = filesOutput.split('\n').filter((file) => CODE_ROOT.test(file) && SOURCE_FILE.test(file));
+  const repositoryFiles = filesOutput.split('\n').filter(Boolean);
+  const sourceFiles = repositoryFiles.filter((file) => CODE_ROOT.test(file) && SOURCE_FILE.test(file));
   const sourceSet = new Set(sourceFiles);
   const grepOutput = await runGit(repoRoot, ['grep', '-I', '-n', '-e', '.', ref, '--', ...sourceRoots(sourceFiles)], { allowNoMatch: true });
   const lines = grepOutput.split('\n').filter(Boolean);
@@ -176,61 +177,75 @@ export async function collectStructuralMetrics(repoRoot, ref = 'HEAD', options =
     file_count: sourceFiles.length,
     import_edges: [...dependencyGraph.values()].reduce((sum, targets) => sum + targets.size, 0),
     dependency_cycles: countDependencyCycles(dependencyGraph),
-    workflow_control_surfaces: sourceFiles.filter((file) => CONTROL_SURFACE.test(file)).length
+    workflow_control_surfaces: repositoryFiles.filter((file) => CONTROL_SURFACE.test(file)).length
   };
 }
 
 export async function collectConsumptionMetrics(repoRoot, storyId) {
+  validateStoryId(storyId);
   const workspace = path.join(path.resolve(repoRoot), '.vibepro');
   const files = await listJsonFiles(workspace);
   const relevant = files.filter((file) => file.includes(storyId));
   const documents = [];
+  let incomplete = false;
   for (const file of relevant) {
     try {
       documents.push(JSON.parse(await readFile(file, 'utf8')));
     } catch {
-      // Malformed or concurrently-written artifacts are unknown, never zero.
+      incomplete = true;
     }
   }
-  return extractConsumptionMetrics(documents);
+  return incomplete ? unknownConsumptionMetrics() : extractConsumptionMetrics(documents);
 }
 
 export function extractConsumptionMetrics(documents = []) {
-  const usageObjects = [];
-  const verifications = [];
+  const usageObjects = new Map();
+  const verifications = new Map();
   const repairIds = new Set();
   walk(documents, (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return;
-    if (value.agent_usage && typeof value.agent_usage === 'object') usageObjects.push(value.agent_usage);
-    if (Number.isFinite(value.duration_ms) && (value.kind || value.verification_kind || value.execution)) verifications.push(value);
+    if (value.agent_usage && typeof value.agent_usage === 'object') {
+      const identity = value.agent_provenance?.agent_id
+        ?? value.agent_usage.agent_id
+        ?? value.agent_usage.session_id
+        ?? value.agent_usage.call_id
+        ?? stableObjectKey(value.agent_usage);
+      usageObjects.set(identity, value.agent_usage);
+    }
+    const verification = normalizeVerification(value);
+    if (verification) verifications.set(verification.identity, verification);
     if (['needs_changes', 'repaired', 'repair_required'].includes(value.status) && (value.id || value.review_id || value.run_id)) {
       repairIds.add(value.id ?? value.review_id ?? value.run_id);
     }
   });
-  const tokenCandidates = usageObjects.map((usage) => usage.fresh_input_tokens ?? usage.input_tokens ?? usage.total_tokens);
+  const usages = [...usageObjects.values()];
+  const verificationRuns = [...verifications.values()];
+  const tokenCandidates = usages.map((usage) => usage.fresh_input_tokens ?? usage.input_tokens ?? usage.total_tokens);
   const tokenValues = tokenCandidates.filter(Number.isFinite);
   return {
     fresh_input_tokens: tokenCandidates.length > 0 && tokenValues.length === tokenCandidates.length
       ? tokenValues.reduce((sum, value) => sum + value, 0)
       : null,
-    agent_executions: usageObjects.length > 0 ? usageObjects.length : null,
-    repair_batches: usageObjects.length > 0 ? repairIds.size : null,
-    expensive_verifications: verifications.length > 0
-      ? verifications.filter((item) => EXPENSIVE_VERIFICATION.test(item.kind ?? item.verification_kind ?? '')).length
+    agent_executions: usages.length > 0 ? usages.length : null,
+    repair_batches: usages.length > 0 ? repairIds.size : null,
+    expensive_verifications: verificationRuns.length > 0
+      ? verificationRuns.filter((item) => EXPENSIVE_VERIFICATION.test(item.kind)).length
       : null,
-    verification_duration_ms: verifications.length > 0
-      ? verifications.reduce((sum, item) => sum + item.duration_ms, 0)
+    verification_duration_ms: verificationRuns.length > 0
+      ? verificationRuns.reduce((sum, item) => sum + item.duration_ms, 0)
       : null
   };
 }
 
 export async function createDevelopmentSnapshot(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const storyId = requireValue(options.storyId, 'storyId');
+  const storyId = validateStoryId(requireValue(options.storyId, 'storyId'));
   const config = normalizeDevelopmentControl(await readRepositoryControlConfig(root));
   const adopted = await collectStructuralMetrics(root, options.commit ?? 'HEAD', options);
-  const history = await readDevelopmentSnapshots(root);
-  const improvedOutcome = options.baseline ? null : await readLatestImprovedOutcome(root);
+  validateCommitSha(adopted.commit);
+  const controlState = await readDevelopmentControlState(root);
+  const history = controlState?.history ?? [];
+  const improvedOutcome = options.baseline ? null : controlState?.latest_improved_outcome ?? null;
   const baselineRef = options.baseline ?? improvedOutcome?.adopted_commit ?? config.baseline_commit;
   if (!baselineRef) throw new Error('development_control.baseline_commit or --baseline is required');
   const baseline = await collectStructuralMetrics(root, baselineRef, options);
@@ -261,23 +276,33 @@ export async function createDevelopmentSnapshot(repoRoot, options = {}) {
   const projection = buildDevelopmentProjection(snapshot);
   await mkdir(path.dirname(paths.current), { recursive: true });
   await writeFile(paths.current, `${JSON.stringify(projection, null, 2)}\n`);
-  return { snapshot, projection, snapshotPath: paths.snapshot, projectionPath: paths.current };
+  const state = {
+    schema_version: '0.1.0',
+    updated_at: snapshot.recorded_at,
+    projection,
+    next_enforcement: snapshot.enforcement,
+    completed_batches: history.length + 1,
+    history: [...history, compactSnapshot(snapshot)].slice(-config.consumption.rolling_p95_window),
+    latest_improved_outcome: controlState?.latest_improved_outcome ?? improvedOutcome ?? null
+  };
+  await writeDevelopmentControlState(root, state);
+  return { snapshot, projection, state, snapshotPath: paths.snapshot, projectionPath: paths.current };
 }
 
 export async function getDevelopmentControlStatus(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const config = normalizeDevelopmentControl(await readRepositoryControlConfig(root));
+  const controlState = await readDevelopmentControlState(root);
   const currentPath = path.join(root, '.vibepro', 'development-control', 'current.json');
-  let projection = null;
+  let projection = controlState?.projection ?? null;
   try {
-    projection = JSON.parse(await readFile(currentPath, 'utf8'));
+    if (!projection) projection = JSON.parse(await readFile(currentPath, 'utf8'));
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
   const intent = options.intent ?? (options.storyId ? await readDevelopmentIntent(root, options.storyId) : null);
   const mode = projection?.mode ?? 'VALUE';
-  const history = await readDevelopmentSnapshots(root);
-  const enforcement = effectiveEnforcement(config, history.length);
+  const enforcement = controlState?.next_enforcement ?? projection?.enforcement ?? effectiveEnforcement(config, 0);
   return {
     schema_version: '0.1.0',
     mode,
@@ -301,12 +326,20 @@ export async function assertDevelopmentAdmission(repoRoot, options = {}) {
 
 export async function recordDevelopmentOutcome(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const storyId = requireValue(options.storyId, 'storyId');
-  const adoptedCommit = requireValue(options.adoptedCommit, 'adoptedCommit');
+  const storyId = validateStoryId(requireValue(options.storyId, 'storyId'));
+  const adoptedCommit = validateCommitSha(requireValue(options.adoptedCommit, 'adoptedCommit'));
   const result = requireValue(options.result, 'result');
   if (!['improved', 'unchanged', 'regressed'].includes(result)) throw new Error('outcome result must be improved, unchanged, or regressed');
   const snapshotPath = developmentControlPaths(root, storyId, adoptedCommit).snapshot;
-  const snapshot = JSON.parse(await readFile(snapshotPath, 'utf8'));
+  const controlState = await readDevelopmentControlState(root);
+  let snapshot;
+  try {
+    snapshot = JSON.parse(await readFile(snapshotPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    snapshot = controlState?.history?.find((item) => item.adopted_commit === adoptedCommit);
+    if (!snapshot) throw new Error(`development snapshot not found for ${storyId}@${adoptedCommit}`);
+  }
   const receipt = {
     schema_version: '0.1.0',
     receipt_id: `${storyId}:${snapshot.adopted_commit}:${Date.now()}`,
@@ -321,7 +354,16 @@ export async function recordDevelopmentOutcome(repoRoot, options = {}) {
   await mkdir(outcomeDir, { recursive: true });
   const outcomePath = path.join(outcomeDir, `${safeName(receipt.receipt_id)}.json`);
   await writeFile(outcomePath, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
-  return { receipt, outcomePath };
+  const config = normalizeDevelopmentControl(await readRepositoryControlConfig(root));
+  const completedBatches = controlState?.completed_batches ?? 0;
+  const state = {
+    ...(controlState ?? { schema_version: '0.1.0', projection: null, history: [], completed_batches: completedBatches }),
+    updated_at: receipt.recorded_at,
+    next_enforcement: effectiveEnforcement(config, completedBatches),
+    latest_improved_outcome: receipt.baseline_eligible ? receipt : controlState?.latest_improved_outcome ?? null
+  };
+  await writeDevelopmentControlState(root, state);
+  return { receipt, state, outcomePath };
 }
 
 export function buildDevelopmentProjection(snapshot) {
@@ -381,6 +423,34 @@ function percentile(values, quantile) {
 function sourceRoots(files) {
   const roots = [...new Set(files.map((file) => file.split('/')[0]))];
   return roots.length > 0 ? roots : ['src', 'test', 'bin'];
+}
+
+function normalizeVerification(value) {
+  const kind = value.kind ?? value.verification_kind ?? null;
+  const duration = value.run?.duration_ms ?? value.duration_ms;
+  if (!kind || !Number.isFinite(duration)) return null;
+  return {
+    identity: value.run_artifact
+      ?? value.observed?.run_artifact
+      ?? value.id
+      ?? `${kind}:${value.head_sha ?? value.run?.head_sha_before ?? ''}:${duration}`,
+    kind,
+    duration_ms: duration
+  };
+}
+
+function stableObjectKey(value) {
+  return JSON.stringify(Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right))));
+}
+
+function unknownConsumptionMetrics() {
+  return {
+    fresh_input_tokens: null,
+    agent_executions: null,
+    repair_batches: null,
+    expensive_verifications: null,
+    verification_duration_ms: null
+  };
 }
 
 function buildDependencyGraph(lines, sourceSet) {
@@ -455,33 +525,31 @@ async function readDevelopmentIntent(root, storyId) {
   }
 }
 
-async function readDevelopmentSnapshots(root) {
-  const snapshotRoot = path.join(root, '.vibepro', 'development-control', 'snapshots');
-  const files = await listJsonFiles(snapshotRoot);
-  const snapshots = [];
-  for (const file of files) {
-    try {
-      snapshots.push(JSON.parse(await readFile(file, 'utf8')));
-    } catch {
-      // Immutable snapshots that cannot be parsed are excluded, not converted to zero.
-    }
+async function readDevelopmentControlState(root) {
+  try {
+    return JSON.parse(await readFile(developmentControlStatePath(root), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
   }
-  return snapshots.sort((a, b) => String(a.recorded_at).localeCompare(String(b.recorded_at)));
 }
 
-async function readLatestImprovedOutcome(root) {
-  const outcomeRoot = path.join(root, '.vibepro', 'development-control', 'outcomes');
-  const files = await listJsonFiles(outcomeRoot);
-  const outcomes = [];
-  for (const file of files) {
-    try {
-      const receipt = JSON.parse(await readFile(file, 'utf8'));
-      if (receipt.result === 'improved' && receipt.baseline_eligible === true && receipt.adopted_commit) outcomes.push(receipt);
-    } catch {
-      // Invalid receipts never advance the baseline.
-    }
-  }
-  return outcomes.sort((a, b) => String(a.recorded_at).localeCompare(String(b.recorded_at))).at(-1) ?? null;
+async function writeDevelopmentControlState(root, state) {
+  const statePath = developmentControlStatePath(root);
+  await mkdir(path.dirname(statePath), { recursive: true });
+  await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`);
+}
+
+function compactSnapshot(snapshot) {
+  return {
+    story_id: snapshot.story_id,
+    adopted_commit: snapshot.adopted_commit,
+    baseline_commit: snapshot.baseline_commit,
+    recorded_at: snapshot.recorded_at,
+    enforcement: snapshot.enforcement,
+    decision: snapshot.decision,
+    consumption: snapshot.consumption
+  };
 }
 
 function effectiveEnforcement(config, completedBatches) {
@@ -531,11 +599,27 @@ function developmentControlPaths(root, storyId, commit) {
   };
 }
 
+function developmentControlStatePath(root) {
+  return path.join(root, 'docs', 'management', 'development-control-state.json');
+}
+
 function safeName(value) {
   return value.replace(/[^a-zA-Z0-9._-]+/g, '-');
 }
 
 function requireValue(value, name) {
   if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+
+function validateStoryId(value) {
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(value)) {
+    throw new Error('storyId must contain only letters, numbers, dot, underscore, or hyphen');
+  }
+  return value;
+}
+
+function validateCommitSha(value) {
+  if (!/^[a-f0-9]{40,64}$/i.test(value)) throw new Error('adoptedCommit must be a full commit SHA');
   return value;
 }
