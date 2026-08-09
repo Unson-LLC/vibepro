@@ -387,6 +387,12 @@ export function specReadinessMarker() {
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
   assert.equal(prPrepare.development_control.enforcement, 'shadow');
   assert.equal(prPrepare.development_control.admission.allowed, true);
+  assert.equal(readiness.development_control.enforcement, 'shadow');
+  assert.equal(readiness.development_control.admission.allowed, true);
+  const persistedReadiness = JSON.parse(await readFile(path.join(
+    repo, '.vibepro', 'spec', STORY_ID, 'pre-spec-readiness.json'
+  ), 'utf8'));
+  assert.equal(persistedReadiness.development_control.enforcement, 'shadow');
   assert.doesNotMatch(prBody, /no development control projection/);
 });
 

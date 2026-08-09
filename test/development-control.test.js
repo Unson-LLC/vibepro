@@ -8,10 +8,12 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { createPullRequest, preparePullRequest } from '../src/pr-manager.js';
 import { renderStoryPlan } from '../src/story-manager.js';
 
 import {
   createDevelopmentSnapshot,
+  collectConsumptionMetrics,
   collectStructuralMetrics,
   deriveConsumptionCaps,
   deriveDevelopmentControlDecision,
@@ -132,6 +134,16 @@ test('anonymous agent usages are counted conservatively instead of deduplicated 
   assert.equal(metrics.fresh_input_tokens, 200);
 });
 
+test('provenance-only agent executions are counted and deduplicated by provenance identity', () => {
+  const metrics = extractConsumptionMetrics([
+    { agent_provenance: { agent_id: 'reviewer-1', thread_id: 'thread-1' }, agent_usage: null },
+    { projection: { agent_provenance: { agent_id: 'reviewer-1', thread_id: 'thread-1' }, agent_usage: null } },
+    { agent_provenance: { agent_id: 'reviewer-1', thread_id: 'thread-2' }, agent_usage: null }
+  ]);
+  assert.equal(metrics.agent_executions, 2);
+  assert.equal(metrics.fresh_input_tokens, null);
+});
+
 test('invalid enforcement configuration and unsafe status story ids fail closed', async () => {
   assert.throws(
     () => normalizeDevelopmentControl({ enforcement: 'enforeced' }),
@@ -141,6 +153,17 @@ test('invalid enforcement configuration and unsafe status story ids fail closed'
     () => getDevelopmentControlStatus('/tmp/repo', { storyId: '../escape' }),
     /storyId must contain/
   );
+  for (const invalid of [
+    { structural: { loc_warning_ratio: -1 } },
+    { structural: { reject_new_dependency_cycle: 'yes' } },
+    { shadow_batches: 1.5 },
+    { consumption: { rolling_median_window: 0 } },
+    { consumption: { bootstrap: { agent_executions: Number.NaN } } }
+  ]) {
+    assert.throws(() => normalizeDevelopmentControl(invalid), /must be/);
+  }
+  assert.throws(() => evaluateDevelopmentAdmission({ mode: 'TYPO', intent: 'value', enforcement: 'enforced' }), /mode must be/);
+  assert.throws(() => evaluateDevelopmentAdmission({ mode: 'VALUE', intent: 'value', enforcement: 'typo' }), /enforcement must be/);
 });
 
 test('first snapshot is shadow, the next batch is enforced, and only improved outcomes advance baseline', async () => {
@@ -224,23 +247,51 @@ test('historical replay distinguishes the growth trigger from slimming commits',
   assert.deepEqual(results.map((item) => [item.commit, item.decision.mode]), replay.map(([commit, , , expected]) => [commit, expected]));
 });
 
-test('structural collection ignores docs for code size but counts workflow and skill control surfaces', async () => {
+test('structural collection ignores docs for code size but counts nested workflow and skill control surfaces', async () => {
   const calls = [];
   const runGit = async (_root, args) => {
     calls.push(args);
-    if (args[0] === 'ls-tree') return 'docs/archive.mjs\n.github/workflows/release.yml\nskills/vibepro-workflow/SKILL.md\nsrc/index.js\ntest/index.test.js\n';
-    if (args[0] === 'grep') return 'HEAD:src/index.js:1:export const value = 1;\n';
+    if (args[0] === 'ls-tree') return 'docs/archive.mjs\n.github/workflows/release.yml\nskills/internal/vibepro-workflow/SKILL.md\nsrc/index.js\nsrc/internal/review-runner.js\nsrc/internal/ordinary/runner.js\ntest/index.test.js\n';
+    if (args[0] === 'grep') return 'HEAD:src/index.js:1:export const value = 1;\nHEAD:src/internal/review-runner.js:1:export const review = 1;\nHEAD:src/internal/ordinary/runner.js:1:export const runner = 1;\n';
     if (args[0] === 'rev-parse') return `${'d'.repeat(40)}\n`;
     throw new Error(`unexpected git args: ${args.join(' ')}`);
   };
 
   const metrics = await collectStructuralMetrics('/tmp/repo', 'HEAD', { runGit });
   const grepCall = calls.find((args) => args[0] === 'grep');
-  assert.equal(metrics.file_count, 2);
+  assert.equal(metrics.file_count, 4);
   assert.ok(grepCall.includes('src'));
   assert.ok(grepCall.includes('test'));
   assert.ok(!grepCall.includes('docs'));
-  assert.equal(metrics.workflow_control_surfaces, 2);
+  assert.equal(metrics.workflow_control_surfaces, 3);
+});
+
+test('consumption collection matches exact Story path segments', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-consumption-scope-'));
+  for (const [storyId, tokens] of [['story-foo', 10], ['story-foobar', 100]]) {
+    const dir = path.join(root, '.vibepro', 'reviews', storyId);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, 'review.json'), JSON.stringify({ agent_usage: { fresh_input_tokens: tokens } }));
+  }
+  const metrics = await collectConsumptionMetrics(root, 'story-foo');
+  assert.equal(metrics.agent_executions, 1);
+  assert.equal(metrics.fresh_input_tokens, 10);
+});
+
+test('outcome fallback requires both Story id and adopted commit', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-scope-'));
+  const commit = 'a'.repeat(40);
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await mkdir(path.join(root, 'docs', 'management'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({ development_control: { enforcement: 'enforced' } }));
+  await writeFile(path.join(root, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
+    schema_version: '0.1.0', next_enforcement: 'enforced', completed_batches: 1, projection: null,
+    history: [{ story_id: 'story-other', adopted_commit: commit, baseline_commit: 'b'.repeat(40), enforcement: 'enforced', decision: { mode: 'VALUE', reasons: [] }, consumption: {} }]
+  }));
+  await assert.rejects(
+    () => recordDevelopmentOutcome(root, { storyId: 'story-target', adoptedCommit: commit, result: 'improved' }),
+    /development snapshot not found/
+  );
 });
 
 test('snapshot and outcome path identifiers reject traversal and abbreviated commits', async () => {
@@ -295,6 +346,33 @@ test('enforced mismatched intent blocks both PR admission entrypoints before sid
     });
     assert.equal(result.exitCode, 1);
     assert.match(capture.join(''), /development control blocked pr/);
+  }
+  for (const operation of [preparePullRequest, createPullRequest]) {
+    await assert.rejects(
+      () => operation(root, {
+        storyId: 'story-value', baseRef: 'main', dryRun: true,
+        developmentControl: { admission: { allowed: true } }
+      }),
+      /development control blocked pr prepare/
+    );
+  }
+
+  await writeFile(path.join(root, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
+    schema_version: '0.1.0', next_enforcement: 'enforeced', completed_batches: 1,
+    projection: { mode: 'TYPO', enforcement: 'enforced', reasons: [] }, history: []
+  }));
+  for (const args of [
+    ['judgment', 'status', root, '--id', 'story-value', '--json'],
+    ['pr', 'prepare', root, '--story-id', 'story-value', '--base', 'main', '--json'],
+    ['pr', 'create', root, '--story-id', 'story-value', '--base', 'main', '--json']
+  ]) {
+    const capture = [];
+    const result = await runCli(args, {
+      stdout: { write: (value) => capture.push(String(value)) },
+      stderr: { write: (value) => capture.push(String(value)) }, env: {}
+    });
+    assert.equal(result.exitCode, 1);
+    assert.match(capture.join(''), /state next_enforcement must be shadow or enforced/);
   }
 
   await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({

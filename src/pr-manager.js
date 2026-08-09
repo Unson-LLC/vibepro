@@ -39,7 +39,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'pr prepare');
   const language = await resolveHumanOutputLanguage(root, options);
-  const developmentControl = options.developmentControl ?? await assertDevelopmentAdmission(root, {
+  const developmentControl = await assertDevelopmentAdmission(root, {
     storyId,
     commandName: 'pr prepare'
   });

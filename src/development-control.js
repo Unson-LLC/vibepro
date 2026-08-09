@@ -36,7 +36,7 @@ export const DEFAULT_DEVELOPMENT_CONTROL = Object.freeze({
 
 const SOURCE_FILE = /\.(?:c|cc|cpp|cjs|go|java|js|jsx|mjs|py|rb|rs|ts|tsx)$/;
 const CODE_ROOT = /^(?:bin|packages|scripts|src|test)\//;
-const CONTROL_SURFACE = /(?:^|\/)(?:\.github\/workflows|src\/[^/]*(?:gate|guard|review|evidence|workflow|judgment|decision|control)[^/]*|skills\/[^/]*(?:gate|workflow|review)[^/]*)/i;
+const CONTROL_SURFACE = /(?:^|\/)(?:\.github\/workflows(?:\/|$)|src\/.*(?:gate|guard|review|evidence|workflow|judgment|decision|control)[^/]*(?:\/|$)|skills\/.*(?:gate|workflow|review)[^/]*(?:\/|$))/i;
 const EXPENSIVE_VERIFICATION = /(?:e2e|browser|performance|security|full_suite|integration)/i;
 
 export function normalizeDevelopmentControl(config = {}) {
@@ -44,7 +44,7 @@ export function normalizeDevelopmentControl(config = {}) {
   if (input.enforcement !== undefined && !['shadow', 'enforced'].includes(input.enforcement)) {
     throw new Error('development_control.enforcement must be shadow or enforced');
   }
-  return {
+  const normalized = {
     ...DEFAULT_DEVELOPMENT_CONTROL,
     ...input,
     structural: {
@@ -60,6 +60,8 @@ export function normalizeDevelopmentControl(config = {}) {
       }
     }
   };
+  validateDevelopmentControlPolicy(normalized);
+  return normalized;
 }
 
 export function evaluateStructuralBudget(baseline, observed, policyInput = {}) {
@@ -140,6 +142,8 @@ export function deriveDevelopmentControlDecision({ structural, consumption }) {
 }
 
 export function evaluateDevelopmentAdmission({ mode = 'VALUE', intent, enforcement = 'shadow' }) {
+  if (!DEVELOPMENT_MODES.includes(mode)) throw new Error('development control mode must be VALUE, VALIDATE, or SIMPLIFY');
+  if (!['shadow', 'enforced'].includes(enforcement)) throw new Error('development control enforcement must be shadow or enforced');
   const normalizedIntent = String(intent ?? '').trim().toLowerCase();
   if (!DEVELOPMENT_INTENTS.includes(normalizedIntent)) {
     return {
@@ -188,7 +192,7 @@ export async function collectConsumptionMetrics(repoRoot, storyId) {
   validateStoryId(storyId);
   const workspace = path.join(path.resolve(repoRoot), '.vibepro');
   const files = await listJsonFiles(workspace);
-  const relevant = files.filter((file) => file.includes(storyId));
+  const relevant = files.filter((file) => belongsToStory(file, storyId));
   const documents = [];
   let incomplete = false;
   for (const file of relevant) {
@@ -208,13 +212,20 @@ export function extractConsumptionMetrics(documents = []) {
   let anonymousUsageCount = 0;
   walk(documents, (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return;
-    if (value.agent_usage && typeof value.agent_usage === 'object') {
-      const identity = value.agent_provenance?.agent_id
-        ?? value.agent_usage.agent_id
-        ?? value.agent_usage.session_id
-        ?? value.agent_usage.call_id
+    const provenance = value.agent_provenance && typeof value.agent_provenance === 'object'
+      ? value.agent_provenance
+      : null;
+    const usage = value.agent_usage && typeof value.agent_usage === 'object'
+      ? value.agent_usage
+      : null;
+    if (provenance || usage) {
+      const identity = provenance
+        ? `provenance:${stableObjectKey(provenance)}`
+        : usage?.agent_id
+        ?? usage?.session_id
+        ?? usage?.call_id
         ?? `anonymous:${anonymousUsageCount++}`;
-      usageObjects.set(identity, value.agent_usage);
+      usageObjects.set(identity, usage ?? {});
     }
     const verification = normalizeVerification(value);
     if (verification) verifications.set(verification.identity, verification);
@@ -297,13 +308,17 @@ export async function getDevelopmentControlStatus(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId ? validateStoryId(options.storyId) : null;
   const config = normalizeDevelopmentControl(await readRepositoryControlConfig(root));
-  const controlState = await readDevelopmentControlState(root);
+  const controlState = await readDevelopmentControlState(root, { allowMalformed: config.enforcement === 'shadow' });
   const currentPath = path.join(root, '.vibepro', 'development-control', 'current.json');
   let projection = controlState?.projection ?? null;
   try {
-    if (!projection) projection = JSON.parse(await readFile(currentPath, 'utf8'));
+    if (!projection) {
+      projection = JSON.parse(await readFile(currentPath, 'utf8'));
+      validateDevelopmentControlProjection(projection);
+    }
   } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
+    if (error.code !== 'ENOENT' && config.enforcement !== 'shadow') throw error;
+    projection = null;
   }
   const intent = options.intent ?? (storyId ? await readDevelopmentIntent(root, storyId) : null);
   const mode = projection?.mode ?? 'VALUE';
@@ -344,7 +359,7 @@ export async function recordDevelopmentOutcome(repoRoot, options = {}) {
     snapshot = JSON.parse(await readFile(snapshotPath, 'utf8'));
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
-    snapshot = controlState?.history?.find((item) => item.adopted_commit === adoptedCommit);
+    snapshot = controlState?.history?.find((item) => item.story_id === storyId && item.adopted_commit === adoptedCommit);
     if (!snapshot) throw new Error(`development snapshot not found for ${storyId}@${adoptedCommit}`);
   }
   const receipt = {
@@ -532,11 +547,14 @@ async function readDevelopmentIntent(root, storyId) {
   }
 }
 
-async function readDevelopmentControlState(root) {
+async function readDevelopmentControlState(root, options = {}) {
   try {
-    return JSON.parse(await readFile(developmentControlStatePath(root), 'utf8'));
+    const state = JSON.parse(await readFile(developmentControlStatePath(root), 'utf8'));
+    validateDevelopmentControlState(state);
+    return state;
   } catch (error) {
     if (error.code === 'ENOENT') return null;
+    if (options.allowMalformed) return null;
     throw error;
   }
 }
@@ -564,6 +582,51 @@ function effectiveEnforcement(config, completedBatches) {
     ? config.shadow_batches
     : DEFAULT_DEVELOPMENT_CONTROL.shadow_batches;
   return completedBatches < shadowBatches ? 'shadow' : config.enforcement;
+}
+
+function validateDevelopmentControlPolicy(config) {
+  for (const key of ['loc_warning_ratio', 'loc_simplify_ratio', 'import_edge_warning_ratio', 'import_edge_simplify_ratio', 'file_warning_ratio', 'file_simplify_ratio']) {
+    if (!Number.isFinite(config.structural[key]) || config.structural[key] < 0) {
+      throw new Error(`development_control.structural.${key} must be a finite non-negative number`);
+    }
+  }
+  for (const key of ['reject_new_dependency_cycle', 'reject_workflow_control_surface_increase']) {
+    if (typeof config.structural[key] !== 'boolean') throw new Error(`development_control.structural.${key} must be boolean`);
+  }
+  if (!Number.isInteger(config.shadow_batches) || config.shadow_batches < 0) {
+    throw new Error('development_control.shadow_batches must be a non-negative integer');
+  }
+  for (const key of ['rolling_median_window', 'rolling_p95_window']) {
+    if (!Number.isInteger(config.consumption[key]) || config.consumption[key] <= 0) {
+      throw new Error(`development_control.consumption.${key} must be a positive integer`);
+    }
+  }
+  for (const [key, value] of Object.entries(config.consumption.bootstrap)) {
+    if (!Number.isFinite(value) || value < 0) throw new Error(`development_control.consumption.bootstrap.${key} must be a finite non-negative number`);
+  }
+}
+
+function validateDevelopmentControlState(state) {
+  if (!state || typeof state !== 'object' || Array.isArray(state)) throw new Error('development control state must be an object');
+  if (!['shadow', 'enforced'].includes(state.next_enforcement)) throw new Error('development control state next_enforcement must be shadow or enforced');
+  if (!Number.isInteger(state.completed_batches) || state.completed_batches < 0) throw new Error('development control state completed_batches must be a non-negative integer');
+  if (!Array.isArray(state.history)) throw new Error('development control state history must be an array');
+  if (state.projection !== null && state.projection !== undefined) {
+    validateDevelopmentControlProjection(state.projection, 'development control state projection');
+  }
+}
+
+function validateDevelopmentControlProjection(projection, label = 'development control projection') {
+  if (!projection || typeof projection !== 'object' || Array.isArray(projection)) throw new Error(`${label} must be an object`);
+  if (!DEVELOPMENT_MODES.includes(projection.mode)) throw new Error(`${label}.mode must be VALUE, VALIDATE, or SIMPLIFY`);
+  if (projection.enforcement !== undefined && !['shadow', 'enforced'].includes(projection.enforcement)) {
+    throw new Error(`${label}.enforcement must be shadow or enforced`);
+  }
+}
+
+function belongsToStory(file, storyId) {
+  const relative = path.relative(path.parse(file).root, file);
+  return relative.split(path.sep).some((segment) => segment === storyId || path.parse(segment).name === storyId);
 }
 
 async function listJsonFiles(root) {

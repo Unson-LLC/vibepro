@@ -2626,6 +2626,14 @@ test('story plan creates execution priorities from the generated story map', asy
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   await mkdir(path.join(repo, 'docs', 'management'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
+    schema_version: '0.1.0', next_enforcement: 'enforeced', completed_batches: 1,
+    projection: { mode: 'TYPO', enforcement: 'enforced', reasons: [] }, history: []
+  }));
+  const malformedState = await runCli(['story', 'plan', repo, '--limit', '3'], {
+    stdout: { write: () => {} }, stderr: { write: () => {} }
+  });
+  assert.equal(malformedState.exitCode, 1);
+  await writeFile(path.join(repo, 'docs', 'management', 'development-control-state.json'), JSON.stringify({
     schema_version: '0.1.0',
     next_enforcement: 'enforced',
     completed_batches: 1,
