@@ -1,0 +1,97 @@
+{
+  "schema_version": "0.1.0",
+  "updated_at": "2026-08-09T08:27:19.320Z",
+  "projection": {
+    "schema_version": "0.1.0",
+    "story_id": "story-vibepro-development-control-loop",
+    "adopted_commit": "0c6ac426a73b508aa2759d0c5b88fba7bbb0e375",
+    "baseline_commit": "6888dc6911f39744630b5132ca4874b4e675903a",
+    "baseline_source": "config",
+    "recorded_at": "2026-08-09T08:27:19.320Z",
+    "mode": "SIMPLIFY",
+    "reasons": [
+      {
+        "metric": "workflow_control_surfaces",
+        "status": "simplify",
+        "baseline": 17,
+        "observed": 18,
+        "delta": 1
+      },
+      {
+        "metric": "fresh_input_tokens",
+        "status": "unknown",
+        "observed": null,
+        "cap": 8000000,
+        "cap_source": "bootstrap"
+      },
+      {
+        "metric": "agent_executions",
+        "status": "unknown",
+        "observed": null,
+        "cap": 6,
+        "cap_source": "bootstrap"
+      },
+      {
+        "metric": "repair_batches",
+        "status": "unknown",
+        "observed": null,
+        "cap": 3,
+        "cap_source": "bootstrap"
+      }
+    ],
+    "enforcement": "shadow",
+    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/0c6ac426a73b508aa2759d0c5b88fba7bbb0e375.json"
+  },
+  "next_enforcement": "shadow",
+  "completed_batches": 1,
+  "history": [
+    {
+      "story_id": "story-vibepro-development-control-loop",
+      "adopted_commit": "0c6ac426a73b508aa2759d0c5b88fba7bbb0e375",
+      "baseline_commit": "6888dc6911f39744630b5132ca4874b4e675903a",
+      "recorded_at": "2026-08-09T08:27:19.320Z",
+      "enforcement": "shadow",
+      "decision": {
+        "mode": "SIMPLIFY",
+        "reasons": [
+          {
+            "metric": "workflow_control_surfaces",
+            "status": "simplify",
+            "baseline": 17,
+            "observed": 18,
+            "delta": 1
+          },
+          {
+            "metric": "fresh_input_tokens",
+            "status": "unknown",
+            "observed": null,
+            "cap": 8000000,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "agent_executions",
+            "status": "unknown",
+            "observed": null,
+            "cap": 6,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "repair_batches",
+            "status": "unknown",
+            "observed": null,
+            "cap": 3,
+            "cap_source": "bootstrap"
+          }
+        ]
+      },
+      "consumption": {
+        "fresh_input_tokens": null,
+        "agent_executions": null,
+        "repair_batches": null,
+        "expensive_verifications": 0,
+        "verification_duration_ms": 144210
+      }
+    }
+  ],
+  "latest_improved_outcome": null
+}
