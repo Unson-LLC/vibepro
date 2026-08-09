@@ -302,7 +302,9 @@ export async function getDevelopmentControlStatus(repoRoot, options = {}) {
   }
   const intent = options.intent ?? (options.storyId ? await readDevelopmentIntent(root, options.storyId) : null);
   const mode = projection?.mode ?? 'VALUE';
-  const enforcement = controlState?.next_enforcement ?? projection?.enforcement ?? effectiveEnforcement(config, 0);
+  const enforcement = config.enforcement === 'shadow'
+    ? 'shadow'
+    : controlState?.next_enforcement ?? projection?.enforcement ?? effectiveEnforcement(config, 0);
   return {
     schema_version: '0.1.0',
     mode,

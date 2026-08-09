@@ -275,6 +275,14 @@ test('enforced mismatched intent blocks both PR admission entrypoints before sid
     assert.equal(result.exitCode, 1);
     assert.match(capture.join(''), /development control blocked pr/);
   }
+
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    execution: { managed_worktree: 'disabled' },
+    development_control: { enforcement: 'shadow', shadow_batches: 1 }
+  }));
+  const rollbackStatus = await getDevelopmentControlStatus(root, { storyId: 'story-value' });
+  assert.equal(rollbackStatus.enforcement, 'shadow');
+  assert.equal(rollbackStatus.admission.allowed, true);
 });
 
 test('public judgment CLI snapshots, reports status, and records an outcome receipt', async () => {
