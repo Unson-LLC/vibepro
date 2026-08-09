@@ -1,22 +1,15 @@
 {
   "schema_version": "0.1.0",
-  "updated_at": "2026-08-09T08:36:10.534Z",
+  "updated_at": "2026-08-09T08:45:54.905Z",
   "projection": {
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-development-control-loop",
-    "adopted_commit": "045bcfe088d6cd6455703d1f3c07e398648a0ac3",
-    "baseline_commit": "6888dc6911f39744630b5132ca4874b4e675903a",
-    "baseline_source": "config",
-    "recorded_at": "2026-08-09T08:36:02.700Z",
-    "mode": "SIMPLIFY",
+    "adopted_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
+    "baseline_commit": "045bcfe088d6cd6455703d1f3c07e398648a0ac3",
+    "baseline_source": "improved_outcome",
+    "recorded_at": "2026-08-09T08:45:45.010Z",
+    "mode": "VALIDATE",
     "reasons": [
-      {
-        "metric": "workflow_control_surfaces",
-        "status": "simplify",
-        "baseline": 17,
-        "observed": 18,
-        "delta": 1
-      },
       {
         "metric": "fresh_input_tokens",
         "status": "unknown",
@@ -40,10 +33,10 @@
       }
     ],
     "enforcement": "enforced",
-    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/045bcfe088d6cd6455703d1f3c07e398648a0ac3.json"
+    "snapshot_ref": ".vibepro/development-control/snapshots/story-vibepro-development-control-loop/fa6ffd8f1d3b25af6ba990cd526f083159b5fceb.json"
   },
   "next_enforcement": "enforced",
-  "completed_batches": 2,
+  "completed_batches": 3,
   "history": [
     {
       "story_id": "story-vibepro-development-control-loop",
@@ -138,16 +131,56 @@
         "expensive_verifications": 0,
         "verification_duration_ms": 149483
       }
+    },
+    {
+      "story_id": "story-vibepro-development-control-loop",
+      "adopted_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
+      "baseline_commit": "045bcfe088d6cd6455703d1f3c07e398648a0ac3",
+      "recorded_at": "2026-08-09T08:45:45.010Z",
+      "enforcement": "enforced",
+      "decision": {
+        "mode": "VALIDATE",
+        "reasons": [
+          {
+            "metric": "fresh_input_tokens",
+            "status": "unknown",
+            "observed": null,
+            "cap": 8000000,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "agent_executions",
+            "status": "unknown",
+            "observed": null,
+            "cap": 6,
+            "cap_source": "bootstrap"
+          },
+          {
+            "metric": "repair_batches",
+            "status": "unknown",
+            "observed": null,
+            "cap": 3,
+            "cap_source": "bootstrap"
+          }
+        ]
+      },
+      "consumption": {
+        "fresh_input_tokens": null,
+        "agent_executions": null,
+        "repair_batches": null,
+        "expensive_verifications": 0,
+        "verification_duration_ms": 155155
+      }
     }
   ],
   "latest_improved_outcome": {
     "schema_version": "0.1.0",
-    "receipt_id": "story-vibepro-development-control-loop:045bcfe088d6cd6455703d1f3c07e398648a0ac3:1786264570534",
+    "receipt_id": "story-vibepro-development-control-loop:fa6ffd8f1d3b25af6ba990cd526f083159b5fceb:1786265154905",
     "story_id": "story-vibepro-development-control-loop",
-    "adopted_commit": "045bcfe088d6cd6455703d1f3c07e398648a0ac3",
+    "adopted_commit": "fa6ffd8f1d3b25af6ba990cd526f083159b5fceb",
     "result": "improved",
-    "summary": "Emergency shadow rollback now overrides persisted enforcement",
-    "recorded_at": "2026-08-09T08:36:10.534Z",
+    "summary": "Closed shared admission, validation, and conservative accounting gaps",
+    "recorded_at": "2026-08-09T08:45:54.905Z",
     "baseline_eligible": true
   }
 }
