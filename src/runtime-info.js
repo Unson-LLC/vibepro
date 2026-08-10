@@ -27,12 +27,13 @@ export async function collectRuntimeInfo(options = {}) {
   const git = await collectRuntimeGitInfo(packageRoot);
   const releaseManifest = await readAndValidateRuntimeManifest(packageRoot, packageJson);
   const mode = resolveRuntimeMode(options);
+  const invokedAs = options.entrypoint ?? process.argv[1] ?? null;
+  const testContext = mode === 'test' ? await collectNodeTestContext(invokedAs) : null;
   const sourceKind = git.is_git_repo
     ? 'git_checkout'
     : releaseManifest.status === 'valid'
       ? 'npm_package'
       : 'unverified_package';
-  const invokedAs = options.entrypoint ?? process.argv[1] ?? null;
   const entrypoint = await resolveRealPath(invokedAs);
   const manifestGit = releaseManifest.manifest?.source_git ?? null;
   const sourceGit = git.is_git_repo
@@ -54,6 +55,7 @@ export async function collectRuntimeInfo(options = {}) {
     collected_at: new Date().toISOString(),
     mode,
     source_kind: sourceKind,
+    test_context: testContext,
     package: {
       name: packageJson?.name ?? EXPECTED_PACKAGE_NAME,
       version: packageJson?.version ?? 'unknown',
@@ -94,8 +96,8 @@ export function evaluateRuntimeIntegrity(runtime, options = {}) {
   }
 
   if (runtime.mode === 'test') {
-    if (!runtime.source_git?.is_git_repo || !['same', 'ahead'].includes(relation)) {
-      return blocked('runtime_mismatch', ['internal test runtime must be a current Git checkout'], purpose);
+    if (!isInternalNodeTestRuntime(runtime)) {
+      return blocked('runtime_mismatch', ['test mode is restricted to the Node test runner in the VibePro source checkout'], purpose);
     }
     return trusted(purpose, ['internal Node test runtime']);
   }
@@ -200,6 +202,32 @@ function resolveRuntimeMode(options) {
   // evidence bypass in ordinary CLI processes.
   if (env.NODE_TEST_CONTEXT) return 'test';
   return 'normal';
+}
+
+function isInternalNodeTestRuntime(runtime) {
+  if (!runtime.source_git?.is_git_repo) return false;
+  if (!/^[0-9a-f]{40}$/i.test(runtime.source_git.commit ?? '')) return false;
+  if (normalizeOrigin(runtime.source_git.origin_url) !== normalizeOrigin(EXPECTED_ORIGIN)) return false;
+  return runtime.test_context?.verified === true;
+}
+
+async function collectNodeTestContext(invokedAs) {
+  const direct = String(invokedAs ?? '');
+  if (isTestFileCommand(direct)) return { verified: true, kind: 'test_file' };
+  try {
+    const { stdout } = await execFileAsync('ps', ['-p', String(process.ppid), '-o', 'command=']);
+    const parentCommand = stdout.trim();
+    if (isTestFileCommand(parentCommand) || /(?:^|\s)node(?:\s|$).*\s--test(?:\s|$)/.test(parentCommand)) {
+      return { verified: true, kind: 'test_child_process' };
+    }
+  } catch {
+    // Fail closed when the parent process cannot be verified.
+  }
+  return { verified: false, kind: 'unverified' };
+}
+
+function isTestFileCommand(value) {
+  return /(?:^|[\s/\\])test(?:[/\\]|$)/.test(value) && /\.(?:test|spec)\.[cm]?[jt]s(?:\s|$)/.test(value);
 }
 
 function isEntrypointForPackage(runtime) {

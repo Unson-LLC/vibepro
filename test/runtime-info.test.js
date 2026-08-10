@@ -172,6 +172,17 @@ test('runtime identity CLI reports the same structured identity contract', async
   assert.match(identity.identity_digest, /^[0-9a-f]{64}$/);
 });
 
+test('unverified Node test environment cannot bless a Git runtime', () => {
+  const runtime = gitRuntime({
+    mode: 'test',
+    test_context: { verified: false, kind: 'unverified' }
+  });
+  runtime.source_git.origin_url = 'https://github.com/Unson-LLC/vibepro.git';
+  const verdict = evaluateRuntimeIntegrity(runtime, { purpose: 'evidence_generation' });
+  assert.equal(verdict.status, 'blocked');
+  assert.equal(verdict.code, 'runtime_mismatch');
+});
+
 test('doctor blocks an unexpected source runtime before fix or artifact writes', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-runtime-doctor-'));
   await writeFile(path.join(root, 'index.html'), '<!doctype html>');

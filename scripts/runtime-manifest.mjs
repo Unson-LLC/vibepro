@@ -23,16 +23,16 @@ if (command === 'generate') {
 async function generate() {
   const packageJsonText = await readFile(path.join(root, 'package.json'), 'utf8');
   const packageJson = JSON.parse(packageJsonText);
+  const dryRun = process.env.npm_config_dry_run === 'true';
   const [commit, originUrl, originMainCommit, porcelain] = await Promise.all([
     git(['rev-parse', 'HEAD']),
     git(['config', '--get', 'remote.origin.url']),
-    git(['rev-parse', 'origin/main']),
+    gitOptional(['rev-parse', 'origin/main']),
     git(['status', '--porcelain'])
   ]);
   const originMainRelation = await relation(commit, originMainCommit);
-  const dryRun = process.env.npm_config_dry_run === 'true';
   if (porcelain && !dryRun) throw new Error('Refusing to pack VibePro from a dirty Git checkout');
-  if (!['same', 'ahead'].includes(originMainRelation)) {
+  if (!dryRun && !['same', 'ahead'].includes(originMainRelation)) {
     throw new Error(`Refusing to pack VibePro from a ${originMainRelation ?? 'unknown'} Git runtime`);
   }
   const manifest = {
@@ -47,7 +47,7 @@ async function generate() {
       commit,
       origin_url: originUrl,
       origin_main_commit: originMainCommit,
-      origin_main_relation: originMainRelation,
+      origin_main_relation: originMainRelation ?? 'unverified_dry_run',
       dirty: Boolean(porcelain)
     }
   };
@@ -65,6 +65,14 @@ async function relation(commit, originMainCommit) {
 async function git(args) {
   const { stdout } = await execFileAsync('git', args, { cwd: root });
   return stdout.trim();
+}
+
+async function gitOptional(args) {
+  try {
+    return await git(args);
+  } catch {
+    return null;
+  }
 }
 
 async function gitExit(args) {
