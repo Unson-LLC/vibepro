@@ -26,6 +26,7 @@ import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getAgentReviewStatus } from './agent-review.js';
 import { bindStoryTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
+import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -37,6 +38,7 @@ const SCHEMA_VERSION = '0.2.0';
 export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'pr prepare');
+  const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
   const [story, git, spec, drift, verification, review] = await Promise.all([
@@ -47,6 +49,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     readVerificationSummary(root, storyId),
     readReviewSummary(root, storyId)
   ]);
+  assertRecordedRuntimeIdentities(verification);
 
   const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
@@ -57,6 +60,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const preparation = {
     schema_version: SCHEMA_VERSION,
     created_at: new Date().toISOString(),
+    runtime_identity: runtimeIdentity,
     story,
     task_context: options.taskId || options.groupId ? { task_id: options.taskId ?? null, group_id: options.groupId ?? null } : null,
     output: { language },
@@ -132,6 +136,7 @@ async function readVerificationSummary(repoRoot, storyId) {
     command: command.command ?? null,
     summary: command.summary ?? null,
     evidence_source: command.evidence_source ?? null,
+    runtime_identity: command.runtime_identity ?? null,
     executed_at: command.executed_at ?? null
   }));
   return {
@@ -140,6 +145,23 @@ async function readVerificationSummary(repoRoot, storyId) {
     artifact: toWorkspaceRelative(repoRoot, evidencePath),
     commands
   };
+}
+
+function assertRecordedRuntimeIdentities(verification) {
+  for (const command of verification.commands ?? []) {
+    const identity = command.runtime_identity;
+    if (!identity) {
+      const verdict = {
+        status: 'blocked',
+        code: 'runtime_mismatch',
+        purpose: 'pr_judgment',
+        reasons: [`verification ${command.kind ?? 'unknown'} is missing runtime_identity`]
+      };
+      throw new RuntimeIntegrityError(verdict, null);
+    }
+    const verdict = evaluateRuntimeIntegrity(identity, { purpose: 'pr_judgment' });
+    if (verdict.status !== 'trusted') throw new RuntimeIntegrityError(verdict, identity);
+  }
 }
 
 async function readReviewSummary(repoRoot, storyId) {
@@ -333,6 +355,13 @@ function renderPrBody(preparation) {
   lines.push(`Story: \`${story.story_id}\``);
   if (story.ssot) lines.push(`SSOT: ${story.ssot}`);
   lines.push('');
+  lines.push('### VibePro runtime identity');
+  lines.push(`- package: \`${preparation.runtime_identity.package.name}@${preparation.runtime_identity.package.exact_version ?? preparation.runtime_identity.package.version}\``);
+  lines.push(`- source: \`${preparation.runtime_identity.source_kind}\` at \`${preparation.runtime_identity.package.root}\``);
+  lines.push(`- entrypoint: \`${preparation.runtime_identity.cli.entrypoint}\``);
+  lines.push(`- source SHA: \`${preparation.runtime_identity.source_git?.commit ?? 'unknown'}\``);
+  lines.push(`- identity digest: \`${preparation.runtime_identity.identity_digest}\``);
+  lines.push('');
   lines.push('### Story document');
   if (storySource?.found) {
     lines.push(`- ${storySource.path}${storySource.title ? ` — ${storySource.title}` : ''}`);
@@ -362,7 +391,7 @@ function renderPrBody(preparation) {
   lines.push('### Verification evidence');
   if (verification.recorded) {
     for (const command of verification.commands) {
-      lines.push(`- [${command.kind}] ${command.status}${command.command ? ` — \`${command.command}\`` : ''}`);
+      lines.push(`- [${command.kind}] ${command.status}${command.command ? ` — \`${command.command}\`` : ''} (runtime \`${command.runtime_identity?.identity_digest ?? 'missing'}\`)`);
     }
   } else {
     lines.push('- no verification evidence recorded (`vibepro verify run` / `vibepro verify record`)');
@@ -429,6 +458,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     created_at: createdAt,
     dry_run: dryRun,
     story: preparation.story,
+    runtime_identity: preparation.runtime_identity,
     base: baseBranch,
     head: headBranch,
     title,

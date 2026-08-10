@@ -9,6 +9,7 @@ import { collectGitContext } from './git-fingerprint.js';
 import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
+import { assertRuntimeIntegrity } from './runtime-info.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -38,6 +39,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   if (!ALLOWED_STATUSES.has(options.status)) {
     throw new Error(`verify record --status must be one of: ${[...ALLOWED_STATUSES].join(', ')}`);
   }
+  const runtimeIdentity = await assertRuntimeIntegrity({
+    purpose: 'evidence_generation',
+    env: options.env
+  });
   const computedRecording = resolveComputedRecording(options);
   // The receipt decides whether the computed keys on this record are the recording path's own
   // or a caller's, so it also decides whether either producer of observation.values may carry
@@ -120,6 +125,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       content_binding: contentBinding,
+      runtime_identity: runtimeIdentity,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
         [managedWorktreeWarning, observationWarning, ...callerKeyWarnings].filter(Boolean),
@@ -134,6 +140,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       schema_version: '0.1.0',
       story_id: storyId,
       updated_at: new Date().toISOString(),
+      runtime_identity: runtimeIdentity,
       warnings: mergeWarnings([], commands.flatMap((item) => item.warnings ?? [])),
       commands
     };
@@ -142,6 +149,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   });
   return {
     evidence,
+    runtime_identity: runtimeIdentity,
     artifact: toWorkspaceRelative(root, evidencePath)
   };
 }

@@ -26,8 +26,16 @@ export async function runDoctor(repoRoot, options = {}) {
     next_commands: [],
     next_actions: [],
     artifacts: {},
-    toolchain: await collectRuntimeInfo()
+    toolchain: await collectRuntimeInfo({ env: options.env, purpose: 'observation' })
   };
+  result.runtime_identity = result.toolchain;
+  const runtimeCheck = buildRuntimeDoctorCheck(result.toolchain);
+  if (result.toolchain.integrity.status !== 'trusted') {
+    result.overall_status = 'blocked';
+    result.checks.push(runtimeCheck);
+    applyNextActions(result);
+    return result;
+  }
 
   const manifest = await readJsonIfExists(manifestPath);
   if (!manifest) {
@@ -46,7 +54,7 @@ export async function runDoctor(repoRoot, options = {}) {
         safe_to_run: true
       })]
     });
-    result.checks.push(buildRuntimeDoctorCheck(result.toolchain));
+    result.checks.push(runtimeCheck);
     applyNextActions(result);
     return result;
   }
@@ -270,7 +278,7 @@ export async function runDoctor(repoRoot, options = {}) {
   if (configChanged) await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   if (manifestChanged) await writeManifest(root, manifest);
 
-  result.checks.push(buildRuntimeDoctorCheck(result.toolchain));
+  result.checks.push(runtimeCheck);
   result.overall_status = resolveDoctorStatus(result);
   applyNextActions(result);
   if (options.writeArtifacts !== false) await writeDoctorArtifact(root, result);
@@ -297,6 +305,16 @@ export function renderDoctor(result) {
 | Initialized | ${result.workspace.initialized ? 'yes' : 'no'} |
 | Overall | ${result.overall_status} |
 | Fix | ${result.fix ? 'yes' : 'no'} |
+| Runtime | ${result.runtime_identity?.package?.name ?? 'unknown'}@${result.runtime_identity?.package?.exact_version ?? result.runtime_identity?.package?.version ?? 'unknown'} |
+| Runtime mode | ${result.runtime_identity?.mode ?? 'unknown'} |
+| Runtime source | ${result.runtime_identity?.source_kind ?? 'unknown'} |
+| Runtime root | ${result.runtime_identity?.package?.root ?? 'unknown'} |
+| Runtime entrypoint | ${result.runtime_identity?.cli?.entrypoint ?? 'unknown'} |
+| Runtime SHA | ${result.runtime_identity?.source_git?.commit ?? 'unknown'} |
+| Runtime dirty | ${String(result.runtime_identity?.source_git?.dirty ?? 'unknown')} |
+| Runtime origin relation | ${result.runtime_identity?.source_git?.origin_main_relation ?? 'unknown'} |
+| Runtime integrity | ${result.runtime_identity?.integrity?.status ?? 'unknown'}${result.runtime_identity?.integrity?.code ? ` (${result.runtime_identity.integrity.code})` : ''} |
+| Runtime identity digest | ${result.runtime_identity?.identity_digest ?? 'unknown'} |
 
 ## Checks
 

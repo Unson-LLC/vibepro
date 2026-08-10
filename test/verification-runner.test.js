@@ -107,6 +107,8 @@ test('verify run records the executed outcome without accepting agent status inp
   assert.equal(command.computed_observation.producer, 'vibepro verify run');
   assert.ok(command.computed_observation.computed_keys.includes('exit_code'));
   assert.ok(/^[0-9a-f]{64}$/.test(command.observation.values.stdout_sha256));
+  assert.equal(command.runtime_identity.integrity.status, 'trusted');
+  assert.match(command.runtime_identity.identity_digest, /^[0-9a-f]{64}$/);
 
   const artifact = await readJson(runArtifactPath(root, 'unit'));
   assert.equal(artifact.evidence_source, 'runner_direct');
@@ -115,9 +117,27 @@ test('verify run records the executed outcome without accepting agent status inp
   assert.equal(artifact.run.counts.tests, 2);
   assert.equal(artifact.run.tree_mutated_during_run, false);
   assert.ok(Number.isFinite(artifact.run.duration_ms));
+  assert.equal(artifact.runtime_identity.identity_digest, command.runtime_identity.identity_digest);
+  assert.equal(result.result.runtime_identity.identity_digest, command.runtime_identity.identity_digest);
 
   const log = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
   assert.match(log, /tests 2/);
+});
+
+test('development runtime is blocked before verify run writes or executes evidence', async () => {
+  const root = await setupRepo();
+  const marker = path.join(root, 'must-not-run.txt');
+  const result = await runCli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--', process.execPath, '-e', `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'ran')`
+  ], {
+    stdout: { write() {} },
+    stderr: { write() {} },
+    env: { ...process.env, NODE_TEST_CONTEXT: '', VIBEPRO_RUNTIME_MODE: 'development' }
+  });
+  assert.notEqual(result.exitCode, 0);
+  await assert.rejects(readFile(marker), /ENOENT/);
+  await assert.rejects(readFile(runArtifactPath(root, 'build')), /ENOENT/);
 });
 
 test('verify run rejects an agent-supplied --status', async () => {
