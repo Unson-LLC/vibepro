@@ -5,6 +5,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
+import { assertRuntimeIntegrity } from './runtime-info.js';
 import { toWorkspaceRelative } from './workspace.js';
 import { classifyTermination, createProgressDeadline } from './progress-deadline.js';
 import {
@@ -123,7 +124,7 @@ function assertArtifactDerivedKeysProtected(document = runArtifactProbeDocument(
 // Markers that make a nested runner report to a foreign harness instead of running normally.
 // Inheriting NODE_TEST_CONTEXT makes `node --test` exit 0 having run nothing and printed
 // nothing — a silent green that this command exists to make impossible.
-const HARNESS_ENV_MARKERS = Object.freeze(['NODE_TEST_CONTEXT']);
+const HARNESS_ENV_MARKERS = Object.freeze(['NODE_TEST_CONTEXT', 'VIBEPRO_RUNTIME_MODE']);
 
 // `verify record` lets the agent write the command, the status, the observed numbers and
 // the artifact they are cross-checked against, so the cross-check compares one piece of
@@ -148,6 +149,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   if (argv.length === 0) {
     throw new Error('verify run requires the command to execute after `--`, e.g. vibepro verify run . --id <id> --kind unit -- node --test test/foo.test.js');
   }
+  const runtimeIdentity = await assertRuntimeIntegrity({
+    purpose: 'evidence_generation',
+    env: options.env
+  });
   const timeoutMs = normalizeTimeout(options.timeoutMs);
   const maxOutputBytes = normalizeOutputLimit(options.maxOutputBytes);
   // Defaults to timeoutMs when unset: with no separate --no-progress-deadline-ms, the
@@ -294,7 +299,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     worktreeSampled,
     worktreeSamplingComplete,
     maxOutputBytes,
-    warnings
+    warnings,
+    runtimeIdentity
   }));
   const artifactPath = written.artifactPath;
   // Classified from the document actually written, not from the empty probe: the probe carries
@@ -349,7 +355,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       output_metrics: outputMetrics
     },
     observationOverrides: overrides,
-    additionalWarnings: warnings
+    additionalWarnings: warnings,
+    env: options.env
   }));
 
   return {
@@ -370,6 +377,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     worktree_sampling_complete: worktreeSamplingComplete,
     output_metrics: outputMetrics,
     counts: runCounts,
+    runtime_identity: runtimeIdentity,
     warnings,
     observation_overrides: overrides,
     run_artifact: toWorkspaceRelative(root, artifactPath),
@@ -649,6 +657,7 @@ function buildRunArtifactDocument(storyId, kind, run) {
     producer: 'vibepro verify run',
     kind,
     story_id: storyId,
+    runtime_identity: run.runtimeIdentity ?? null,
     head_sha: run.headAfter,
     observed: run.computedValues,
     run: {

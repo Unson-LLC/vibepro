@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { preparePullRequest } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -75,12 +76,34 @@ test('pr prepare embeds story_source and traceability, with unmapped clauses sho
 
   assert.equal(preparation.traceability.summary.acceptance_criteria_count, 2);
   assert.ok(preparation.traceability.summary.unmapped_count >= 1);
+  assert.equal(preparation.runtime_identity.integrity.status, 'trusted');
+  assert.match(preparation.runtime_identity.identity_digest, /^[0-9a-f]{64}$/);
 
   const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
   assert.match(body, /### Story document/);
   assert.match(body, new RegExp(`docs/management/stories/active/${storyId}\\.md`));
   assert.match(body, /### Acceptance criteria/);
   assert.match(body, /\[未対応\].*AC-2/, 'unmapped AC must be rendered as unaddressed, not as a blocker');
+  assert.match(body, /### VibePro runtime identity/);
+  assert.match(body, new RegExp(preparation.runtime_identity.identity_digest));
+});
+
+test('pr prepare rejects legacy verification evidence without runtime identity before writing judgment', async () => {
+  const storyId = 'story-pr-manager-legacy-runtime';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  const prDir = path.join(root, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: storyId,
+    commands: [{ kind: 'unit', status: 'pass', command: 'node --test test/example.test.js' }]
+  }, null, 2)}\n`);
+
+  await assert.rejects(
+    () => preparePullRequest(root, { storyId, baseRef: 'main' }),
+    /runtime_mismatch/
+  );
+  await assert.rejects(readFile(path.join(prDir, 'pr-prepare.json')), /ENOENT/);
 });
 
 test('pr prepare does not block when no story document exists', async () => {

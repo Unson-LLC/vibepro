@@ -381,16 +381,17 @@ async function upsertIndexEntry(root, pr, month) {
 export async function projectPublishedVersion(root, before, after, mergedAt) {
   if (!shouldReleaseVersion(before, after)) return false;
   const targets = [
-    ['docs/ja/reference/version-history.md', projectVersionHistory],
-    ['docs/reference/version-history.md', projectVersionHistory],
+    ['docs/ja/reference/version-history.md', (content) => projectVersionHistory(content, before, after, 'ja')],
+    ['docs/reference/version-history.md', (content) => projectVersionHistory(content, before, after, 'en')],
     ['docs/ja/guide/release-and-audit.md', (content) => projectUpgradeHeading(content, before, after, 'ja')],
     ['docs/guide/release-and-audit.md', (content) => projectUpgradeHeading(content, before, after, 'en')],
     ['docs/.vitepress/config.mjs', projectSoftwareVersion]
   ];
+  const projections = [];
   for (const [relative, project] of targets) {
     const file = path.join(root, relative);
     const content = await readFile(file, 'utf8');
-    await writeFile(file, project(content, before, after));
+    projections.push({ relative, file, content, projected: project(content, before, after) });
   }
   const date = new Date(mergedAt).toISOString().slice(0, 10);
   const rows = [
@@ -400,15 +401,17 @@ export async function projectPublishedVersion(root, before, after, mergedAt) {
   for (const [relative, row] of rows) {
     const file = path.join(root, relative);
     const content = await readFile(file, 'utf8');
-    if (!content.includes(`/v/${after})`)) {
-      const separator = /^\| ---.*$/mu;
-      await writeFile(file, content.replace(separator, (match) => `${match}\n${row}`));
-    }
+    projections.push({ relative, file, content, projected: projectPublishedReleaseIndex(content, after, row) });
+  }
+
+  validatePublishedVersionProjection(projections, before, after);
+  for (const { file, content, projected } of projections) {
+    if (content !== projected) await writeFile(file, projected);
   }
   return true;
 }
 
-function projectVersionHistory(content, before, after) {
+function projectVersionHistory(content, before, after, locale) {
   const lines = content.split('\n');
   for (const prefix of ['| npm `latest` |', '| npm `beta` |', '| Repository `main` |']) {
     const index = lines.findIndex((line) => line.startsWith(prefix));
@@ -416,10 +419,69 @@ function projectVersionHistory(content, before, after) {
     lines[index] = replaceCurrentVersion(lines[index], before, after, prefix);
   }
 
-  const currentHeading = lines.findIndex((line) => line.startsWith('## '));
-  if (currentHeading < 0) throw new Error('Published-version heading is missing');
-  lines[currentHeading] = replaceCurrentVersion(lines[currentHeading], before, after, 'published-version heading');
+  const headings = versionHistoryHeadings(lines.join('\n'));
+  if (headings.length === 0) throw new Error('Published-version heading is missing');
+  const currentHeading = lines.findIndex((line) => line === `## ${headings[0]}`);
+  if (headings[0] !== before && headings[0] !== after) {
+    throw new Error(`Current published-version heading must identify ${before} or ${after}`);
+  }
+  if (!headings.includes(after)) {
+    const details = locale === 'ja'
+      ? `この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。`
+      : `Detailed changes for this published version are recorded in [Release Notes](/releases/).`;
+    lines.splice(currentHeading, 0, `## ${after}`, '', details, '');
+  }
   return lines.join('\n');
+}
+
+function projectPublishedReleaseIndex(content, after, row) {
+  if (content.includes(`/v/${after})`)) return content;
+  const separator = /^\| ---.*$/mu;
+  if (!separator.test(content)) throw new Error('Published release index table separator is missing');
+  return content.replace(separator, (match) => `${match}\n${row}`);
+}
+
+function validatePublishedVersionProjection(projections, before, after) {
+  const histories = projections.filter(({ relative }) => relative.endsWith('reference/version-history.md'));
+  if (histories.length !== 2) throw new Error('English and Japanese version histories are required');
+
+  for (const { relative, content, projected } of histories) {
+    const prior = versionHistoryHeadings(content);
+    const next = versionHistoryHeadings(projected);
+    assertUniqueVersionHeadings(prior, `${relative} before projection`);
+    assertUniqueVersionHeadings(next, `${relative} after projection`);
+    const expected = prior.includes(after) ? prior : [after, ...prior];
+    if (JSON.stringify(next) !== JSON.stringify(expected)) {
+      throw new Error(`${relative} must prepend ${after} without changing published history`);
+    }
+    if (next[0] !== after || next.filter((version) => version === after).length !== 1) {
+      throw new Error(`${relative} must identify ${after} exactly once as the newest published version`);
+    }
+    if (!prior.includes(after) && prior[0] !== before) {
+      throw new Error(`${relative} must identify ${before} before projecting ${after}`);
+    }
+    for (const version of prior) {
+      if (next.filter((candidate) => candidate === version).length !== 1) {
+        throw new Error(`${relative} must preserve published version ${version} exactly once`);
+      }
+    }
+  }
+
+  const headingSequences = histories.map(({ projected }) => versionHistoryHeadings(projected));
+  if (JSON.stringify(headingSequences[0]) !== JSON.stringify(headingSequences[1])) {
+    throw new Error('English and Japanese published-version histories must match');
+  }
+}
+
+function versionHistoryHeadings(content) {
+  return [...content.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)$/gmu)]
+    .map((match) => match[1]);
+}
+
+function assertUniqueVersionHeadings(headings, field) {
+  if (new Set(headings).size !== headings.length) {
+    throw new Error(`${field} contains duplicate published-version headings`);
+  }
 }
 
 function projectUpgradeHeading(content, before, after, locale) {

@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-07 | [`0.2.0-beta.4`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.4) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-07 | [`0.2.0-beta.3`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.3) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | Post-merge continuous release |
@@ -355,3 +356,11 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:443:start -->
 - [PR #443](https://github.com/Unson-LLC/vibepro/pull/443) — [2026-08](/releases/2026-08): fix: derive judgment mode from causal evidence
 <!-- vibepro-release-index-pr:443:end -->
+
+<!-- vibepro-release-index-pr:444:start -->
+- [PR #444](https://github.com/Unson-LLC/vibepro/pull/444) — [2026-08](/releases/2026-08): fix: 判断モードの証拠境界を分離
+<!-- vibepro-release-index-pr:444:end -->
+
+<!-- vibepro-release-index-pr:445:start -->
+- [PR #445](https://github.com/Unson-LLC/vibepro/pull/445) — [2026-08](/releases/2026-08): fix: release履歴を追記型に修正
+<!-- vibepro-release-index-pr:445:end -->

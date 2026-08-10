@@ -4,10 +4,16 @@ The authoritative source version is `package.json`; an installed binary reports 
 
 | Channel | Expected after this release | Authority |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.3` | Live npm registry dist-tag |
-| npm `beta` | `0.2.0-beta.3` | Live npm registry dist-tag |
-| Repository `main` | `0.2.0-beta.3` release source | Git commit and `package.json` |
+| npm `latest` | `0.2.0-beta.4` | Live npm registry dist-tag |
+| npm `beta` | `0.2.0-beta.4` | Live npm registry dist-tag |
+| Repository `main` | `0.2.0-beta.4` release source | Git commit and `package.json` |
 | Manual build | Source commit in footer/meta | Deployed VitePress artifact |
+
+The table identifies the current release channels. The sections below are an append-only ledger of published versions; detailed PR evidence remains in [Release Notes](/releases/).
+
+## 0.2.0-beta.4
+
+Separates evidence that a problem exists from evidence for its solution direction in the Senior Engineering Judgment DAG. Structural excess routes to `SIMPLIFY`, value constraints to `VALUE`, and insufficient or unknown decision evidence to `VALIDATE`. This breaking beta updates the senior judgment input schema from `0.2.0` to `0.3.0`.
 
 ## 0.2.0-beta.3
 

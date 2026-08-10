@@ -53,6 +53,7 @@ const SMOKE = {
   help: { setup: 'none', args: () => ['help'] },
   init: { setup: 'bare', args: (r) => ['init', r, '--story-id', 'story-i', '--title', 'T', '--view', 'dev', '--period', '2026-W18'] },
   config: { setup: 'story', args: (r) => ['config', 'language', r, '--language', 'en'] },
+  runtime: { setup: 'none', args: () => ['runtime', 'identity', '--json'] },
   doctor: { setup: 'story', args: (r) => ['doctor', r] },
   status: { setup: 'story', args: (r) => ['status', r] },
   graph: { setup: 'story', args: (r) => ['graph', r] },

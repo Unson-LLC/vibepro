@@ -11,6 +11,12 @@ const releaseChannels = (content) => Object.fromEntries(
     .map((match) => [match[1], match[2]])
 );
 const softwareVersion = (config) => config.match(/softwareVersion: '([^']+)'/u)?.[1];
+const publishedVersions = (content) => [
+  ...content.matchAll(/^\| \d{4}-\d{2}-\d{2} \| \[`([^`]+)`\]\(https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/[^)]+\)/gmu)
+].map((match) => match[1]);
+const versionHistoryHeadings = (content) => [
+  ...content.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)$/gmu)
+].map((match) => match[1]);
 
 test('VRNH-AC-001/002/004 release index separates published versions from the PR snapshot', async () => {
   for (const [path, snapshotDate] of [
@@ -81,4 +87,25 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
       `${channel} must be SemVer`
     );
   }
+});
+
+test('VRNH-CON-007 published version ledgers are a bilingual prefix of the release index', async () => {
+  const [jaIndex, enIndex, jaHistory, enHistory] = await Promise.all([
+    read('docs/ja/releases/index.md'),
+    read('docs/releases/index.md'),
+    read('docs/ja/reference/version-history.md'),
+    read('docs/reference/version-history.md')
+  ]);
+  const indexVersions = [publishedVersions(enIndex), publishedVersions(jaIndex)];
+  const historyVersions = [versionHistoryHeadings(enHistory), versionHistoryHeadings(jaHistory)];
+
+  assert.deepEqual(indexVersions[0], indexVersions[1], 'published release indexes must match across locales');
+  assert.deepEqual(historyVersions[0], historyVersions[1], 'published version ledgers must match across locales');
+  assert.ok(historyVersions[0].length >= 2, 'the append-only ledger must retain prior published versions');
+  assert.equal(new Set(historyVersions[0]).size, historyVersions[0].length, 'published ledger headings must be unique');
+  assert.deepEqual(
+    historyVersions[0],
+    indexVersions[0].slice(0, historyVersions[0].length),
+    'the version ledger must match the newest published releases without gaps'
+  );
 });
