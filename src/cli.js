@@ -16,6 +16,7 @@ import { ArtifactRoutingError, buildArtifactMigrationPlan, resolveArtifactRoute,
 import { deriveEnvironmentGraph, renderEnvironmentGraphSummary } from './environment-graph.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, resolveHumanOutputLanguage, setOutputLanguage } from './language.js';
 import { renderDoctor, runDoctor } from './doctor.js';
+import { collectRuntimeInfo } from './runtime-info.js';
 import {
   recordSessionLearning,
   renderSessionLearningRecordSummary,
@@ -154,6 +155,7 @@ Usage:
   vibepro --version | -v
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>] [--language ja|en]
   vibepro config language [repo] --language ja|en
+  vibepro runtime identity [--json]
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
@@ -261,6 +263,7 @@ Usage:
   vibepro --version | -v
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>] [--language ja|en]
   vibepro config language [repo] --language ja|en
+  vibepro runtime identity [--json]
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro skills list [--json]
@@ -310,7 +313,7 @@ Usage:
 // assert every command is exercised end-to-end — a missing/broken handler import
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
-  'version', 'help', 'init', 'config', 'doctor', 'status', 'graph', 'env',
+  'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
   'workspace', 'store'
@@ -553,13 +556,31 @@ async function dispatchCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
+    if (command === 'runtime') {
+      const subcommand = rest[0];
+      if (subcommand !== 'identity') {
+        write(stderr, `Unknown runtime command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+        return { exitCode: 1, command, subcommand };
+      }
+      const runtimeIdentity = await collectRuntimeInfo({ env: io.env, purpose: 'observation' });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(runtimeIdentity, null, 2)}\n`
+        : `${runtimeIdentity.package.name}@${runtimeIdentity.package.exact_version} ${runtimeIdentity.identity_digest} ${runtimeIdentity.integrity.status}\n`);
+      return {
+        exitCode: runtimeIdentity.integrity.status === 'trusted' ? 0 : 2,
+        command,
+        subcommand,
+        result: runtimeIdentity
+      };
+    }
+
     if (command === 'doctor') {
       const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
-      const result = await runDoctor(repoRoot, { fix: hasFlag(rest, '--fix') });
+      const result = await runDoctor(repoRoot, { fix: hasFlag(rest, '--fix'), env: io.env });
       write(stdout, hasFlag(rest, '--json')
         ? `${JSON.stringify(result, null, 2)}\n`
         : renderDoctor(result));
-      return { exitCode: 0, command, result };
+      return { exitCode: result.runtime_identity?.integrity?.status === 'trusted' ? 0 : 2, command, result };
     }
 
     if (command === 'status') {
@@ -684,6 +705,7 @@ async function dispatchCli(argv, io = {}) {
           scenarios: getOptions(rest, '--scenario'),
           observed: getOptions(rest, '--observed'),
           strictHeadBinding: hasFlag(rest, '--strict-head-binding'),
+          env: io.env,
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });

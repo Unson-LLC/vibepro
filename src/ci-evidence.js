@@ -11,6 +11,7 @@ import {
   writeValidationSequence
 } from './validation-sequencing.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
+import { assertRuntimeIntegrity } from './runtime-info.js';
 
 const execFileAsync = promisify(execFile);
 const CI_IMPORT_RECEIPT = Symbol('validated-ci-import');
@@ -26,6 +27,7 @@ export async function importCiEvidence(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId;
   if (!storyId) throw new Error('verify import-ci requires --id <story-id>');
+  await assertRuntimeIntegrity({ purpose: 'evidence_generation', env: options.env });
 
   const currentHead = await gitHead(root);
   if (!currentHead) throw new Error('verify import-ci could not resolve the current git HEAD');
@@ -84,6 +86,7 @@ export async function importCiEvidence(repoRoot, options = {}) {
       managedWorktreeWarning: options.managedWorktreeWarning ?? null,
       evidenceReceipt: RUNNER_EVIDENCE_RECEIPT,
       evidenceSource: 'ci_import',
+      env: options.env,
       computedObservation: {
         producer: 'vibepro verify import-ci',
         computed_keys: ['check', 'conclusion', 'run_url', 'head_sha'],

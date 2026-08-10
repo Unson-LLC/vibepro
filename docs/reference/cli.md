@@ -16,6 +16,7 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
   vibepro --version | -v
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>] [--language ja|en]
   vibepro config language [repo] --language ja|en
+  vibepro runtime identity [--json]
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
