@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
+import { extractMarkdownAcceptanceCriteria } from './markdown-acceptance-criteria.js';
 import { toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -227,6 +228,8 @@ function buildClauseTraceabilityItem({
     id,
     type,
     source_text: text,
+    // Backwards-compatible alias retained for pr-prepare.json consumers.
+    text,
     source_line,
     status,
     story_scenario_ids: storyScenarioIds,
@@ -341,27 +344,7 @@ function isClauseBindingTarget(value) {
 }
 
 export function extractAcceptanceCriteria(storyText) {
-  const lines = String(storyText ?? '').split(/\r?\n/);
-  const criteria = [];
-  let inSection = false;
-  for (const [index, line] of lines.entries()) {
-    if (/^#{2,}\s*(Acceptance Criteria|受け入れ基準|受け入れ条件)\s*$/i.test(line.trim())) {
-      inSection = true;
-      continue;
-    }
-    if (inSection && /^#{1,}\s+/.test(line)) break;
-    if (!inSection) continue;
-    const match = line.match(/^\s*-\s*(?:\[[ xX]\]\s*)?(.+?)\s*$/);
-    if (!match) continue;
-    const text = match[1].trim();
-    if (!text) continue;
-    criteria.push({
-      id: `AC-${criteria.length + 1}`,
-      text,
-      source_line: index + 1
-    });
-  }
-  return criteria;
+  return extractMarkdownAcceptanceCriteria(storyText);
 }
 
 function clauseMatchesPathOrText({ id, text, value }) {
@@ -385,10 +368,28 @@ export async function readTraceability(repoRoot, storyId) {
   return readJsonIfExists(await traceabilityArtifactPath(repoRoot, storyId));
 }
 
-export async function bindStoryTraceability(repoRoot, { storyId, storyDocPath = null, source, lifecycle, evidence = [] }) {
+export async function bindStoryTraceability(repoRoot, {
+  storyId,
+  storyDocPath = null,
+  source,
+  lifecycle,
+  evidence = [],
+  acceptanceCriteria = null,
+  scenarioClauses = null,
+  scenarioLineage = null
+}) {
   const artifactPath = await traceabilityArtifactPath(repoRoot, storyId);
   const existing = await readJsonIfExists(artifactPath);
-  const traceability = buildTraceability(existing, { storyId, storyDocPath, source, lifecycle, evidence });
+  const traceability = buildTraceability(existing, {
+    storyId,
+    storyDocPath,
+    source,
+    lifecycle,
+    evidence,
+    acceptanceCriteria,
+    scenarioClauses,
+    scenarioLineage
+  });
   await mkdir(path.dirname(artifactPath), { recursive: true });
   await writeFile(artifactPath, `${JSON.stringify(traceability, null, 2)}\n`);
   return traceability;

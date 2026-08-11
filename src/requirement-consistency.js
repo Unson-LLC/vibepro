@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { resolveArtifactRoute } from './artifact-routing.js';
+import { extractMarkdownAcceptanceCriteria } from './markdown-acceptance-criteria.js';
 
 export const MAX_SCAN_FILES = 80;
 export const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -1165,6 +1166,7 @@ export async function parseStoryLikeDocument(repoRoot, absoluteOrRelativeFile, k
   const content = await readFile(absolute, 'utf8');
   const relative = normalizePath(path.relative(repoRoot, absolute));
   const frontmatter = parseFrontmatter(content);
+  const acceptanceCriteriaDetails = extractMarkdownAcceptanceCriteria(content);
   return {
     kind: kind ?? inferSourceKind(relative),
     path: relative,
@@ -1174,7 +1176,8 @@ export async function parseStoryLikeDocument(repoRoot, absoluteOrRelativeFile, k
     content,
     background: extractSectionText(content, ['背景', '現状', '課題']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略', 'ポリシー']),
-    acceptance_criteria: extractAcceptanceCriteria(content)
+    acceptance_criteria: acceptanceCriteriaDetails.map((criterion) => criterion.text),
+    acceptance_criteria_details: acceptanceCriteriaDetails
   };
 }
 
@@ -1210,18 +1213,6 @@ function extractSectionText(content, headings) {
     if (paragraph) return paragraph;
   }
   return null;
-}
-
-function extractAcceptanceCriteria(content) {
-  const section = extractRawSection(content, ['受け入れ基準', '完了定義', 'Acceptance Criteria']);
-  const source = section ?? content;
-  return source
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => /^-\s+(?:\[[ xX]\]\s+)?/.test(line))
-    .map((line) => line.replace(/^-\s+(?:\[[ xX]\]\s+)?/, '').trim())
-    .filter(Boolean)
-    .slice(0, 16);
 }
 
 function extractRawSection(content, headings) {
