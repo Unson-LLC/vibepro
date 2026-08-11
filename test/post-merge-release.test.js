@@ -224,6 +224,7 @@ test('RNLN-007 initializes the Markdown renderer only for projection commands', 
   assert.equal(commandRequiresMarkdownRenderer('release-body'), true);
   assert.equal(commandRequiresMarkdownRenderer('plan'), false);
   assert.equal(commandRequiresMarkdownRenderer('publish-npm'), false);
+  assert.equal(commandRequiresMarkdownRenderer('reconcile-github-release'), false);
   assert.equal(commandRequiresMarkdownRenderer('unknown'), false);
 
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-renderer-boundary-'));
@@ -672,14 +673,14 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
   assert.match(workflow, /git checkout --detach/);
   assert.match(workflow, /git checkout --detach[\s\S]*npm ci[\s\S]*npm run typecheck/);
-  assert.match(workflow, /gh release edit/);
+  assert.match(workflow, /post-merge-release\.mjs reconcile-github-release/);
   assert.match(workflow, /npm-release-lock\.mjs acquire/);
   assert.match(workflow, /trap release_lock EXIT/);
   assert.match(workflow, /timeout-minutes: 90/);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('gh release'));
-  assert.ok(workflow.indexOf('gh release') < workflow.indexOf('Project PR body into release history'));
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('reconcile-github-release'));
+  assert.ok(workflow.indexOf('reconcile-github-release') < workflow.indexOf('Project PR body into release history'));
   const deployStep = workflow.match(/- name: Deploy VitePress manual[\s\S]*?(?=\n      - name:|$)/)?.[0] ?? '';
   assert.match(deployStep, /git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
   assert.match(gitignore, /^node_modules\/$/m);
