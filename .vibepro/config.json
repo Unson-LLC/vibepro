@@ -542,6 +542,20 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-pr-artifact-consistency",
+        "title": "PR成果物を同一HEADの正規データから一貫生成する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-11",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "pr-artifact-consistency"
+      },
+      {
         "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
         "title": "Codex host containment テストの waitFor を高負荷ホストでフレークしない待機設計にする",
         "ssot": "local",
@@ -1441,7 +1455,7 @@
         "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-dependency-cycle-scc-reduction"
+    "current_story_id": "story-vibepro-pr-artifact-consistency"
   },
   "current_story_id": "story-vibepro-dependency-cycle-scc-reduction"
 }
