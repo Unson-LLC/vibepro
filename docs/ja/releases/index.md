@@ -369,3 +369,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:448:start -->
 - [PR #448](https://github.com/Unson-LLC/vibepro/pull/448) — [2026-08](/ja/releases/2026-08): fix: enforce immutable runtime identity
 <!-- vibepro-release-index-pr:448:end -->
+
+<!-- vibepro-release-index-pr:450:start -->
+- [PR #450](https://github.com/Unson-LLC/vibepro/pull/450) — [2026-08](/ja/releases/2026-08): fix: PR準備成果物の不整合を修正
+<!-- vibepro-release-index-pr:450:end -->

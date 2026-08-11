@@ -1996,3 +1996,24 @@ No action required.
 なし
 
 <!-- vibepro-release-pr:448:end -->
+
+<!-- vibepro-release-pr:450:start -->
+## [#450](https://github.com/Unson-LLC/vibepro/pull/450) fix: PR準備成果物の不整合を修正
+
+- Author: @sintariran
+- Merged: 2026-08-11T10:12:36Z
+- Commit: `a662da0d53d99399e21ffe1304be92fa790d619d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:450:end -->
