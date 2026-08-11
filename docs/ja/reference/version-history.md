@@ -4,12 +4,16 @@ source versionの正本は `package.json` で、installed binaryは `vibepro ver
 
 | Channel | このrelease後の期待値 | 正本 |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.5` | liveなnpm registry dist-tag |
-| npm `beta` | `0.2.0-beta.5` | liveなnpm registry dist-tag |
-| Repository `main` | `0.2.0-beta.5` release source | Git commitと `package.json` |
+| npm `latest` | `0.2.0-beta.6` | liveなnpm registry dist-tag |
+| npm `beta` | `0.2.0-beta.6` | liveなnpm registry dist-tag |
+| Repository `main` | `0.2.0-beta.6` release source | Git commitと `package.json` |
 | Manual build | footer/metaのsource commit | deployed VitePress artifact |
 
 表は現在のrelease channelを示します。以下のsectionは公開済みversionの追記専用ledgerで、PRごとの詳細な根拠は[リリースノート](/ja/releases/)に保持します。
+
+## 0.2.0-beta.6
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
 
 ## 0.2.0-beta.5
 

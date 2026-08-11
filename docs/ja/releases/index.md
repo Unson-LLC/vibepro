@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-11 | [`0.2.0-beta.6`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.6) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-10 | [`0.2.0-beta.5`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.5) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-07 | [`0.2.0-beta.4`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.4) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-07 | [`0.2.0-beta.3`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.3) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -377,3 +378,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:451:start -->
 - [PR #451](https://github.com/Unson-LLC/vibepro/pull/451) — [2026-08](/ja/releases/2026-08): fix: GitHub Release分類を確実に収束
 <!-- vibepro-release-index-pr:451:end -->
+
+<!-- vibepro-release-index-pr:452:start -->
+- [PR #452](https://github.com/Unson-LLC/vibepro/pull/452) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.6を公開準備
+<!-- vibepro-release-index-pr:452:end -->

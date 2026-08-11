@@ -2038,3 +2038,24 @@ No action required.
 なし
 
 <!-- vibepro-release-pr:451:end -->
+
+<!-- vibepro-release-pr:452:start -->
+## [#452](https://github.com/Unson-LLC/vibepro/pull/452) chore: 0.2.0-beta.6を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-11T12:18:40Z
+- Commit: `28775f0963d78aeba941145d50da8c4d96b1efd7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:452:end -->
