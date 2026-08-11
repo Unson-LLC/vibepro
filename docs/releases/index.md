@@ -382,3 +382,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:452:start -->
 - [PR #452](https://github.com/Unson-LLC/vibepro/pull/452) — [2026-08](/releases/2026-08): chore: 0.2.0-beta.6を公開準備
 <!-- vibepro-release-index-pr:452:end -->
+
+<!-- vibepro-release-index-pr:453:start -->
+- [PR #453](https://github.com/Unson-LLC/vibepro/pull/453) — [2026-08](/releases/2026-08): docs: リリース安全事例を公開
+<!-- vibepro-release-index-pr:453:end -->

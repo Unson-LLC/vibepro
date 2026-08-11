@@ -2059,3 +2059,24 @@ No action required.
 なし
 
 <!-- vibepro-release-pr:452:end -->
+
+<!-- vibepro-release-pr:453:start -->
+## [#453](https://github.com/Unson-LLC/vibepro/pull/453) docs: リリース安全事例を公開
+
+- Author: @sintariran
+- Merged: 2026-08-11T13:50:05Z
+- Commit: `50fcbd270e8d58930ab5940f408dab32077148fa`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:453:end -->
