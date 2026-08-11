@@ -583,6 +583,122 @@ function parseSemver(value) {
   return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), pre: match[4]?.split('.') ?? [] };
 }
 
+export function releaseClassification(version) {
+  const { pre } = parseSemver(version);
+  const prerelease = pre.length > 0;
+  return { prerelease, latest: !prerelease };
+}
+
+function releaseClassificationForCurrentLatest(version, currentLatestTag) {
+  const classification = releaseClassification(version);
+  if (classification.prerelease || !currentLatestTag) return classification;
+  const match = currentLatestTag.match(/^v(.+)$/u);
+  if (!match) {
+    throw new Error(`Latest GitHub Release tag is not a v-prefixed SemVer: ${currentLatestTag}`);
+  }
+  return {
+    ...classification,
+    latest: compareSemver(version, match[1]) >= 0
+  };
+}
+
+export function reconcileGithubRelease({
+  root = rootDefault,
+  version,
+  expectedSha,
+  notesFile,
+  repository = process.env.GITHUB_REPOSITORY || REPOSITORY,
+  execute = run
+}) {
+  if (!/^[0-9a-f]{40}$/u.test(`${expectedSha}`)) {
+    throw new Error(`Expected release SHA must be a full 40-character commit SHA: ${expectedSha}`);
+  }
+  if (!notesFile) throw new Error('GitHub Release notes file is required');
+  if (!/^[^/]+\/[^/]+$/u.test(repository)) throw new Error(`Invalid GitHub repository: ${repository}`);
+
+  const tag = `v${version}`;
+  const latestTagBefore = readLatestGithubReleaseTag(repository, root);
+  const classification = releaseClassificationForCurrentLatest(version, latestTagBefore);
+  const exists = githubReleaseExists(tag, repository, root);
+  if (exists) verifyReleaseTag(tag, expectedSha, root, execute);
+
+  execute('gh', [
+    'release', exists ? 'edit' : 'create', tag,
+    '--target', expectedSha,
+    '--title', `VibePro ${version}`,
+    '--notes-file', notesFile,
+    `--prerelease=${classification.prerelease}`,
+    `--latest=${classification.latest}`,
+    '--repo', repository
+  ], root);
+
+  verifyReleaseTag(tag, expectedSha, root, execute);
+  const metadata = readGithubReleaseMetadata(tag, repository, root, execute);
+  const latestTag = readLatestGithubReleaseTag(repository, root);
+  const actualLatest = latestTag === tag;
+  const preservedNewerLatest = !classification.prerelease
+    && !classification.latest
+    && latestTag === latestTagBefore;
+  if (
+    metadata.tagName !== tag
+    || metadata.targetCommitish !== expectedSha
+    || metadata.isPrerelease !== classification.prerelease
+    || actualLatest !== classification.latest
+    || (!classification.prerelease && !classification.latest && !preservedNewerLatest)
+  ) {
+    throw new Error(
+      `GitHub Release ${tag} metadata did not converge: ` +
+      `expected target=${expectedSha} prerelease=${classification.prerelease} latest=${classification.latest}` +
+      `${classification.latest || classification.prerelease ? '' : ` latestTag=${latestTagBefore}`}; ` +
+      `received target=${metadata.targetCommitish} prerelease=${metadata.isPrerelease} latest=${actualLatest}` +
+      ` latestTag=${latestTag ?? 'none'}`
+    );
+  }
+  return { tag, ...classification, targetCommitish: metadata.targetCommitish };
+}
+
+function githubReleaseExists(tag, repository, root) {
+  const result = spawnSync('gh', ['release', 'view', tag, '--repo', repository], {
+    cwd: root,
+    encoding: 'utf8'
+  });
+  if (result.status === 0) return true;
+  const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+  if (/release not found|HTTP 404|not found/iu.test(diagnostic)) return false;
+  throw new Error(`GitHub Release lookup failed for ${tag}: ${diagnostic || `exit ${result.status}`}`);
+}
+
+function verifyReleaseTag(tag, expectedSha, root, execute) {
+  execute('git', ['fetch', '--tags', '--force', 'origin'], root);
+  const actualSha = execute('git', ['rev-list', '-n', '1', tag], root);
+  if (actualSha !== expectedSha) {
+    throw new Error(`GitHub Release tag ${tag} resolves to ${actualSha || 'no commit'}; expected ${expectedSha}`);
+  }
+}
+
+function readGithubReleaseMetadata(tag, repository, root, execute) {
+  const output = execute('gh', [
+    'release', 'view', tag,
+    '--json', 'tagName,targetCommitish,isPrerelease',
+    '--repo', repository
+  ], root);
+  try {
+    return JSON.parse(output);
+  } catch (error) {
+    throw new Error(`GitHub Release ${tag} metadata was invalid JSON: ${error.message}`);
+  }
+}
+
+function readLatestGithubReleaseTag(repository, root) {
+  const result = spawnSync('gh', [
+    'api', `repos/${repository}/releases/latest`, '--jq', '.tag_name'
+  ], { cwd: root, encoding: 'utf8' });
+  if (result.status === 0) return result.stdout.trim();
+  const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+  if (/release not found|HTTP 404|not found/iu.test(diagnostic)) return null;
+  throw new Error(`Latest GitHub Release lookup failed: ${diagnostic || `exit ${result.status}`}`);
+}
+
 export function npmDistTags(version) {
   const { pre } = parseSemver(version);
   if (!pre.length) return ['latest'];
@@ -742,7 +858,16 @@ async function main(args) {
     await reconcileNpmRelease({ version: option('--version'), expectedSha: option('--sha') });
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <plan|project|reproject|release-body|publish-npm>');
+  if (command === 'reconcile-github-release') {
+    reconcileGithubRelease({
+      version: option('--version'),
+      expectedSha: option('--sha'),
+      notesFile: option('--notes-file'),
+      repository: option('--repository') || process.env.GITHUB_REPOSITORY || REPOSITORY
+    });
+    return;
+  }
+  throw new Error('Usage: post-merge-release.mjs <plan|project|reproject|release-body|publish-npm|reconcile-github-release>');
 }
 
 if (isDirectInvocation()) {

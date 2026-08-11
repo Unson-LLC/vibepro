@@ -1975,3 +1975,66 @@ No package or CLI compatibility change.
 No action required.
 
 <!-- vibepro-release-pr:445:end -->
+
+<!-- vibepro-release-pr:448:start -->
+## [#448](https://github.com/Unson-LLC/vibepro/pull/448) fix: enforce immutable runtime identity
+
+- Author: @sintariran
+- Merged: 2026-08-10T16:12:18Z
+- Commit: `5e19da4a890a6ae607241d40bbbb438dae6f5124`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:448:end -->
+
+<!-- vibepro-release-pr:450:start -->
+## [#450](https://github.com/Unson-LLC/vibepro/pull/450) fix: PR準備成果物の不整合を修正
+
+- Author: @sintariran
+- Merged: 2026-08-11T10:12:36Z
+- Commit: `a662da0d53d99399e21ffe1304be92fa790d619d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:450:end -->
+
+<!-- vibepro-release-pr:451:start -->
+## [#451](https://github.com/Unson-LLC/vibepro/pull/451) fix: GitHub Release分類を確実に収束
+
+- Author: @sintariran
+- Merged: 2026-08-11T11:48:10Z
+- Commit: `4388cf10aa0a6cb6692fd79c00017a9824910979`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:451:end -->

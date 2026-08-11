@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-10 | [`0.2.0-beta.5`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.5) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-07 | [`0.2.0-beta.4`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.4) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-07 | [`0.2.0-beta.3`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.3) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | Post-merge continuous release |
@@ -364,3 +365,15 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:445:start -->
 - [PR #445](https://github.com/Unson-LLC/vibepro/pull/445) — [2026-08](/releases/2026-08): fix: release履歴を追記型に修正
 <!-- vibepro-release-index-pr:445:end -->
+
+<!-- vibepro-release-index-pr:448:start -->
+- [PR #448](https://github.com/Unson-LLC/vibepro/pull/448) — [2026-08](/releases/2026-08): fix: enforce immutable runtime identity
+<!-- vibepro-release-index-pr:448:end -->
+
+<!-- vibepro-release-index-pr:450:start -->
+- [PR #450](https://github.com/Unson-LLC/vibepro/pull/450) — [2026-08](/releases/2026-08): fix: PR準備成果物の不整合を修正
+<!-- vibepro-release-index-pr:450:end -->
+
+<!-- vibepro-release-index-pr:451:start -->
+- [PR #451](https://github.com/Unson-LLC/vibepro/pull/451) — [2026-08](/releases/2026-08): fix: GitHub Release分類を確実に収束
+<!-- vibepro-release-index-pr:451:end -->

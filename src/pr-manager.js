@@ -27,6 +27,7 @@ import { getAgentReviewStatus } from './agent-review.js';
 import { bindStoryTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
+import { readTaskAuthorities } from './task-authority.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -56,6 +57,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   const storySource = await findStorySource(root, story).catch(() => null);
   const clauseMap = buildClauseMapForPrepare({ storyId, storySource, git });
+  const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
 
   const preparation = {
     schema_version: SCHEMA_VERSION,
@@ -63,6 +65,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     runtime_identity: runtimeIdentity,
     story,
     task_context: options.taskId || options.groupId ? { task_id: options.taskId ?? null, group_id: options.groupId ?? null } : null,
+    task_authorities: taskAuthorities,
     output: { language },
     git,
     spec: spec ? { present: true, story_id: spec.story_id ?? storyId, clause_count: (spec.clauses ?? []).length } : { present: false },
@@ -81,7 +84,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await writeFile(bodyPath, body, 'utf8');
 
   await recordManifestPrPrepare(root, storyId, { jsonPath, bodyPath }).catch(() => null);
-  await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification, storySource }).catch(() => null);
+  // Canonical traceability is part of the same projection contract as
+  // pr-prepare.json and pr-body.md.  If it cannot be refreshed, `pr prepare`
+  // must fail instead of reporting success with contradictory artifacts.
+  await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification, storySource, clauseMap });
 
   return {
     story,
@@ -135,7 +141,11 @@ async function readVerificationSummary(repoRoot, storyId) {
     status: command.status,
     command: command.command ?? null,
     summary: command.summary ?? null,
+    summary_authority: command.summary ? 'agent_provided_non_authoritative' : null,
     evidence_source: command.evidence_source ?? null,
+    observation: command.observation ?? null,
+    computed_observation: command.computed_observation ?? null,
+    computed_counts: extractComputedVerificationCounts(command),
     runtime_identity: command.runtime_identity ?? null,
     executed_at: command.executed_at ?? null
   }));
@@ -145,6 +155,17 @@ async function readVerificationSummary(repoRoot, storyId) {
     artifact: toWorkspaceRelative(repoRoot, evidencePath),
     commands
   };
+}
+
+function extractComputedVerificationCounts(command) {
+  const values = command?.computed_observation?.values;
+  if (!values || typeof values !== 'object') return null;
+  const counts = {};
+  for (const key of ['tests', 'pass', 'fail']) {
+    const value = Number(values[key]);
+    if (Number.isFinite(value)) counts[key] = value;
+  }
+  return Object.keys(counts).length > 0 ? counts : null;
 }
 
 function assertRecordedRuntimeIdentities(verification) {
@@ -182,14 +203,17 @@ async function readReviewSummary(repoRoot, storyId) {
   }
 }
 
-async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification, storySource }) {
+async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification, storySource, clauseMap }) {
   const evidence = buildPrArtifactEvidence(repoRoot, { bodyPath, verification });
   await bindStoryTraceability(repoRoot, {
     storyId,
     storyDocPath: storySource?.path ?? null,
     source: 'pr_prepare',
     lifecycle: 'in_progress',
-    evidence
+    evidence,
+    acceptanceCriteria: clauseMap.acceptance_criteria,
+    scenarioClauses: clauseMap.scenario_clauses,
+    scenarioLineage: clauseMap.scenario_lineage
   });
 }
 
@@ -231,7 +255,11 @@ function buildClauseMapForPrepare({ storyId, storySource, git }) {
   // (pr-body.md) ref would trip buildTraceabilityClauseMap's "broad evidence"
   // fallback and mark every clause at least weakly_mapped, hiding genuinely
   // unaddressed clauses. This summary reflects only changed-file/test matches.
-  const acceptanceCriteria = storySource?.acceptance_criteria?.length ? storySource.acceptance_criteria : null;
+  const acceptanceCriteria = storySource?.acceptance_criteria_details?.length
+    ? storySource.acceptance_criteria_details
+    : storySource?.acceptance_criteria?.length
+      ? storySource.acceptance_criteria
+      : null;
   return buildTraceabilityClauseMap({
     storyId,
     storyText: storySource?.content ?? '',
@@ -244,21 +272,11 @@ function buildClauseMapForPrepare({ storyId, storySource, git }) {
 }
 
 function summarizeClauseMapForPrepare(clauseMap) {
-  const acceptanceCriteria = clauseMap.acceptance_criteria.map((clause) => ({
-    id: clause.id,
-    status: clause.status,
-    text: clause.source_text,
-    mapped_files: clause.mapped_files,
-    mapped_tests: clause.mapped_tests,
-    weak_mapping_reason: clause.weak_mapping_reason
-  }));
   return {
-    acceptance_criteria: acceptanceCriteria,
-    summary: summarizeTraceabilityClauseMap({
-      acceptance_criteria: clauseMap.acceptance_criteria,
-      scenario_clauses: [],
-      scenario_lineage: null
-    })
+    acceptance_criteria: clauseMap.acceptance_criteria,
+    scenario_clauses: clauseMap.scenario_clauses,
+    scenario_lineage: clauseMap.scenario_lineage,
+    summary: summarizeTraceabilityClauseMap(clauseMap)
   };
 }
 
@@ -348,7 +366,7 @@ async function gitOptional(repoRoot, args) {
 // ---------------------------------------------------------------------------
 
 function renderPrBody(preparation) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability, task_authorities: taskAuthorities } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
@@ -391,11 +409,19 @@ function renderPrBody(preparation) {
   lines.push('### Verification evidence');
   if (verification.recorded) {
     for (const command of verification.commands) {
-      lines.push(`- [${command.kind}] ${command.status}${command.command ? ` — \`${command.command}\`` : ''} (runtime \`${command.runtime_identity?.identity_digest ?? 'missing'}\`)`);
+      const counts = command.computed_counts
+        ? ` — computed: ${formatComputedCounts(command.computed_counts)}`
+        : '';
+      lines.push(`- [${command.kind}] ${command.status}${counts}${command.command ? ` — \`${command.command}\`` : ''} (runtime \`${command.runtime_identity?.identity_digest ?? 'missing'}\`)`);
+      if (command.summary) lines.push('  - 自由記述summaryは参考情報であり、計算済み件数の権威ではありません');
     }
   } else {
     lines.push('- no verification evidence recorded (`vibepro verify run` / `vibepro verify record`)');
   }
+  lines.push('');
+  lines.push('### タスク権限');
+  lines.push(renderHumanTaskAuthority(taskAuthorities?.human));
+  lines.push(renderGeneratedTaskAuthority(taskAuthorities?.generated));
   lines.push('');
   lines.push('### Review');
   if (review.recorded) {
@@ -418,6 +444,31 @@ function renderPrBody(preparation) {
   }
   lines.push('');
   return `${lines.join('\n')}\n`;
+}
+
+function formatComputedCounts(counts) {
+  return ['tests', 'pass', 'fail']
+    .filter((key) => Number.isFinite(counts?.[key]))
+    .map((key) => `${key}=${counts[key]}`)
+    .join(', ');
+}
+
+function formatStatusCounts(counts = {}) {
+  return Object.entries(counts).map(([status, count]) => `${status}=${count}`).join(', ');
+}
+
+function renderHumanTaskAuthority(authority) {
+  if (!authority?.present) return '- 人間作成タスク: 未検出';
+  const counts = formatStatusCounts(authority.status_counts);
+  return `- 人間作成タスク: ${authority.task_count}件${counts ? ` (${counts})` : ''} — ${authority.path}`;
+}
+
+function renderGeneratedTaskAuthority(authority) {
+  if (!authority?.present) return '- 生成proposal: 未検出';
+  const counts = formatStatusCounts(authority.status_counts);
+  const policies = authority.execution_policies?.join(', ') || '未指定';
+  const mutates = authority.mutates_repository?.map((value) => String(value)).join(', ') || '未指定';
+  return `- 生成proposal: ${authority.task_count}件${counts ? ` (${counts})` : ''}; execution_policy=${policies}; mutates_repository=${mutates} — ${authority.path}`;
 }
 
 // ---------------------------------------------------------------------------
