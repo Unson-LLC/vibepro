@@ -373,3 +373,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:450:start -->
 - [PR #450](https://github.com/Unson-LLC/vibepro/pull/450) — [2026-08](/ja/releases/2026-08): fix: PR準備成果物の不整合を修正
 <!-- vibepro-release-index-pr:450:end -->
+
+<!-- vibepro-release-index-pr:451:start -->
+- [PR #451](https://github.com/Unson-LLC/vibepro/pull/451) — [2026-08](/ja/releases/2026-08): fix: GitHub Release分類を確実に収束
+<!-- vibepro-release-index-pr:451:end -->
