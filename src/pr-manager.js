@@ -24,10 +24,11 @@ import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getAgentReviewStatus } from './agent-review.js';
-import { bindStoryTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
+import { bindStoryTraceability, buildAcceptedSpecClauseMap, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
 import { readTaskAuthorities } from './task-authority.js';
+import { evaluateContentBinding } from './content-binding.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -56,7 +57,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
 
   const storySource = await findStorySource(root, story).catch(() => null);
-  const clauseMap = buildClauseMapForPrepare({ storyId, storySource, git });
+  const verificationTrustStatus = await evaluateVerificationEvidenceTrust(root, verification, git.head_sha);
+  const clauseMap = await buildClauseMapForPrepare(root, {
+    storyId,
+    storySource,
+    git,
+    verification,
+    verificationTrustStatus
+  });
   const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
 
   const preparation = {
@@ -146,6 +154,11 @@ async function readVerificationSummary(repoRoot, storyId) {
     observation: command.observation ?? null,
     computed_observation: command.computed_observation ?? null,
     computed_counts: extractComputedVerificationCounts(command),
+    artifact_check: command.artifact_check ?? null,
+    observation_check: command.observation_check ?? null,
+    git_context: command.git_context ?? null,
+    content_binding: command.content_binding ?? null,
+    warnings: command.warnings ?? [],
     runtime_identity: command.runtime_identity ?? null,
     executed_at: command.executed_at ?? null
   }));
@@ -155,6 +168,46 @@ async function readVerificationSummary(repoRoot, storyId) {
     artifact: toWorkspaceRelative(repoRoot, evidencePath),
     commands
   };
+}
+
+export async function evaluateVerificationEvidenceTrust(repoRoot, verification, headSha) {
+  if (!verification?.recorded) return 'untrusted';
+  let hasTrustedCommand = false;
+  for (const command of verification.commands ?? []) {
+    const values = command?.computed_observation?.values ?? {};
+    const binding = await evaluateContentBinding(repoRoot, command.content_binding, { head_sha: headSha });
+    const recordedAtExactHead = Boolean(headSha)
+      && command.git_context?.head_sha === headSha
+      && command.content_binding?.recorded_head_sha === headSha;
+    const runnerAtExactHead = recordedAtExactHead
+      && values.head_sha === headSha
+      && values.head_sha_before === headSha
+      && values.head_sha_after === headSha;
+    const runnerComplete = String(values.exit_code) === '0'
+      && String(values.timed_out) === 'false'
+      && String(values.log_truncated) === 'false'
+      && String(values.output_limit_exceeded) === 'false'
+      && String(values.tree_mutated_during_run) === 'false'
+      && String(values.head_moved_during_run) === 'false'
+      && String(values.worktree_changed_during_run) === 'false';
+    const runnerBindingCurrent = command.content_binding?.mode === 'strict_head'
+      ? runnerAtExactHead
+      : binding?.status === 'current' && runnerAtExactHead;
+    const runnerTrusted = command.evidence_source === 'runner_direct'
+      && runnerBindingCurrent
+      && runnerComplete;
+    const ciTrusted = command.evidence_source === 'ci_import'
+      && recordedAtExactHead
+      && values.head_sha === headSha
+      && String(values.conclusion).toUpperCase() === 'SUCCESS';
+    command.trust_status = (runnerTrusted || ciTrusted)
+      && command.artifact_check?.status === 'verified'
+      && command.observation_check?.status === 'recorded'
+      ? 'trusted'
+      : 'untrusted';
+    if (command.trust_status === 'trusted') hasTrustedCommand = true;
+  }
+  return hasTrustedCommand ? 'trusted' : 'untrusted';
 }
 
 function extractComputedVerificationCounts(command) {
@@ -213,7 +266,8 @@ async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verif
     evidence,
     acceptanceCriteria: clauseMap.acceptance_criteria,
     scenarioClauses: clauseMap.scenario_clauses,
-    scenarioLineage: clauseMap.scenario_lineage
+    scenarioLineage: clauseMap.scenario_lineage,
+    acceptedSpecLineage: clauseMap.accepted_spec_lineage ?? null
   });
 }
 
@@ -248,7 +302,21 @@ function summarizeStorySource(storySource) {
   };
 }
 
-function buildClauseMapForPrepare({ storyId, storySource, git }) {
+async function buildClauseMapForPrepare(repoRoot, {
+  storyId,
+  storySource,
+  git,
+  verification,
+  verificationTrustStatus
+}) {
+  const acceptedSpecMap = await buildAcceptedSpecClauseMap(repoRoot, {
+    storyId,
+    storyDocPath: storySource?.path ?? null,
+    verification,
+    verificationTrustStatus,
+    headRef: git.head_ref ?? 'HEAD'
+  });
+  if (acceptedSpecMap) return acceptedSpecMap;
   const changedFiles = git.changed_files ?? [];
   const testFiles = changedFiles.filter((file) => /(^|[\\/])(test|tests|spec)([\\/]|$)|\.(test|spec)\.[jt]sx?$/i.test(file.path ?? ''));
   // No evidence array here on purpose: passing the always-present pr_artifact
@@ -276,6 +344,7 @@ function summarizeClauseMapForPrepare(clauseMap) {
     acceptance_criteria: clauseMap.acceptance_criteria,
     scenario_clauses: clauseMap.scenario_clauses,
     scenario_lineage: clauseMap.scenario_lineage,
+    accepted_spec_lineage: clauseMap.accepted_spec_lineage ?? null,
     summary: summarizeTraceabilityClauseMap(clauseMap)
   };
 }
@@ -388,6 +457,14 @@ function renderPrBody(preparation) {
   }
   lines.push('');
   lines.push('### Acceptance criteria');
+  if (traceability?.accepted_spec_lineage) {
+    const lineage = traceability.accepted_spec_lineage;
+    lines.push(`- accepted-spec lineage: ${lineage.status} — \`${lineage.spec_path}\` @ \`${lineage.spec_blob_oid ?? 'missing'}\` (HEAD \`${lineage.head_sha ?? 'unknown'}\`)`);
+    if (lineage.story_path) {
+      lines.push(`  - story: \`${lineage.story_path}\` @ \`${lineage.story_blob_oid ?? 'missing'}\` (HEAD \`${lineage.head_sha ?? 'unknown'}\`)`);
+    }
+    if (lineage.reason_codes?.length) lines.push(`  - reasons: ${lineage.reason_codes.join(', ')}`);
+  }
   const acceptanceCriteria = traceability?.acceptance_criteria ?? [];
   if (acceptanceCriteria.length === 0) {
     lines.push('- no acceptance criteria found in the story document');
@@ -395,6 +472,11 @@ function renderPrBody(preparation) {
     for (const clause of acceptanceCriteria) {
       const marker = clause.status === 'unmapped' ? '未対応' : clause.status;
       lines.push(`- [${marker}] ${clause.id}: ${clause.text}`);
+      if (clause.spec_clause_ids?.length) lines.push(`  - spec clauses: ${clause.spec_clause_ids.join(', ')}`);
+      for (const testRef of clause.mapped_test_provenance ?? []) {
+        lines.push(`  - test: \`${testRef.file}\` — \`${testRef.case}\` @ \`${testRef.blob_oid ?? 'missing'}\` (HEAD \`${testRef.head_sha ?? 'unknown'}\`)`);
+      }
+      if (clause.reason_codes?.length) lines.push(`  - reasons: ${clause.reason_codes.join(', ')}`);
     }
   }
   lines.push('');

@@ -594,6 +594,7 @@ export const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set([
   'timeout_ms',
   'max_output_bytes',
   'harness_env_removed',
+  'runner_node_version',
   'head_sha_before',
   'head_sha_after',
   'head_moved_during_run',

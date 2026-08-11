@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-08-11T14:45:00.000Z",
+  "story": {
+    "story_id": "story-vibepro-accepted-spec-traceability",
+    "title": "accepted-specの条項系譜を同一HEADへ再解決する"
+  },
+  "tasks": [
+    {
+      "id": "ASTR-T-001",
+      "story_id": "story-vibepro-accepted-spec-traceability",
+      "title": "HEAD-tree accepted-spec lineage resolverを実装する",
+      "status": "done",
+      "source_type": "story_explicit_task",
+      "execution_policy": "implementation",
+      "mutates_repository": true,
+      "target_files": ["src/artifact-routing.js", "src/traceability.js"],
+      "dependencies": [],
+      "acceptance_criteria": ["ASTR-AC-001〜005、008〜011を満たす"]
+    },
+    {
+      "id": "ASTR-T-002",
+      "story_id": "story-vibepro-accepted-spec-traceability",
+      "title": "同一条項mapを3つのPR成果物へ投影する",
+      "status": "done",
+      "source_type": "story_explicit_task",
+      "execution_policy": "implementation",
+      "mutates_repository": true,
+      "target_files": ["src/pr-manager.js"],
+      "dependencies": ["ASTR-T-001"],
+      "acceptance_criteria": ["ASTR-AC-007を満たす"]
+    },
+    {
+      "id": "ASTR-T-003",
+      "story_id": "story-vibepro-accepted-spec-traceability",
+      "title": "12条項fixture・fail-closed負例・runner由来環境証拠を検証する",
+      "status": "done",
+      "source_type": "story_explicit_task",
+      "execution_policy": "verification",
+      "mutates_repository": true,
+      "target_files": ["test/accepted-spec-traceability.test.js", "src/verification-runner.js", "src/verification-evidence.js", "test/verification-runner.test.js"],
+      "dependencies": ["ASTR-T-001", "ASTR-T-002"],
+      "acceptance_criteria": ["ASTR-AC-006、008〜012を満たす"]
+    }
+  ]
+}

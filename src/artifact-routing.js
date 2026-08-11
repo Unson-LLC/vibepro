@@ -39,9 +39,21 @@ export async function readArtifactRoutingConfig(repoRoot) {
 export async function resolveArtifactRoutes(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = normalizeStoryId(options.storyId);
-  const { configPath, config, routing } = await readArtifactRoutingConfig(root);
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = options.configOverride === undefined
+    ? (await readArtifactRoutingConfig(root)).config
+    : options.configOverride;
+  const routing = config?.artifact_routing ?? null;
   const schemaVersion = validateRoutingShape(routing);
-  const selection = await resolveSelection(root, config, routing, schemaVersion, storyId, options.featureSlug);
+  const selection = await resolveSelection(
+    root,
+    config,
+    routing,
+    schemaVersion,
+    storyId,
+    options.featureSlug,
+    options.validateStoryMirror !== false
+  );
   const effectiveSchemaVersion = selection.profile ? schemaVersion : LEGACY_ARTIFACT_ROUTING_SCHEMA_VERSION;
   const variables = { story_id: storyId, feature_slug: selection.featureSlug };
   const artifacts = selection.profile?.artifacts ?? (schemaVersion === LEGACY_ARTIFACT_ROUTING_SCHEMA_VERSION ? routing?.artifacts : {}) ?? {};
@@ -397,7 +409,7 @@ async function readCanonicalBytesForRoute(root, route, sourcePath) {
   } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
-async function resolveSelection(root, config, routing, schemaVersion, storyId, explicitFeature) {
+async function resolveSelection(root, config, routing, schemaVersion, storyId, explicitFeature, validateStoryMirror = true) {
   if (schemaVersion !== '0.2.0') return { profile: null, profileName: null, featureSlug: explicitFeature == null ? slugify(storyId.replace(/^story-/, ''), 'feature') : slugify(explicitFeature, 'feature'), metadataSource: explicitFeature == null ? 'derived' : 'option' };
   const matches = (config.brainbase?.stories ?? []).filter((s) => normalizeStoryId(s.story_id ?? s.id) === storyId);
   if (matches.length > 1) throw new ArtifactRoutingError('duplicate_story_metadata', `Multiple catalog entries found for ${storyId}`);
@@ -413,6 +425,9 @@ async function resolveSelection(root, config, routing, schemaVersion, storyId, e
   if (!profile) throw new ArtifactRoutingError('unknown_profile', `Unknown artifact profile: ${entry.artifact_profile}`);
   const missing = ARTIFACT_KINDS.filter((kind) => !profile.artifacts?.[kind]);
   if (missing.length) throw new ArtifactRoutingError('incomplete_profile', `Artifact profile ${entry.artifact_profile} is missing: ${missing.join(', ')}`, { missing });
+  if (!validateStoryMirror) {
+    return { profile, profileName: entry.artifact_profile, featureSlug, metadataSource: 'brainbase.stories' };
+  }
   const storyPath = resolveTemplate(root, 'story', profile.artifacts.story.canonical, { story_id: storyId, feature_slug: featureSlug }, 'canonical').absolute_path;
   let frontmatter; try { frontmatter = parseFrontmatter(await readFile(storyPath, 'utf8')); } catch (error) { if (error.code === 'ENOENT') throw new ArtifactRoutingError('missing_story_mirror', `Story frontmatter mirror is required for named profile ${entry.artifact_profile}`, { story_path: toPosix(path.relative(root, storyPath)) }); throw error; }
   if (frontmatter.artifact_profile == null || frontmatter.feature_slug == null) throw new ArtifactRoutingError('missing_story_mirror', `Story frontmatter must mirror artifact_profile and feature_slug for named profile ${entry.artifact_profile}`, { story_path: toPosix(path.relative(root, storyPath)) });
