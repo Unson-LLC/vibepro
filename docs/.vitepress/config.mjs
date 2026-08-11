@@ -12,6 +12,7 @@ export default {
   srcExclude: [
     'architecture/**',
     'contracts/**',
+    'features/anonymized-value-cases/**',
     'frames/**',
     'management/**',
     'marketing/**',
@@ -107,7 +108,7 @@ export default {
         siteTitle: 'VibeProマニュアル',
         nav: [
           { text: 'ガイド', link: '/ja/guide/what-is-vibepro' },
-          { text: '事例', link: '/ja/cases/release-safety' },
+          { text: '事例', link: '/ja/cases/' },
           { text: '新着情報', link: '/ja/releases/' },
           { text: 'リファレンス', link: '/ja/reference/cli' },
           { text: 'GitHub', link: 'https://github.com/Unson-LLC/vibepro' }

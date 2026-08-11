@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const FORBIDDEN_PUBLIC_ROUTES = [
+  'features/anonymized-value-cases',
   'reference/gate-tuning/2026-07',
   'reference/vibepro-ui-journey-e2e-dogfood'
 ];
@@ -20,6 +21,12 @@ export const FORBIDDEN_PUBLIC_CORPORA = [
 ];
 
 export const REQUIRED_PUBLIC_ROUTES = [
+  'cases/index.html',
+  'cases/evidence-gated-answer.html',
+  'cases/stable-completion-decision.html',
+  'cases/stable-batch-window.html',
+  'cases/restart-safe-delivery.html',
+  'cases/release-safety.html',
   'guide/agent-review.html',
   'guide/ai-pr-workflow.html',
   'guide/check-packs.html',
@@ -66,6 +73,12 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'ja/guide/story-spec-traceability.html',
   'ja/guide/verification-decisions-ci.html',
   'ja/guide/what-is-vibepro.html',
+  'ja/cases/index.html',
+  'ja/cases/evidence-gated-answer.html',
+  'ja/cases/stable-completion-decision.html',
+  'ja/cases/stable-batch-window.html',
+  'ja/cases/restart-safe-delivery.html',
+  'ja/cases/release-safety.html',
   'ja/reference/artifact-map.html',
   'ja/reference/cli.html',
   'ja/reference/cloudflare-pages.html',

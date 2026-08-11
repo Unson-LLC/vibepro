@@ -37,3 +37,5 @@ VibeProは、AIエージェントを速く動かすだけの道具ではあり�
 - [PR #451: GitHub Release分類を確実に収束](https://github.com/Unson-LLC/vibepro/pull/451)
 - [PR #452: 0.2.0-beta.6を公開準備](https://github.com/Unson-LLC/vibepro/pull/452)
 - [Actions: Post-merge continuous release](https://github.com/Unson-LLC/vibepro/actions/runs/31490602296)
+
+[事例一覧へ戻る](./)
