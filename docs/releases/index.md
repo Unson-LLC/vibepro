@@ -390,3 +390,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:456:start -->
 - [PR #456](https://github.com/Unson-LLC/vibepro/pull/456) — [2026-08](/releases/2026-08): docs: 匿名化した実運用事例を追加
 <!-- vibepro-release-index-pr:456:end -->
+
+<!-- vibepro-release-index-pr:455:start -->
+- [PR #455](https://github.com/Unson-LLC/vibepro/pull/455) — [2026-08](/releases/2026-08): fix: accepted-specのHEAD系譜をPR成果物へ投影する
+<!-- vibepro-release-index-pr:455:end -->
