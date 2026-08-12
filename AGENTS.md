@@ -15,7 +15,13 @@
 
 Keep: Story registration + Story→Spec→code traceability, Spec validation (code_refs/test_refs existence and anchors), one lightweight review pass, PR-body evidence summary. No merge-blocking machinery, no budgets, no lifecycle ceremony.
 
-## 3. Development Commands
+## 3. Skill Routing
+
+| Work type | Skill |
+|---|---|
+| Publishing VibePro to npm, release monitoring, dist-tag / GitHub Release reconciliation | `skills/vibepro-npm-publish` |
+
+## 4. Development Commands
 
 ```bash
 node --test test/<file>.test.js        # targeted tests first
@@ -25,6 +31,6 @@ cmp -s CLAUDE.md AGENTS.md             # must be identical
 
 Never start a second suite in the same worktree while one is running, and never mutate the tree mid-suite.
 
-## 4. Archive pointers
+## 5. Archive pointers
 
 `.vibepro/`, `docs/management/audit-artifacts/`, and `.vibepro-store/` are a read-only archive of the old machine (adjudication records, gap analyses, rescued diffs). Salvage design lessons from them; do not restore code from them.
