@@ -1,4 +1,5 @@
 name: CodeQL
+run-name: CodeQL | pr=${{ github.event.pull_request.number || 0 }} | base=${{ github.event.pull_request.base.sha || github.event.before || 'none' }} | head=${{ github.event.pull_request.head.sha || github.sha }}
 
 on:
   pull_request:
