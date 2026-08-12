@@ -1551,9 +1551,23 @@
         "category": "quality",
         "artifact_profile": "feature_packet",
         "feature_slug": "release-exact-sha-fast-path"
+      },
+      {
+        "story_id": "story-vibepro-release-0-2-0-beta-8",
+        "title": "0.2.0-beta.8 を npm へ出荷する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-12",
+        "due_at": null,
+        "category": "release",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "release-0-2-0-beta-8"
       }
     ],
-    "current_story_id": "story-vibepro-release-exact-sha-fast-path"
+    "current_story_id": "story-vibepro-release-0-2-0-beta-8"
   },
-  "current_story_id": "story-vibepro-release-exact-sha-fast-path"
+  "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }
