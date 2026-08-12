@@ -1495,9 +1495,23 @@
         "category": "product",
         "artifact_profile": "feature_packet",
         "feature_slug": "release-safety-case-study"
+      },
+      {
+        "story_id": "story-vibepro-anonymized-value-cases",
+        "title": "実運用で価値が出た4件を匿名事例として公開する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-11",
+        "due_at": null,
+        "category": "product",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "anonymized-value-cases"
       }
     ],
-    "current_story_id": "story-vibepro-release-safety-case-study"
+    "current_story_id": "story-vibepro-anonymized-value-cases"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-6"
 }
