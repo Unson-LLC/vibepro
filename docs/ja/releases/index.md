@@ -386,3 +386,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:453:start -->
 - [PR #453](https://github.com/Unson-LLC/vibepro/pull/453) — [2026-08](/ja/releases/2026-08): docs: リリース安全事例を公開
 <!-- vibepro-release-index-pr:453:end -->
+
+<!-- vibepro-release-index-pr:456:start -->
+- [PR #456](https://github.com/Unson-LLC/vibepro/pull/456) — [2026-08](/ja/releases/2026-08): docs: 匿名化した実運用事例を追加
+<!-- vibepro-release-index-pr:456:end -->

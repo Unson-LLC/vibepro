@@ -2080,3 +2080,24 @@ No action required.
 なし
 
 <!-- vibepro-release-pr:453:end -->
+
+<!-- vibepro-release-pr:456:start -->
+## [#456](https://github.com/Unson-LLC/vibepro/pull/456) docs: 匿名化した実運用事例を追加
+
+- Author: @sintariran
+- Merged: 2026-08-12T00:19:51Z
+- Commit: `67e5a9cc4c7e6d637d3f602d2f68e99f898487da`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:456:end -->

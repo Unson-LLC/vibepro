@@ -386,3 +386,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:453:start -->
 - [PR #453](https://github.com/Unson-LLC/vibepro/pull/453) — [2026-08](/releases/2026-08): docs: リリース安全事例を公開
 <!-- vibepro-release-index-pr:453:end -->
+
+<!-- vibepro-release-index-pr:456:start -->
+- [PR #456](https://github.com/Unson-LLC/vibepro/pull/456) — [2026-08](/releases/2026-08): docs: 匿名化した実運用事例を追加
+<!-- vibepro-release-index-pr:456:end -->
