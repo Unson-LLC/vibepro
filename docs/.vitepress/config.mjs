@@ -12,6 +12,7 @@ export default {
   srcExclude: [
     'architecture/**',
     'contracts/**',
+    'features/anonymized-value-cases/**',
     'frames/**',
     'management/**',
     'marketing/**',
@@ -39,7 +40,7 @@ export default {
       name: 'VibePro',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Linux, Windows',
-      softwareVersion: '0.2.0-beta.5',
+      softwareVersion: '0.2.0-beta.6',
       url: siteUrl,
       codeRepository: 'https://github.com/Unson-LLC/vibepro',
       license: 'https://www.apache.org/licenses/LICENSE-2.0'
@@ -107,6 +108,7 @@ export default {
         siteTitle: 'VibeProマニュアル',
         nav: [
           { text: 'ガイド', link: '/ja/guide/what-is-vibepro' },
+          { text: '事例', link: '/ja/cases/' },
           { text: '新着情報', link: '/ja/releases/' },
           { text: 'リファレンス', link: '/ja/reference/cli' },
           { text: 'GitHub', link: 'https://github.com/Unson-LLC/vibepro' }

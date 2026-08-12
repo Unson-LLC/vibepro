@@ -542,6 +542,20 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-accepted-spec-traceability",
+        "title": "accepted-specの条項系譜を同一HEADへ再解決する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-11",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "accepted-spec-traceability"
+      },
+      {
         "story_id": "story-vibepro-pr-artifact-consistency",
         "title": "PR成果物を同一HEADの正規データから一貫生成する",
         "ssot": "local",
@@ -1481,9 +1495,51 @@
         "category": "release",
         "artifact_profile": "feature_packet",
         "feature_slug": "release-0-2-0-beta-6"
+      },
+      {
+        "story_id": "story-vibepro-release-safety-case-study",
+        "title": "誤ったリリースを公開前に止めた事例をVitePressで公開する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-11",
+        "due_at": null,
+        "category": "product",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "release-safety-case-study"
+      },
+      {
+        "story_id": "story-vibepro-anonymized-value-cases",
+        "title": "実運用で価値が出た4件を匿名事例として公開する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-11",
+        "due_at": null,
+        "category": "product",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "anonymized-value-cases"
+      },
+      {
+        "story_id": "story-vibepro-release-0-2-0-beta-7",
+        "title": "0.2.0-beta.7 を npm へ出荷する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-12",
+        "due_at": null,
+        "category": "release",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "release-0-2-0-beta-7"
       }
     ],
-    "current_story_id": "story-vibepro-release-0-2-0-beta-6"
+    "current_story_id": "story-vibepro-release-0-2-0-beta-7"
   },
-  "current_story_id": "story-vibepro-release-0-2-0-beta-6"
+  "current_story_id": "story-vibepro-release-0-2-0-beta-7"
 }

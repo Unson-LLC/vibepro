@@ -104,6 +104,7 @@ test('verify run records the executed outcome without accepting agent status inp
   assert.equal(command.observation.values.tests, '2');
   assert.equal(command.observation.values.pass, '2');
   assert.equal(command.observation.values.fail, '0');
+  assert.equal(command.observation.values.runner_node_version, process.version);
   assert.equal(command.computed_observation.producer, 'vibepro verify run');
   assert.ok(command.computed_observation.computed_keys.includes('exit_code'));
   assert.ok(/^[0-9a-f]{64}$/.test(command.observation.values.stdout_sha256));
@@ -115,6 +116,7 @@ test('verify run records the executed outcome without accepting agent status inp
   assert.equal(artifact.exit_code, 0);
   assert.deepEqual(artifact.run.argv, ['node', '--test', 'tests/sample.test.js']);
   assert.equal(artifact.run.counts.tests, 2);
+  assert.equal(artifact.run.node_version, process.version);
   assert.equal(artifact.run.tree_mutated_during_run, false);
   assert.ok(Number.isFinite(artifact.run.duration_ms));
   assert.equal(artifact.runtime_identity.identity_digest, command.runtime_identity.identity_digest);
@@ -980,7 +982,7 @@ test('every computed observation key is classified as provenance or hand-supplia
   // test exists to prevent, and `head_sha` must stay suppliable or verify import-ci breaks.
   assert.ok(CALLER_FORBIDDEN_OBSERVATION_KEYS.size > 1, 'the rule must cover a class, not one key');
   assert.equal(CALLER_FORBIDDEN_OBSERVATION_KEYS.has('head_sha'), false);
-  for (const key of ['run_artifact', 'stdout_sha256', 'worktree_sha256_before', 'harness_env_removed']) {
+  for (const key of ['run_artifact', 'stdout_sha256', 'worktree_sha256_before', 'harness_env_removed', 'runner_node_version']) {
     assert.ok(CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key), `${key} states how the record was produced`);
   }
 });

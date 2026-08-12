@@ -75,6 +75,7 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'timeout_ms',
   'max_output_bytes',
   'harness_env_removed',
+  'runner_node_version',
   'evidence_source'
 ]);
 
@@ -238,6 +239,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     timeout_ms: String(timeoutMs),
     max_output_bytes: String(maxOutputBytes),
     harness_env_removed: (execution.envRemoved ?? []).join(',') || 'none',
+    runner_node_version: process.version,
     tree_mutated_during_run: String(treeMutated),
     head_moved_during_run: String(headMoved),
     worktree_changed_during_run: String(worktreeChanged),
@@ -685,6 +687,7 @@ function buildRunArtifactDocument(storyId, kind, run) {
       worktree_sampling_complete: run.worktreeSamplingComplete,
       output_metrics: run.outputMetrics,
       counts: run.counts,
+      node_version: run.computedValues.runner_node_version,
       harness_env_removed: run.execution.envRemoved ?? [],
       log: run.logPath,
       log_truncated: run.logTruncated
