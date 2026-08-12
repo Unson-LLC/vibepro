@@ -9,21 +9,26 @@ concurrency:
   group: post-merge-release-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: read
-
 jobs:
-  release:
+  validation:
     if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      pull-requests: read
+    outputs:
+      release_required: ${{ steps.projection.outputs.release_required }}
+      version: ${{ steps.projection.outputs.version }}
+      validation_mode: ${{ steps.validation.outputs.validation_mode }}
+      validation_reason: ${{ steps.validation.outputs.validation_reason }}
     steps:
       - uses: actions/checkout@v7
         with:
-          # Run the trusted workflow and projection code from the default branch.
-          # The merged SHA is checked out only for the immutable package build below.
-          ref: main
+          # The selector is code from the immutable pre-merge base, never from
+          # the pull request or the moving post-merge default branch.
+          ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
@@ -33,29 +38,68 @@ jobs:
       - name: Plan conditional package release
         id: projection
         run: node scripts/post-merge-release.mjs plan --event "$GITHUB_EVENT_PATH"
-      - name: Bind package release to the merged PR commit
+      - name: Select exact-SHA validation path
+        id: validation
         if: ${{ steps.projection.outputs.release_required == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! node scripts/post-merge-release.mjs validation-plan --event "$GITHUB_EVENT_PATH" --repository "$GITHUB_REPOSITORY"; then
+            echo "validation_mode=full" >> "$GITHUB_OUTPUT"
+            echo "validation_reason=trusted_base_selector_unavailable" >> "$GITHUB_OUTPUT"
+            echo "reviewed_head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+            echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> "$GITHUB_OUTPUT"
+          fi
+          cat "$GITHUB_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: validation
+    if: ${{ always() && needs.validation.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Bind package release to the merged PR commit
+        if: ${{ needs.validation.outputs.release_required == 'true' }}
         env:
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
-          git checkout --detach "$RELEASE_SHA"
-          test "$(node -p "require('./package.json').version")" = "${{ steps.projection.outputs.version }}"
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
           echo "release_target=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-      - name: Validate package
-        if: ${{ steps.projection.outputs.release_required == 'true' }}
+          echo "validation_mode=${{ needs.validation.outputs.validation_mode || 'full' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "validation_reason=${{ needs.validation.outputs.validation_reason || 'missing_validation_output' }}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Validate release candidate
+        if: ${{ needs.validation.outputs.release_required == 'true' }}
         run: |
           npm ci
           npm run typecheck
-          npm test
+          node --test test/post-merge-release.test.js test/github-release-convergence.test.js test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js test/e2e/story-vibepro-release-exact-sha-fast-path.test.js
           npm run pack:dry-run
+      - name: Run full validation fallback
+        if: ${{ needs.validation.outputs.release_required == 'true' && needs.validation.outputs.validation_mode != 'fast' }}
+        run: npm test
       - name: Publish npm and reconcile GitHub Release under package lease
-        if: ${{ steps.projection.outputs.release_required == 'true' }}
+        id: publish
+        if: ${{ needs.validation.outputs.release_required == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.projection.outputs.version }}
+          VERSION: ${{ needs.validation.outputs.version }}
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
+          PUBLISH_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "publish_started_at=${PUBLISH_STARTED_AT}" >> "$GITHUB_OUTPUT"
           RELEASE_LOCK=$(node scripts/npm-release-lock.mjs acquire)
           release_lock() { node scripts/npm-release-lock.mjs release "$RELEASE_LOCK"; }
           trap release_lock EXIT
@@ -65,7 +109,7 @@ jobs:
           node scripts/post-merge-release.mjs reconcile-github-release --version "$VERSION" --sha "$RELEASE_SHA" --notes-file /tmp/vibepro-release.md --repository "$GITHUB_REPOSITORY"
           echo "github_release=v${VERSION}@${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
       - name: Record version gate
-        if: ${{ steps.projection.outputs.release_required != 'true' }}
+        if: ${{ needs.validation.outputs.release_required != 'true' }}
         run: echo "npm=skipped (package version unchanged)" >> "$GITHUB_STEP_SUMMARY"
       - name: Project PR body into release history
         id: docs_projection
@@ -108,5 +152,15 @@ jobs:
       - name: Record recovery state
         if: ${{ always() }}
         run: |
+          if [ "${{ needs.validation.outputs.release_required }}" = "true" ] && [ -n "${{ steps.publish.outputs.npm_published_at }}" ]; then
+            WORKFLOW_COMPLETED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            node scripts/post-merge-release.mjs timing \
+              --merged-at "${{ github.event.pull_request.merged_at }}" \
+              --publish-started-at "${{ steps.publish.outputs.publish_started_at }}" \
+              --npm-published-at "${{ steps.publish.outputs.npm_published_at }}" \
+              --workflow-completed-at "$WORKFLOW_COMPLETED_AT"
+          else
+            echo "release_timing=unavailable (npm publication was not observed)" >> "$GITHUB_STEP_SUMMARY"
+          fi
           echo "recovery=rerun this workflow; projection, GitHub Release, npm metadata, dist-tags, docs markers, and docs commit are reconciled idempotently" >> "$GITHUB_STEP_SUMMARY"
           echo "result=${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"

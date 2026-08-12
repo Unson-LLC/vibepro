@@ -12,6 +12,9 @@ const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const releaseTestParser = await createMarkdownRenderer(repositoryRoot);
 
 import {
+  buildReleaseTiming,
+  listGithubChecks,
+  selectReleaseValidationPath,
   extractReleaseSections,
   commandRequiresMarkdownRenderer,
   npmDistTags,
@@ -24,6 +27,312 @@ import {
   sanitizeReleaseContent,
   shouldReleaseVersion
 } from '../scripts/post-merge-release.mjs';
+
+const releaseEvidenceFixture = ({
+  baseSha = '1'.repeat(40),
+  headSha = '2'.repeat(40),
+  mergeSha = '3'.repeat(40),
+  mergedAt = '2026-08-12T01:36:11Z'
+} = {}) => ({
+  pull_request: {
+    merged: true,
+    number: 458,
+    title: 'Exact SHA release fixture',
+    body: '',
+    merged_at: mergedAt,
+    merge_commit_sha: mergeSha,
+    html_url: 'https://github.com/Unson-LLC/vibepro/pull/458',
+    user: { login: 'release-agent' },
+    base: {
+      ref: 'main',
+      sha: baseSha,
+      repo: { full_name: 'Unson-LLC/vibepro' }
+    },
+    head: { sha: headSha }
+  }
+});
+
+function successfulReleaseChecks(headSha = '2'.repeat(40), completedAt = '2026-08-12T01:35:00Z') {
+  return ['test (20)', 'test (22)', 'analyze'].map((name) => ({
+    name,
+    status: 'completed',
+    conclusion: 'success',
+    head_sha: headSha,
+    completed_at: completedAt,
+    app: { slug: 'github-actions' },
+    workflow_run: {
+      id: name === 'analyze' ? 102 : 101,
+      repository: { full_name: 'Unson-LLC/vibepro' },
+      event: 'pull_request',
+      path: name === 'analyze' ? '.github/workflows/codeql.yml' : '.github/workflows/ci.yml',
+      head_sha: headSha,
+      display_title: `${name === 'analyze' ? 'CodeQL' : 'CI'} | pr=458 | base=${'1'.repeat(40)} | head=${headSha}`
+    }
+  }));
+}
+
+function matchingMergeGit({
+  baseSha = '1'.repeat(40),
+  headSha = '2'.repeat(40),
+  mergeSha = '3'.repeat(40),
+  treeSha = '4'.repeat(40)
+} = {}) {
+  return (_command, args) => {
+    if (args[0] === 'rev-list') return `${mergeSha} ${baseSha} ${headSha}`;
+    if (args[0] === 'rev-parse') {
+      if (`${args[1]}`.includes(':')) return '6'.repeat(40);
+      return treeSha;
+    }
+    if (args[0] === 'merge-tree') return treeSha;
+    throw new Error(`unexpected git command: ${args.join(' ')}`);
+  };
+}
+
+test('RELFAST-AC-001/002/003 selects fast only for bound tree and exact-SHA trusted checks', async () => {
+  const result = await selectReleaseValidationPath({
+    event: releaseEvidenceFixture(),
+    execute: matchingMergeGit(),
+    listChecks: async () => successfulReleaseChecks()
+  });
+
+  assert.equal(result.mode, 'fast');
+  assert.equal(result.reviewedHeadSha, '2'.repeat(40));
+  assert.equal(result.mergeSha, '3'.repeat(40));
+  assert.deepEqual(result.reusedChecks.map((check) => check.name), ['test (20)', 'test (22)', 'analyze']);
+  assert.deepEqual(result.reasons, []);
+});
+
+test('RELFAST-AC-004 falls back for missing, failed, or pending exact-SHA checks', async (t) => {
+  for (const [label, checks, reason] of [
+    ['missing', successfulReleaseChecks().filter((check) => check.name !== 'analyze'), 'missing_check:analyze'],
+    ['failed', successfulReleaseChecks().map((check) => check.name === 'test (22)' ? { ...check, conclusion: 'failure' } : check), 'unsuccessful_check:test (22):failure'],
+    ['pending', successfulReleaseChecks().map((check) => check.name === 'test (20)' ? { ...check, status: 'in_progress', conclusion: null } : check), 'incomplete_check:test (20):in_progress']
+  ]) {
+    await t.test(label, async () => {
+      const result = await selectReleaseValidationPath({
+        event: releaseEvidenceFixture(),
+        execute: matchingMergeGit(),
+        listChecks: async () => checks
+      });
+      assert.equal(result.mode, 'full');
+      assert.ok(result.reasons.includes(reason), result.reasons.join(','));
+    });
+  }
+});
+
+test('RELFAST-AC-004 rejects stale evidence and exact-SHA mismatch', async (t) => {
+  await t.test('stale', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: matchingMergeGit(),
+      listChecks: async () => successfulReleaseChecks('2'.repeat(40), '2026-08-10T01:35:00Z'),
+      maxEvidenceAgeMs: 24 * 60 * 60 * 1000
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.some((reason) => reason.startsWith('stale_check:')));
+  });
+
+  await t.test('SHA mismatch', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: matchingMergeGit(),
+      listChecks: async () => successfulReleaseChecks('9'.repeat(40))
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.some((reason) => reason.startsWith('check_sha_mismatch:')));
+  });
+});
+
+test('RELFAST-AC-004 falls back when check provenance or the Checks API is untrusted', async (t) => {
+  await t.test('foreign check app', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: matchingMergeGit(),
+      listChecks: async () => successfulReleaseChecks().map((check) => check.name === 'analyze'
+        ? { ...check, app: { slug: 'third-party-ci' } }
+        : check)
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.includes('untrusted_check_app:analyze'));
+  });
+
+  await t.test('Checks API error', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: matchingMergeGit(),
+      listChecks: async () => {
+        throw new Error('API unavailable');
+      }
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.includes('check_evidence_unavailable'));
+  });
+
+  for (const [label, mutate, reason] of [
+    ['current base SHA', (run) => ({ ...run, display_title: run.display_title.replace('1'.repeat(40), '8'.repeat(40)) }), 'workflow_binding_mismatch:test (20)'],
+    ['workflow path', (run) => ({ ...run, path: '.github/workflows/other.yml' }), 'workflow_path_mismatch:test (20)'],
+    ['workflow event', (run) => ({ ...run, event: 'push' }), 'workflow_event_mismatch:test (20)']
+  ]) {
+    await t.test(`mismatched ${label}`, async () => {
+      const checks = successfulReleaseChecks().map((check) => check.name === 'test (20)'
+        ? { ...check, workflow_run: mutate(check.workflow_run) }
+        : check);
+      const result = await selectReleaseValidationPath({
+        event: releaseEvidenceFixture(),
+        execute: matchingMergeGit(),
+        listChecks: async () => checks
+      });
+      assert.equal(result.mode, 'full');
+      assert.ok(result.reasons.includes(reason), result.reasons.join(','));
+    });
+  }
+
+  await t.test('newer rerun is pending', async () => {
+    const [first, ...rest] = successfulReleaseChecks();
+    const pending = {
+      ...first,
+      status: 'queued',
+      conclusion: null,
+      completed_at: null,
+      started_at: '2026-08-12T01:35:30Z'
+    };
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: matchingMergeGit(),
+      listChecks: async () => [first, pending, ...rest]
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.includes('incomplete_check:test (20):queued'));
+  });
+});
+
+test('RELFAST-AC-002/004 loads every Checks page and binds each check to its workflow run', async () => {
+  const headSha = '2'.repeat(40);
+  const checks = successfulReleaseChecks(headSha).map((check, index) => ({
+    ...check,
+    details_url: `https://github.com/Unson-LLC/vibepro/actions/runs/${index < 2 ? 101 : 102}/job/${index + 1}`
+  }));
+  const calls = [];
+  const loaded = await listGithubChecks({
+    repository: 'Unson-LLC/vibepro',
+    sha: headSha,
+    root: repositoryRoot,
+    execute: (_command, args) => {
+      calls.push(args);
+      if (args.includes('--paginate')) {
+        return JSON.stringify([{ check_runs: checks.slice(0, 2) }, { check_runs: checks.slice(2) }]);
+      }
+      const runId = args.at(-1).split('/').at(-1);
+      const fixture = checks.find((check) => `${check.workflow_run.id}` === runId).workflow_run;
+      return JSON.stringify(fixture);
+    }
+  });
+  assert.deepEqual(loaded.map((check) => check.name), ['test (20)', 'test (22)', 'analyze']);
+  assert.equal(calls.filter((args) => args.at(-1).endsWith('/101')).length, 1);
+  assert.equal(calls.filter((args) => args.at(-1).endsWith('/102')).length, 1);
+});
+
+test('RELFAST-AC-001/004 falls back when merge parents or reconstructed tree do not bind', async (t) => {
+  await t.test('parent mismatch', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: (_command, args) => args[0] === 'rev-list'
+        ? `${'3'.repeat(40)} ${'8'.repeat(40)} ${'2'.repeat(40)}`
+        : '4'.repeat(40),
+      listChecks: async () => successfulReleaseChecks()
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.includes('merge_parent_mismatch'));
+  });
+
+  await t.test('tree mismatch', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: (_command, args) => {
+        if (args[0] === 'rev-list') return `${'3'.repeat(40)} ${'1'.repeat(40)} ${'2'.repeat(40)}`;
+        if (args[0] === 'rev-parse') return '4'.repeat(40);
+        if (args[0] === 'merge-tree') return '5'.repeat(40);
+        throw new Error('unexpected git command');
+      },
+      listChecks: async () => successfulReleaseChecks()
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.includes('merge_tree_mismatch'));
+  });
+
+  await t.test('required CI workflow changed by the pull request', async () => {
+    const result = await selectReleaseValidationPath({
+      event: releaseEvidenceFixture(),
+      execute: (_command, args) => {
+        if (args[0] === 'rev-list') return `${'3'.repeat(40)} ${'1'.repeat(40)} ${'2'.repeat(40)}`;
+        if (args[0] === 'merge-tree') return '4'.repeat(40);
+        if (args[0] === 'rev-parse' && args[1] === `${'2'.repeat(40)}:.github/workflows/ci.yml`) {
+          return '7'.repeat(40);
+        }
+        if (args[0] === 'rev-parse' && `${args[1]}`.includes(':')) return '6'.repeat(40);
+        if (args[0] === 'rev-parse') return '4'.repeat(40);
+        throw new Error('unexpected git command');
+      },
+      listChecks: async () => successfulReleaseChecks()
+    });
+    assert.equal(result.mode, 'full');
+    assert.ok(result.reasons.includes('required_workflow_changed:.github/workflows/ci.yml'));
+  });
+});
+
+test('RELFAST-AC-007/008 separates release stages and evaluates the 120 second target', () => {
+  const timing = buildReleaseTiming({
+    mergedAt: '2026-08-12T01:36:11Z',
+    publishStartedAt: '2026-08-12T01:37:10Z',
+    npmPublishedAt: '2026-08-12T01:37:55Z',
+    workflowCompletedAt: '2026-08-12T01:38:25Z'
+  });
+  assert.deepEqual(timing, {
+    merge_at: '2026-08-12T01:36:11.000Z',
+    publish_started_at: '2026-08-12T01:37:10.000Z',
+    npm_published_at: '2026-08-12T01:37:55.000Z',
+    workflow_completed_at: '2026-08-12T01:38:25.000Z',
+    pre_publish_ms: 59000,
+    npm_publish_ms: 45000,
+    post_publish_ms: 30000,
+    merge_to_npm_ms: 104000,
+    workflow_total_ms: 134000,
+    merge_to_npm_target_ms: 120000,
+    merge_to_npm_target_met: true,
+    stage_measurement: 'complete'
+  });
+});
+
+test('RELFAST-AC-007/008 timing CLI writes the decision surface to the workflow summary', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-release-summary-'));
+  const summary = path.join(root, 'summary.md');
+  const result = spawnSync(process.execPath, [
+    path.join(repositoryRoot, 'scripts/post-merge-release.mjs'),
+    'timing',
+    '--merged-at', '2026-08-12T01:36:11Z',
+    '--publish-started-at', '2026-08-12T01:37:10Z',
+    '--npm-published-at', '2026-08-12T01:37:55Z',
+    '--workflow-completed-at', '2026-08-12T01:38:25Z'
+  ], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_STEP_SUMMARY: summary }
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const output = await readFile(summary, 'utf8');
+  for (const expected of [
+    'merge_at=2026-08-12T01:36:11.000Z',
+    'publish_started_at=2026-08-12T01:37:10.000Z',
+    'npm_published_at=2026-08-12T01:37:55.000Z',
+    'workflow_completed_at=2026-08-12T01:38:25.000Z',
+    'pre_publish_ms=59000',
+    'npm_publish_ms=45000',
+    'post_publish_ms=30000',
+    'merge_to_npm_ms=104000',
+    'workflow_total_ms=134000',
+    'merge_to_npm_target_met=true'
+  ]) assert.match(output, new RegExp(expected));
+});
 
 test('RNLN-SEC-001 escapes backslashes before serializing a bare Markdown destination', () => {
   assert.equal(
@@ -271,6 +580,7 @@ test('RNLN-007 initializes the Markdown renderer only for projection commands', 
   await writeFile(fakeNpm, `#!/usr/bin/env node
 const args = process.argv.slice(2);
 if (args[0] === 'view' && args[1] === 'vibepro@1.0.1') console.log(JSON.stringify({ version: '1.0.1', gitHead: '${mergeSha}' }));
+else if (args[0] === 'view' && args[1] === 'vibepro' && args[2] === 'time') console.log(JSON.stringify({ '1.0.1': '2026-07-19T00:01:00Z' }));
 else if (args[0] === 'view' && args[1] === 'vibepro' && args[2] === 'versions') console.log(JSON.stringify(['1.0.1']));
 else if (args[0] === 'view' && args[1] === 'vibepro' && args[2] === 'dist-tags') console.log(JSON.stringify({ latest: '1.0.1' }));
 else if (args[0] === 'dist-tag') process.exit(0);
@@ -671,8 +981,8 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /release_required == 'true'/);
   assert.match(workflow, /post-merge-release\.mjs publish-npm/);
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
-  assert.match(workflow, /git checkout --detach/);
-  assert.match(workflow, /git checkout --detach[\s\S]*npm ci[\s\S]*npm run typecheck/);
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);
   assert.match(workflow, /post-merge-release\.mjs reconcile-github-release/);
   assert.match(workflow, /npm-release-lock\.mjs acquire/);
   assert.match(workflow, /trap release_lock EXIT/);
@@ -915,12 +1225,40 @@ test('post-merge docs release is not gated by an approval environment', async ()
   assert.doesNotMatch(workflow, /^\s+environment:\s+npm\s*$/m);
 });
 
-test('post-merge release uses the trusted default-branch workflow for fork merges', async () => {
+test('post-merge release uses immutable pre-merge base code for fork validation', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   assert.match(workflow, /pull_request_target:[\s\S]*types:[\s\S]*- closed/);
-  assert.match(workflow, /ref: main[\s\S]*git checkout --detach "\$RELEASE_SHA"/);
+  assert.match(workflow, /validation:[\s\S]*ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.match(workflow, /release:[\s\S]*ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
   assert.match(workflow, /pull_request\.merged == true/);
   assert.match(workflow, /pull_request\.base\.ref == 'main'/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('post-merge-release.mjs project'));
   assert.match(workflow, /git add[^\n]*docs\/\.vitepress\/config\.mjs/);
+});
+
+test('post-merge first deployment executes the missing-selector fallback as full validation', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const fallbackScript = workflow.match(/          if ! node scripts\/post-merge-release\.mjs validation-plan[\s\S]*?          cat "\$GITHUB_OUTPUT" >> "\$GITHUB_STEP_SUMMARY"/u)?.[0] ?? '';
+  assert.notEqual(fallbackScript, '');
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-release-selector-fallback-'));
+  const output = path.join(root, 'output');
+  const summary = path.join(root, 'summary');
+  const executable = fallbackScript
+    .replace(/^ {10}/gmu, '')
+    .replace(/node scripts\/post-merge-release\.mjs validation-plan[^;]+/u, 'false')
+    .replace(/\$\{\{ github\.event\.pull_request\.head\.sha \}\}/gu, '2'.repeat(40))
+    .replace(/\$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/gu, '3'.repeat(40));
+  const run = spawnSync('bash', ['-euo', 'pipefail', '-c', executable], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      GITHUB_OUTPUT: output,
+      GITHUB_STEP_SUMMARY: summary
+    }
+  });
+  assert.equal(run.status, 0, run.stderr);
+  const recorded = await readFile(output, 'utf8');
+  assert.match(recorded, /^validation_mode=full$/mu);
+  assert.match(recorded, /^validation_reason=trusted_base_selector_unavailable$/mu);
+  assert.equal(await readFile(summary, 'utf8'), recorded);
 });

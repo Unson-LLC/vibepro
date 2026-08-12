@@ -12,6 +12,16 @@ const DEFAULT_BRANCH = 'main';
 const REPOSITORY_WEB_ROOT = `https://github.com/${REPOSITORY}`;
 const REPOSITORY_SOURCE_ROOT = `${REPOSITORY_WEB_ROOT}/blob/${DEFAULT_BRANCH}/`;
 const REPOSITORY_RAW_ROOT = `https://raw.githubusercontent.com/${REPOSITORY}/${DEFAULT_BRANCH}/`;
+const REQUIRED_RELEASE_CHECKS = Object.freeze(['test (20)', 'test (22)', 'analyze']);
+const REQUIRED_CHECK_WORKFLOWS = Object.freeze({
+  'test (20)': { path: '.github/workflows/ci.yml', runName: 'CI' },
+  'test (22)': { path: '.github/workflows/ci.yml', runName: 'CI' },
+  analyze: { path: '.github/workflows/codeql.yml', runName: 'CodeQL' }
+});
+const REQUIRED_WORKFLOW_PATHS = Object.freeze([
+  ...new Set(Object.values(REQUIRED_CHECK_WORKFLOWS).map(({ path: workflowPath }) => workflowPath))
+]);
+const DEFAULT_EVIDENCE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const invokedCommand = isDirectInvocation()
   ? process.argv[2]
   : null;
@@ -552,6 +562,210 @@ function validateMergedPullRequest(event) {
   return { ...pr, body: pr.body ?? '' };
 }
 
+export async function selectReleaseValidationPath({
+  event,
+  root = rootDefault,
+  repository = process.env.GITHUB_REPOSITORY || REPOSITORY,
+  maxEvidenceAgeMs = DEFAULT_EVIDENCE_MAX_AGE_MS,
+  execute = run,
+  listChecks = listGithubChecks
+}) {
+  const pr = validateMergedPullRequest(event);
+  const baseSha = pr?.base?.sha;
+  const reviewedHeadSha = pr?.head?.sha;
+  const mergeSha = pr?.merge_commit_sha;
+  const result = (mode, reasons = [], reusedChecks = []) => ({
+    mode,
+    reasons,
+    repository,
+    baseSha,
+    reviewedHeadSha,
+    mergeSha,
+    reusedChecks
+  });
+  const malformed = [
+    ['base_sha', baseSha],
+    ['reviewed_head_sha', reviewedHeadSha],
+    ['merge_sha', mergeSha]
+  ].filter(([, value]) => !isFullCommitSha(value));
+  if (malformed.length) {
+    return result('full', malformed.map(([name]) => `invalid_${name}`));
+  }
+  if (!Number.isFinite(maxEvidenceAgeMs) || maxEvidenceAgeMs < 0) {
+    throw new Error(`maxEvidenceAgeMs must be a non-negative finite number: ${maxEvidenceAgeMs}`);
+  }
+
+  const bindingReasons = [];
+  try {
+    const parents = execute('git', ['rev-list', '--parents', '-n', '1', mergeSha], root).trim().split(/\s+/u);
+    if (
+      parents.length !== 3
+      || parents[0] !== mergeSha
+      || parents[1] !== baseSha
+      || parents[2] !== reviewedHeadSha
+    ) {
+      bindingReasons.push('merge_parent_mismatch');
+    }
+    const mergeTree = firstObjectId(execute('git', ['rev-parse', `${mergeSha}^{tree}`], root));
+    const reconstructedTree = firstObjectId(execute('git', ['merge-tree', '--write-tree', baseSha, reviewedHeadSha], root));
+    if (!mergeTree || !reconstructedTree || mergeTree !== reconstructedTree) {
+      bindingReasons.push('merge_tree_mismatch');
+    }
+    for (const workflowPath of REQUIRED_WORKFLOW_PATHS) {
+      const baseWorkflowBlob = firstObjectId(execute('git', ['rev-parse', `${baseSha}:${workflowPath}`], root));
+      const headWorkflowBlob = firstObjectId(execute('git', ['rev-parse', `${reviewedHeadSha}:${workflowPath}`], root));
+      if (!baseWorkflowBlob || !headWorkflowBlob || baseWorkflowBlob !== headWorkflowBlob) {
+        bindingReasons.push(`required_workflow_changed:${workflowPath}`);
+      }
+    }
+  } catch {
+    bindingReasons.push('merge_binding_unavailable');
+  }
+  if (bindingReasons.length) return result('full', [...new Set(bindingReasons)]);
+
+  let checks;
+  try {
+    checks = await listChecks({ repository, sha: reviewedHeadSha, root });
+  } catch {
+    return result('full', ['check_evidence_unavailable']);
+  }
+  if (!Array.isArray(checks)) return result('full', ['invalid_check_evidence']);
+
+  const mergedAt = Date.parse(pr.merged_at);
+  if (!Number.isFinite(mergedAt)) return result('full', ['invalid_merged_at']);
+  const reasons = [];
+  const reusedChecks = [];
+  for (const name of REQUIRED_RELEASE_CHECKS) {
+    const check = latestCheck(checks.filter((candidate) => candidate?.name === name));
+    if (!check) {
+      reasons.push(`missing_check:${name}`);
+      continue;
+    }
+    if (check.head_sha !== reviewedHeadSha) reasons.push(`check_sha_mismatch:${name}`);
+    if (check.app?.slug !== 'github-actions') reasons.push(`untrusted_check_app:${name}`);
+    const expectedWorkflow = REQUIRED_CHECK_WORKFLOWS[name];
+    const workflowRun = check.workflow_run;
+    const expectedRunName = `${expectedWorkflow.runName} | pr=${pr.number} | base=${baseSha} | head=${reviewedHeadSha}`;
+    if (!workflowRun) reasons.push(`missing_workflow_provenance:${name}`);
+    else {
+      if (workflowRun.repository?.full_name !== repository) reasons.push(`workflow_repository_mismatch:${name}`);
+      if (workflowRun.event !== 'pull_request') reasons.push(`workflow_event_mismatch:${name}`);
+      if (workflowRun.path !== expectedWorkflow.path) reasons.push(`workflow_path_mismatch:${name}`);
+      if (workflowRun.head_sha !== reviewedHeadSha) reasons.push(`workflow_head_sha_mismatch:${name}`);
+      if (workflowRun.display_title !== expectedRunName) reasons.push(`workflow_binding_mismatch:${name}`);
+    }
+    if (check.status !== 'completed') reasons.push(`incomplete_check:${name}:${check.status ?? 'unknown'}`);
+    else if (check.conclusion !== 'success') reasons.push(`unsuccessful_check:${name}:${check.conclusion ?? 'unknown'}`);
+    const completedAt = Date.parse(check.completed_at);
+    if (!Number.isFinite(completedAt)) reasons.push(`invalid_check_time:${name}`);
+    else if (completedAt > mergedAt) reasons.push(`check_completed_after_merge:${name}`);
+    else if (mergedAt - completedAt > maxEvidenceAgeMs) reasons.push(`stale_check:${name}`);
+    reusedChecks.push({
+      name,
+      headSha: check.head_sha,
+      completedAt: check.completed_at,
+      app: check.app?.slug ?? null,
+      workflowPath: workflowRun?.path ?? null,
+      workflowRunId: workflowRun?.id ?? null
+    });
+  }
+  return result(reasons.length ? 'full' : 'fast', reasons, reusedChecks);
+}
+
+function isFullCommitSha(value) {
+  return /^[0-9a-f]{40}$/u.test(`${value ?? ''}`);
+}
+
+function firstObjectId(output) {
+  const candidate = `${output ?? ''}`.trim().split(/\s+/u)[0];
+  return isFullCommitSha(candidate) ? candidate : null;
+}
+
+function latestCheck(checks) {
+  return [...checks].sort((left, right) => (
+    Date.parse(right?.completed_at ?? right?.started_at ?? 0)
+    - Date.parse(left?.completed_at ?? left?.started_at ?? 0)
+  ))[0] ?? null;
+}
+
+export async function listGithubChecks({ repository, sha, root, execute = run }) {
+  const response = execute('gh', [
+    'api',
+    '--paginate',
+    '--slurp',
+    `repos/${repository}/commits/${sha}/check-runs?filter=latest&per_page=100`
+  ], root);
+  let parsed;
+  try {
+    parsed = JSON.parse(response);
+  } catch (error) {
+    throw new Error(`GitHub Checks response was invalid JSON: ${error.message}`);
+  }
+  const pages = Array.isArray(parsed) ? parsed : [parsed];
+  if (pages.some((page) => !Array.isArray(page?.check_runs))) {
+    throw new Error('GitHub Checks response did not include check_runs');
+  }
+  const workflowRuns = new Map();
+  const checks = pages.flatMap((page) => page.check_runs);
+  return Promise.all(checks.map(async (check) => {
+    const runId = workflowRunId(check?.details_url);
+    if (!runId) return { ...check, workflow_run: null };
+    if (!workflowRuns.has(runId)) {
+      workflowRuns.set(runId, Promise.resolve().then(() => {
+        const runResponse = execute('gh', ['api', `repos/${repository}/actions/runs/${runId}`], root);
+        return JSON.parse(runResponse);
+      }));
+    }
+    return { ...check, workflow_run: await workflowRuns.get(runId) };
+  }));
+}
+
+function workflowRunId(detailsUrl) {
+  return `${detailsUrl ?? ''}`.match(/\/actions\/runs\/(\d+)(?:\/|$)/u)?.[1] ?? null;
+}
+
+export function buildReleaseTiming({
+  mergedAt,
+  publishStartedAt,
+  npmPublishedAt,
+  workflowCompletedAt,
+  mergeToNpmTargetMs = 120_000
+}) {
+  const merged = requiredTimestamp(mergedAt, 'mergedAt');
+  const publishStarted = requiredTimestamp(publishStartedAt, 'publishStartedAt');
+  const npmPublished = requiredTimestamp(npmPublishedAt, 'npmPublishedAt');
+  const workflowCompleted = requiredTimestamp(workflowCompletedAt, 'workflowCompletedAt');
+  if (npmPublished.value < merged.value) throw new Error('npmPublishedAt must not precede mergedAt');
+  if (workflowCompleted.value < npmPublished.value) {
+    throw new Error('workflowCompletedAt must not precede npmPublishedAt');
+  }
+  if (publishStarted.value > workflowCompleted.value) {
+    throw new Error('publishStartedAt must not follow workflowCompletedAt');
+  }
+  const completeStages = publishStarted.value >= merged.value && publishStarted.value <= npmPublished.value;
+  const mergeToNpmMs = npmPublished.value - merged.value;
+  return {
+    merge_at: merged.iso,
+    publish_started_at: publishStarted.iso,
+    npm_published_at: npmPublished.iso,
+    workflow_completed_at: workflowCompleted.iso,
+    pre_publish_ms: completeStages ? publishStarted.value - merged.value : null,
+    npm_publish_ms: completeStages ? npmPublished.value - publishStarted.value : null,
+    post_publish_ms: workflowCompleted.value - npmPublished.value,
+    merge_to_npm_ms: mergeToNpmMs,
+    workflow_total_ms: workflowCompleted.value - merged.value,
+    merge_to_npm_target_ms: mergeToNpmTargetMs,
+    merge_to_npm_target_met: mergeToNpmMs <= mergeToNpmTargetMs,
+    stage_measurement: completeStages ? 'complete' : 'registry_already_visible'
+  };
+}
+
+function requiredTimestamp(value, name) {
+  const timestamp = Date.parse(`${value ?? ''}`);
+  if (!Number.isFinite(timestamp)) throw new Error(`${name} must be an ISO timestamp: ${value}`);
+  return { value: timestamp, iso: new Date(timestamp).toISOString() };
+}
+
 export function shouldReleaseVersion(before, after) {
   return compareSemver(after, before) > 0;
 }
@@ -773,6 +987,19 @@ function npmVersions() {
   }
 }
 
+export function npmPublishedAt(version, { root = rootDefault, execute = run } = {}) {
+  const response = execute('npm', ['view', 'vibepro', 'time', '--json'], root);
+  let times;
+  try {
+    times = JSON.parse(response);
+  } catch (error) {
+    throw new Error(`npm publication times returned invalid JSON: ${error.message}`);
+  }
+  const publishedAt = times?.[version];
+  requiredTimestamp(publishedAt, `npm publishedAt for ${version}`);
+  return publishedAt;
+}
+
 async function readMetadataWithRetry(operation, attempts, delay) {
   let lastError;
   for (let index = 0; index < attempts; index += 1) {
@@ -822,6 +1049,28 @@ async function writeOutput(values) {
   else process.stdout.write(lines);
 }
 
+async function appendReleaseTimingSummary(timing) {
+  const lines = [
+    `merge_at=${timing.merge_at}`,
+    `publish_started_at=${timing.publish_started_at}`,
+    `npm_published_at=${timing.npm_published_at}`,
+    `workflow_completed_at=${timing.workflow_completed_at}`,
+    `pre_publish_ms=${timing.pre_publish_ms ?? 'unavailable'}`,
+    `npm_publish_ms=${timing.npm_publish_ms ?? 'unavailable'}`,
+    `post_publish_ms=${timing.post_publish_ms}`,
+    `merge_to_npm_ms=${timing.merge_to_npm_ms}`,
+    `workflow_total_ms=${timing.workflow_total_ms}`,
+    `merge_to_npm_target_ms=${timing.merge_to_npm_target_ms}`,
+    `merge_to_npm_target_met=${timing.merge_to_npm_target_met}`,
+    `stage_measurement=${timing.stage_measurement}`
+  ];
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await appendFile(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
+  } else {
+    process.stdout.write(`${JSON.stringify(timing)}\n`);
+  }
+}
+
 async function main(args) {
   const [command, ...rest] = args;
   const option = (name) => rest[rest.indexOf(name) + 1];
@@ -831,6 +1080,20 @@ async function main(args) {
     const after = versionAt(rootDefault, event.pull_request.merge_commit_sha);
     validateMergedPullRequest(event);
     await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after });
+    return;
+  }
+  if (command === 'validation-plan') {
+    const event = JSON.parse(await readFile(option('--event'), 'utf8'));
+    const result = await selectReleaseValidationPath({
+      event,
+      repository: option('--repository') || process.env.GITHUB_REPOSITORY || REPOSITORY
+    });
+    await writeOutput({
+      validation_mode: result.mode,
+      validation_reason: result.reasons.join(',') || 'exact_sha_ci_reused',
+      reviewed_head_sha: result.reviewedHeadSha,
+      merge_sha: result.mergeSha
+    });
     return;
   }
   if (command === 'project') {
@@ -855,7 +1118,9 @@ async function main(args) {
     return;
   }
   if (command === 'publish-npm') {
-    await reconcileNpmRelease({ version: option('--version'), expectedSha: option('--sha') });
+    const version = option('--version');
+    await reconcileNpmRelease({ version, expectedSha: option('--sha') });
+    await writeOutput({ npm_published_at: npmPublishedAt(version) });
     return;
   }
   if (command === 'reconcile-github-release') {
@@ -867,7 +1132,17 @@ async function main(args) {
     });
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <plan|project|reproject|release-body|publish-npm|reconcile-github-release>');
+  if (command === 'timing') {
+    const timing = buildReleaseTiming({
+      mergedAt: option('--merged-at'),
+      publishStartedAt: option('--publish-started-at'),
+      npmPublishedAt: option('--npm-published-at'),
+      workflowCompletedAt: option('--workflow-completed-at')
+    });
+    await appendReleaseTimingSummary(timing);
+    return;
+  }
+  throw new Error('Usage: post-merge-release.mjs <plan|validation-plan|project|reproject|release-body|publish-npm|reconcile-github-release|timing>');
 }
 
 if (isDirectInvocation()) {
