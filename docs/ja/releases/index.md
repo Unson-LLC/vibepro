@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-12 | [`0.2.0-beta.8`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.8) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-12 | [`0.2.0-beta.7`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.7) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-11 | [`0.2.0-beta.6`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.6) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-10 | [`0.2.0-beta.5`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.5) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -403,3 +404,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:459:start -->
 - [PR #459](https://github.com/Unson-LLC/vibepro/pull/459) — [2026-08](/ja/releases/2026-08): feat: VibePro npm公開Skillを追加する
 <!-- vibepro-release-index-pr:459:end -->
+
+<!-- vibepro-release-index-pr:461:start -->
+- [PR #461](https://github.com/Unson-LLC/vibepro/pull/461) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.8を公開準備
+<!-- vibepro-release-index-pr:461:end -->
