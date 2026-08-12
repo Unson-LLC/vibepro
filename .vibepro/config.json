@@ -542,6 +542,20 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-accepted-spec-traceability",
+        "title": "accepted-specの条項系譜を同一HEADへ再解決する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-11",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "accepted-spec-traceability"
+      },
+      {
         "story_id": "story-vibepro-pr-artifact-consistency",
         "title": "PR成果物を同一HEADの正規データから一貫生成する",
         "ssot": "local",
