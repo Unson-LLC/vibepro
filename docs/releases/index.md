@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-12 | [`0.2.0-beta.7`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.7) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-11 | [`0.2.0-beta.6`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.6) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-10 | [`0.2.0-beta.5`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.5) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-07 | [`0.2.0-beta.4`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.4) | npm `beta` / `latest` | Post-merge continuous release |
@@ -394,3 +395,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:455:start -->
 - [PR #455](https://github.com/Unson-LLC/vibepro/pull/455) — [2026-08](/releases/2026-08): fix: accepted-specのHEAD系譜をPR成果物へ投影する
 <!-- vibepro-release-index-pr:455:end -->
+
+<!-- vibepro-release-index-pr:457:start -->
+- [PR #457](https://github.com/Unson-LLC/vibepro/pull/457) — [2026-08](/releases/2026-08): chore: 0.2.0-beta.7を公開準備
+<!-- vibepro-release-index-pr:457:end -->

@@ -2122,3 +2122,24 @@ No action required.
 なし
 
 <!-- vibepro-release-pr:455:end -->
+
+<!-- vibepro-release-pr:457:start -->
+## [#457](https://github.com/Unson-LLC/vibepro/pull/457) chore: 0.2.0-beta.7を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-12T01:36:11Z
+- Commit: `a306c7789cece62ca46df85e40f39ca5c61a72a7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:457:end -->
