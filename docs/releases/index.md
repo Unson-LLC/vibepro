@@ -399,3 +399,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:457:start -->
 - [PR #457](https://github.com/Unson-LLC/vibepro/pull/457) — [2026-08](/releases/2026-08): chore: 0.2.0-beta.7を公開準備
 <!-- vibepro-release-index-pr:457:end -->
+
+<!-- vibepro-release-index-pr:459:start -->
+- [PR #459](https://github.com/Unson-LLC/vibepro/pull/459) — [2026-08](/releases/2026-08): feat: VibePro npm公開Skillを追加する
+<!-- vibepro-release-index-pr:459:end -->

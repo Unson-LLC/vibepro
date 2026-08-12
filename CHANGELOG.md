@@ -2143,3 +2143,24 @@ No action required.
 なし
 
 <!-- vibepro-release-pr:457:end -->
+
+<!-- vibepro-release-pr:459:start -->
+## [#459](https://github.com/Unson-LLC/vibepro/pull/459) feat: VibePro npm公開Skillを追加する
+
+- Author: @sintariran
+- Merged: 2026-08-12T02:13:29Z
+- Commit: `9b6f672d714818f128f80cc0b1d01fb579e35129`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:459:end -->

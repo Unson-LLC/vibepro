@@ -399,3 +399,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:457:start -->
 - [PR #457](https://github.com/Unson-LLC/vibepro/pull/457) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.7を公開準備
 <!-- vibepro-release-index-pr:457:end -->
+
+<!-- vibepro-release-index-pr:459:start -->
+- [PR #459](https://github.com/Unson-LLC/vibepro/pull/459) — [2026-08](/ja/releases/2026-08): feat: VibePro npm公開Skillを追加する
+<!-- vibepro-release-index-pr:459:end -->
