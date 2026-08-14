@@ -30,7 +30,7 @@ Use this Skill when deciding whether a VibePro-prepared change should proceed, s
 7. Check split lanes and Graphify investigation scope from `split-plan.json` / `split-plan.html` when present.
 8. For UI modernization PRs, read `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json`. Confirm that current routes, information architecture, CTA priority, state behavior, and data dependencies are preserved unless the Story/Spec explicitly changes them.
 9. For performance-sensitive PRs, read the concise `Performance Evidence` summary in `pr-body.md` if present, then verify the JSON runs under `.vibepro/pr/<story-id>/performance-runs/`.
-10. Review next commands and confirm they use `vibepro pr create` before PR creation and `vibepro execute merge` before merge.
+10. Review next commands against the target repository's current git policy. For the VibePro repository itself, confirm they use the ordinary GitHub flow; do not require or suggest the removed `vibepro execute merge` command.
 11. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
 
 ## Decision Rules
