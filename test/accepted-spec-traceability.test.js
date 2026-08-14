@@ -227,6 +227,49 @@ test('Issue #454 lineage resolver fails closed with explicit reasons and keeps v
   assert.equal(positiveMap.accepted_spec_lineage.status, 'resolved');
 });
 
+test('Issue #462 resolves test.each and it.each cases without weakening exact case matching', async () => {
+  const { root, specPath } = await setupRepo();
+  const testEachCase = 'parameterized test.each resolves the exact template';
+  const itEachCase = 'parameterized it.each resolves the exact template';
+  await writeFile(path.join(root, TEST_PATH), [
+    "import test from 'node:test';",
+    "import assert from 'node:assert/strict';",
+    '',
+    `test.each(contract.cases)('${testEachCase}', () => assert.ok('ASTR-FIX-PATTERN-1'));`,
+    `it.each(fixture.cases)(\`${itEachCase}\`, () => assert.ok('ASTR-FIX-PATTERN-2'));`,
+    "test('ordinary test remains resolvable', () => assert.ok('ASTR-FIX-PATTERN-3'));",
+    "it('ordinary it remains resolvable', () => assert.ok('ASTR-FIX-PATTERN-4'));",
+    ''
+  ].join('\n'));
+
+  const spec = acceptedSpec();
+  spec.clauses = spec.clauses.slice(0, 5);
+  spec.clauses[0].origin.test_refs[0].case = testEachCase;
+  spec.clauses[1].origin.test_refs[0].case = itEachCase;
+  spec.clauses[2].origin.test_refs[0].case = 'ordinary test remains resolvable';
+  spec.clauses[3].origin.test_refs[0].case = 'ordinary it remains resolvable';
+  spec.clauses[4].origin.test_refs[0].case = 'parameterized test.each resolves a different template';
+  for (const [index, clause] of spec.clauses.entries()) {
+    clause.verifiable_by.test_pattern[0].must_contain = `ASTR-FIX-PATTERN-${Math.min(index + 1, 4)}`;
+  }
+  await writeFile(path.join(root, specPath), `${JSON.stringify(spec, null, 2)}\n`);
+  await git(root, ['add', TEST_PATH, specPath]);
+  await git(root, ['commit', '-m', 'add parameterized test fixture']);
+
+  const map = await buildAcceptedSpecClauseMap(root, {
+    storyId: STORY_ID,
+    storyDocPath: STORY_PATH,
+    verification: { recorded: false, commands: [] }
+  });
+
+  for (const id of [acId(1), acId(2), acId(3), acId(4)]) {
+    assert.equal(map.acceptance_criteria.find((item) => item.id === id)?.lineage_status, 'resolved', id);
+  }
+  const mismatch = map.acceptance_criteria.find((item) => item.id === acId(5));
+  assert.equal(mismatch?.lineage_status, 'invalid');
+  assert.ok(mismatch?.reason_codes.includes('test_case_missing'));
+});
+
 test('Issue #454 resolves routing from target HEAD and trusts only exact computed evidence', async () => {
   const { root, specPath } = await setupRepo();
   const configPath = path.join(root, '.vibepro', 'config.json');
