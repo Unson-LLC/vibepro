@@ -417,7 +417,12 @@ function normalizeGitPath(value) {
 function nodeTestCaseExists(content, caseName) {
   if (typeof caseName !== 'string' || !caseName) return false;
   const escaped = caseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`\\b(?:test|it)\\s*\\(\\s*(['\"\x60])${escaped}\\1\\s*[,)]`).test(content);
+  const exactCase = `(['\"\\x60])${escaped}\\1\\s*[,)]`;
+  const directCall = new RegExp(`\\b(?:test|it)\\s*\\(\\s*${exactCase}`);
+  const parameterizedCall = new RegExp(
+    `\\b(?:test|it)\\s*\\.\\s*each\\s*\\([^)]*\\)\\s*\\(\\s*${exactCase}`
+  );
+  return directCall.test(content) || parameterizedCall.test(content);
 }
 
 async function testPatternMatchesHead(root, headRef, pattern, blobCache) {
