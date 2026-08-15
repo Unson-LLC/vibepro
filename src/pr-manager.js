@@ -29,6 +29,7 @@ import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
 import { readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
+import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -66,6 +67,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
     verificationTrustStatus
   });
   const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
+  const multiTenantArchitecture = assessMultiTenantArchitecture({
+    storyText: storySource?.content ?? '',
+    contract: spec?.multi_tenancy ?? null,
+    mode: 'final'
+  });
 
   const preparation = {
     schema_version: SCHEMA_VERSION,
@@ -80,6 +86,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
+    multi_tenant_architecture: {
+      ...multiTenantArchitecture,
+      review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
+    },
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -435,7 +445,7 @@ async function gitOptional(repoRoot, args) {
 // ---------------------------------------------------------------------------
 
 function renderPrBody(preparation) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability, task_authorities: taskAuthorities } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
@@ -486,6 +496,21 @@ function renderPrBody(preparation) {
     : '- no accepted spec found for this story');
   if (specDrift) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
+  }
+  lines.push('');
+  lines.push('### Multi-tenant architecture');
+  if (!multiTenantArchitecture?.applicable) {
+    lines.push('- status: not_applicable');
+  } else {
+    lines.push(`- status: ${multiTenantArchitecture.status}`);
+    lines.push(`- activation: ${(multiTenantArchitecture.activation_reasons ?? []).join(', ') || 'unknown'}`);
+    lines.push(`- architecture views: ${Object.keys(multiTenantArchitecture.views ?? {}).join(', ') || 'none'}`);
+    for (const finding of multiTenantArchitecture.findings ?? []) {
+      lines.push(`- [${finding.severity}] ${finding.code}: ${finding.path}`);
+    }
+    for (const lens of multiTenantArchitecture.review_lenses ?? []) {
+      lines.push(`- review/${lens.id}: ${lens.question}`);
+    }
   }
   lines.push('');
   lines.push('### Verification evidence');

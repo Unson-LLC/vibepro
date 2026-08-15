@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "tenancy_model": "customer_managed",
+  "tenant_identity": {
+    "canonical_key": "workspace_id",
+    "resolved_from": ["customer_configuration"],
+    "resolution_point": "connector_boot",
+    "missing_behavior": "deny",
+    "ambiguity_behavior": "deny"
+  },
+  "propagation": {
+    "required_surfaces": ["connector", "storage", "migration"],
+    "verified_surfaces": ["connector", "storage", "migration"]
+  },
+  "resources": [
+    { "name": "customer_database", "sharing": "connection_defined", "tenant_key": "workspace_id", "trust_zone": "customer_data", "residue_policy": "customer_retention_policy" }
+  ],
+  "credentials": {
+    "lookup_key": "workspace_id",
+    "scope": "customer_connection",
+    "raw_secret_in_artifacts": "forbidden",
+    "cross_tenant_fallback": "forbidden"
+  },
+  "data": {
+    "canonical_owners": ["customer_database"],
+    "residency": "customer_managed",
+    "migration": "customer_approved_export_import",
+    "rollback": "restore_customer_managed_backup"
+  },
+  "failure_semantics": {
+    "unknown_tenant": "deny",
+    "ambiguous_tenant": "deny",
+    "unavailable_connection": "unavailable",
+    "no_data": "empty",
+    "cross_tenant_candidate": "deny_and_audit"
+  },
+  "deployment_modes": ["customer_managed", "self_hosted"],
+  "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+  "graph_metadata": {
+    "tenant_entities": ["Workspace", "CustomerDatabase"],
+    "boundary_edges": ["Workspace->CustomerDatabase"]
+  },
+  "verification": { "scanner_coverage": "verified" }
+}

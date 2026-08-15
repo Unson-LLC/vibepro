@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1.0",
+  "tenancy_model": "dedicated",
+  "tenant_identity": {
+    "canonical_key": "organization_id",
+    "resolved_from": ["deployment_binding"],
+    "resolution_point": "service_boot",
+    "missing_behavior": "deny",
+    "ambiguity_behavior": "deny"
+  },
+  "propagation": {
+    "required_surfaces": ["http", "storage", "tool"],
+    "verified_surfaces": ["http", "storage", "tool"]
+  },
+  "resources": [
+    { "name": "runtime", "sharing": "dedicated", "tenant_key": "organization_id", "trust_zone": "dedicated_runtime", "residue_policy": "destroy_with_deployment" },
+    { "name": "database", "sharing": "dedicated", "tenant_key": "organization_id", "trust_zone": "dedicated_data", "residue_policy": "destroy_after_retention" }
+  ],
+  "credentials": {
+    "lookup_key": "organization_id",
+    "scope": "tenant_deployment",
+    "raw_secret_in_artifacts": "forbidden",
+    "cross_tenant_fallback": "forbidden"
+  },
+  "data": {
+    "canonical_owners": ["dedicated_database"],
+    "residency": "deployment_region",
+    "migration": "replace_dedicated_deployment",
+    "rollback": "restore_dedicated_snapshot"
+  },
+  "failure_semantics": {
+    "unknown_tenant": "deny",
+    "ambiguous_tenant": "deny",
+    "unavailable_connection": "unavailable",
+    "no_data": "empty",
+    "cross_tenant_candidate": "deny_and_audit"
+  },
+  "deployment_modes": ["managed_dedicated"],
+  "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+  "graph_metadata": {
+    "tenant_entities": ["Organization", "DedicatedRuntime"],
+    "boundary_edges": ["Organization->DedicatedRuntime"]
+  },
+  "verification": { "scanner_coverage": "verified" }
+}

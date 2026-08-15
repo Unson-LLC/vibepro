@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1.0",
+  "tenancy_model": "pooled",
+  "tenant_identity": {
+    "canonical_key": "tenant_id",
+    "resolved_from": ["authenticated_claim"],
+    "resolution_point": "request_ingress",
+    "missing_behavior": "deny",
+    "ambiguity_behavior": "deny"
+  },
+  "propagation": {
+    "required_surfaces": ["http", "queue", "storage", "tool", "memory"],
+    "verified_surfaces": ["http", "queue", "storage", "tool", "memory"]
+  },
+  "resources": [
+    { "name": "postgres", "sharing": "tenant_partitioned", "tenant_key": "tenant_id", "trust_zone": "managed_data", "residue_policy": "delete_by_tenant" },
+    { "name": "job_queue", "sharing": "tenant_partitioned", "tenant_key": "tenant_id", "trust_zone": "managed_runtime", "residue_policy": "expire_by_tenant" }
+  ],
+  "credentials": {
+    "lookup_key": "tenant_id",
+    "scope": "tenant",
+    "raw_secret_in_artifacts": "forbidden",
+    "cross_tenant_fallback": "forbidden"
+  },
+  "data": {
+    "canonical_owners": ["tenant_database"],
+    "residency": "tenant_selected_region",
+    "migration": "copy_then_verify_by_tenant",
+    "rollback": "restore_tenant_snapshot"
+  },
+  "failure_semantics": {
+    "unknown_tenant": "deny",
+    "ambiguous_tenant": "deny",
+    "unavailable_connection": "unavailable",
+    "no_data": "empty",
+    "cross_tenant_candidate": "deny_and_audit"
+  },
+  "deployment_modes": ["managed_shared"],
+  "negative_scenarios": [
+    "unknown_tenant",
+    "ambiguous_tenant",
+    "unavailable_connection",
+    "no_data",
+    "cross_tenant_candidate"
+  ],
+  "graph_metadata": {
+    "tenant_entities": ["Tenant", "QueueJob", "CredentialBinding"],
+    "boundary_edges": ["Tenant->QueueJob", "Tenant->CredentialBinding"]
+  },
+  "verification": { "scanner_coverage": "verified" }
+}
