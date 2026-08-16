@@ -2527,6 +2527,10 @@ test('story derive creates a repo-wide story catalog and local stories', async (
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').view, 'business');
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').category, 'product');
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').period, null);
+  assert.equal(
+    config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').contract_type,
+    authStory.derived.story_contract.story_type
+  );
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.story_catalog, '.vibepro/stories/story-catalog.json');
   assert.equal(manifest.artifacts.story_map, '.vibepro/stories/story-map.md');

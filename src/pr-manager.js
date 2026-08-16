@@ -11,8 +11,9 @@
 //   - createPullRequest: turn a prepare result into an actual PR (push +
 //     `gh pr create`, or refresh an existing open PR's body).
 //
-// No blocking, no gate_dag, no readiness/route classification, no
-// remediation-command generation.
+// Bug Stories add one narrow fail-closed readiness check backed by their
+// diagnosis evidence. The former general-purpose Gate DAG and route
+// classification remain removed.
 
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -30,6 +31,8 @@ import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError
 import { readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
+import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
+import { buildExecutionDag } from './managed-worktree.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -58,6 +61,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
 
   const storySource = await findStorySource(root, story).catch(() => null);
+  const bugDiagnosis = await readLatestBugDiagnosis(root, story);
+  const executionDag = buildExecutionDag({
+    managedWorktree: { mode: 'disabled' },
+    completedPhases: [verification.recorded ? 'verify' : null, review.recorded ? 'agent_review' : null].filter(Boolean),
+    completionStatus: 'not_prepared',
+    expectedHeadSha: git.head_sha,
+    bugDiagnosis
+  });
   const verificationTrustStatus = await evaluateVerificationEvidenceTrust(root, verification, git.head_sha);
   const clauseMap = await buildClauseMapForPrepare(root, {
     storyId,
@@ -90,6 +101,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
       ...multiTenantArchitecture,
       review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
     },
+    bug_diagnosis: bugDiagnosis,
+    execution_dag: executionDag,
+    gate_status: bugDiagnosis?.status === 'blocked' ? 'blocked' : 'ready',
+    blocking_reasons: bugDiagnosis?.status === 'blocked'
+      ? bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
+      : [],
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -518,6 +535,20 @@ function renderPrBody(preparation) {
     }
   }
   lines.push('');
+  lines.push('### Bug diagnosis DAG');
+  if (preparation.bug_diagnosis) {
+    lines.push(`- gate: ${preparation.bug_diagnosis.status}`);
+    lines.push(`- run: \`${preparation.bug_diagnosis.run_id ?? 'missing'}\` @ \`${preparation.bug_diagnosis.target_head_sha ?? 'missing'}\``);
+    for (const node of preparation.bug_diagnosis.nodes ?? []) {
+      lines.push(`- [${node.status}] ${node.id}${node.head_sha ? ` @ \`${node.head_sha}\`` : ''}`);
+    }
+    if (preparation.bug_diagnosis.return_to_node) {
+      lines.push(`- return_to_node: \`${preparation.bug_diagnosis.return_to_node}\``);
+    }
+  } else {
+    lines.push('- not applicable (Story contract type is not bug_fix/regression_fix)');
+  }
+  lines.push('');
   lines.push('### Verification evidence');
   if (verification.recorded) {
     for (const command of verification.commands) {
@@ -591,6 +622,12 @@ export async function createPullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const prepareResult = await preparePullRequest(root, options);
   const { preparation } = prepareResult;
+  if (preparation.gate_status !== 'ready') {
+    throw new Error(
+      `PR creation blocked: ${preparation.blocking_reasons.join(', ')}. `
+      + (preparation.bug_diagnosis?.next_actions?.[0] ?? 'Complete the required VibePro evidence.')
+    );
+  }
   const currentBranch = preparation.git.current_branch;
   const headBranch = options.headBranch ?? currentBranch;
   if (!headBranch) {
@@ -797,6 +834,8 @@ export function renderPrPrepareSummary(result) {
     `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
+    `- gate: ${preparation.gate_status}`,
+    ...(preparation.bug_diagnosis ? [`- bug diagnosis return: ${preparation.bug_diagnosis.return_to_node ?? '-'}`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];

@@ -1579,9 +1579,23 @@
         "category": "quality",
         "artifact_profile": "feature_packet",
         "feature_slug": "test-each-lineage"
+      },
+      {
+        "story_id": "story-vibepro-bug-diagnosis-dag",
+        "title": "Verify-firstの問題解析をVibeProのバグ診断DAGへ統合する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-16",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "bug-diagnosis-dag"
       }
     ],
-    "current_story_id": "story-vibepro-test-each-lineage"
+    "current_story_id": "story-vibepro-bug-diagnosis-dag"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }
