@@ -63,6 +63,7 @@ import {
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
+import { findStorySource } from './requirement-consistency.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
   assertPreSpecReadinessForFinalSpec,
@@ -1322,9 +1323,22 @@ async function dispatchCli(argv, io = {}) {
         } catch (error) {
           throw new Error(`spec write: input is not valid JSON: ${error.message}`);
         }
-        const validation = await validateSpec(repoRoot, parsed, { expectedStoryId: storyId });
+        const storySource = await findStorySource(path.resolve(repoRoot), {
+          story_id: storyId,
+          title: storyId
+        }).catch(() => null);
+        const validation = await validateSpec(repoRoot, parsed, {
+          expectedStoryId: storyId,
+          mode: draft ? 'draft' : 'final',
+          storyContext: storySource?.content ?? ''
+        });
         if (!validation.ok) {
-          write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
+          write(stdout, `${JSON.stringify({
+            ok: false,
+            errors: validation.errors,
+            warnings: validation.warnings,
+            multi_tenant_architecture: validation.multi_tenant_architecture
+          }, null, 2)}\n`);
           return { exitCode: 2, command, subcommand, validation };
         }
         const preSpecReadiness = final
@@ -1352,6 +1366,7 @@ async function dispatchCli(argv, io = {}) {
           mode: draft ? 'draft' : 'final',
           clauses: stabilized.clauses.length,
           warnings: validation.warnings,
+          multi_tenant_architecture: validation.multi_tenant_architecture,
           pre_spec_readiness: preSpecReadiness ? {
             status: preSpecReadiness.status,
             created_at: preSpecReadiness.created_at,

@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { preparePullRequest } from '../src/pr-manager.js';
+import { writeInferredSpec } from '../src/spec-store.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -86,6 +87,41 @@ test('pr prepare embeds story_source and traceability, with unmapped clauses sho
   assert.match(body, /\[未対応\].*AC-2/, 'unmapped AC must be rendered as unaddressed, not as a blocker');
   assert.match(body, /### VibePro runtime identity/);
   assert.match(body, new RegExp(preparation.runtime_identity.identity_digest));
+});
+
+test('pr prepare summarizes multi-tenant contract, six views, findings, and review lenses', async () => {
+  const storyId = 'story-pr-manager-tenant';
+  const storyDoc = STORY_DOC
+    .replaceAll('story-pr-manager-ac', storyId)
+    .replace('# Story', '# Multi-tenant Story\n\n複数テナントのqueue、credential、storage境界をtenant_idで分離する。');
+  const root = await setupRepo({ storyId, storyDoc });
+  const contract = JSON.parse(await readFile(
+    path.join(import.meta.dirname, 'fixtures', 'multi-tenant-architecture', 'pooled.json'),
+    'utf8'
+  ));
+  await writeInferredSpec(root, storyId, {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    clauses: [],
+    multi_tenancy: contract
+  });
+
+  await preparePullRequest(root, { storyId, baseRef: 'main' });
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.multi_tenant_architecture.status, 'ready');
+  assert.equal(Object.keys(preparation.multi_tenant_architecture.views).length, 6);
+  assert.deepEqual(
+    preparation.multi_tenant_architecture.review_lenses.map((lens) => lens.id),
+    ['tenant_architecture', 'security_boundary', 'operations_and_migration']
+  );
+
+  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(body, /### Multi-tenant architecture/);
+  assert.match(body, /status: ready/);
+  assert.match(body, /system_context/);
+  assert.match(body, /evidence coverage: verified/);
+  assert.match(body, /review\/security_boundary \[ready\]/);
+  assert.match(body, /unconfirmed: none/);
 });
 
 test('pr prepare rejects legacy verification evidence without runtime identity before writing judgment', async () => {
