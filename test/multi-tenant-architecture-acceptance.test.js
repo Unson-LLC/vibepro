@@ -198,6 +198,40 @@ test('resource・credential・data・deploymentの契約不足を別findingで�
   assert.ok(report.findings.some((finding) => finding.code === 'tenant_deployment_modes'));
 });
 
+test('canonical data ownerの複数定義とresource側の食い違いを最終Specで拒否する', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-tenant-owner-conflict-'));
+  await writeFile(path.join(repo, 'storage.js'), 'export const owner = "tenant_database";\n');
+  const contract = await fixture('pooled');
+  contract.data.canonical_owners.push('legacy_database');
+  contract.resources[0].data_owner = 'shadow_database';
+  const spec = {
+    schema_version: '0.1.0',
+    story_id: 'story-tenant-owner-conflict',
+    clauses: [{
+      id: 'OWNER-1',
+      type: 'contract',
+      statement: 'tenant dataの正本を一意にする。',
+      origin: { code_refs: [{ file: 'storage.js', anchor: 'owner' }] }
+    }],
+    multi_tenancy: contract
+  };
+
+  const report = assessMultiTenantArchitecture({
+    storyText: '複数テナントのdata ownerとstorage境界を定義する。',
+    contract
+  });
+  assert.equal(report.status, 'invalid');
+  assert.ok(report.findings.some((finding) => finding.code === 'canonical_data_owner_conflict' && finding.path === 'data.canonical_owners'));
+  assert.ok(report.findings.some((finding) => finding.code === 'canonical_data_owner_conflict' && finding.path === 'resources[0].data_owner'));
+
+  const final = await validateSpec(repo, spec, {
+    mode: 'final',
+    storyContext: '複数テナントのdata ownerとstorage境界を定義する。'
+  });
+  assert.equal(final.ok, false);
+  assert.ok(final.errors.some((error) => error.code === 'multi_tenant_canonical_data_owner_conflict'));
+});
+
 test('6ビューは証拠を含み、配備形態を比較し、review lensはfindingと未確認点を持つ', async () => {
   const contracts = await Promise.all(['pooled', 'dedicated', 'customer-managed'].map(fixture));
   const report = assessMultiTenantArchitecture({

@@ -93,7 +93,27 @@ export function assessMultiTenantArchitecture({ storyText = '', contract = null,
   requireEqual(credentials.cross_tenant_fallback, 'forbidden', 'credentials.cross_tenant_fallback', 'cross_tenant_credential_fallback', error);
 
   const data = objectAt(contract.data);
-  requireNonEmptyArray(data.canonical_owners, 'data.canonical_owners', 'tenant_data_owners', error);
+  const canonicalOwners = requireNonEmptyArray(data.canonical_owners, 'data.canonical_owners', 'tenant_data_owners', error);
+  canonicalOwners.forEach((owner, index) => requireText(owner, `data.canonical_owners[${index}]`, 'tenant_data_owner', error));
+  const distinctCanonicalOwners = [...new Set(canonicalOwners.filter(nonEmptyText).map((owner) => owner.trim()))];
+  if (distinctCanonicalOwners.length > 1) {
+    error(
+      'canonical_data_owner_conflict',
+      'data.canonical_owners',
+      `canonical data ownerは一意である必要があります: ${distinctCanonicalOwners.join(', ')}`,
+      { owners: distinctCanonicalOwners }
+    );
+  }
+  arrayAt(contract.resources).forEach((resource, index) => {
+    if (nonEmptyText(resource?.data_owner) && distinctCanonicalOwners.length > 0 && !distinctCanonicalOwners.includes(resource.data_owner.trim())) {
+      error(
+        'canonical_data_owner_conflict',
+        `resources[${index}].data_owner`,
+        `resources[${index}].data_owner ${resource.data_owner} はcanonical data owner ${distinctCanonicalOwners.join(', ')} と一致しません`,
+        { owners: distinctCanonicalOwners, actual: resource.data_owner }
+      );
+    }
+  });
   requireText(data.residency, 'data.residency', 'tenant_data_residency', error);
   requireText(data.migration, 'data.migration', 'tenant_data_migration', error);
   requireText(nonEmptyText(data.rollback) ? data.rollback : data.operator_action, 'data.rollback', 'tenant_data_rollback', error);
