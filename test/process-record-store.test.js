@@ -66,21 +66,24 @@ test('records survive worktree deletion via snapshot then hydrate into a regener
   await writeRecord(worktree, `executions/${STORY}/runs/r1/decisions/d1.json`, '{"decision":"block"}\n');
   await writeRecord(worktree, `pr/${STORY}/verification-evidence.json`, '{"commands":[]}\n');
   await writeRecord(worktree, `pr/${STORY}/decision-outcome-ledger.json`, '{"entries":[]}\n');
+  await writeRecord(worktree, `bug-diagnosis/${STORY}/run-1/bug-diagnosis.json`, '{"status":"blocked"}\n');
 
   const snap = await snapshotProcessRecords({ repoRoot: worktree, storyId: STORY });
   assert.equal(snap.status, 'ok');
-  assert.equal(snap.copied.length, 7);
+  assert.equal(snap.copied.length, 8);
 
   // Simulate the incident: the worktree (and everything under .vibepro) vanishes.
   await rm(path.join(worktree, '.vibepro'), { recursive: true, force: true });
 
   const hydrate = await hydrateProcessRecords({ repoRoot: worktree, storyId: STORY });
   assert.equal(hydrate.status, 'ok');
-  assert.equal(hydrate.copied.length, 7);
+  assert.equal(hydrate.copied.length, 8);
   const restored = await readFile(path.join(worktree, '.vibepro', 'reviews', STORY, 'round-1', 'architect.json'), 'utf8');
   assert.equal(restored, '{"status":"block"}\n');
   const restoredEvidence = await readFile(path.join(worktree, '.vibepro', 'pr', STORY, 'verification-evidence.json'), 'utf8');
   assert.equal(restoredEvidence, '{"commands":[]}\n');
+  const restoredDiagnosis = await readFile(path.join(worktree, '.vibepro', 'bug-diagnosis', STORY, 'run-1', 'bug-diagnosis.json'), 'utf8');
+  assert.equal(restoredDiagnosis, '{"status":"blocked"}\n');
   assert.ok(hydrate.store_root.startsWith(path.join(main, '.vibepro-store')));
 });
 

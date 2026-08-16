@@ -73,7 +73,9 @@ const SMOKE = {
   spec: { setup: 'story', args: (r) => ['spec', r] },
   report: { setup: 'story', args: (r) => ['report', r] },
   workspace: { setup: 'story', args: (r) => ['workspace', 'status', r, '--json'] },
-  store: { setup: 'story', args: (r) => ['store', 'status', r, '--story-id', 'story-x', '--json'] }
+  store: { setup: 'story', args: (r) => ['store', 'status', r, '--story-id', 'story-x', '--json'] },
+  bug: { setup: 'none', args: () => ['bug', 'diagnose', 'record', '--help'] },
+  'verify-first': { setup: 'story', args: (r) => ['verify-first', r, '--id', 'story-x'] }
 };
 
 async function repoFor(setup) {
@@ -112,4 +114,15 @@ test('CLI smoke coverage: every TOP_LEVEL_COMMANDS entry has a smoke test', () =
   const known = new Set(TOP_LEVEL_COMMANDS);
   const stale = [...smoked].filter((c) => !known.has(c));
   assert.deepEqual(stale, [], `these smoke entries are not real commands: ${stale.join(', ')}`);
+});
+
+test('bug diagnosis help routes succeed and print the recording contract', async () => {
+  for (const argv of [['bug', '--help'], ['bug', 'diagnose', 'record', '--help']]) {
+    let output = '';
+    const result = await runCli(argv, { stdout: { write: (chunk) => { output += chunk; } } });
+    assert.equal(result.exitCode, 0, `${argv.join(' ')} must be a successful help route`);
+    assert.match(output, /Usage:/);
+    assert.match(output, /vibepro bug diagnose record/);
+    assert.match(output, /--status <passed\|failed\|not_applicable>/);
+  }
 });

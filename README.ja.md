@@ -7,7 +7,7 @@
 
 VibeProは、AI支援開発の文脈を追跡可能に保つ、小さなリポジトリローカルCLIです。Story、Spec、検証結果、レビュー記録、判断、PR要約を `.vibepro/` に保存し、人間とコーディングエージェントが同じ証跡を確認できるようにします。
 
-VibeProはアプリを実装せず、変更の安全性を判定せず、PR作成をブロックせず、コードをマージしません。最小コアへの再構築により、従来のGate DAG、readiness/blocking判定、managed execution、lifecycle会計、budget enforcement、自動audit bundleは廃止しました。
+VibeProはアプリを実装せず、変更の安全性を判定せず、コードをマージしません。最小コアへの再構築により、従来のGate DAGを汎用の判断主体としては廃止し、managed execution、lifecycle会計、budget enforcement、自動audit bundleも取り除きました。バグStoryだけは狭い例外で、実経路の診断証拠が揃うまでPR作成をfail-closedします。
 
 ## インストール
 
@@ -45,6 +45,8 @@ vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
 
 `pr prepare` は `.vibepro/pr/<story-id>/` に機械可読な要約とPR本文を書きます。これは記録内容の要約であり、安全性の承認ではありません。`pr create` は選択したbranchをpushしてGitHub CLIを呼べますが、最終レビューとmerge権限はVibeProの外にあります。
+
+バグ修正ではStoryを `--contract-type bug_fix` 付きで登録します。VibeProは再現から同経路再検証までの順序付き診断証拠を要求します。詳しくは[バグ診断への移行](docs/ja/guide/bug-diagnosis-migration.md)を参照してください。
 
 base branchは `origin/main` に固定せず、対象リポジトリの実際の既定branchを指定してください。
 
