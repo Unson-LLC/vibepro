@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-multi-tenant-architecture-review-views
 title: "テナント設計を境界ビューと3つの専門レビューで判断できるようにする"
-status: active
+status: completed
 view: dev
 period: 2026-08
 category: quality
@@ -21,7 +21,7 @@ spec_docs:
 reason: >-
   alternatives considered: 汎用security/data/deployment表だけでは、同一tenant keyが解決・実行・配備・移行を横断する関係をレビューできないため、専用ビューとreview lensを導入する。compatibility impact: multi_tenant_architecture適用時だけPR要約へ追加する。rollback plan: 専用projectionとPR要約を外せる。boundary: 判断材料の表示を扱い、新しいreview lifecycleやGateは追加しない。
 created_at: 2026-08-15
-updated_at: 2026-08-15
+updated_at: 2026-08-16
 ---
 
 # テナント設計を境界ビューと3つの専門レビューで判断できるようにする
@@ -47,14 +47,14 @@ updated_at: 2026-08-15
 
 ## Acceptance Criteria
 
-- [ ] MTAR-AC-001: 6つの専用ビューがContractとGraph/scanner証拠から生成される。
-- [ ] MTAR-AC-002: shared、dedicated、customer-managedの差がdeployment variantsビューで比較できる。
-- [ ] MTAR-AC-003: tenant resolutionビューからcanonical key、取得元、曖昧・欠落時の動作を追える。
-- [ ] MTAR-AC-004: trust/data boundaryビューからsharing、partition、credential、data owner、residue policyを追える。
-- [ ] MTAR-AC-005: 適用StoryのPR証拠要約に3つの専門review lensが追加される。
-- [ ] MTAR-AC-006: 契約findingと未確認点がreview lensの近くに表示され、役割名だけでpassを生成しない。
-- [ ] MTAR-AC-007: 非適用Storyでは専用ビュー・review roleを要求しない。
-- [ ] MTAR-AC-008: 日本語テンプレートから不要な製品固有名を除き、同じContract項目を記入・確認できる。
+- [x] MTAR-AC-001: 6つの専用ビューがContractとGraph/scanner証拠から生成される。
+- [x] MTAR-AC-002: shared、dedicated、customer-managedの差がdeployment variantsビューで比較できる。
+- [x] MTAR-AC-003: tenant resolutionビューからcanonical key、取得元、曖昧・欠落時の動作を追える。
+- [x] MTAR-AC-004: trust/data boundaryビューからsharing、partition、credential、data owner、residue policyを追える。
+- [x] MTAR-AC-005: 適用StoryのPR証拠要約に3つの専門review lensが追加される。
+- [x] MTAR-AC-006: 契約findingと未確認点がreview lensの近くに表示され、役割名だけでpassを生成しない。
+- [x] MTAR-AC-007: 非適用Storyでは専用ビュー・review roleを要求しない。
+- [x] MTAR-AC-008: 日本語テンプレートから不要な製品固有名を除き、同じContract項目を記入・確認できる。
 
 ## 実装タスク
 
@@ -75,3 +75,8 @@ updated_at: 2026-08-15
 
 - Contract StoryとEvidence Scanner Storyの成果物を入力とする。
 - 完了時には3配備形態のfixtureで6ビューと3 review planを再生成できること。
+
+## 完了証拠
+
+- 3配備fixtureから6ビューとdeployment比較を再生成する受け入れテストを追加した。
+- PR本文へcoverage、scanner状態、lens別finding、未確認点を隣接表示する回帰テストを追加した。

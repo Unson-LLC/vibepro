@@ -1,51 +1,32 @@
 {
   "schema_version": "0.1.0",
   "tenancy_model": "pooled",
-  "tenant_identity": {
-    "canonical_key": "tenant_id",
-    "resolved_from": ["authenticated_claim"],
-    "resolution_point": "request_ingress",
-    "missing_behavior": "deny",
-    "ambiguity_behavior": "deny"
-  },
-  "propagation": {
-    "required_surfaces": ["http", "queue", "storage", "tool", "memory"],
-    "verified_surfaces": ["http", "queue", "storage", "tool", "memory"]
-  },
+  "tenant_identity": { "canonical_key": "tenant_id", "resolved_from": ["authenticated_claim"], "resolution_point": "request_ingress", "missing_behavior": "deny", "ambiguity_behavior": "deny" },
+  "propagation": { "required_surfaces": ["http", "queue", "storage", "tool", "memory"], "verified_surfaces": ["http", "queue", "storage", "tool", "memory"] },
   "resources": [
-    { "name": "postgres", "sharing": "tenant_partitioned", "tenant_key": "tenant_id", "trust_zone": "managed_data", "residue_policy": "delete_by_tenant" },
-    { "name": "job_queue", "sharing": "tenant_partitioned", "tenant_key": "tenant_id", "trust_zone": "managed_runtime", "residue_policy": "expire_by_tenant" }
+    { "name": "postgres", "sharing": "tenant_partitioned", "tenant_key": "tenant_id", "partition_key": "tenant_id/id", "trust_zone": "managed_data", "residue_policy": "delete_by_tenant", "data_owner": "tenant_database", "credential_scope": "tenant" },
+    { "name": "job_queue", "sharing": "tenant_partitioned", "tenant_key": "tenant_id", "partition_key": "tenant_id/job_id", "trust_zone": "managed_runtime", "residue_policy": "expire_by_tenant", "data_owner": "tenant_database", "credential_scope": "tenant" },
+    { "name": "sandbox", "sharing": "tenant_or_session_isolated", "tenant_key": "tenant_id", "trust_zone": "managed_execution", "residue_policy": "destroy_or_verified_reset", "data_owner": "tenant_database", "credential_scope": "tenant" }
   ],
-  "credentials": {
-    "lookup_key": "tenant_id",
-    "scope": "tenant",
-    "raw_secret_in_artifacts": "forbidden",
-    "cross_tenant_fallback": "forbidden"
-  },
-  "data": {
-    "canonical_owners": ["tenant_database"],
-    "residency": "tenant_selected_region",
-    "migration": "copy_then_verify_by_tenant",
-    "rollback": "restore_tenant_snapshot"
-  },
-  "failure_semantics": {
-    "unknown_tenant": "deny",
-    "ambiguous_tenant": "deny",
-    "unavailable_connection": "unavailable",
-    "no_data": "empty",
-    "cross_tenant_candidate": "deny_and_audit"
-  },
+  "credentials": { "lookup_key": "tenant_id", "scope": "tenant", "raw_secret_in_artifacts": "forbidden", "cross_tenant_fallback": "forbidden" },
+  "data": { "canonical_owners": ["tenant_database"], "residency": "tenant_selected_region", "migration": "copy_then_verify_by_tenant", "rollback": "restore_tenant_snapshot", "operator_action": "quarantine_tenant_and_restore_snapshot" },
+  "failure_semantics": { "unknown_tenant": "deny", "ambiguous_tenant": "deny", "unavailable_connection": "unavailable", "no_data": "empty", "cross_tenant_candidate": "deny_and_audit" },
   "deployment_modes": ["managed_shared"],
-  "negative_scenarios": [
-    "unknown_tenant",
-    "ambiguous_tenant",
-    "unavailable_connection",
-    "no_data",
-    "cross_tenant_candidate"
-  ],
-  "graph_metadata": {
-    "tenant_entities": ["Tenant", "QueueJob", "CredentialBinding"],
-    "boundary_edges": ["Tenant->QueueJob", "Tenant->CredentialBinding"]
-  },
-  "verification": { "scanner_coverage": "verified" }
+  "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+  "graph_metadata": { "tenant_entities": ["Tenant", "QueueJob", "CredentialBinding", "Sandbox"], "boundary_edges": ["Tenant->QueueJob", "Tenant->CredentialBinding", "Tenant->Sandbox"] },
+  "verification": {
+    "scanner_coverage": "verified",
+    "evidence": {
+      "propagation_surfaces": ["http", "queue", "storage", "tool", "memory"],
+      "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+      "scanner_results": { "tenant_boundary": "pass", "tenant_key_propagation": "pass", "cross_tenant_authorization": "pass", "state_partitioning": "pass", "sandbox_isolation": "pass", "connection_routing": "pass", "secret_scope": "pass", "canonical_data_owner": "pass", "deployment_topology": "pass", "cross_tenant_negative_evidence": "pass" },
+      "graph": {
+        "tenant_key": "tenant_id", "sharing_modes": ["tenant_partitioned", "tenant_or_session_isolated"], "deployment_modes": ["managed_shared"],
+        "tenant_entities": [{ "name": "Tenant", "tenant_scope": "tenant", "tenant_key_source": "authenticated_claim", "trust_zone": "managed", "data_owner": "tenant_database" }],
+        "boundary_edges": [{ "from": "Tenant", "to": "RuntimeResources", "tenant_scope": "tenant", "tenant_key_source": "tenant_id", "sharing_mode": "tenant_partitioned", "credential_scope": "tenant", "connection_mode": "managed", "deployment_mode": "managed_shared" }]
+      },
+      "spec": { "tenant_key": "tenant_id", "sharing_modes": ["tenant_partitioned", "tenant_or_session_isolated"], "deployment_modes": ["managed_shared"] },
+      "implementation": { "tenant_key": "tenant_id", "sharing_modes": ["tenant_partitioned", "tenant_or_session_isolated"], "deployment_modes": ["managed_shared"] }
+    }
+  }
 }

@@ -119,7 +119,9 @@ test('pr prepare summarizes multi-tenant contract, six views, findings, and revi
   assert.match(body, /### Multi-tenant architecture/);
   assert.match(body, /status: ready/);
   assert.match(body, /system_context/);
-  assert.match(body, /review\/security_boundary/);
+  assert.match(body, /evidence coverage: verified/);
+  assert.match(body, /review\/security_boundary \[ready\]/);
+  assert.match(body, /unconfirmed: none/);
 });
 
 test('pr prepare rejects legacy verification evidence without runtime identity before writing judgment', async () => {

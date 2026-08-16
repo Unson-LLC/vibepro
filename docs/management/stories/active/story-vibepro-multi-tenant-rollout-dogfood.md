@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-multi-tenant-rollout-dogfood
 title: "マルチテナント契約をfixtureとdownstream例で段階検証する"
-status: active
+status: completed
 view: dev
 period: 2026-08
 category: product
@@ -23,7 +23,7 @@ spec_docs:
 reason: >-
   alternatives considered: pooled fixtureだけではdedicated/customer-managedの境界差を検証できないため、同一スキーマの3配備fixtureを用意する。compatibility impact: VibePro本体では自己dogfoodせず通常のテストとGitHubフローを使う。rollback plan: downstreamは契約採用を取りやめられ、VibeProの非適用Storyには影響しない。boundary: customer-managed構成の再現までを扱い、mana-runtime実環境のreadbackは別Issue/Storyへ分離する。
 created_at: 2026-08-15
-updated_at: 2026-08-15
+updated_at: 2026-08-16
 ---
 
 # マルチテナント契約をfixtureとdownstream例で段階検証する
@@ -50,15 +50,15 @@ updated_at: 2026-08-15
 
 ## Acceptance Criteria
 
-- [ ] MTRD-AC-001: Phase 1/2/3の開始条件、停止条件、rollback条件、責任者が文書化される。
-- [ ] MTRD-AC-002: advisory runで適用件数、pass、needs_review、inconclusive、false positive、false negative候補を別々に集計できる。
-- [ ] MTRD-AC-003: non-applicable CLI/copy-only fixtureが`not_applicable`となり、追加errorが0件であることを確認する。
-- [ ] MTRD-AC-004: shared、dedicated、customer-managedのpositive fixtureと全negative fixtureが同じ公開契約で再実行できる。
-- [ ] MTRD-AC-005: customer-managed fixtureでContract作成から6ビュー、3 review lens、Spec判定までを再現できる。
-- [ ] MTRD-AC-006: 実リポジトリへの適用は別Storyとして、tenant identity、接続先、credential scope、state partition、receiptを個別にreadbackする。
-- [ ] MTRD-AC-007: HTTP成功、認証成功、secret binding設定済みだけをE2E成功として扱わない。
-- [ ] MTRD-AC-008: 導入後も既存のSpec検証とPR準備の回帰テストが通る。
-- [ ] MTRD-AC-009: 未確認・製品固有不具合・後続改善がVibePro完成へ丸められず、別Story候補またはblockerとして残る。
+- [x] MTRD-AC-001: Phase 1/2/3の開始条件、停止条件、rollback条件、責任者が文書化される。
+- [x] MTRD-AC-002: advisory runで適用件数、pass、needs_review、inconclusive、false positive、false negative候補を別々に集計できる。
+- [x] MTRD-AC-003: non-applicable CLI/copy-only fixtureが`not_applicable`となり、追加errorが0件であることを確認する。
+- [x] MTRD-AC-004: shared、dedicated、customer-managedのpositive fixtureと全negative fixtureが同じ公開契約で再実行できる。
+- [x] MTRD-AC-005: customer-managed fixtureでContract作成から6ビュー、3 review lens、Spec判定までを再現できる。
+- [x] MTRD-AC-006: 実リポジトリへの適用は別Storyとして、tenant identity、接続先、credential scope、state partition、receiptを個別にreadbackする。
+- [x] MTRD-AC-007: HTTP成功、認証成功、secret binding設定済みだけをE2E成功として扱わない。
+- [x] MTRD-AC-008: 導入後も既存のSpec検証とPR準備の回帰テストが通る。
+- [x] MTRD-AC-009: 未確認・製品固有不具合・後続改善がVibePro完成へ丸められず、別Story候補またはblockerとして残る。
 
 ## 実装タスク
 
@@ -80,3 +80,9 @@ updated_at: 2026-08-15
 
 - 前4 Storyの契約、検証、ビュー、最終Spec判定が利用可能であることを開始条件とする。
 - このStoryの完了にはVibePro fixture証拠を必要とし、`mana-runtime`実環境readbackは別Storyの完了条件とする。
+
+## 完了証拠
+
+- `docs/management/multi-tenant-rollout-policy.md`へPhase別の開始・停止・rollback条件と証拠境界を固定した。
+- advisory集計、全positive/negative fixture、customer-managed E2Eを受け入れテストで固定した。
+- downstream実環境readbackは`story-mana-runtime-multi-tenant-contract-readback`を未着手の別Story候補として残した。

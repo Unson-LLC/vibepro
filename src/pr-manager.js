@@ -505,11 +505,16 @@ function renderPrBody(preparation) {
     lines.push(`- status: ${multiTenantArchitecture.status}`);
     lines.push(`- activation: ${(multiTenantArchitecture.activation_reasons ?? []).join(', ') || 'unknown'}`);
     lines.push(`- architecture views: ${Object.keys(multiTenantArchitecture.views ?? {}).join(', ') || 'none'}`);
+    lines.push(`- evidence coverage: ${multiTenantArchitecture.coverage?.status ?? 'inconclusive'}`);
+    const scannerStates = Object.entries(multiTenantArchitecture.coverage?.scanners ?? {});
+    if (scannerStates.length > 0) lines.push(`- scanners: ${scannerStates.map(([name, status]) => `${name}=${status}`).join(', ')}`);
     for (const finding of multiTenantArchitecture.findings ?? []) {
       lines.push(`- [${finding.severity}] ${finding.code}: ${finding.path}`);
     }
     for (const lens of multiTenantArchitecture.review_lenses ?? []) {
-      lines.push(`- review/${lens.id}: ${lens.question}`);
+      lines.push(`- review/${lens.id} [${lens.status}]: ${lens.question}`);
+      lines.push(`  - findings: ${(lens.findings ?? []).map((finding) => `${finding.code}@${finding.path}`).join(', ') || 'none'}`);
+      lines.push(`  - unconfirmed: ${(lens.unconfirmed ?? []).map((finding) => `${finding.code}@${finding.path}`).join(', ') || 'none'}`);
     }
   }
   lines.push('');

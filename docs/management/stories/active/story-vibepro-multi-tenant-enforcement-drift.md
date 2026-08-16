@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-multi-tenant-enforcement-drift
 title: "未解決のテナント境界を最終Specで拒否しPRへ明示する"
-status: active
+status: completed
 view: dev
 period: 2026-08
 category: quality
@@ -22,7 +22,7 @@ spec_docs:
 reason: >-
   alternatives considered: すべてのneeds_reviewを全Storyで拒否する案は非適用Storyを壊すため却下し、適用済みmulti_tenant_architectureの契約errorだけを最終Specでfail-closedにする。compatibility impact: 既存Spec検証を維持し、下書きは警告として保存できる。rollback plan: 加算的なSpec検証とPR要約を外せる。boundary: 最終SpecとPRでの可視化を扱い、旧Gate DAGや実装着手判定は追加しない。
 created_at: 2026-08-15
-updated_at: 2026-08-15
+updated_at: 2026-08-16
 ---
 
 # 未解決のテナント境界を最終Specで拒否しPRへ明示する
@@ -49,14 +49,14 @@ updated_at: 2026-08-15
 
 ## Acceptance Criteria
 
-- [ ] MTEG-AC-001: canonical tenant identityまたはresolution policy欠落時に最終Specを拒否する。
-- [ ] MTEG-AC-002: 必須伝播面、resource境界、credential scope、canonical data owner欠落時に最終Specを拒否する。
-- [ ] MTEG-AC-003: cross-tenant deny-and-auditのnegative scenarioがない場合、最終Specを受理しない。
-- [ ] MTEG-AC-004: 適用Storyのcritical scannerが`needs_review`/`inconclusive`なら、確認済みpassへ丸めない。
-- [ ] MTEG-AC-005: ContractとGraph/Spec/実装のtenant key、sharing mode、deployment modeの不一致をdriftとして報告する。
-- [ ] MTEG-AC-006: migration/export/delete/residencyを扱う変更ではrollbackまたはoperator action欠落を最終Specで拒否する。
-- [ ] MTEG-AC-007: critical cross-tenant findingを下書きの警告から最終Specのerrorへ昇格し、迂回できない。
-- [ ] MTEG-AC-008: 非適用Storyと既存一般scannerの`inconclusive`集約挙動を不要に変更しない。
+- [x] MTEG-AC-001: canonical tenant identityまたはresolution policy欠落時に最終Specを拒否する。
+- [x] MTEG-AC-002: 必須伝播面、resource境界、credential scope、canonical data owner欠落時に最終Specを拒否する。
+- [x] MTEG-AC-003: cross-tenant deny-and-auditのnegative scenarioがない場合、最終Specを受理しない。
+- [x] MTEG-AC-004: 適用Storyのcritical scannerが`needs_review`/`inconclusive`なら、確認済みpassへ丸めない。
+- [x] MTEG-AC-005: ContractとGraph/Spec/実装のtenant key、sharing mode、deployment modeの不一致をdriftとして報告する。
+- [x] MTEG-AC-006: migration/export/delete/residencyを扱う変更ではrollbackまたはoperator action欠落を最終Specで拒否する。
+- [x] MTEG-AC-007: critical cross-tenant findingを下書きの警告から最終Specのerrorへ昇格し、迂回できない。
+- [x] MTEG-AC-008: 非適用Storyと既存一般scannerの`inconclusive`集約挙動を不要に変更しない。
 
 ## 実装タスク
 
@@ -77,3 +77,8 @@ updated_at: 2026-08-15
 
 - Contract、Evidence Scanner、Architecture Review Viewsの3 Storyに依存する。
 - 完了時には各段階のblock/pass、drift、非適用を同じfixture系列で再現できること。
+
+## 完了証拠
+
+- 最終Specと下書きSpecのerror/warning差、migration recovery、非適用回帰をテストした。
+- Graph/Spec/実装それぞれのtenant key、sharing、deployment driftをsource付きfindingとして固定した。

@@ -13,8 +13,8 @@
     "verified_surfaces": ["http", "storage", "tool"]
   },
   "resources": [
-    { "name": "runtime", "sharing": "dedicated", "tenant_key": "organization_id", "trust_zone": "dedicated_runtime", "residue_policy": "destroy_with_deployment" },
-    { "name": "database", "sharing": "dedicated", "tenant_key": "organization_id", "trust_zone": "dedicated_data", "residue_policy": "destroy_after_retention" }
+    { "name": "runtime", "sharing": "dedicated", "tenant_key": "organization_id", "trust_zone": "dedicated_runtime", "residue_policy": "destroy_with_deployment", "data_owner": "dedicated_database", "credential_scope": "tenant_deployment" },
+    { "name": "database", "sharing": "dedicated", "tenant_key": "organization_id", "trust_zone": "dedicated_data", "residue_policy": "destroy_after_retention", "data_owner": "dedicated_database", "credential_scope": "tenant_deployment" }
   ],
   "credentials": {
     "lookup_key": "organization_id",
@@ -26,7 +26,8 @@
     "canonical_owners": ["dedicated_database"],
     "residency": "deployment_region",
     "migration": "replace_dedicated_deployment",
-    "rollback": "restore_dedicated_snapshot"
+    "rollback": "restore_dedicated_snapshot",
+    "operator_action": "replace_deployment_from_verified_snapshot"
   },
   "failure_semantics": {
     "unknown_tenant": "deny",
@@ -41,5 +42,19 @@
     "tenant_entities": ["Organization", "DedicatedRuntime"],
     "boundary_edges": ["Organization->DedicatedRuntime"]
   },
-  "verification": { "scanner_coverage": "verified" }
+  "verification": {
+    "scanner_coverage": "verified",
+    "evidence": {
+      "propagation_surfaces": ["http", "storage", "tool"],
+      "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+      "scanner_results": { "tenant_boundary": "pass", "tenant_key_propagation": "pass", "cross_tenant_authorization": "pass", "state_partitioning": "pass", "sandbox_isolation": "pass", "connection_routing": "pass", "secret_scope": "pass", "canonical_data_owner": "pass", "deployment_topology": "pass", "cross_tenant_negative_evidence": "pass" },
+      "graph": {
+        "tenant_key": "organization_id", "sharing_modes": ["dedicated"], "deployment_modes": ["managed_dedicated"],
+        "tenant_entities": [{ "name": "Organization", "tenant_scope": "tenant", "tenant_key_source": "deployment_binding", "trust_zone": "dedicated", "data_owner": "dedicated_database" }],
+        "boundary_edges": [{ "from": "Organization", "to": "DedicatedRuntime", "tenant_scope": "tenant", "tenant_key_source": "organization_id", "sharing_mode": "dedicated", "credential_scope": "tenant_deployment", "connection_mode": "managed_dedicated", "deployment_mode": "managed_dedicated" }]
+      },
+      "spec": { "tenant_key": "organization_id", "sharing_modes": ["dedicated"], "deployment_modes": ["managed_dedicated"] },
+      "implementation": { "tenant_key": "organization_id", "sharing_modes": ["dedicated"], "deployment_modes": ["managed_dedicated"] }
+    }
+  }
 }

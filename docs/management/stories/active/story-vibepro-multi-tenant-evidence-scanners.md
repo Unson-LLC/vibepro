@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-multi-tenant-evidence-scanners
 title: "テナント境界のGraph metadataと検証範囲を契約として照合する"
-status: active
+status: completed
 view: dev
 period: 2026-08
 category: quality
@@ -20,7 +20,7 @@ spec_docs:
 reason: >-
   alternatives considered: Graph metadataの存在だけを合格証拠にする案は、検査不能と安全を混同するため却下する。Contractを期待値、検証済み面を別の証拠として照合する。compatibility impact: 非適用Storyはnot_applicable、適用Storyで検査不能な場合はneeds_reviewを保持する。rollback plan: Spec validatorから加算的な照合を外せる。boundary: finding分類までを扱い、専用check packや旧Gate DAGは追加しない。
 created_at: 2026-08-15
-updated_at: 2026-08-15
+updated_at: 2026-08-16
 ---
 
 # テナント境界のGraph metadataと検証範囲を契約として照合する
@@ -46,14 +46,14 @@ updated_at: 2026-08-15
 
 ## Acceptance Criteria
 
-- [ ] MTES-AC-001: 必須伝播面と検証済み面の欠落を位置付きで報告する。
-- [ ] MTES-AC-002: resource、credential、data、deploymentの契約不足が別findingとして出力される。
-- [ ] MTES-AC-003: Graph metadataのtenant entityとboundary edge欠落を報告する。
-- [ ] MTES-AC-004: cross-tenant negative testが確認できない場合、`cross_tenant_negative_evidence`をpassにしない。
-- [ ] MTES-AC-005: tenant key欠落、曖昧resolution、cross-tenant fallback、共有state key、sandbox residueのnegative fixtureを検出する。
-- [ ] MTES-AC-006: scannerが対象を確認できない場合は`needs_review`または`inconclusive`となり、検査済みpassと区別される。
-- [ ] MTES-AC-007: 非適用Storyでは専用findingを出さず`not_applicable`として理由を残す。
-- [ ] MTES-AC-008: Graphify不在だけで一般Storyをblockせず、適用Storyでは不足している証拠面を明示する。
+- [x] MTES-AC-001: 必須伝播面と検証済み面の欠落を位置付きで報告する。
+- [x] MTES-AC-002: resource、credential、data、deploymentの契約不足が別findingとして出力される。
+- [x] MTES-AC-003: Graph metadataのtenant entityとboundary edge欠落を報告する。
+- [x] MTES-AC-004: cross-tenant negative testが確認できない場合、`cross_tenant_negative_evidence`をpassにしない。
+- [x] MTES-AC-005: tenant key欠落、曖昧resolution、cross-tenant fallback、共有state key、sandbox residueのnegative fixtureを検出する。
+- [x] MTES-AC-006: scannerが対象を確認できない場合は`needs_review`または`inconclusive`となり、検査済みpassと区別される。
+- [x] MTES-AC-007: 非適用Storyでは専用findingを出さず`not_applicable`として理由を残す。
+- [x] MTES-AC-008: Graphify不在だけで一般Storyをblockせず、適用Storyでは不足している証拠面を明示する。
 
 ## 実装タスク
 
@@ -74,3 +74,8 @@ updated_at: 2026-08-15
 
 - `story-vibepro-multi-tenant-contract-applicability`のContractを入力とする。
 - 完了時には同じnegative fixtureから、期待するfinding、coverage、非pass状態を再現できること。
+
+## 完了証拠
+
+- Graph entity/edgeの構造化metadata、10 scanner、伝播面、negative scenarioを独立に照合する。
+- 5種類のnegative fixtureと証拠欠落・検査不能テストでfinding codeとcoverageを固定した。

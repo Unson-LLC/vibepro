@@ -23,11 +23,17 @@ VibePro本体で廃止済みのGate DAG、実装着手判定、専用check pack�
 flowchart LR
   Story[Story本文] --> Applicability[適用判定]
   Spec[Spec multi_tenancy] --> Validator[契約検証]
+  Graph[Graph metadata] --> Scanner[証拠照合]
+  Scan[scanner結果] --> Scanner
   Applicability --> Validator
+  Validator --> Scanner
+  Scanner --> Drift[Graph / Spec / 実装drift]
   Validator --> Views[6設計ビュー]
+  Scanner --> Views
   Validator --> SpecResult[final拒否 / draft警告]
+  Drift --> SpecResult
   Views --> PR[PR証拠要約]
-  Validator --> PR
+  Scanner --> PR
 ```
 
 ## 6つの投影ビュー
@@ -49,6 +55,22 @@ flowchart LR
 - 下書きSpecでは同じfindingを警告として保存できる。
 - PR作成には独自Gateを追加せず、状態とfindingを証拠要約へ明示する。
 
+## 証拠とdriftの境界
+
+- Contractの宣言と実行証拠を分ける。`verified_surfaces`の自己申告だけでは`ready`にしない。
+- Graphのtenant entityとboundary edgeは、tenant scope、tenant key source、trust zone、data owner、sharing、credential、connection、deploymentのmetadataを持つ。
+- 10種のscanner結果は`pass | fail | inconclusive`で記録し、`inconclusive`をpassへ丸めない。
+- ContractとGraph、Spec、実装のtenant key、sharing mode、deployment modeを比較し、不一致はsource付きdriftにする。
+- cross-tenant候補を含む5つのnegative scenarioは、契約の列挙と実行証拠を別々に要求する。
+
+## 保存とレビュー
+
+Contractはaccepted Specの`multi_tenancy`としてStory ID単位で保存する。保存前に最終モードで検証し、`ready`でなければ既存Specを上書きしない。
+
+PR要約にはcoverage、scanner状態、findingを表示する。3つのreview lensには状態、関連finding、未確認点を隣接表示し、役割名だけでpassを生成しない。
+
 ## 配備形態
 
 共有、専用、顧客管理の3 fixtureを同じスキーマで検証する。customer-managed fixtureはmana-runtimeのようなdownstream構成を表現するが、この変更でmana-runtime実環境を検証済みとは扱わない。
+
+段階導入の開始・停止・rollback条件は`docs/management/multi-tenant-rollout-policy.md`を正本とする。downstream実リポジトリのidentity、接続先、credential、state、receipt readbackは別Storyへ分離する。

@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-multi-tenant-contract-applicability
 title: "マルチテナントStoryの適用判定とTenant Architecture Contractを確立する"
-status: active
+status: completed
 view: dev
 period: 2026-08
 category: quality
@@ -19,7 +19,7 @@ spec_docs:
 reason: >-
   alternatives considered: 汎用security/data項目の追加だけでは、テナント識別、伝播、配備形態を一つの契約として追跡できないため、Story別のmulti_tenant_architecture判定と機械可読Contractを追加する。compatibility impact: 既存Storyは明示的な適用シグナルがない限り対象外とする。rollback plan: Spec validatorとPR要約から新判定を外せる加算的導入とする。boundary: 適用判定とContract検証を扱い、旧Gate DAGやreview lifecycleは追加しない。
 created_at: 2026-08-15
-updated_at: 2026-08-15
+updated_at: 2026-08-16
 ---
 
 # マルチテナントStoryの適用判定とTenant Architecture Contractを確立する
@@ -46,14 +46,14 @@ updated_at: 2026-08-15
 
 ## Acceptance Criteria
 
-- [ ] MTCA-AC-001: マルチテナントの意味を持つStoryで`multi_tenant_architecture`軸が有効になる。
-- [ ] MTCA-AC-002: copy-only、一般CLI、単に`tenant`という語を含むだけのStoryでは専用軸が有効にならない。
-- [ ] MTCA-AC-003: 判定が曖昧な場合はpassや対象外に丸めず`needs_review`になる。
-- [ ] MTCA-AC-004: Contractはtenancy model、canonical tenant key、`resolved_from`、resolution point、欠落・曖昧時の動作を保持する。
-- [ ] MTCA-AC-005: Contractは必須伝播面、共有方式、trust zone、partition key、residue policy、credential scope、data owner、connection/deployment mode、migration/rollbackを保持する。
-- [ ] MTCA-AC-006: ContractをStory IDから保存・読込でき、壊れた値や必須項目欠落はfail-closedで報告される。
-- [ ] MTCA-AC-007: shared、dedicated、customer-managedのpositive fixtureと、copy-only/CLIの対象外fixtureで判定を固定する。
-- [ ] MTCA-AC-008: 既存の判断軸とIssue #128/#327/#423の適用・誤発火抑制テストを維持する。
+- [x] MTCA-AC-001: マルチテナントの意味を持つStoryで`multi_tenant_architecture`軸が有効になる。
+- [x] MTCA-AC-002: copy-only、一般CLI、単に`tenant`という語を含むだけのStoryでは専用軸が有効にならない。
+- [x] MTCA-AC-003: 判定が曖昧な場合はpassや対象外に丸めず`needs_review`になる。
+- [x] MTCA-AC-004: Contractはtenancy model、canonical tenant key、`resolved_from`、resolution point、欠落・曖昧時の動作を保持する。
+- [x] MTCA-AC-005: Contractは必須伝播面、共有方式、trust zone、partition key、residue policy、credential scope、data owner、connection/deployment mode、migration/rollbackを保持する。
+- [x] MTCA-AC-006: ContractをStory IDから保存・読込でき、壊れた値や必須項目欠落はfail-closedで報告される。
+- [x] MTCA-AC-007: shared、dedicated、customer-managedのpositive fixtureと、copy-only/CLIの対象外fixtureで判定を固定する。
+- [x] MTCA-AC-008: 既存の判断軸とIssue #128/#327/#423の適用・誤発火抑制テストを維持する。
 
 ## 実装タスク
 
@@ -74,3 +74,8 @@ updated_at: 2026-08-15
 
 - このStoryが後続4 Storyの前提となる。
 - 完了時にはStory入力、Contract JSON、判定結果を同じfixtureから再現できること。
+
+## 完了証拠
+
+- `test/multi-tenant-architecture.test.js`と`test/multi-tenant-architecture-acceptance.test.js`で適用、非適用、曖昧性、保存・読込、3配備fixtureを固定した。
+- Contractはaccepted Specの`multi_tenancy`へ保存し、保存前の最終検証失敗時は上書きしない。
