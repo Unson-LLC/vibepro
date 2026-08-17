@@ -353,6 +353,7 @@ function applyCompletionStatus({ activeTasks, existingTaskState, currentSourceId
     .filter((task) => task.source_id && !currentSourceIds.has(task.source_id))
     .map((task) => ({
       ...task,
+      read_first_files: task.read_first_files === undefined ? [] : task.read_first_files,
       status: 'done',
       completed_at: new Date().toISOString(),
       completion_evidence: {
