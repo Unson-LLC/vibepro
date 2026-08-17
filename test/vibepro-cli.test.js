@@ -1206,8 +1206,11 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Slack attachments/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Core Synopsis/);
   assert.match(await readFile(npmPublishSkillPath, 'utf8'), /name: vibepro-npm-publish/);
-  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Exact-SHA Evidence Reuse/);
-  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /npm view "vibepro@\$VERSION" version gitHead dist-tags --json/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Required Skill/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /npm-package-publish/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Unson-LLC\/vibepro/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /post-merge-release\.yml/);
+  assert.doesNotMatch(await readFile(npmPublishSkillPath, 'utf8'), /Exact-SHA Evidence Reuse/);
 
   const verify = await runCli(['skills', 'verify', repo]);
   assert.equal(verify.exitCode, 0);
