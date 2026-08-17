@@ -56,3 +56,15 @@ flowchart TD
 - [DB設計](./02_db_design.md)
 - [API設計](./03_api_design.md)
 - [ログ・監視設計](./06_logging_monitoring.md)
+
+## 8. テナント境界（該当する場合）
+
+| 項目 | 内容 |
+|---|---|
+| tenancy model | shared / dedicated / customer-managed / self-hosted |
+| canonical tenant key |  |
+| tenant解決元・解決点 |  |
+| 必須伝播面 | HTTP / queue / storage / tool / memory / その他 |
+| 配備形態 |  |
+
+文言に`tenant`があるだけでは記入しない。複数組織のcredential、data、runtime、配備境界を扱う場合に記入する。

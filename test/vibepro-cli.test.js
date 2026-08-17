@@ -23,7 +23,7 @@ import { preparePullRequest } from '../src/pr-manager.js';
 import { renderAgentReviewPrSection } from '../src/agent-review.js';
 import { writeInferredSpec } from '../src/spec-store.js';
 import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
-import { buildStoryTaskState } from '../src/story-task-generator.js';
+import { buildStoryTaskState, renderStoryTasks } from '../src/story-task-generator.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -1206,8 +1206,11 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Slack attachments/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Core Synopsis/);
   assert.match(await readFile(npmPublishSkillPath, 'utf8'), /name: vibepro-npm-publish/);
-  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Exact-SHA Evidence Reuse/);
-  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /npm view "vibepro@\$VERSION" version gitHead dist-tags --json/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Required Skill/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /npm-package-publish/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Unson-LLC\/vibepro/);
+  assert.match(await readFile(npmPublishSkillPath, 'utf8'), /post-merge-release\.yml/);
+  assert.doesNotMatch(await readFile(npmPublishSkillPath, 'utf8'), /Exact-SHA Evidence Reuse/);
 
   const verify = await runCli(['skills', 'verify', repo]);
   assert.equal(verify.exitCode, 0);
@@ -2527,6 +2530,10 @@ test('story derive creates a repo-wide story catalog and local stories', async (
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').view, 'business');
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').category, 'product');
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').period, null);
+  assert.equal(
+    config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').contract_type,
+    authStory.derived.story_contract.story_type
+  );
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.story_catalog, '.vibepro/stories/story-catalog.json');
   assert.equal(manifest.artifacts.story_map, '.vibepro/stories/story-map.md');
@@ -4543,7 +4550,7 @@ test('diagnose emits local dev performance findings and tasks', async () => {
   assert.match(summary, /runtime probe plan/);
 });
 
-test('story task generator keeps resolved finding tasks as done after re-diagnosis', () => {
+test('story task generator renders legacy resolved tasks without read_first_files after re-diagnosis', () => {
   const taskState = buildStoryTaskState({
     story: { story_id: 'story-local-perf', title: 'ローカル性能を改善する' },
     runId: '2026-05-07Tresolved',
@@ -4560,10 +4567,24 @@ test('story task generator keeps resolved finding tasks as done after re-diagnos
         target_files: ['package.json'],
         target_routes: [],
         target_groups: [],
-        read_first_files: [],
         recommended_strategy: { id: 'manual-review', reason: '分離する' },
         implementation_steps: [],
-        acceptance_criteria: ['分離する']
+        acceptance_criteria: ['分離する'],
+        legacy_extension: { keep: true }
+      },
+      {
+        id: 'VP-TASK-PERF-002',
+        source_type: 'accepted_spec',
+        source_id: 'CI-008',
+        status: 'todo',
+        title: '既存の読込対象を保持する',
+        target_files: ['package.json'],
+        target_routes: [],
+        target_groups: [],
+        read_first_files: [{ file: 'docs/architecture.md', reason: '既存判断を読む' }],
+        recommended_strategy: { id: 'manual-review', reason: '保持する' },
+        implementation_steps: [],
+        acceptance_criteria: ['保持する']
       }]
     },
     evidence: {
@@ -4572,10 +4593,21 @@ test('story task generator keeps resolved finding tasks as done after re-diagnos
     }
   });
 
-  assert.equal(taskState.tasks.length, 1);
-  assert.equal(taskState.tasks[0].id, 'VP-TASK-PERF-001');
-  assert.equal(taskState.tasks[0].status, 'done');
-  assert.equal(taskState.tasks[0].completion_evidence.run_id, '2026-05-07Tresolved');
+  const markdown = renderStoryTasks(taskState);
+
+  const legacyTask = taskState.tasks.find((task) => task.id === 'VP-TASK-PERF-001');
+  const explicitTask = taskState.tasks.find((task) => task.id === 'VP-TASK-PERF-002');
+
+  assert.equal(taskState.tasks.length, 2);
+  assert.equal(legacyTask.status, 'done');
+  assert.deepEqual(legacyTask.read_first_files, []);
+  assert.deepEqual(legacyTask.legacy_extension, { keep: true });
+  assert.equal(legacyTask.completion_evidence.run_id, '2026-05-07Tresolved');
+  assert.deepEqual(explicitTask.read_first_files, [
+    { file: 'docs/architecture.md', reason: '既存判断を読む' }
+  ]);
+  assert.match(markdown, /- Read first: -/);
+  assert.match(markdown, /- Read first: docs\/architecture\.md/);
 });
 
 test('story task generator splits DB findings by route and service domain', () => {

@@ -430,7 +430,7 @@ export function buildManagedWorktreeCommandBinding(context) {
   };
 }
 
-export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null }) {
+export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null, bugDiagnosis = null }) {
   const hasWorktree = Boolean(managedWorktree?.path && managedWorktree.mode !== 'disabled');
   const worktreeAvailable = ['created', 'reused', 'available'].includes(managedWorktree?.status);
   const branchBound = worktreeAvailable && managedWorktree.branch && managedWorktree.branch_match !== false;
@@ -526,13 +526,31 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
           ? 'implementation starts in the current checkout because managed worktree mode is disabled'
           : 'implementation has not started in a bound managed branch yet'
     },
+    ...(bugDiagnosis?.nodes ?? []).map((node) => ({
+      id: node.id,
+      status: node.status,
+      required: true,
+      reason: node.reason ?? (node.status === 'pending' ? 'bug diagnosis evidence has not been recorded yet' : 'bug diagnosis evidence recorded'),
+      evidence: {
+        story_id: bugDiagnosis.story_id,
+        run_id: bugDiagnosis.run_id,
+        head_sha: node.head_sha,
+        evidence_refs: node.evidence_refs ?? [],
+        path_id: node.path_id ?? null,
+        analyses: node.analyses ?? []
+      }
+    })),
     {
       id: 'implementation_complete',
-      status: completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus)
+      status: bugDiagnosis?.status === 'blocked'
+        ? 'blocked'
+        : completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus)
         ? 'passed'
         : deliveryObserved ? 'not_applicable' : 'pending',
-      required: false,
-      reason: completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus)
+      required: Boolean(bugDiagnosis),
+      reason: bugDiagnosis?.status === 'blocked'
+        ? `bug diagnosis must return to ${bugDiagnosis.return_to_node}`
+        : completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus)
         ? 'implementation has produced PR preparation or verification evidence'
         : deliveryObserved
           ? 'delivery was observed externally; local implementation evidence is not inferred from delivery'
@@ -647,6 +665,14 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       reason: 'managed worktree cleanup is outside this MVP implementation scope'
     }
   ];
+  const bugNodeIds = (bugDiagnosis?.nodes ?? []).map((node) => node.id);
+  const implementationEdges = bugNodeIds.length > 0
+    ? [
+        ['implementation_started', bugNodeIds[0]],
+        ...bugNodeIds.slice(1).map((nodeId, index) => [bugNodeIds[index], nodeId]),
+        [bugNodeIds.at(-1), 'implementation_complete']
+      ]
+    : [['implementation_started', 'implementation_complete']];
   return {
     schema_version: '0.1.0',
     nodes,
@@ -655,7 +681,7 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       ['worktree_created', 'branch_bound'],
       ['branch_bound', 'head_bound'],
       ['head_bound', 'implementation_started'],
-      ['implementation_started', 'implementation_complete'],
+      ...implementationEdges,
       ['implementation_complete', 'verification_recorded'],
       ['verification_recorded', 'agent_review_recorded'],
       ['agent_review_recorded', 'pr_prepare_ready'],

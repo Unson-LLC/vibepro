@@ -1,6 +1,8 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
+import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
+
 const CLAUSE_TYPES = new Set(['invariant', 'scenario', 'contract', 'sla']);
 const ORIGIN_KINDS = new Set(['acceptance_criteria', 'background', 'policy', 'frontmatter', 'other']);
 const DIAGRAM_KINDS = new Set(['er', 'state', 'sequence', 'flow', 'c4_context', 'deployment', 'threat_model', 'dfd']);
@@ -83,11 +85,29 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     }
   }
 
+  const multiTenantArchitecture = assessMultiTenantArchitecture({
+    storyText: options.storyContext ?? spec.story_context ?? '',
+    contract: spec.multi_tenancy ?? null,
+    mode: options.mode ?? 'final'
+  });
+  if (multiTenantArchitecture.applicable) {
+    for (const finding of multiTenantArchitecture.findings) {
+      const issue = {
+        code: `multi_tenant_${finding.code}`,
+        message: `${finding.path}: ${finding.message}`,
+        path: finding.path
+      };
+      if (finding.severity === 'error' && options.mode !== 'draft') errors.push(issue);
+      else warnings.push(issue);
+    }
+  }
+
   return {
     ok: errors.length === 0,
     errors,
     warnings,
     clause_reports: clauseReports,
+    multi_tenant_architecture: multiTenantArchitecture,
     spec
   };
 }

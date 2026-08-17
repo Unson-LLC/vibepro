@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibepro.dev/schemas/bug-diagnosis-evidence.schema.json",
+  "title": "VibePro bug diagnosis evidence",
+  "type": "object",
+  "required": ["schema_version", "kind", "story_id", "run_id", "target_head_sha", "nodes", "status", "failures", "return_to_node", "next_actions"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "kind": { "const": "vibepro_bug_diagnosis_dag" },
+    "story_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "target_head_sha": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "status": { "enum": ["ready", "blocked"] },
+    "return_to_node": { "type": ["string", "null"] },
+    "next_actions": { "type": "array", "items": { "type": "string" } },
+    "failures": { "type": "array", "items": { "type": "object", "required": ["id", "reason"] } },
+    "nodes": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "head_sha", "evidence_refs", "reason", "path_id", "analyses"],
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "enum": ["pending", "passed", "failed", "not_applicable"] },
+          "head_sha": { "type": ["string", "null"] },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } },
+          "reason": { "type": ["string", "null"] },
+          "path_id": { "type": ["string", "null"] },
+          "analyses": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

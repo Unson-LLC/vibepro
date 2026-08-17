@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-15 | [`0.2.0-beta.9`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.9) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-12 | [`0.2.0-beta.8`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.8) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-12 | [`0.2.0-beta.7`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.7) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-11 | [`0.2.0-beta.6`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.6) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -408,3 +409,15 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:461:start -->
 - [PR #461](https://github.com/Unson-LLC/vibepro/pull/461) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.8を公開準備
 <!-- vibepro-release-index-pr:461:end -->
+
+<!-- vibepro-release-index-pr:465:start -->
+- [PR #465](https://github.com/Unson-LLC/vibepro/pull/465) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.9を公開準備
+<!-- vibepro-release-index-pr:465:end -->
+
+<!-- vibepro-release-index-pr:473:start -->
+- [PR #473](https://github.com/Unson-LLC/vibepro/pull/473) — [2026-08](/ja/releases/2026-08): fix: バージョン据え置き時のマージ後処理を完了する
+<!-- vibepro-release-index-pr:473:end -->
+
+<!-- vibepro-release-index-pr:474:start -->
+- [PR #474](https://github.com/Unson-LLC/vibepro/pull/474) — [2026-08](/ja/releases/2026-08): fix: 旧形式Storyタスクを正規化する
+<!-- vibepro-release-index-pr:474:end -->

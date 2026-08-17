@@ -7,7 +7,7 @@
 
 VibePro is a small, repository-local CLI for keeping the context around AI-assisted development traceable. It stores Stories, Specs, verification results, review records, decisions, and PR summaries under `.vibepro/` so humans and coding agents can inspect the same evidence.
 
-VibePro does not implement your application, decide whether a change is safe, block PR creation, or merge code for you. The minimal core deliberately removed the former Gate DAG, readiness/blocking verdicts, managed execution, lifecycle accounting, budget enforcement, and automatic audit bundles.
+VibePro does not implement your application, decide whether a change is safe, or merge code for you. The minimal core deliberately removed the former Gate DAG as a general-purpose authority, together with managed execution, lifecycle accounting, budget enforcement, and automatic audit bundles. Bug Stories are the narrow exception: their diagnosis contract fails closed before PR creation until actual-path evidence is complete.
 
 ## Install
 
@@ -45,6 +45,8 @@ vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
 
 `pr prepare` writes a machine-readable summary and PR body under `.vibepro/pr/<story-id>/`. It reports what was recorded; it is not a safety approval. `pr create` can push the selected branch and call GitHub CLI, but final review and merge authority remain outside VibePro.
+
+For a bug fix, register the Story with `--contract-type bug_fix`. VibePro then requires ordered diagnosis evidence from reproduction through same-path reverification. See [Bug diagnosis migration](docs/guide/bug-diagnosis-migration.md).
 
 Use the repository's actual default branch instead of assuming `origin/main`.
 

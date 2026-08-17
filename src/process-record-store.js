@@ -12,6 +12,7 @@ import { isSafeStoryPathSegment } from './story-id.js';
 // verification/<story> (execution-state), spec/<story> (spec-store),
 // evidence/<story>, executions/<story> (runs + decisions), and
 // pr/<story> (verification-evidence.json, verification-runs/,
+// bug-diagnosis/<story>/<run> (ordered bug diagnosis evidence),
 // decision-outcome-ledger.json via artifact-routing).
 export const STORY_SCOPED_RECORD_CLASSES = Object.freeze([
   'reviews',
@@ -20,7 +21,8 @@ export const STORY_SCOPED_RECORD_CLASSES = Object.freeze([
   'spec',
   'evidence',
   'executions',
-  'pr'
+  'pr',
+  'bug-diagnosis'
 ]);
 export const REPO_SCOPED_RECORD_FILES = Object.freeze([
   path.join('gate-outcomes', 'ledger.json')

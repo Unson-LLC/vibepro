@@ -11,8 +11,9 @@
 //   - createPullRequest: turn a prepare result into an actual PR (push +
 //     `gh pr create`, or refresh an existing open PR's body).
 //
-// No blocking, no gate_dag, no readiness/route classification, no
-// remediation-command generation.
+// Bug Stories add one narrow fail-closed readiness check backed by their
+// diagnosis evidence. The former general-purpose Gate DAG and route
+// classification remain removed.
 
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -29,6 +30,9 @@ import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
 import { readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
+import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
+import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
+import { buildExecutionDag } from './managed-worktree.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -57,6 +61,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
 
   const storySource = await findStorySource(root, story).catch(() => null);
+  const bugDiagnosis = await readLatestBugDiagnosis(root, story);
+  const executionDag = buildExecutionDag({
+    managedWorktree: { mode: 'disabled' },
+    completedPhases: [verification.recorded ? 'verify' : null, review.recorded ? 'agent_review' : null].filter(Boolean),
+    completionStatus: 'not_prepared',
+    expectedHeadSha: git.head_sha,
+    bugDiagnosis
+  });
   const verificationTrustStatus = await evaluateVerificationEvidenceTrust(root, verification, git.head_sha);
   const clauseMap = await buildClauseMapForPrepare(root, {
     storyId,
@@ -66,6 +78,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
     verificationTrustStatus
   });
   const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
+  const multiTenantArchitecture = assessMultiTenantArchitecture({
+    storyText: storySource?.content ?? '',
+    contract: spec?.multi_tenancy ?? null,
+    mode: 'final'
+  });
 
   const preparation = {
     schema_version: SCHEMA_VERSION,
@@ -80,6 +97,16 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
+    multi_tenant_architecture: {
+      ...multiTenantArchitecture,
+      review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
+    },
+    bug_diagnosis: bugDiagnosis,
+    execution_dag: executionDag,
+    gate_status: bugDiagnosis?.status === 'blocked' ? 'blocked' : 'ready',
+    blocking_reasons: bugDiagnosis?.status === 'blocked'
+      ? bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
+      : [],
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -435,7 +462,7 @@ async function gitOptional(repoRoot, args) {
 // ---------------------------------------------------------------------------
 
 function renderPrBody(preparation) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability, task_authorities: taskAuthorities } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
@@ -486,6 +513,40 @@ function renderPrBody(preparation) {
     : '- no accepted spec found for this story');
   if (specDrift) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
+  }
+  lines.push('');
+  lines.push('### Multi-tenant architecture');
+  if (!multiTenantArchitecture?.applicable) {
+    lines.push('- status: not_applicable');
+  } else {
+    lines.push(`- status: ${multiTenantArchitecture.status}`);
+    lines.push(`- activation: ${(multiTenantArchitecture.activation_reasons ?? []).join(', ') || 'unknown'}`);
+    lines.push(`- architecture views: ${Object.keys(multiTenantArchitecture.views ?? {}).join(', ') || 'none'}`);
+    lines.push(`- evidence coverage: ${multiTenantArchitecture.coverage?.status ?? 'inconclusive'}`);
+    const scannerStates = Object.entries(multiTenantArchitecture.coverage?.scanners ?? {});
+    if (scannerStates.length > 0) lines.push(`- scanners: ${scannerStates.map(([name, status]) => `${name}=${status}`).join(', ')}`);
+    for (const finding of multiTenantArchitecture.findings ?? []) {
+      lines.push(`- [${finding.severity}] ${finding.code}: ${finding.path}`);
+    }
+    for (const lens of multiTenantArchitecture.review_lenses ?? []) {
+      lines.push(`- review/${lens.id} [${lens.status}]: ${lens.question}`);
+      lines.push(`  - findings: ${(lens.findings ?? []).map((finding) => `${finding.code}@${finding.path}`).join(', ') || 'none'}`);
+      lines.push(`  - unconfirmed: ${(lens.unconfirmed ?? []).map((finding) => `${finding.code}@${finding.path}`).join(', ') || 'none'}`);
+    }
+  }
+  lines.push('');
+  lines.push('### Bug diagnosis DAG');
+  if (preparation.bug_diagnosis) {
+    lines.push(`- gate: ${preparation.bug_diagnosis.status}`);
+    lines.push(`- run: \`${preparation.bug_diagnosis.run_id ?? 'missing'}\` @ \`${preparation.bug_diagnosis.target_head_sha ?? 'missing'}\``);
+    for (const node of preparation.bug_diagnosis.nodes ?? []) {
+      lines.push(`- [${node.status}] ${node.id}${node.head_sha ? ` @ \`${node.head_sha}\`` : ''}`);
+    }
+    if (preparation.bug_diagnosis.return_to_node) {
+      lines.push(`- return_to_node: \`${preparation.bug_diagnosis.return_to_node}\``);
+    }
+  } else {
+    lines.push('- not applicable (Story contract type is not bug_fix/regression_fix)');
   }
   lines.push('');
   lines.push('### Verification evidence');
@@ -561,6 +622,12 @@ export async function createPullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const prepareResult = await preparePullRequest(root, options);
   const { preparation } = prepareResult;
+  if (preparation.gate_status !== 'ready') {
+    throw new Error(
+      `PR creation blocked: ${preparation.blocking_reasons.join(', ')}. `
+      + (preparation.bug_diagnosis?.next_actions?.[0] ?? 'Complete the required VibePro evidence.')
+    );
+  }
   const currentBranch = preparation.git.current_branch;
   const headBranch = options.headBranch ?? currentBranch;
   if (!headBranch) {
@@ -767,6 +834,8 @@ export function renderPrPrepareSummary(result) {
     `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
+    `- gate: ${preparation.gate_status}`,
+    ...(preparation.bug_diagnosis ? [`- bug diagnosis return: ${preparation.bug_diagnosis.return_to_node ?? '-'}`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];

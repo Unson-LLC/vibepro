@@ -39,6 +39,27 @@ A clause is a single machine-checkable statement about the system. Four types:
 7. **Use `open_questions[]`** when Story / Code / Test conflict or the spec
    cannot be determined. Do not invent clauses to paper over ambiguity.
 
+## マルチテナント契約（該当する変更のみ）
+
+Storyが複数の組織・ワークスペース・顧客間のデータ、認証情報、接続先、
+実行環境、状態、キュー、移行または配備の境界を扱う場合は、トップレベルの
+`multi_tenancy`に次の項目を記入する。製品固有の名称ではなく、Story内で確認できる
+役割名と資源名を使う。
+
+- `tenant_identity`: canonical key、取得元、解決点、欠落・曖昧時の動作
+- `propagation`: 必須伝播面と検証済み伝播面
+- `resources`: sharing、partition key、data owner、credential scope、residue policy
+- `credentials`: lookup key、scope、raw secretとcross-tenant fallbackの禁止
+- `data`: canonical owner、residency、migration、rollbackまたはoperator action
+- `failure_semantics`: unknown、ambiguous、接続不能、データなし、越境候補の動作
+- `deployment_modes`: shared、dedicated、customer-managedなど該当する配備形態
+- `negative_scenarios`: failure semanticsを検証する負のシナリオ
+- `graph_metadata`: tenant entityとboundary edge
+- `verification.evidence`: Graph、Spec、実装、scanner、負のシナリオの証拠
+
+境界を扱わないStoryでは`multi_tenancy`を推測で追加しない。適用要否が曖昧なら
+`open_questions[]`へ残す。
+
 ## Output format
 
 ```jsonc

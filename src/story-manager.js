@@ -21,7 +21,8 @@ const STORY_FIELDS = [
   ['--view', 'view'],
   ['--period', 'period'],
   ['--started-at', 'started_at'],
-  ['--due-at', 'due_at']
+  ['--due-at', 'due_at'],
+  ['--contract-type', 'contract_type']
 ];
 
 const DEFAULT_STORY_JOURNEY_ID = 'default-product-journey';
@@ -2278,6 +2279,7 @@ function toConfigStory(story) {
     started_at: story.started_at ?? null,
     due_at: story.due_at ?? null,
     category: story.category ?? null,
+    contract_type: story.contract_type ?? story.story_type ?? story.derived?.story_contract?.story_type ?? null,
     derived_by: 'vibepro-story-derive'
   };
 }
@@ -2325,7 +2327,8 @@ function buildStory(options) {
     view: options.view ?? null,
     period: options.period ?? null,
     started_at: options.started_at ?? null,
-    due_at: options.due_at ?? null
+    due_at: options.due_at ?? null,
+    contract_type: options.contract_type ?? null
   };
 }
 

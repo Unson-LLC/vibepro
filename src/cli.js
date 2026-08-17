@@ -61,8 +61,10 @@ import {
   renderDecisionStatusSummary
 } from './decision-records.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
+import { isBugStory, recordBugDiagnosisNode } from './bug-diagnosis-dag.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
+import { findStorySource } from './requirement-consistency.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
   assertPreSpecReadinessForFinalSpec,
@@ -123,10 +125,11 @@ const HELP_EN = `VibePro CLI
 
 VibePro is a minimal CLI control plane for Story-driven AI development.
 Per docs/management/REBUILD.md ("最小コアのスコープ"), it no longer carries a
-Gate DAG, readiness/blocking evaluation, delivery-efficiency budgets, review
+general-purpose Gate DAG, readiness/blocking evaluation, delivery-efficiency budgets, review
 lifecycle accounting, or auto-generated audit artifacts. It stores Story,
 Spec, verification, review, and PR evidence under .vibepro/ so humans and AI
-agents can continue with reviewable context; it does not block PR creation.
+agents can continue with reviewable context. Bug Stories are the narrow exception:
+PR creation fails closed while ordered diagnosis evidence is incomplete or stale.
 
 Core model:
   Story defines user value and acceptance criteria.
@@ -145,9 +148,11 @@ Typical flow:
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
 
 pr prepare writes .vibepro/pr/<story-id>/pr-prepare.json (Story + Spec presence +
-recorded verification + recorded review, no Gate DAG) and a PR body markdown file.
+recorded verification + recorded review, plus diagnosis status for bug Stories;
+no general-purpose Gate DAG) and a PR body markdown file.
 pr create pushes the current branch and runs \`gh pr create\` (or refreshes an
-existing open PR's body); it does not block on any gate.
+existing open PR's body). Bug Stories are refused while diagnosis evidence is
+incomplete or stale; other Stories have no general-purpose blocking gate.
 
 Usage:
   vibepro help [command]
@@ -190,13 +195,15 @@ Usage:
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro story list [repo] [--all]
-  vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
+  vibepro story add [repo] --id <id> --title <title> [--contract-type <bug_fix|regression_fix>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
   vibepro story archive [repo] --id <id>
   vibepro story runs [repo] [--id <id>]
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
+  vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable> [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...
+  vibepro verify-first [repo] --id <story-id> [--run-graphify]  # deprecated compatibility entry; routes to story diagnose
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
@@ -220,11 +227,11 @@ Usage:
 const HELP_JA = `VibePro CLI
 
 VibeProは、Story起点のAI開発を進めるための最小CLI制御基盤です。
-docs/management/REBUILD.md（「最小コアのスコープ」）に従い、Gate DAG・
+docs/management/REBUILD.md（「最小コアのスコープ」）に従い、汎用Gate DAG・
 readiness/blocking判定・delivery-efficiencyバジェット・review lifecycle会計・
 audit artifactの自動生成は廃止しました。Story・Spec・検証証跡・レビュー証跡・
-PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を追える形にしますが、
-PR作成をブロックする機構は持ちません。
+PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を追える形にします。
+ただしバグStoryだけは例外で、順序付き診断証跡が未完了または古い場合にPR作成を止めます。
 
 まず人間が使う基本コマンド:
   vibepro init <repo> --language ja --story-id <id> --title <title>
@@ -241,7 +248,8 @@ PR作成をブロックする機構は持ちません。
       レビュー結果を記録します。
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
       Story + Spec有無 + 記録済み検証 + 記録済みレビューを要約し、
-      .vibepro/pr/<story-id>/pr-prepare.json とPR本文を作ります。ブロックはしません。
+      .vibepro/pr/<story-id>/pr-prepare.json とPR本文を作ります。
+      バグStoryでは、診断証跡が未完了または古い場合にブロックします。
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
       現在のブランチをpushし、gh pr create（または既存PRの本文更新）を実行します。
 
@@ -294,6 +302,8 @@ Usage:
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
+  vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable> [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...
+  vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
@@ -316,7 +326,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
-  'workspace', 'store'
+  'workspace', 'store', 'bug', 'verify-first'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -328,7 +338,8 @@ const AUTO_SNAPSHOT_SUBCOMMANDS = {
   review: ['record'],
   spec: ['write'],
   pr: ['prepare'],
-  decision: ['record']
+  decision: ['record'],
+  bug: ['diagnose-record']
 };
 
 async function maybeAutoSnapshotProcessRecords(argv, result, io) {
@@ -337,7 +348,8 @@ async function maybeAutoSnapshotProcessRecords(argv, result, io) {
   if (!prefixes || result?.exitCode !== 0) return;
   const subcommand = typeof result.subcommand === 'string' ? result.subcommand : rest[0];
   if (!prefixes.some((prefix) => subcommand === prefix || String(subcommand ?? '').startsWith(`${prefix}-`))) return;
-  const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+  const repoIndex = command === 'bug' ? 2 : 1;
+  const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
   const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
   if (!storyId) return;
   await snapshotProcessRecordsFailSoft({
@@ -369,6 +381,48 @@ async function dispatchCli(argv, io = {}) {
       const version = await readPackageVersion();
       write(stdout, `${version}\n`);
       return { exitCode: 0, command: 'version', version };
+    }
+
+    if (command === 'verify-first') {
+      const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
+      write(stderr, 'DEPRECATED: `vibepro verify-first` is a compatibility entry and routes into the VibePro bug Story DAG. Use `vibepro story diagnose` instead.\n');
+      const result = await executeStoryDiagnosis(repoRoot, ['diagnose', ...rest], io, stdout, { requireBugStory: true });
+      return { exitCode: 0, command, subcommand: 'compat-route', result };
+    }
+
+    if (command === 'bug') {
+      if (hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, [
+          'Usage:',
+          '  vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable>',
+          '    [--run-id <run-id>] [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...',
+          '',
+          'Records one ordered diagnosis node for a registered bug Story and snapshots the evidence to the durable process-record store.',
+          ''
+        ].join('\n'));
+        return { exitCode: 0, command, subcommand: 'help' };
+      }
+      const subcommand = rest[0];
+      const action = rest[1];
+      const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+      if (subcommand !== 'diagnose' || action !== 'record') {
+        write(stderr, `Unknown bug command: ${[subcommand, action].filter(Boolean).join(' ')}\n\n${renderHelp()}`);
+        return { exitCode: 1, command };
+      }
+      const result = await recordBugDiagnosisNode(repoRoot, {
+        storyId: getOption(rest, '--id'),
+        runId: getOption(rest, '--run-id'),
+        nodeId: getOption(rest, '--node'),
+        status: getOption(rest, '--status'),
+        reason: getOption(rest, '--reason'),
+        pathId: getOption(rest, '--path-id'),
+        evidenceRefs: getOptions(rest, '--evidence'),
+        analyses: getOptions(rest, '--analysis')
+      });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : `Bug diagnosis recorded: ${result.evidence.story_id}/${result.evidence.run_id}/${getOption(rest, '--node')} (${result.evidence.status})\n`);
+      return { exitCode: 0, command, subcommand: `${subcommand}-${action}`, result };
     }
 
     if (command === 'init') {
@@ -1052,25 +1106,8 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'diagnose') {
-        const story = await selectStory(repoRoot, getOption(rest, '--id'));
-        write(stdout, `Story selected: ${story.story_id}\n`);
-        const graph = await importGraphifyArtifacts(repoRoot, {
-          storyId: story.story_id,
-          sourceDir: getOption(rest, '--from'),
-          runGraphify: hasFlag(rest, '--run-graphify'),
-          env: io.env
-        });
-        write(stdout, `graphify artifacts imported: ${graph.graphifyDir}\n`);
-        const diagnosis = await runDiagnosis(repoRoot, {
-          runId: getOption(rest, '--run-id'),
-          phase: resolveDiagnosisPhaseOption(rest)
-        });
-        write(stdout, `diagnosis created: ${diagnosis.runDir}\n`);
-        const report = await createStoryReport(repoRoot, story.story_id);
-        write(stdout, `Story report created: ${report.reportPath}\n`);
-        const status = await getStoryStatus(repoRoot, story.story_id);
-        write(stdout, renderStoryStatus(status));
-        return { exitCode: 0, command, subcommand, result: { story, graph, diagnosis, report, status } };
+        const result = await executeStoryDiagnosis(repoRoot, rest, io, stdout);
+        return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'derive') {
         let graph = null;
@@ -1322,9 +1359,22 @@ async function dispatchCli(argv, io = {}) {
         } catch (error) {
           throw new Error(`spec write: input is not valid JSON: ${error.message}`);
         }
-        const validation = await validateSpec(repoRoot, parsed, { expectedStoryId: storyId });
+        const storySource = await findStorySource(path.resolve(repoRoot), {
+          story_id: storyId,
+          title: storyId
+        }).catch(() => null);
+        const validation = await validateSpec(repoRoot, parsed, {
+          expectedStoryId: storyId,
+          mode: draft ? 'draft' : 'final',
+          storyContext: storySource?.content ?? ''
+        });
         if (!validation.ok) {
-          write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
+          write(stdout, `${JSON.stringify({
+            ok: false,
+            errors: validation.errors,
+            warnings: validation.warnings,
+            multi_tenant_architecture: validation.multi_tenant_architecture
+          }, null, 2)}\n`);
           return { exitCode: 2, command, subcommand, validation };
         }
         const preSpecReadiness = final
@@ -1352,6 +1402,7 @@ async function dispatchCli(argv, io = {}) {
           mode: draft ? 'draft' : 'final',
           clauses: stabilized.clauses.length,
           warnings: validation.warnings,
+          multi_tenant_architecture: validation.multi_tenant_architecture,
           pre_spec_readiness: preSpecReadiness ? {
             status: preSpecReadiness.status,
             created_at: preSpecReadiness.created_at,
@@ -1789,7 +1840,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     ja: [
       `VibePro workspaceを初期化しました: ${workspaceDir}`,
       '',
-      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。Gate DAGやPR作成をブロックする機構は持ちません。',
+      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。汎用Gate DAGは持ちませんが、バグStoryは診断証跡が未完了または古い場合にPR作成を止めます。',
       `人間向け出力言語: ${language}`,
       `base branch候補: ${baseBranch ?? '未検出。origin/main, origin/develop, main, develop など実リポジトリの既定branchを指定してください。'}`,
       '',
@@ -1804,7 +1855,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     en: [
       `VibePro workspace initialized: ${workspaceDir}`,
       '',
-      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. It carries no Gate DAG or PR-creation-blocking machinery.',
+      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. Commands may enforce Story-specific readiness contracts before PR creation.',
       `Human output language: ${language}`,
       `Base branch candidate: ${baseBranch ?? 'not detected. Use the repository default such as origin/main, origin/develop, main, or develop.'}`,
       '',
@@ -1827,6 +1878,31 @@ async function detectBaseBranch(repoRoot) {
     if (await gitRefExists(root, ref)) return ref;
   }
   return null;
+}
+
+async function executeStoryDiagnosis(repoRoot, args, io, stdout, options = {}) {
+  const story = await selectStory(repoRoot, getOption(args, '--id'));
+  if (options.requireBugStory && !isBugStory(story)) {
+    throw new Error('`vibepro verify-first` requires a Story registered with contract_type=bug_fix; use `vibepro story diagnose` for other Stories');
+  }
+  write(stdout, `Story selected: ${story.story_id}\n`);
+  const graph = await importGraphifyArtifacts(repoRoot, {
+    storyId: story.story_id,
+    sourceDir: getOption(args, '--from'),
+    runGraphify: hasFlag(args, '--run-graphify'),
+    env: io.env
+  });
+  write(stdout, `graphify artifacts imported: ${graph.graphifyDir}\n`);
+  const diagnosis = await runDiagnosis(repoRoot, {
+    runId: getOption(args, '--run-id'),
+    phase: resolveDiagnosisPhaseOption(args)
+  });
+  write(stdout, `diagnosis created: ${diagnosis.runDir}\n`);
+  const report = await createStoryReport(repoRoot, story.story_id);
+  write(stdout, `Story report created: ${report.reportPath}\n`);
+  const status = await getStoryStatus(repoRoot, story.story_id);
+  write(stdout, renderStoryStatus(status));
+  return { story, graph, diagnosis, report, status };
 }
 
 async function readConfiguredOutputLanguage(repoRoot, fallback = null) {

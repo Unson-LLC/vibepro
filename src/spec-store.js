@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { WORKSPACE_DIR } from './workspace.js';
 import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
+import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
 
 export const SPEC_SCHEMA_VERSION = '0.1.0';
 const HISTORY_KEEP = 10;
@@ -55,6 +56,34 @@ export async function readInferredSpec(repoRoot, storyId) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+export async function readMultiTenantContract(repoRoot, storyId) {
+  const spec = await readInferredSpec(repoRoot, storyId);
+  return spec?.multi_tenancy ?? null;
+}
+
+export async function writeMultiTenantContract(repoRoot, storyId, contract, options = {}) {
+  const spec = await readInferredSpec(repoRoot, storyId);
+  if (!spec) throw new Error(`accepted Spec not found for Story ${storyId}`);
+
+  const assessment = assessMultiTenantArchitecture({
+    storyText: options.storyText ?? spec.story_context ?? '',
+    contract,
+    evidence: options.evidence,
+    mode: 'final'
+  });
+  if (assessment.status !== 'ready') {
+    const codes = assessment.findings.map((finding) => finding.code).join(', ') || assessment.status;
+    throw new Error(`multi-tenant Contract rejected: ${codes}`);
+  }
+
+  await writeInferredSpec(repoRoot, storyId, {
+    ...spec,
+    multi_tenancy: contract,
+    generated_at: new Date().toISOString()
+  });
+  return contract;
 }
 
 export async function readPreSpecReadiness(repoRoot, storyId) {

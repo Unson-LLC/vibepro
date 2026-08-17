@@ -100,7 +100,8 @@ export function normalizeActiveStories(stories) {
     period: typeof story.period === 'string' ? story.period : null,
     started_at: story.started_at ?? null,
     due_at: story.due_at ?? null,
-    category: story.category ?? null
+    category: story.category ?? null,
+    contract_type: story.contract_type ?? story.story_type ?? null
   }));
 }
 
