@@ -417,3 +417,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:473:start -->
 - [PR #473](https://github.com/Unson-LLC/vibepro/pull/473) — [2026-08](/ja/releases/2026-08): fix: バージョン据え置き時のマージ後処理を完了する
 <!-- vibepro-release-index-pr:473:end -->
+
+<!-- vibepro-release-index-pr:474:start -->
+- [PR #474](https://github.com/Unson-LLC/vibepro/pull/474) — [2026-08](/ja/releases/2026-08): fix: 旧形式Storyタスクを正規化する
+<!-- vibepro-release-index-pr:474:end -->

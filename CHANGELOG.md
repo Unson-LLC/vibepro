@@ -2227,3 +2227,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:473:end -->
+
+<!-- vibepro-release-pr:474:start -->
+## [#474](https://github.com/Unson-LLC/vibepro/pull/474) fix: 旧形式Storyタスクを正規化する
+
+- Author: @sintariran
+- Merged: 2026-08-17T06:56:00Z
+- Commit: `e9bb9c2e3309826dd09c72e737218f2c1e65a4c6`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:474:end -->
