@@ -1225,6 +1225,12 @@ test('post-merge docs release is not gated by an approval environment', async ()
   assert.doesNotMatch(workflow, /^\s+environment:\s+npm\s*$/m);
 });
 
+test('post-merge release installs dependencies before unconditional docs projection', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const projectionLoop = workflow.match(/for attempt in 1 2 3; do[\s\S]*?node scripts\/post-merge-release\.mjs project --event "\$GITHUB_EVENT_PATH"/)?.[0] ?? '';
+  assert.match(projectionLoop, /git reset --hard origin\/main[\s\S]*npm ci --ignore-scripts[\s\S]*post-merge-release\.mjs project/);
+});
+
 test('post-merge release uses immutable pre-merge base code for fork validation', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   assert.match(workflow, /pull_request_target:[\s\S]*types:[\s\S]*- closed/);
