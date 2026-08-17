@@ -413,3 +413,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:465:start -->
 - [PR #465](https://github.com/Unson-LLC/vibepro/pull/465) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.9を公開準備
 <!-- vibepro-release-index-pr:465:end -->
+
+<!-- vibepro-release-index-pr:473:start -->
+- [PR #473](https://github.com/Unson-LLC/vibepro/pull/473) — [2026-08](/ja/releases/2026-08): fix: バージョン据え置き時のマージ後処理を完了する
+<!-- vibepro-release-index-pr:473:end -->
