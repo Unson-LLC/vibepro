@@ -426,3 +426,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:475:start -->
 - [PR #475](https://github.com/Unson-LLC/vibepro/pull/475) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.10を公開準備
 <!-- vibepro-release-index-pr:475:end -->
+
+<!-- vibepro-release-index-pr:476:start -->
+- [PR #476](https://github.com/Unson-LLC/vibepro/pull/476) — [2026-08](/ja/releases/2026-08): docs: align VibePro with product intent traceability
+<!-- vibepro-release-index-pr:476:end -->
