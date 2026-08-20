@@ -430,3 +430,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:476:start -->
 - [PR #476](https://github.com/Unson-LLC/vibepro/pull/476) — [2026-08](/releases/2026-08): docs: align VibePro with product intent traceability
 <!-- vibepro-release-index-pr:476:end -->
+
+<!-- vibepro-release-index-pr:477:start -->
+- [PR #477](https://github.com/Unson-LLC/vibepro/pull/477) — [2026-08](/releases/2026-08): feat: add minimal Development Judgment DAG
+<!-- vibepro-release-index-pr:477:end -->
