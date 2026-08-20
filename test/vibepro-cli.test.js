@@ -7431,7 +7431,7 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
   assert.match(readme, /Graphify is optional/);
   assert.match(readme, /Graphify is optional and is not bundled/);
-  assert.match(readme, /former Gate DAG/);
+  assert.match(readme, /former broad Gate DAG/);
   assert.match(readme, /does not implement your application/);
   assert.match(readme, /final review and merge authority remain outside VibePro/);
   assert.match(readme, /`pr create` can push/);
@@ -7440,8 +7440,8 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.doesNotMatch(readme, /Internal beta release notes/);
   assert.match(readmeJa, /Graphifyは任意/);
   assert.match(readmeJa, /Graphifyは任意で、VibeProには同梱しません/);
-  assert.match(readmeJa, /従来のGate DAG/);
-  assert.match(readmeJa, /アプリを実装せず/);
+  assert.match(readmeJa, /従来の広範なGate DAG/);
+  assert.match(readmeJa, /アプリそのものを実装したり.*しません/);
   assert.match(readmeJa, /最終レビューとmerge権限はVibeProの外/);
   assert.match(readmeJa, /`pr create` は選択したbranchをpush/);
   assert.match(readmeJa, /VibeProはApache-2\.0で公開/);

@@ -13,19 +13,19 @@ test('public manual states the current positioning and human authority boundary'
     readFile(path.join(root, 'docs/ja/guide/what-is-vibepro.md'), 'utf8')
   ]);
 
-  assert.match(english, /Keep AI coding context traceable/);
-  assert.match(english, /Human reviewers and repository policy remain responsible/);
-  assert.match(japanese, /AIコーディングの文脈を追跡可能にする/);
-  assert.match(japanese, /人間のreviewerと対象リポジトリのpolicy/);
-  assert.match(englishOverview, /repository-local evidence workspace/);
-  assert.match(japaneseOverview, /リポジトリローカル証跡ワークスペース/);
+  assert.match(english, /product intent to Story, Spec, implementation, verification, decisions, and PR handoff/);
+  assert.match(english, /merge authority with people and repository policy/);
+  assert.match(japanese, /プロダクト意図からStory、Spec、実装、検証、判断、PR引き渡し/);
+  assert.match(japanese, /merge権限は人間とリポジトリpolicy/);
+  assert.match(englishOverview, /repository-local and inspectable/);
+  assert.match(japaneseOverview, /リポジトリローカルに残し/);
   for (const overview of [englishOverview, japaneseOverview]) {
     assert.match(overview, /Story/);
     assert.match(overview, /Spec/);
     assert.match(overview, /verification|検証/i);
-    assert.match(overview, /review/i);
+    assert.match(overview, /review|レビュー/i);
     assert.match(overview, /PR/);
-    assert.match(overview, /no Gate DAG|Gate DAG.*ありません/i);
+    assert.match(overview, /no broad Gate DAG|広範なGate DAG.*ありません/i);
     assert.match(overview, /approve a PR|PRを承認/i);
     assert.match(overview, /merge/i);
   }
