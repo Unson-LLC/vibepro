@@ -434,3 +434,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:477:start -->
 - [PR #477](https://github.com/Unson-LLC/vibepro/pull/477) — [2026-08](/ja/releases/2026-08): feat: add minimal Development Judgment DAG
 <!-- vibepro-release-index-pr:477:end -->
+
+<!-- vibepro-release-index-pr:478:start -->
+- [PR #478](https://github.com/Unson-LLC/vibepro/pull/478) — [2026-08](/ja/releases/2026-08): 公開説明文の意図を保ったまま、旧文言に固定されたCI契約を修復する
+<!-- vibepro-release-index-pr:478:end -->
