@@ -5,9 +5,25 @@
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
-VibeProは、AI支援開発の文脈を追跡可能に保つ、小さなリポジトリローカルCLIです。Story、Spec、検証結果、レビュー記録、判断、PR要約を `.vibepro/` に保存し、人間とコーディングエージェントが同じ証跡を確認できるようにします。
+VibeProは、**人間が意図したプロダクト**と**AI支援開発が実際に作るもの**のズレを減らすためのシステムです。
 
-VibeProはアプリを実装せず、変更の安全性を判定せず、コードをマージしません。最小コアへの再構築により、従来のGate DAGを汎用の判断主体としては廃止し、managed execution、lifecycle会計、budget enforcement、自動audit bundleも取り除きました。バグStoryだけは狭い例外で、実経路の診断証拠が揃うまでPR作成をfail-closedします。
+AIコーディングエージェントは、技術的には正しいコードを書きながら、そもそも違う問題を解くことがあります。VibeProは、Story、Spec、実装証跡、検証、レビュー、判断、PR引き渡しまでの因果関係をリポジトリ内に明示し、人間とコーディングエージェントが同じプロダクト意図と証跡を確認できるようにします。
+
+```text
+Intent
+  -> Story
+    -> Spec
+      -> Implementation
+        -> Verification
+          -> Review / Decision
+            -> PR handoff
+```
+
+VibeProは、主としてAIエージェントのサンドボックスやツール権限制御を行う製品ではありません。Bash、Edit、deployなどをAIに使わせるかどうかは、実行能力の境界に属します。VibeProが扱うのは意図とトレーサビリティの境界です。危険な操作を制限されたAIでも、作るもの自体を間違えることはあります。VibeProは、そのズレを変更が受け入れられる前に見える状態にすることを目的とします。
+
+現行の最小コアは意図的に小さく保っています。Story、Spec、検証結果、レビュー記録、判断、trace、PR要約を `.vibepro/` に保存します。一方で、アプリそのものを実装したり、プロダクトの意味を自律的に決めたり、変更の安全性を判定したり、コードをマージしたりはしません。従来の広範なGate DAG、managed execution、lifecycle会計、budget enforcement、自動audit bundleは最小コア再構築の際に削除しました。
+
+プロダクト思想と現在のアーキテクチャ境界は [Product Intent Traceability](docs/architecture/product-intent-traceability.md) を参照してください。
 
 ## インストール
 
@@ -22,29 +38,29 @@ npm install -g vibepro@beta
 ## 最小ワークフロー
 
 ```bash
-# 1. リポジトリローカルの文脈を初期化
+# 1. 意図した変更をStoryとして登録
 vibepro init /path/to/repo \
   --story-id story-example \
   --title "変更内容" \
   --language ja
 
-# 2. 調査し、追跡可能なSpecを書く
+# 2. コードベースを調査し、追跡可能なSpecを書く
 vibepro story diagnose /path/to/repo --id story-example --run-graphify
 vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 
-# 3. 検証を実行または記録
+# 3. 検証証跡を実行または記録
 vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 
 # 4. レビュー証跡を準備・記録
 vibepro review prepare /path/to/repo --id story-example --stage gate
 vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "確認済み"
+  --role implementation --status pass --summary "StoryとSpecに照らして確認済み"
 
-# 5. PR向けに証跡を要約
+# 5. 意図から実装までの証跡をPR向けに要約
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
 
-`pr prepare` は `.vibepro/pr/<story-id>/` に機械可読な要約とPR本文を書きます。これは記録内容の要約であり、安全性の承認ではありません。`pr create` は選択したbranchをpushしてGitHub CLIを呼べますが、最終レビューとmerge権限はVibeProの外にあります。
+`pr prepare` は `.vibepro/pr/<story-id>/` に機械可読な要約とPR本文を書きます。そこでは記録された内容と、実装がStory / Specへどう紐づいているかを要約しますが、自律的な安全性承認ではありません。`pr create` は選択したbranchをpushしてGitHub CLIを呼べますが、最終レビューとmerge権限はVibeProの外にあります。
 
 バグ修正ではStoryを `--contract-type bug_fix` 付きで登録します。VibeProは再現から同経路再検証までの順序付き診断証拠を要求します。詳しくは[バグ診断への移行](docs/ja/guide/bug-diagnosis-migration.md)を参照してください。
 
@@ -55,8 +71,8 @@ base branchは `origin/main` に固定せず、対象リポジトリの実際の
 - 初期化と健全性: `init`, `config language`, `doctor`, `status`
 - エージェント設定: `skills`, `codex`, `harness`
 - 文脈調査: `graph`, `env graph`, `diagnose`
-- プロダクト意図: `story`, `spec`, `trace`
-- 証跡: `verify`, `review`, `decision`, `guard`
+- プロダクト意図とトレーサビリティ: `story`, `spec`, `trace`, `decision`
+- 証跡: `verify`, `review`, `guard`
 - PR引き渡し: `pr prepare`, `pr create`
 - 連携とartifact保守: `brainbase`, `artifacts`
 
@@ -70,6 +86,7 @@ Graphifyは任意で、VibeProには同梱しません。外部の `graphify` �
 
 - マニュアル: https://vibepro.pages.dev/ja/
 - English README: [README.md](README.md)
+- プロダクト思想: [Product Intent Traceability](docs/architecture/product-intent-traceability.md)
 - CLIリファレンス: https://vibepro.pages.dev/ja/reference/cli
 - リリースノート: https://vibepro.pages.dev/ja/releases/
 

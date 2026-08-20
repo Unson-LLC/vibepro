@@ -5,9 +5,25 @@
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
-VibePro is a small, repository-local CLI for keeping the context around AI-assisted development traceable. It stores Stories, Specs, verification results, review records, decisions, and PR summaries under `.vibepro/` so humans and coding agents can inspect the same evidence.
+VibePro helps teams keep **what they intended to build** aligned with **what AI-assisted development actually produces**.
 
-VibePro does not implement your application, decide whether a change is safe, or merge code for you. The minimal core deliberately removed the former Gate DAG as a general-purpose authority, together with managed execution, lifecycle accounting, budget enforcement, and automatic audit bundles. Bug Stories are the narrow exception: their diagnosis contract fails closed before PR creation until actual-path evidence is complete.
+AI coding agents can write technically valid code and still solve the wrong problem. VibePro keeps the chain from Story to Spec, implementation evidence, verification, review, decisions, and PR handoff explicit and repository-local, so humans and coding agents can inspect the same product intent and the same evidence.
+
+```text
+Intent
+  -> Story
+    -> Spec
+      -> Implementation
+        -> Verification
+          -> Review / Decision
+            -> PR handoff
+```
+
+VibePro is not primarily an agent sandbox or tool-permission system. It does not try to decide which Bash/Edit/deploy tools an agent may use. Those controls belong at the capability/execution boundary. VibePro operates at the intent/traceability boundary: a constrained agent can still build the wrong thing, and VibePro exists to make that mismatch visible before the change is accepted.
+
+The current minimal core is intentionally small. It stores Stories, Specs, verification results, review records, decisions, traces, and PR summaries under `.vibepro/`. It does not implement your application, autonomously decide product meaning, decide whether a change is safe, or merge code for you. The former broad Gate DAG, managed execution, lifecycle accounting, budget enforcement, and automatic audit bundles were removed during the minimal-core rebuild.
+
+See [Product Intent Traceability](docs/architecture/product-intent-traceability.md) for the product philosophy and architectural boundary.
 
 ## Install
 
@@ -22,29 +38,29 @@ npm install -g vibepro@beta
 ## Minimal workflow
 
 ```bash
-# 1. Initialize repository-local context
+# 1. Register the intended change as a Story
 vibepro init /path/to/repo \
   --story-id story-example \
   --title "Example change" \
   --language en
 
-# 2. Investigate and write a traceable Spec
+# 2. Investigate the codebase and write a traceable Spec
 vibepro story diagnose /path/to/repo --id story-example --run-graphify
 vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 
-# 3. Run or record verification
+# 3. Run or record verification evidence
 vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 
 # 4. Prepare and record review evidence
 vibepro review prepare /path/to/repo --id story-example --stage gate
 vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "Reviewed"
+  --role implementation --status pass --summary "Reviewed against the Story and Spec"
 
-# 5. Summarize evidence for a PR
+# 5. Summarize the intent-to-implementation evidence for a PR
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
 
-`pr prepare` writes a machine-readable summary and PR body under `.vibepro/pr/<story-id>/`. It reports what was recorded; it is not a safety approval. `pr create` can push the selected branch and call GitHub CLI, but final review and merge authority remain outside VibePro.
+`pr prepare` writes a machine-readable summary and PR body under `.vibepro/pr/<story-id>/`. It reports what was recorded and how the implementation is linked back to the Story and Spec; it is not an autonomous safety approval. `pr create` can push the selected branch and call GitHub CLI, but final review and merge authority remain outside VibePro.
 
 For a bug fix, register the Story with `--contract-type bug_fix`. VibePro then requires ordered diagnosis evidence from reproduction through same-path reverification. See [Bug diagnosis migration](docs/guide/bug-diagnosis-migration.md).
 
@@ -55,8 +71,8 @@ Use the repository's actual default branch instead of assuming `origin/main`.
 - Repository setup and health: `init`, `config language`, `doctor`, `status`
 - Agent setup: `skills`, `codex`, `harness`
 - Context discovery: `graph`, `env graph`, `diagnose`
-- Product intent: `story`, `spec`, `trace`
-- Evidence: `verify`, `review`, `decision`, `guard`
+- Product intent and traceability: `story`, `spec`, `trace`, `decision`
+- Evidence: `verify`, `review`, `guard`
 - PR handoff: `pr prepare`, `pr create`
 - Integration and artifact maintenance: `brainbase`, `artifacts`
 
@@ -70,6 +86,7 @@ Graphify is optional and is not bundled. With an external `graphify` command ins
 
 - Manual: https://vibepro.pages.dev
 - Japanese README: [README.ja.md](README.ja.md)
+- Product philosophy: [Product Intent Traceability](docs/architecture/product-intent-traceability.md)
 - CLI reference: https://vibepro.pages.dev/reference/cli
 - Releases: https://vibepro.pages.dev/releases/
 
