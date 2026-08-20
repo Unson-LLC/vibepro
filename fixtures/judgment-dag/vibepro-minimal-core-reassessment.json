@@ -1,0 +1,239 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "vibepro_development_judgment_dag",
+  "scope": "vibepro:minimal-core-reassessment",
+  "story_id": "story-vibepro-development-judgment-dag",
+  "event_id": "event-vibepro-development-judgment-dag-dogfood",
+  "created_at": "2026-08-20T18:00:00+09:00",
+  "nodes": [
+    {
+      "id": "judgment-old-gate-dag",
+      "story_id": "story-vibepro-development-judgment-dag",
+      "event_id": "event-vibepro-development-judgment-dag-dogfood",
+      "question": "How should VibePro make AI delivery safe and repeatable?",
+      "context_snapshot": {
+        "phase": "pre-minimal-core",
+        "source": "historical architecture"
+      },
+      "assumptions": [],
+      "options": [
+        {
+          "id": "comprehensive-gate-dag",
+          "summary": "Combine judgment, policy, execution and audit in one Gate DAG",
+          "disposition": "selected",
+          "reason": null
+        },
+        {
+          "id": "lighter-evidence-core",
+          "summary": "Keep only traceable evidence and human judgment",
+          "disposition": "rejected",
+          "reason": null
+        }
+      ],
+      "evidence_refs": [],
+      "judgment": "A comprehensive Gate DAG can encode engineering judgment and safety checks.",
+      "decision": "Build the comprehensive Gate DAG.",
+      "authority": {
+        "kind": "human",
+        "ref": "VibePro product owner"
+      },
+      "runner_type": "human",
+      "confidence": 0.7,
+      "status": "accepted",
+      "expected_outcomes": [
+        {
+          "id": "safe-autonomy",
+          "statement": "Increase safe autonomous delivery without increasing operator burden.",
+          "metric": null
+        }
+      ],
+      "evaluations": [
+        {
+          "evaluation_id": "evaluation-old-gate-dag-001",
+          "status": "falsified",
+          "summary": "The combined Gate DAG accumulated excessive product and operator complexity, triggering the minimal-core rebuild.",
+          "evidence_refs": [
+            "docs/management/rebuild-plan.md",
+            "CHANGELOG.md"
+          ],
+          "observed_outcomes": [
+            {
+              "id": "safe-autonomy",
+              "observation": "Safety machinery expanded together with substantial orchestration, lifecycle and audit complexity instead of remaining a small reusable primitive."
+            }
+          ],
+          "observed_at": "2026-08-07T11:08:05+09:00"
+        }
+      ],
+      "recorded_at": "2026-08-20T18:00:00+09:00"
+    },
+    {
+      "id": "judgment-minimal-core",
+      "story_id": "story-vibepro-development-judgment-dag",
+      "event_id": "event-vibepro-development-judgment-dag-dogfood",
+      "question": "What should be removed after the Gate DAG became too large and operationally expensive?",
+      "context_snapshot": {
+        "phase": "minimal-core-rebuild",
+        "source": "REBUILD.md / beta.3 cleanup"
+      },
+      "assumptions": [
+        "Story, Spec, verification, review and PR evidence preserve the essential traceability value."
+      ],
+      "options": [
+        {
+          "id": "keep-gate-dag",
+          "summary": "Keep the comprehensive Gate DAG and simplify incrementally",
+          "disposition": "rejected",
+          "reason": null
+        },
+        {
+          "id": "minimal-core",
+          "summary": "Remove generic Gate DAG and retain repository-local evidence core",
+          "disposition": "selected",
+          "reason": null
+        }
+      ],
+      "evidence_refs": [
+        "docs/management/rebuild-plan.md",
+        "CHANGELOG.md"
+      ],
+      "judgment": "The combined control system had grown beyond the value of its safety guarantees.",
+      "decision": "Rebuild around a minimal evidence core.",
+      "authority": {
+        "kind": "human",
+        "ref": "VibePro product owner"
+      },
+      "runner_type": "human",
+      "confidence": 0.85,
+      "status": "accepted",
+      "expected_outcomes": [
+        {
+          "id": "lower-complexity",
+          "statement": "Reduce product complexity and operator friction.",
+          "metric": null
+        },
+        {
+          "id": "retain-traceability",
+          "statement": "Retain Story-to-evidence traceability.",
+          "metric": null
+        }
+      ],
+      "evaluations": [
+        {
+          "evaluation_id": "evaluation-minimal-core-001",
+          "status": "mixed",
+          "summary": "The minimal core removed generic Gate coupling, while the repository still retains evidence and traceability primitives; however, causal engineering judgment is no longer represented as a general current model.",
+          "evidence_refs": [
+            "src/pr-manager.js",
+            "src/traceability.js",
+            "src/pre-spec-readiness.js"
+          ],
+          "observed_outcomes": [
+            {
+              "id": "lower-complexity",
+              "observation": "Generic Gate DAG and readiness machinery were removed from pr-manager."
+            },
+            {
+              "id": "retain-traceability",
+              "observation": "Story, Spec, verification, review and traceability artifacts remain, but engineering judgment lineage is no longer a general-purpose current primitive."
+            }
+          ],
+          "observed_at": "2026-08-20T18:00:00+09:00"
+        }
+      ],
+      "recorded_at": "2026-08-20T18:00:00+09:00"
+    },
+    {
+      "id": "judgment-development-dag-kernel",
+      "story_id": "story-vibepro-development-judgment-dag",
+      "event_id": "event-vibepro-development-judgment-dag-dogfood",
+      "question": "How can VibePro retain the useful causal structure of engineering judgment without recreating Gate DAG coupling?",
+      "context_snapshot": {
+        "phase": "post-minimal-core",
+        "source": "development judgment DAG dogfood"
+      },
+      "assumptions": [
+        "Judgment history is useful even when it does not block execution.",
+        "Guardrail and Execution DAGs remain separate concerns."
+      ],
+      "options": [
+        {
+          "id": "restore-old-gates",
+          "summary": "Restore the former Gate DAG machinery",
+          "disposition": "rejected",
+          "reason": null
+        },
+        {
+          "id": "nonblocking-kernel",
+          "summary": "Add a small append-only Judgment Node/Edge model with outcome evaluation",
+          "disposition": "selected",
+          "reason": null
+        }
+      ],
+      "evidence_refs": [
+        "src/judgment-dag.js",
+        "docs/architecture/development-judgment-dag.md"
+      ],
+      "judgment": "The reusable primitive is causal judgment history, not a universal readiness gate.",
+      "decision": "Introduce a non-blocking Development Judgment DAG kernel and dogfood it on VibePro itself.",
+      "authority": {
+        "kind": "human",
+        "ref": "VibePro product owner"
+      },
+      "runner_type": "human",
+      "confidence": 0.9,
+      "status": "accepted",
+      "expected_outcomes": [
+        {
+          "id": "causal-trace",
+          "statement": "A later contributor can reconstruct why the current architecture superseded the former one.",
+          "metric": null
+        },
+        {
+          "id": "no-gate-coupling",
+          "statement": "Judgment records do not create readiness or merge blockers.",
+          "metric": null
+        }
+      ],
+      "evaluations": [
+        {
+          "evaluation_id": "evaluation-development-dag-dogfood-001",
+          "status": "confirmed",
+          "summary": "The first dogfood graph represents the architecture lineage without adding readiness, merge, waiver or execution authority.",
+          "evidence_refs": [
+            "src/judgment-dag.js",
+            "test/judgment-dag.test.js"
+          ],
+          "observed_outcomes": [
+            {
+              "id": "causal-trace",
+              "observation": "The graph explicitly links the comprehensive Gate DAG, minimal-core rebuild, and the new non-blocking kernel."
+            },
+            {
+              "id": "no-gate-coupling",
+              "observation": "The model contains no gate_status or ready_for_pr_create verdict and exposes blocking=false only as a summary invariant."
+            }
+          ],
+          "observed_at": "2026-08-20T18:10:00+09:00"
+        }
+      ],
+      "recorded_at": "2026-08-20T18:00:00+09:00"
+    }
+  ],
+  "edges": [
+    {
+      "from": "judgment-old-gate-dag",
+      "to": "judgment-minimal-core",
+      "relation": "supersedes",
+      "reason": "Observed operational complexity invalidated the earlier architecture choice.",
+      "recorded_at": "2026-08-20T18:00:00+09:00"
+    },
+    {
+      "from": "judgment-minimal-core",
+      "to": "judgment-development-dag-kernel",
+      "relation": "supports",
+      "reason": "The minimal core provides the boundary condition for reintroducing only the judgment primitive.",
+      "recorded_at": "2026-08-20T18:00:00+09:00"
+    }
+  ]
+}
