@@ -438,3 +438,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:478:start -->
 - [PR #478](https://github.com/Unson-LLC/vibepro/pull/478) — [2026-08](/releases/2026-08): 公開説明文の意図を保ったまま、旧文言に固定されたCI契約を修復する
 <!-- vibepro-release-index-pr:478:end -->
+
+<!-- vibepro-release-index-pr:479:start -->
+- [PR #479](https://github.com/Unson-LLC/vibepro/pull/479) — [2026-08](/releases/2026-08): fix: block PR creation until agent reviews complete
+<!-- vibepro-release-index-pr:479:end -->

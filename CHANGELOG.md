@@ -2332,3 +2332,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:478:end -->
+
+<!-- vibepro-release-pr:479:start -->
+## [#479](https://github.com/Unson-LLC/vibepro/pull/479) fix: block PR creation until agent reviews complete
+
+- Author: @sintariran
+- Merged: 2026-08-21T11:38:27Z
+- Commit: `598c4c3c13b36ea96900afca182124aa61232ff8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:479:end -->
