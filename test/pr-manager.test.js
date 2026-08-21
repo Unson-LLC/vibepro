@@ -315,3 +315,91 @@ test('pr readiness marks the execution DAG ready after every configured review p
     'pending'
   );
 });
+
+test('pr readiness fails closed when the configured review status cannot be read', async () => {
+  const storyId = 'story-pr-manager-review-status-error';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    defaults: {
+      freshness_mode: 'strict_head'
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(root, ['add', configPath]);
+  await git(root, ['commit', '-m', 'test: configure an invalid review policy']);
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0, 'pr prepare must persist the blocked review status for inspection');
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, true);
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.equal(preparation.review.status, 'error');
+  assert.match(preparation.review.error.message, /freshness_mode cannot be strict_head/);
+  assert.equal(preparation.gate_status, 'blocked');
+  assert.deepEqual(preparation.blocking_reasons, ['agent_review:status_unavailable']);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+
+  let createError = '';
+  const created = await runCli(
+    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
+    { stderr: { write: (chunk) => { createError += chunk; } } }
+  );
+  assert.equal(created.exitCode, 1);
+  assert.match(createError, /PR creation blocked: agent_review:status_unavailable/);
+});
+
+test('pr readiness stays ready when every review stage is explicitly disabled', async () => {
+  const storyId = 'story-pr-manager-review-disabled';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      planning_spec: [],
+      requirement: [],
+      architecture_spec: [],
+      test_plan: [],
+      implementation: [],
+      gate: [],
+      preview: []
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(root, ['add', configPath]);
+  await git(root, ['commit', '-m', 'test: explicitly disable review stages']);
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, false);
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.equal(preparation.review.status, 'needs_review');
+  assert.equal(preparation.review.error, null);
+  assert.equal(preparation.gate_status, 'ready');
+  assert.deepEqual(preparation.blocking_reasons, []);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'passed'
+  );
+});

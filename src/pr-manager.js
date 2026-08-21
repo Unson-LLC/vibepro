@@ -280,6 +280,7 @@ async function readReviewSummary(repoRoot, storyId) {
       recorded,
       complete: configured && status.status === 'pass',
       status: status.status ?? null,
+      error: null,
       summary: status.summary ?? null,
       stages: (status.stages ?? []).map((stage) => ({
         stage: stage.stage,
@@ -287,8 +288,16 @@ async function readReviewSummary(repoRoot, storyId) {
         roles: (stage.roles ?? []).map((role) => role.role ?? role.name ?? role).filter(Boolean)
       }))
     };
-  } catch {
-    return { configured: false, recorded: false, complete: false, status: null, summary: null, stages: [] };
+  } catch (error) {
+    return {
+      configured: true,
+      recorded: false,
+      complete: false,
+      status: 'error',
+      error: { message: String(error?.message ?? error) },
+      summary: null,
+      stages: []
+    };
   }
 }
 
@@ -297,6 +306,12 @@ function resolvePrReadiness({ bugDiagnosis, review }) {
     return {
       status: 'blocked',
       reasons: bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
+    };
+  }
+  if (review.error) {
+    return {
+      status: 'blocked',
+      reasons: ['agent_review:status_unavailable']
     };
   }
   if (review.configured && !review.complete) {
