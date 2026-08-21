@@ -144,9 +144,11 @@ function summarizeVerification(verification) {
 }
 
 function summarizeReview(review) {
-  if (!review) return { recorded: false, status: null };
+  if (!review) return { configured: false, recorded: false, complete: false, status: null };
   return {
+    configured: review.configured ?? false,
     recorded: review.recorded ?? false,
+    complete: review.complete ?? false,
     status: review.status ?? null,
     summary: review.summary ?? null
   };

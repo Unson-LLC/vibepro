@@ -168,3 +168,304 @@ test('pr prepare does not block when no story document exists', async () => {
   assert.match(body, /no story document found/);
   assert.match(body, /no acceptance criteria found/);
 });
+
+test('pr readiness reports configured but incomplete reviews and blocks PR creation until complete', async () => {
+  const storyId = 'story-pr-manager-review-readiness';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, true);
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.equal(preparation.review.status, 'needs_review');
+  assert.equal(preparation.gate_status, 'needs_review');
+  assert.deepEqual(preparation.blocking_reasons, ['agent_review:needs_review']);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+
+  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(body, /### Review\n- configured: true\n- recorded: false\n- complete: false\n- status: needs_review/);
+  assert.match(body, /- blocking reasons: agent_review:needs_review/);
+  assert.match(body, /- error: none/);
+
+  let createError = '';
+  const created = await runCli(
+    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
+    { stderr: { write: (chunk) => { createError += chunk; } } }
+  );
+  assert.equal(created.exitCode, 1);
+  assert.match(createError, /PR creation blocked: agent_review:needs_review/);
+});
+
+test('pr readiness marks the execution DAG ready after every configured review passes', async () => {
+  const storyId = 'story-pr-manager-review-complete';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      planning_spec: ['product_requirement'],
+      requirement: [],
+      architecture_spec: [],
+      test_plan: [],
+      implementation: [],
+      gate: [],
+      preview: []
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(root, ['add', configPath]);
+  await git(root, ['commit', '-m', 'test: configure one lightweight review']);
+
+  const preparedReview = await runCli([
+    'review', 'prepare', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--roles', 'product_requirement',
+    '--json'
+  ]);
+  assert.equal(preparedReview.exitCode, 0);
+
+  const recordedReview = await runCli([
+    'review', 'record', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', 'pass',
+    '--summary', 'the configured lightweight review passed',
+    '--inspection-summary', 'inspected the story and implementation diff',
+    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
+    '--inspection-input', 'widget.js',
+    '--judgment-delta', 'review missing -> passed after inspecting the current content surface',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'reviewer-ready-1',
+    '--reviewer-identity', 'separate_session',
+    '--implementation-session-id', 'implementation-session-1',
+    '--agent-session-id', 'review-session-1',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(recordedReview.exitCode, 0);
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, true);
+  assert.equal(preparation.review.recorded, true);
+  assert.equal(preparation.review.complete, true);
+  assert.equal(preparation.review.status, 'pass');
+  assert.equal(preparation.gate_status, 'ready');
+  assert.deepEqual(preparation.blocking_reasons, []);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'passed'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'passed'
+  );
+
+  const changedReview = await runCli([
+    'review', 'record', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', 'needs_changes',
+    '--summary', 'the configured review found a required change',
+    '--inspection-summary', 'reinspected the story and implementation diff',
+    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
+    '--inspection-input', 'widget.js',
+    '--judgment-delta', 'pass -> needs changes after finding a contract mismatch',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'reviewer-ready-2',
+    '--reviewer-identity', 'separate_session',
+    '--implementation-session-id', 'implementation-session-1',
+    '--agent-session-id', 'review-session-2',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(changedReview.exitCode, 0);
+
+  const preparedAfterChange = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(preparedAfterChange.exitCode, 0);
+  const changedPreparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(changedPreparation.review.recorded, true);
+  assert.equal(changedPreparation.review.complete, false);
+  assert.equal(changedPreparation.review.status, 'needs_review');
+  assert.equal(changedPreparation.gate_status, 'needs_review');
+  assert.deepEqual(changedPreparation.blocking_reasons, ['agent_review:needs_review']);
+  assert.equal(
+    changedPreparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    changedPreparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+
+  const blockedReview = await runCli([
+    'review', 'record', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', 'block',
+    '--summary', 'the configured review found a release blocker',
+    '--inspection-summary', 'reinspected the story and implementation diff',
+    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
+    '--inspection-input', 'widget.js',
+    '--judgment-delta', 'needs changes -> blocked after confirming a release blocker',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'reviewer-ready-3',
+    '--reviewer-identity', 'separate_session',
+    '--implementation-session-id', 'implementation-session-1',
+    '--agent-session-id', 'review-session-3',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(blockedReview.exitCode, 0);
+
+  const preparedAfterBlock = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(preparedAfterBlock.exitCode, 0);
+  const blockedPreparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(blockedPreparation.review.recorded, true);
+  assert.equal(blockedPreparation.review.complete, false);
+  assert.equal(blockedPreparation.review.status, 'block');
+  assert.equal(blockedPreparation.gate_status, 'blocked');
+  assert.deepEqual(blockedPreparation.blocking_reasons, ['agent_review:block']);
+  assert.equal(
+    blockedPreparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    blockedPreparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+
+  const blockedBody = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(blockedBody, /### Review\n- configured: true\n- recorded: true\n- complete: false\n- status: block/);
+  assert.match(blockedBody, /- blocking reasons: agent_review:block/);
+
+  let blockCreateError = '';
+  const blockedCreate = await runCli(
+    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
+    { stderr: { write: (chunk) => { blockCreateError += chunk; } } }
+  );
+  assert.equal(blockedCreate.exitCode, 1);
+  assert.match(blockCreateError, /PR creation blocked: agent_review:block/);
+});
+
+test('pr readiness fails closed when the configured review status cannot be read', async () => {
+  const storyId = 'story-pr-manager-review-status-error';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    defaults: {
+      freshness_mode: 'strict_head'
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(root, ['add', configPath]);
+  await git(root, ['commit', '-m', 'test: configure an invalid review policy']);
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0, 'pr prepare must persist the blocked review status for inspection');
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, true);
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.equal(preparation.review.status, 'error');
+  assert.match(preparation.review.error.message, /freshness_mode cannot be strict_head/);
+  assert.equal(preparation.gate_status, 'blocked');
+  assert.deepEqual(preparation.blocking_reasons, ['agent_review:status_unavailable']);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+
+  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(body, /### Review\n- configured: true\n- recorded: false\n- complete: false\n- status: error/);
+  assert.match(body, /- blocking reasons: agent_review:status_unavailable/);
+  assert.match(body, /- error: .*freshness_mode cannot be strict_head/);
+
+  let createError = '';
+  const created = await runCli(
+    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
+    { stderr: { write: (chunk) => { createError += chunk; } } }
+  );
+  assert.equal(created.exitCode, 1);
+  assert.match(createError, /PR creation blocked: agent_review:status_unavailable/);
+});
+
+test('pr readiness stays ready when every review stage is explicitly disabled', async () => {
+  const storyId = 'story-pr-manager-review-disabled';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      planning_spec: [],
+      requirement: [],
+      architecture_spec: [],
+      test_plan: [],
+      implementation: [],
+      gate: [],
+      preview: []
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(root, ['add', configPath]);
+  await git(root, ['commit', '-m', 'test: explicitly disable review stages']);
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, false);
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.equal(preparation.review.status, 'needs_review');
+  assert.equal(preparation.review.error, null);
+  assert.equal(preparation.gate_status, 'ready');
+  assert.deepEqual(preparation.blocking_reasons, []);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'not_applicable'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'passed'
+  );
+
+  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(body, /### Review\n- configured: false\n- recorded: false\n- complete: false\n- status: needs_review/);
+  assert.match(body, /- blocking reasons: none/);
+  assert.match(body, /- error: none/);
+});
