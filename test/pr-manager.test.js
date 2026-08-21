@@ -168,3 +168,150 @@ test('pr prepare does not block when no story document exists', async () => {
   assert.match(body, /no story document found/);
   assert.match(body, /no acceptance criteria found/);
 });
+
+test('pr readiness reports configured but incomplete reviews and blocks PR creation until complete', async () => {
+  const storyId = 'story-pr-manager-review-readiness';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, true);
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.equal(preparation.review.status, 'needs_review');
+  assert.equal(preparation.gate_status, 'needs_review');
+  assert.deepEqual(preparation.blocking_reasons, ['agent_review:needs_review']);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+
+  let createError = '';
+  const created = await runCli(
+    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
+    { stderr: { write: (chunk) => { createError += chunk; } } }
+  );
+  assert.equal(created.exitCode, 1);
+  assert.match(createError, /PR creation blocked: agent_review:needs_review/);
+});
+
+test('pr readiness marks the execution DAG ready after every configured review passes', async () => {
+  const storyId = 'story-pr-manager-review-complete';
+  const root = await setupRepo({
+    storyId,
+    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
+  });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      planning_spec: ['product_requirement'],
+      requirement: [],
+      architecture_spec: [],
+      test_plan: [],
+      implementation: [],
+      gate: [],
+      preview: []
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(root, ['add', configPath]);
+  await git(root, ['commit', '-m', 'test: configure one lightweight review']);
+
+  const preparedReview = await runCli([
+    'review', 'prepare', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--roles', 'product_requirement',
+    '--json'
+  ]);
+  assert.equal(preparedReview.exitCode, 0);
+
+  const recordedReview = await runCli([
+    'review', 'record', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', 'pass',
+    '--summary', 'the configured lightweight review passed',
+    '--inspection-summary', 'inspected the story and implementation diff',
+    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
+    '--inspection-input', 'widget.js',
+    '--judgment-delta', 'review missing -> passed after inspecting the current content surface',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'reviewer-ready-1',
+    '--reviewer-identity', 'separate_session',
+    '--implementation-session-id', 'implementation-session-1',
+    '--agent-session-id', 'review-session-1',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(recordedReview.exitCode, 0);
+
+  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(preparation.review.configured, true);
+  assert.equal(preparation.review.recorded, true);
+  assert.equal(preparation.review.complete, true);
+  assert.equal(preparation.review.status, 'pass');
+  assert.equal(preparation.gate_status, 'ready');
+  assert.deepEqual(preparation.blocking_reasons, []);
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'passed'
+  );
+  assert.equal(
+    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'passed'
+  );
+
+  const changedReview = await runCli([
+    'review', 'record', root,
+    '--id', storyId,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', 'needs_changes',
+    '--summary', 'the configured review found a required change',
+    '--inspection-summary', 'reinspected the story and implementation diff',
+    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
+    '--inspection-input', 'widget.js',
+    '--judgment-delta', 'pass -> needs changes after finding a contract mismatch',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'reviewer-ready-2',
+    '--reviewer-identity', 'separate_session',
+    '--implementation-session-id', 'implementation-session-1',
+    '--agent-session-id', 'review-session-2',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(changedReview.exitCode, 0);
+
+  const preparedAfterChange = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(preparedAfterChange.exitCode, 0);
+  const changedPreparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(changedPreparation.review.recorded, true);
+  assert.equal(changedPreparation.review.complete, false);
+  assert.equal(changedPreparation.review.status, 'needs_review');
+  assert.equal(changedPreparation.gate_status, 'needs_review');
+  assert.deepEqual(changedPreparation.blocking_reasons, ['agent_review:needs_review']);
+  assert.equal(
+    changedPreparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
+    'pending'
+  );
+  assert.equal(
+    changedPreparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
+    'pending'
+  );
+});

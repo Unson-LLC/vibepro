@@ -11,8 +11,8 @@
 //   - createPullRequest: turn a prepare result into an actual PR (push +
 //     `gh pr create`, or refresh an existing open PR's body).
 //
-// Bug Stories add one narrow fail-closed readiness check backed by their
-// diagnosis evidence. The former general-purpose Gate DAG and route
+// Bug Stories and the configured lightweight review pass add narrow,
+// fail-closed readiness checks. The former general-purpose Gate DAG and route
 // classification remain removed.
 
 import { execFile } from 'node:child_process';
@@ -62,9 +62,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   const storySource = await findStorySource(root, story).catch(() => null);
   const bugDiagnosis = await readLatestBugDiagnosis(root, story);
+  const readiness = resolvePrReadiness({ bugDiagnosis, review });
   const executionDag = buildExecutionDag({
     managedWorktree: { mode: 'disabled' },
-    completedPhases: [verification.recorded ? 'verify' : null, review.recorded ? 'agent_review' : null].filter(Boolean),
+    completedPhases: [
+      verification.recorded ? 'verify' : null,
+      review.complete ? 'agent_review' : null,
+      readiness.status === 'ready' ? 'ready_for_pr_create' : null
+    ].filter(Boolean),
     completionStatus: 'not_prepared',
     expectedHeadSha: git.head_sha,
     bugDiagnosis
@@ -103,10 +108,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     },
     bug_diagnosis: bugDiagnosis,
     execution_dag: executionDag,
-    gate_status: bugDiagnosis?.status === 'blocked' ? 'blocked' : 'ready',
-    blocking_reasons: bugDiagnosis?.status === 'blocked'
-      ? bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
-      : [],
+    gate_status: readiness.status,
+    blocking_reasons: readiness.reasons,
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -268,8 +271,14 @@ function assertRecordedRuntimeIdentities(verification) {
 async function readReviewSummary(repoRoot, storyId) {
   try {
     const status = await getAgentReviewStatus(repoRoot, { storyId });
+    const configured = (status.summary?.stage_count ?? 0) > 0;
+    const recorded = (status.stages ?? []).some((stage) =>
+      (stage.roles ?? []).some((role) => Boolean(role.artifact))
+    );
     return {
-      recorded: (status.summary?.stage_count ?? 0) > 0,
+      configured,
+      recorded,
+      complete: configured && status.status === 'pass',
       status: status.status ?? null,
       summary: status.summary ?? null,
       stages: (status.stages ?? []).map((stage) => ({
@@ -279,8 +288,24 @@ async function readReviewSummary(repoRoot, storyId) {
       }))
     };
   } catch {
-    return { recorded: false, status: null, summary: null, stages: [] };
+    return { configured: false, recorded: false, complete: false, status: null, summary: null, stages: [] };
   }
+}
+
+function resolvePrReadiness({ bugDiagnosis, review }) {
+  if (bugDiagnosis?.status === 'blocked') {
+    return {
+      status: 'blocked',
+      reasons: bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
+    };
+  }
+  if (review.configured && !review.complete) {
+    return {
+      status: 'needs_review',
+      reasons: [`agent_review:${review.status ?? 'needs_review'}`]
+    };
+  }
+  return { status: 'ready', reasons: [] };
 }
 
 async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification, storySource, clauseMap }) {
