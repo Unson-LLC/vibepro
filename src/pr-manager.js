@@ -65,6 +65,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const readiness = resolvePrReadiness({ bugDiagnosis, review });
   const executionDag = buildExecutionDag({
     managedWorktree: { mode: 'disabled' },
+    agentReviewApplicable: review.configured,
     completedPhases: [
       verification.recorded ? 'verify' : null,
       review.complete ? 'agent_review' : null,
@@ -302,17 +303,17 @@ async function readReviewSummary(repoRoot, storyId) {
 }
 
 function resolvePrReadiness({ bugDiagnosis, review }) {
+  const blockedReasons = [];
   if (bugDiagnosis?.status === 'blocked') {
-    return {
-      status: 'blocked',
-      reasons: bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
-    };
+    blockedReasons.push(...bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`));
   }
   if (review.error) {
-    return {
-      status: 'blocked',
-      reasons: ['agent_review:status_unavailable']
-    };
+    blockedReasons.push('agent_review:status_unavailable');
+  } else if (review.configured && review.status === 'block') {
+    blockedReasons.push('agent_review:block');
+  }
+  if (blockedReasons.length > 0) {
+    return { status: 'blocked', reasons: blockedReasons };
   }
   if (review.configured && !review.complete) {
     return {
@@ -607,13 +608,21 @@ function renderPrBody(preparation) {
   lines.push(renderGeneratedTaskAuthority(taskAuthorities?.generated));
   lines.push('');
   lines.push('### Review');
+  lines.push(`- configured: ${review.configured}`);
+  lines.push(`- recorded: ${review.recorded}`);
+  lines.push(`- complete: ${review.complete}`);
+  const reviewCounts = review.summary
+    ? ` (pass=${review.summary.pass ?? 0}, needs_review=${review.summary.needs_review ?? 0}, block=${review.summary.block ?? 0})`
+    : '';
+  lines.push(`- status: ${review.status ?? 'unknown'}${reviewCounts}`);
+  lines.push(`- blocking reasons: ${preparation.blocking_reasons?.join(', ') || 'none'}`);
+  lines.push(`- error: ${formatReviewError(review.error)}`);
   if (review.recorded) {
-    lines.push(`- status: ${review.status ?? 'unknown'} (pass=${review.summary?.pass ?? 0}, needs_review=${review.summary?.needs_review ?? 0}, block=${review.summary?.block ?? 0})`);
     for (const stage of review.stages) {
       lines.push(`  - ${stage.stage}: ${stage.status}${stage.roles.length ? ` (${stage.roles.join(', ')})` : ''}`);
     }
   } else {
-    lines.push('- no review recorded (`vibepro review prepare` / `vibepro review record`)');
+    lines.push('- next: no review recorded (`vibepro review prepare` / `vibepro review record`)');
   }
   lines.push('');
   lines.push('### Changed files');
@@ -627,6 +636,15 @@ function renderPrBody(preparation) {
   }
   lines.push('');
   return `${lines.join('\n')}\n`;
+}
+
+function formatReviewError(error) {
+  if (!error) return 'none';
+  const summary = String(error.message ?? error)
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return summary.slice(0, 240) || 'unknown';
 }
 
 function formatComputedCounts(counts) {
