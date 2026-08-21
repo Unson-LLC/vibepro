@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-21 | [`0.2.0-beta.11`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.11) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-17 | [`0.2.0-beta.10`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.10) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-15 | [`0.2.0-beta.9`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.9) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-12 | [`0.2.0-beta.8`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.8) | npm `beta` / `latest` | Post-merge continuous release |
@@ -442,3 +443,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:479:start -->
 - [PR #479](https://github.com/Unson-LLC/vibepro/pull/479) — [2026-08](/releases/2026-08): fix: block PR creation until agent reviews complete
 <!-- vibepro-release-index-pr:479:end -->
+
+<!-- vibepro-release-index-pr:480:start -->
+- [PR #480](https://github.com/Unson-LLC/vibepro/pull/480) — [2026-08](/releases/2026-08): chore: 0.2.0-beta.11を公開準備
+<!-- vibepro-release-index-pr:480:end -->
