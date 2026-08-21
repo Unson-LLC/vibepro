@@ -37,9 +37,11 @@ test('the public feature map describes the minimal core while legacy UI/UX playb
     readRepoFile('docs/playbooks/story-engineering-playbook/design/08_copy_guidelines.md')
   ]);
 
-  assert.match(readme, /minimal core deliberately removed/);
+  assert.match(readme, /The current minimal core is intentionally small\./);
+  assert.match(readme, /former broad Gate DAG.*removed during the minimal-core rebuild/);
   assert.match(readme, /vibepro pr prepare/);
-  assert.match(readmeJa, /最小コアへの再構築/);
+  assert.match(readmeJa, /現行の最小コアは意図的に小さく保っています。/);
+  assert.match(readmeJa, /広範なGate DAG.*最小コア再構築.*削除/);
   assert.match(readmeJa, /vibepro pr prepare/);
   assert.match(featureMap, /Preserve product intent/);
   assert.match(featureMap, /design-modernization pipelines/);

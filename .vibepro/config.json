@@ -1593,6 +1593,21 @@
         "category": "quality",
         "artifact_profile": "feature_packet",
         "feature_slug": "bug-diagnosis-dag"
+      },
+      {
+        "story_id": "story-vibepro-public-doc-contract-ci-repair",
+        "title": "公開説明文の意図を保ったまま、旧文言に固定されたCI契約を修復する",
+        "ssot": "local",
+        "status": "active",
+        "contract_type": "bug_fix",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-20",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "public-doc-contract-ci-repair"
       }
     ],
     "current_story_id": "story-vibepro-bug-diagnosis-dag"

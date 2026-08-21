@@ -430,7 +430,7 @@ export function buildManagedWorktreeCommandBinding(context) {
   };
 }
 
-export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null, bugDiagnosis = null }) {
+export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null, bugDiagnosis = null, agentReviewApplicable = true }) {
   const hasWorktree = Boolean(managedWorktree?.path && managedWorktree.mode !== 'disabled');
   const worktreeAvailable = ['created', 'reused', 'available'].includes(managedWorktree?.status);
   const branchBound = worktreeAvailable && managedWorktree.branch && managedWorktree.branch_match !== false;
@@ -564,9 +564,13 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'agent_review_recorded',
-      status: completedPhases.includes('agent_review') ? 'passed' : 'pending',
+      status: !agentReviewApplicable
+        ? 'not_applicable'
+        : completedPhases.includes('agent_review') ? 'passed' : 'pending',
       required: false,
-      reason: completedPhases.includes('agent_review')
+      reason: !agentReviewApplicable
+        ? 'agent review is explicitly disabled'
+        : completedPhases.includes('agent_review')
         ? 'required agent review evidence is complete'
         : 'agent review is not complete yet'
     },

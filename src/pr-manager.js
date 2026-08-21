@@ -11,8 +11,8 @@
 //   - createPullRequest: turn a prepare result into an actual PR (push +
 //     `gh pr create`, or refresh an existing open PR's body).
 //
-// Bug Stories add one narrow fail-closed readiness check backed by their
-// diagnosis evidence. The former general-purpose Gate DAG and route
+// Bug Stories and the configured lightweight review pass add narrow,
+// fail-closed readiness checks. The former general-purpose Gate DAG and route
 // classification remain removed.
 
 import { execFile } from 'node:child_process';
@@ -62,9 +62,15 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   const storySource = await findStorySource(root, story).catch(() => null);
   const bugDiagnosis = await readLatestBugDiagnosis(root, story);
+  const readiness = resolvePrReadiness({ bugDiagnosis, review });
   const executionDag = buildExecutionDag({
     managedWorktree: { mode: 'disabled' },
-    completedPhases: [verification.recorded ? 'verify' : null, review.recorded ? 'agent_review' : null].filter(Boolean),
+    agentReviewApplicable: review.configured,
+    completedPhases: [
+      verification.recorded ? 'verify' : null,
+      review.complete ? 'agent_review' : null,
+      readiness.status === 'ready' ? 'ready_for_pr_create' : null
+    ].filter(Boolean),
     completionStatus: 'not_prepared',
     expectedHeadSha: git.head_sha,
     bugDiagnosis
@@ -103,10 +109,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     },
     bug_diagnosis: bugDiagnosis,
     execution_dag: executionDag,
-    gate_status: bugDiagnosis?.status === 'blocked' ? 'blocked' : 'ready',
-    blocking_reasons: bugDiagnosis?.status === 'blocked'
-      ? bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`)
-      : [],
+    gate_status: readiness.status,
+    blocking_reasons: readiness.reasons,
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
@@ -268,9 +272,16 @@ function assertRecordedRuntimeIdentities(verification) {
 async function readReviewSummary(repoRoot, storyId) {
   try {
     const status = await getAgentReviewStatus(repoRoot, { storyId });
+    const configured = (status.summary?.stage_count ?? 0) > 0;
+    const recorded = (status.stages ?? []).some((stage) =>
+      (stage.roles ?? []).some((role) => Boolean(role.artifact))
+    );
     return {
-      recorded: (status.summary?.stage_count ?? 0) > 0,
+      configured,
+      recorded,
+      complete: configured && status.status === 'pass',
       status: status.status ?? null,
+      error: null,
       summary: status.summary ?? null,
       stages: (status.stages ?? []).map((stage) => ({
         stage: stage.stage,
@@ -278,9 +289,39 @@ async function readReviewSummary(repoRoot, storyId) {
         roles: (stage.roles ?? []).map((role) => role.role ?? role.name ?? role).filter(Boolean)
       }))
     };
-  } catch {
-    return { recorded: false, status: null, summary: null, stages: [] };
+  } catch (error) {
+    return {
+      configured: true,
+      recorded: false,
+      complete: false,
+      status: 'error',
+      error: { message: String(error?.message ?? error) },
+      summary: null,
+      stages: []
+    };
   }
+}
+
+function resolvePrReadiness({ bugDiagnosis, review }) {
+  const blockedReasons = [];
+  if (bugDiagnosis?.status === 'blocked') {
+    blockedReasons.push(...bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`));
+  }
+  if (review.error) {
+    blockedReasons.push('agent_review:status_unavailable');
+  } else if (review.configured && review.status === 'block') {
+    blockedReasons.push('agent_review:block');
+  }
+  if (blockedReasons.length > 0) {
+    return { status: 'blocked', reasons: blockedReasons };
+  }
+  if (review.configured && !review.complete) {
+    return {
+      status: 'needs_review',
+      reasons: [`agent_review:${review.status ?? 'needs_review'}`]
+    };
+  }
+  return { status: 'ready', reasons: [] };
 }
 
 async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification, storySource, clauseMap }) {
@@ -567,13 +608,21 @@ function renderPrBody(preparation) {
   lines.push(renderGeneratedTaskAuthority(taskAuthorities?.generated));
   lines.push('');
   lines.push('### Review');
+  lines.push(`- configured: ${review.configured}`);
+  lines.push(`- recorded: ${review.recorded}`);
+  lines.push(`- complete: ${review.complete}`);
+  const reviewCounts = review.summary
+    ? ` (pass=${review.summary.pass ?? 0}, needs_review=${review.summary.needs_review ?? 0}, block=${review.summary.block ?? 0})`
+    : '';
+  lines.push(`- status: ${review.status ?? 'unknown'}${reviewCounts}`);
+  lines.push(`- blocking reasons: ${preparation.blocking_reasons?.join(', ') || 'none'}`);
+  lines.push(`- error: ${formatReviewError(review.error)}`);
   if (review.recorded) {
-    lines.push(`- status: ${review.status ?? 'unknown'} (pass=${review.summary?.pass ?? 0}, needs_review=${review.summary?.needs_review ?? 0}, block=${review.summary?.block ?? 0})`);
     for (const stage of review.stages) {
       lines.push(`  - ${stage.stage}: ${stage.status}${stage.roles.length ? ` (${stage.roles.join(', ')})` : ''}`);
     }
   } else {
-    lines.push('- no review recorded (`vibepro review prepare` / `vibepro review record`)');
+    lines.push('- next: no review recorded (`vibepro review prepare` / `vibepro review record`)');
   }
   lines.push('');
   lines.push('### Changed files');
@@ -587,6 +636,15 @@ function renderPrBody(preparation) {
   }
   lines.push('');
   return `${lines.join('\n')}\n`;
+}
+
+function formatReviewError(error) {
+  if (!error) return 'none';
+  const summary = String(error.message ?? error)
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return summary.slice(0, 240) || 'unknown';
 }
 
 function formatComputedCounts(counts) {

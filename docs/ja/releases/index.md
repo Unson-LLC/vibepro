@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-17 | [`0.2.0-beta.10`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.10) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-15 | [`0.2.0-beta.9`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.9) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-12 | [`0.2.0-beta.8`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.8) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-12 | [`0.2.0-beta.7`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.7) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -421,3 +422,23 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:474:start -->
 - [PR #474](https://github.com/Unson-LLC/vibepro/pull/474) — [2026-08](/ja/releases/2026-08): fix: 旧形式Storyタスクを正規化する
 <!-- vibepro-release-index-pr:474:end -->
+
+<!-- vibepro-release-index-pr:475:start -->
+- [PR #475](https://github.com/Unson-LLC/vibepro/pull/475) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.10を公開準備
+<!-- vibepro-release-index-pr:475:end -->
+
+<!-- vibepro-release-index-pr:476:start -->
+- [PR #476](https://github.com/Unson-LLC/vibepro/pull/476) — [2026-08](/ja/releases/2026-08): docs: align VibePro with product intent traceability
+<!-- vibepro-release-index-pr:476:end -->
+
+<!-- vibepro-release-index-pr:477:start -->
+- [PR #477](https://github.com/Unson-LLC/vibepro/pull/477) — [2026-08](/ja/releases/2026-08): feat: add minimal Development Judgment DAG
+<!-- vibepro-release-index-pr:477:end -->
+
+<!-- vibepro-release-index-pr:478:start -->
+- [PR #478](https://github.com/Unson-LLC/vibepro/pull/478) — [2026-08](/ja/releases/2026-08): 公開説明文の意図を保ったまま、旧文言に固定されたCI契約を修復する
+<!-- vibepro-release-index-pr:478:end -->
+
+<!-- vibepro-release-index-pr:479:start -->
+- [PR #479](https://github.com/Unson-LLC/vibepro/pull/479) — [2026-08](/ja/releases/2026-08): fix: block PR creation until agent reviews complete
+<!-- vibepro-release-index-pr:479:end -->

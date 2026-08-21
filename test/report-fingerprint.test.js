@@ -86,10 +86,11 @@ test('report fingerprint --kind pr-body computes fields from the persisted minim
   assert.equal(fingerprint.verification.commands[0].kind, 'unit');
   assert.equal(fingerprint.verification.commands[0].status, 'pass');
 
-  // The review pipeline always reports a default stage set (all
-  // `needs_review` until roles record verdicts), so `recorded` is true even
-  // though no role has recorded a verdict in this fixture.
-  assert.equal(fingerprint.review.recorded, true);
+  // The review pipeline reports the configured default stage set, but no
+  // review is recorded until at least one role artifact actually exists.
+  assert.equal(fingerprint.review.configured, true);
+  assert.equal(fingerprint.review.recorded, false);
+  assert.equal(fingerprint.review.complete, false);
   assert.equal(fingerprint.review.status, 'needs_review');
 
   // Deterministic, schema-derived numerical truth — no gate_dag / requirement
