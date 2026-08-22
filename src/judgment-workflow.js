@@ -108,7 +108,7 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     axes: STANDARD_JUDGMENT_AXES.map((axis) => ({
       id: axis,
       activation: 'inactive',
-      reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',
+      activation_reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',
       hypotheses: []
     })),
     constraints: [],
@@ -146,6 +146,7 @@ export async function evaluateJudgmentWorkflow(repoRoot, options = {}) {
   const artifacts = await writeDevelopmentJudgmentArtifacts(root, storyId, developmentDag, senior);
   const projection = buildProjection(developmentDag, artifacts.current_json);
   return {
+    ...senior,
     senior,
     development_judgment: {
       dag: developmentDag,
