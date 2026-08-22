@@ -1,0 +1,42 @@
+name: Bootstrap judgment workflow integration
+
+on:
+  push:
+    branches:
+      - feat/judgment-workflow-vertical-integration
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/judgment-workflow-vertical-integration
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+      - run: node scripts/apply-judgment-workflow-integration.mjs
+      - run: npm run docs:cli
+      - run: npm run typecheck
+      - run: node --test test/judgment-dag.test.js test/senior-judgment-dag.test.js test/senior-judgment-cli.test.js test/judgment-workflow.test.js
+      - run: npm run docs:build
+
+      - name: Commit integrated implementation
+        run: |
+          rm scripts/apply-judgment-workflow-integration.mjs
+          rm .github/workflows/bootstrap-judgment-workflow-integration.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- src/cli.js src/pr-manager.js docs/reference/cli.md docs/ja/reference/cli.md
+          git add -u -- scripts/apply-judgment-workflow-integration.mjs .github/workflows/bootstrap-judgment-workflow-integration.yml
+          git diff --cached --check
+          git commit -m "feat: connect judgment evaluation to durable outcomes"
+          git push origin HEAD:feat/judgment-workflow-vertical-integration
