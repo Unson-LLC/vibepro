@@ -1,5 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
+const DOLLAR = '$';
+
 async function patchFile(file, transform) {
   const before = await readFile(file, 'utf8');
   const after = transform(before);
@@ -84,7 +86,7 @@ await patchFile('src/cli.js', (input) => {
           outputPath: getOption(rest, '--output')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? \`${JSON.stringify(result, null, 2)}\\n\`
+          ? \`${DOLLAR}{JSON.stringify(result, null, 2)}\\n\`
           : renderJudgmentPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
@@ -94,7 +96,7 @@ await patchFile('src/cli.js', (input) => {
           inputPath: getOption(rest, '--input')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? \`${JSON.stringify(result, null, 2)}\\n\`
+          ? \`${DOLLAR}{JSON.stringify(result, null, 2)}\\n\`
           : renderJudgmentEvaluationSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
@@ -110,11 +112,11 @@ await patchFile('src/cli.js', (input) => {
           observedOutcomes: getOptions(rest, '--observed-outcome')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? \`${JSON.stringify(result, null, 2)}\\n\`
+          ? \`${DOLLAR}{JSON.stringify(result, null, 2)}\\n\`
           : renderJudgmentOutcomeSummary(result));
         return { exitCode: 0, command, subcommand: 'outcome-record', result };
       }
-      write(stderr, \`Unknown judgment command: ${subcommand ?? ''}\\n\\n${renderHelp()}\`);
+      write(stderr, \`Unknown judgment command: ${DOLLAR}{subcommand ?? ''}\\n\\n${DOLLAR}{renderHelp()}\`);
       return { exitCode: 1, command };
     }
 
@@ -175,20 +177,20 @@ await patchFile('src/pr-manager.js', (input) => {
   lines.push('### Review');`,
     `  lines.push('');
   lines.push('### Development Judgment');
-  lines.push(\`- available: ${developmentJudgment?.available ?? false}\`);
-  lines.push(\`- status: ${developmentJudgment?.status ?? 'not_recorded'}\`);
-  lines.push(\`- advisory: ${developmentJudgment?.advisory ?? true}\`);
-  lines.push(\`- blocking: ${developmentJudgment?.blocking ?? false}\`);
+  lines.push(\`- available: ${DOLLAR}{developmentJudgment?.available ?? false}\`);
+  lines.push(\`- status: ${DOLLAR}{developmentJudgment?.status ?? 'not_recorded'}\`);
+  lines.push(\`- advisory: ${DOLLAR}{developmentJudgment?.advisory ?? true}\`);
+  lines.push(\`- blocking: ${DOLLAR}{developmentJudgment?.blocking ?? false}\`);
   if (developmentJudgment?.available) {
-    lines.push(\`- run: ${developmentJudgment.run_id ?? '-'}\`);
-    lines.push(\`- development mode: ${developmentJudgment.development_mode ?? 'not_selected'}\`);
-    lines.push(\`- recommendation: ${developmentJudgment.recommendation ?? 'none'}\`);
-    lines.push(\`- unknowns: ${developmentJudgment.unknown_count ?? 0}\`);
-    lines.push(\`- outcome evaluations: ${developmentJudgment.outcome_count ?? 0}\`);
-    lines.push(\`- latest outcome: ${developmentJudgment.latest_outcome_status ?? 'none'}\`);
-    lines.push(\`- artifact: ${developmentJudgment.artifact ?? '-'}\`);
+    lines.push(\`- run: ${DOLLAR}{developmentJudgment.run_id ?? '-'}\`);
+    lines.push(\`- development mode: ${DOLLAR}{developmentJudgment.development_mode ?? 'not_selected'}\`);
+    lines.push(\`- recommendation: ${DOLLAR}{developmentJudgment.recommendation ?? 'none'}\`);
+    lines.push(\`- unknowns: ${DOLLAR}{developmentJudgment.unknown_count ?? 0}\`);
+    lines.push(\`- outcome evaluations: ${DOLLAR}{developmentJudgment.outcome_count ?? 0}\`);
+    lines.push(\`- latest outcome: ${DOLLAR}{developmentJudgment.latest_outcome_status ?? 'none'}\`);
+    lines.push(\`- artifact: ${DOLLAR}{developmentJudgment.artifact ?? '-'}\`);
   } else if (developmentJudgment?.error) {
-    lines.push(\`- error: ${developmentJudgment.error}\`);
+    lines.push(\`- error: ${DOLLAR}{developmentJudgment.error}\`);
   }
   lines.push('');
   lines.push('### Review');`,
