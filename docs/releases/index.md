@@ -447,3 +447,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:480:start -->
 - [PR #480](https://github.com/Unson-LLC/vibepro/pull/480) — [2026-08](/releases/2026-08): chore: 0.2.0-beta.11を公開準備
 <!-- vibepro-release-index-pr:480:end -->
+
+<!-- vibepro-release-index-pr:481:start -->
+- [PR #481](https://github.com/Unson-LLC/vibepro/pull/481) — [2026-08](/releases/2026-08): feat: connect Development Judgment to the delivery workflow
+<!-- vibepro-release-index-pr:481:end -->
