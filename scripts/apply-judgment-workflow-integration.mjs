@@ -22,12 +22,27 @@ function replaceAllExpected(source, search, replacement, expected, label) {
   return source.split(search).join(replacement);
 }
 
-await patchFile('src/judgment-workflow.js', (input) => replaceOnce(
-  input,
-  "      reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',",
-  "      activation_reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',",
-  'prepared axis activation reason'
-));
+await patchFile('src/judgment-workflow.js', (input) => {
+  let source = input;
+  source = replaceOnce(
+    source,
+    "      reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',",
+    "      activation_reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',",
+    'prepared axis activation reason'
+  );
+  source = replaceOnce(
+    source,
+    `  return {
+    senior,
+    development_judgment: {`,
+    `  return {
+    ...senior,
+    senior,
+    development_judgment: {`,
+    'legacy senior judgment result contract'
+  );
+  return source;
+});
 
 await patchFile('src/cli.js', (input) => {
   let source = input;
