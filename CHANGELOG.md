@@ -2353,3 +2353,45 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:479:end -->
+
+<!-- vibepro-release-pr:480:start -->
+## [#480](https://github.com/Unson-LLC/vibepro/pull/480) chore: 0.2.0-beta.11を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-21T11:47:49Z
+- Commit: `65ad94c68250405438bdeb22b8940952d2b3b0ea`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:480:end -->
+
+<!-- vibepro-release-pr:481:start -->
+## [#481](https://github.com/Unson-LLC/vibepro/pull/481) feat: connect Development Judgment to the delivery workflow
+
+- Author: @sintariran
+- Merged: 2026-08-22T01:15:19Z
+- Commit: `fc17b4afafd233cc76ebd00bfc45a010fa1986c5`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:481:end -->
