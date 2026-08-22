@@ -4,12 +4,16 @@ on:
   push:
     branches:
       - feat/judgment-workflow-vertical-integration
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   apply-and-verify:
+    if: github.head_ref == 'feat/judgment-workflow-vertical-integration' || github.ref_name == 'feat/judgment-workflow-vertical-integration'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +39,7 @@ jobs:
           rm .github/workflows/bootstrap-judgment-workflow-integration.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- src/cli.js src/pr-manager.js docs/reference/cli.md docs/ja/reference/cli.md
+          git add -- src/judgment-workflow.js src/cli.js src/pr-manager.js docs/reference/cli.md docs/ja/reference/cli.md
           git add -u -- scripts/apply-judgment-workflow-integration.mjs .github/workflows/bootstrap-judgment-workflow-integration.yml
           git diff --cached --check
           git commit -m "feat: connect judgment evaluation to durable outcomes"
