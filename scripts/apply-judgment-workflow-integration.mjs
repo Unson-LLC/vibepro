@@ -20,6 +20,13 @@ function replaceAllExpected(source, search, replacement, expected, label) {
   return source.split(search).join(replacement);
 }
 
+await patchFile('src/judgment-workflow.js', (input) => replaceOnce(
+  input,
+  "      reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',",
+  "      activation_reason: 'Prepared as inactive until the problem frame and relevant risk surface are explicitly reviewed.',",
+  'prepared axis activation reason'
+));
+
 await patchFile('src/cli.js', (input) => {
   let source = input;
   source = replaceOnce(
@@ -52,6 +59,12 @@ await patchFile('src/cli.js', (input) => {
     "  decision: ['record'],\n  judgment: ['evaluate', 'outcome-record'],\n  bug: ['diagnose-record']",
     'auto snapshot judgment commands'
   );
+  source = replaceOnce(
+    source,
+    "  const repoIndex = command === 'bug' ? 2 : 1;",
+    "  const repoIndex = command === 'bug' || (command === 'judgment' && rest[0] === 'outcome') ? 2 : 1;",
+    'nested judgment snapshot repository index'
+  );
 
   const handlerPattern = /    if \(command === 'judgment'\) \{[\s\S]*?\n    if \(command === 'guard'\) \{/;
   if (!handlerPattern.test(source)) throw new Error('missing judgment handler block');
@@ -71,7 +84,7 @@ await patchFile('src/cli.js', (input) => {
           outputPath: getOption(rest, '--output')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? \`${'${JSON.stringify(result, null, 2)}'}\\n\`
+          ? \`${JSON.stringify(result, null, 2)}\\n\`
           : renderJudgmentPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
@@ -81,7 +94,7 @@ await patchFile('src/cli.js', (input) => {
           inputPath: getOption(rest, '--input')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? \`${'${JSON.stringify(result, null, 2)}'}\\n\`
+          ? \`${JSON.stringify(result, null, 2)}\\n\`
           : renderJudgmentEvaluationSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
@@ -97,11 +110,11 @@ await patchFile('src/cli.js', (input) => {
           observedOutcomes: getOptions(rest, '--observed-outcome')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? \`${'${JSON.stringify(result, null, 2)}'}\\n\`
+          ? \`${JSON.stringify(result, null, 2)}\\n\`
           : renderJudgmentOutcomeSummary(result));
         return { exitCode: 0, command, subcommand: 'outcome-record', result };
       }
-      write(stderr, \`Unknown judgment command: ${'${subcommand ?? \'\'}'}\\n\\n${'${renderHelp()}'}\`);
+      write(stderr, \`Unknown judgment command: ${subcommand ?? ''}\\n\\n${renderHelp()}\`);
       return { exitCode: 1, command };
     }
 
@@ -162,20 +175,20 @@ await patchFile('src/pr-manager.js', (input) => {
   lines.push('### Review');`,
     `  lines.push('');
   lines.push('### Development Judgment');
-  lines.push(\`- available: ${'${developmentJudgment?.available ?? false}'}\`);
-  lines.push(\`- status: ${'${developmentJudgment?.status ?? \'not_recorded\'}'}\`);
-  lines.push(\`- advisory: ${'${developmentJudgment?.advisory ?? true}'}\`);
-  lines.push(\`- blocking: ${'${developmentJudgment?.blocking ?? false}'}\`);
+  lines.push(\`- available: ${developmentJudgment?.available ?? false}\`);
+  lines.push(\`- status: ${developmentJudgment?.status ?? 'not_recorded'}\`);
+  lines.push(\`- advisory: ${developmentJudgment?.advisory ?? true}\`);
+  lines.push(\`- blocking: ${developmentJudgment?.blocking ?? false}\`);
   if (developmentJudgment?.available) {
-    lines.push(\`- run: ${'${developmentJudgment.run_id ?? \'-\'}'}\`);
-    lines.push(\`- development mode: ${'${developmentJudgment.development_mode ?? \'not_selected\'}'}\`);
-    lines.push(\`- recommendation: ${'${developmentJudgment.recommendation ?? \'none\'}'}\`);
-    lines.push(\`- unknowns: ${'${developmentJudgment.unknown_count ?? 0}'}\`);
-    lines.push(\`- outcome evaluations: ${'${developmentJudgment.outcome_count ?? 0}'}\`);
-    lines.push(\`- latest outcome: ${'${developmentJudgment.latest_outcome_status ?? \'none\'}'}\`);
-    lines.push(\`- artifact: ${'${developmentJudgment.artifact ?? \'-\'}'}\`);
+    lines.push(\`- run: ${developmentJudgment.run_id ?? '-'}\`);
+    lines.push(\`- development mode: ${developmentJudgment.development_mode ?? 'not_selected'}\`);
+    lines.push(\`- recommendation: ${developmentJudgment.recommendation ?? 'none'}\`);
+    lines.push(\`- unknowns: ${developmentJudgment.unknown_count ?? 0}\`);
+    lines.push(\`- outcome evaluations: ${developmentJudgment.outcome_count ?? 0}\`);
+    lines.push(\`- latest outcome: ${developmentJudgment.latest_outcome_status ?? 'none'}\`);
+    lines.push(\`- artifact: ${developmentJudgment.artifact ?? '-'}\`);
   } else if (developmentJudgment?.error) {
-    lines.push(\`- error: ${'${developmentJudgment.error}'}\`);
+    lines.push(\`- error: ${developmentJudgment.error}\`);
   }
   lines.push('');
   lines.push('### Review');`,
