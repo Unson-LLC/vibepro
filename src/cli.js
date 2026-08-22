@@ -52,7 +52,14 @@ import {
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
-import { evaluateSeniorJudgmentRun, renderSeniorJudgmentSummary } from './senior-judgment-dag.js';
+import {
+  evaluateJudgmentWorkflow,
+  prepareJudgmentInput,
+  recordJudgmentOutcome,
+  renderJudgmentEvaluationSummary,
+  renderJudgmentOutcomeSummary,
+  renderJudgmentPrepareSummary
+} from './judgment-workflow.js';
 import {
   getDecisionStatus,
   readDecisionRecordsIfExists,
@@ -185,7 +192,9 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -292,7 +301,9 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -339,6 +350,7 @@ const AUTO_SNAPSHOT_SUBCOMMANDS = {
   spec: ['write'],
   pr: ['prepare'],
   decision: ['record'],
+  judgment: ['evaluate', 'outcome-record'],
   bug: ['diagnose-record']
 };
 
@@ -348,7 +360,7 @@ async function maybeAutoSnapshotProcessRecords(argv, result, io) {
   if (!prefixes || result?.exitCode !== 0) return;
   const subcommand = typeof result.subcommand === 'string' ? result.subcommand : rest[0];
   if (!prefixes.some((prefix) => subcommand === prefix || String(subcommand ?? '').startsWith(`${prefix}-`))) return;
-  const repoIndex = command === 'bug' ? 2 : 1;
+  const repoIndex = command === 'bug' || (command === 'judgment' && rest[0] === 'outcome') ? 2 : 1;
   const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
   const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
   if (!storyId) return;
@@ -912,20 +924,49 @@ async function dispatchCli(argv, io = {}) {
 
     if (command === 'judgment') {
       const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const nestedAction = subcommand === 'outcome' ? rest[1] : null;
+      const repoIndex = subcommand === 'outcome' ? 2 : 1;
+      const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
+      if (subcommand === 'prepare') {
+        const result = await prepareJudgmentInput(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          runId: getOption(rest, '--run-id'),
+          outputPath: getOption(rest, '--output')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderJudgmentPrepareSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'evaluate') {
-        const result = await evaluateSeniorJudgmentRun(repoRoot, {
+        const result = await evaluateJudgmentWorkflow(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           inputPath: getOption(rest, '--input')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderSeniorJudgmentSummary(result));
+          : renderJudgmentEvaluationSummary(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'outcome' && nestedAction === 'record') {
+        const result = await recordJudgmentOutcome(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          runId: getOption(rest, '--run'),
+          humanDecision: getOption(rest, '--human-decision'),
+          effect: getOption(rest, '--effect'),
+          status: getOption(rest, '--status'),
+          summary: getOption(rest, '--summary'),
+          evidenceRefs: getOptions(rest, '--evidence'),
+          observedOutcomes: getOptions(rest, '--observed-outcome')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderJudgmentOutcomeSummary(result));
+        return { exitCode: 0, command, subcommand: 'outcome-record', result };
       }
       write(stderr, `Unknown judgment command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };

@@ -33,6 +33,7 @@ import { evaluateContentBinding } from './content-binding.js';
 import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
 import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
 import { buildExecutionDag } from './managed-worktree.js';
+import { readDevelopmentJudgmentProjection } from './judgment-workflow.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -47,13 +48,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
-  const [story, git, spec, drift, verification, review] = await Promise.all([
+  const [story, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
     readStory(root, storyId),
     collectGitState(root, options),
     readInferredSpec(root, storyId).catch(() => null),
     readDrift(root, storyId).catch(() => null),
     readVerificationSummary(root, storyId),
-    readReviewSummary(root, storyId)
+    readReviewSummary(root, storyId),
+    readDevelopmentJudgmentProjection(root, storyId)
   ]);
   assertRecordedRuntimeIdentities(verification);
 
@@ -103,6 +105,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
+    development_judgment: developmentJudgment,
     multi_tenant_architecture: {
       ...multiTenantArchitecture,
       review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
@@ -503,7 +506,7 @@ async function gitOptional(repoRoot, args) {
 // ---------------------------------------------------------------------------
 
 function renderPrBody(preparation) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
@@ -606,6 +609,23 @@ function renderPrBody(preparation) {
   lines.push('### タスク権限');
   lines.push(renderHumanTaskAuthority(taskAuthorities?.human));
   lines.push(renderGeneratedTaskAuthority(taskAuthorities?.generated));
+  lines.push('');
+  lines.push('### Development Judgment');
+  lines.push(`- available: ${developmentJudgment?.available ?? false}`);
+  lines.push(`- status: ${developmentJudgment?.status ?? 'not_recorded'}`);
+  lines.push(`- advisory: ${developmentJudgment?.advisory ?? true}`);
+  lines.push(`- blocking: ${developmentJudgment?.blocking ?? false}`);
+  if (developmentJudgment?.available) {
+    lines.push(`- run: ${developmentJudgment.run_id ?? '-'}`);
+    lines.push(`- development mode: ${developmentJudgment.development_mode ?? 'not_selected'}`);
+    lines.push(`- recommendation: ${developmentJudgment.recommendation ?? 'none'}`);
+    lines.push(`- unknowns: ${developmentJudgment.unknown_count ?? 0}`);
+    lines.push(`- outcome evaluations: ${developmentJudgment.outcome_count ?? 0}`);
+    lines.push(`- latest outcome: ${developmentJudgment.latest_outcome_status ?? 'none'}`);
+    lines.push(`- artifact: ${developmentJudgment.artifact ?? '-'}`);
+  } else if (developmentJudgment?.error) {
+    lines.push(`- error: ${developmentJudgment.error}`);
+  }
   lines.push('');
   lines.push('### Review');
   lines.push(`- configured: ${review.configured}`);
