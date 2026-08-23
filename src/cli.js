@@ -53,6 +53,23 @@ import { recordVerificationEvidence, renderVerificationEvidenceSummary } from '.
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import {
+  adoptJudgmentInput,
+  evaluateOperationalJudgmentWorkflow,
+  getJudgmentOperationalStatus,
+  listPendingJudgmentWork,
+  prepareOperationalJudgmentInput,
+  recordJudgmentApplicability,
+  recordJudgmentDisposition,
+  recordOperationalJudgmentOutcome,
+  renderJudgmentAdoptionSummary,
+  renderJudgmentApplicabilitySummary,
+  renderJudgmentDispositionSummary,
+  renderJudgmentOperationalEvaluationSummary,
+  renderJudgmentOperationalStatus,
+  renderOperationalJudgmentOutcomeSummary,
+  renderPendingJudgmentWork
+} from './judgment-operations.js';
+import {
   evaluateJudgmentWorkflow,
   prepareJudgmentInput,
   recordJudgmentOutcome,
@@ -192,9 +209,14 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]
   vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
-  vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
-  vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
+  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
+  vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
+  vibepro judgment status [repo] --id <story-id> [--json]
+  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
+  vibepro judgment pending [repo] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -301,9 +323,14 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]
   vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
-  vibepro judgment evaluate [repo] --id <story-id> --input <input.json> [--json]
-  vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
+  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
+  vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
+  vibepro judgment status [repo] --id <story-id> [--json]
+  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+  vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
+  vibepro judgment pending [repo] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -924,51 +951,159 @@ async function dispatchCli(argv, io = {}) {
 
     if (command === 'judgment') {
       const subcommand = rest[0];
-      const nestedAction = subcommand === 'outcome' ? rest[1] : null;
-      const repoIndex = subcommand === 'outcome' ? 2 : 1;
+      const nestedCommands = new Set(['applicability', 'input', 'disposition', 'outcome']);
+      const nestedAction = nestedCommands.has(subcommand) ? rest[1] : null;
+      const repoIndex = nestedCommands.has(subcommand) ? 2 : 1;
       const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
+      if (subcommand === 'applicability' && nestedAction === 'record') {
+        const result = await recordJudgmentApplicability(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          applicable: getOption(rest, '--applicable'),
+          reason: getOption(rest, '--reason'),
+          recordedBy: getOption(rest, '--recorded-by')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderJudgmentApplicabilitySummary(result));
+        return { exitCode: 0, command, subcommand: 'applicability-record', result };
+      }
       if (subcommand === 'prepare') {
-        const result = await prepareJudgmentInput(repoRoot, {
+        const options = {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           runId: getOption(rest, '--run-id'),
           outputPath: getOption(rest, '--output')
+        };
+        const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
+        const result = status.applicable === null
+          ? await prepareJudgmentInput(repoRoot, options)
+          : await prepareOperationalJudgmentInput(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : status.applicable === null
+            ? renderJudgmentPrepareSummary(result)
+            : renderJudgmentOperationalStatus(await getJudgmentOperationalStatus(repoRoot, result.story_id)));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'input' && nestedAction === 'adopt') {
+        const result = await adoptJudgmentInput(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          inputPath: getOption(rest, '--input'),
+          reviewedBy: getOption(rest, '--reviewed-by'),
+          authority: getOption(rest, '--authority'),
+          summary: getOption(rest, '--summary')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderJudgmentPrepareSummary(result));
-        return { exitCode: 0, command, subcommand, result };
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderJudgmentAdoptionSummary(result));
+        return { exitCode: 0, command, subcommand: 'input-adopt', result };
       }
       if (subcommand === 'evaluate') {
-        const result = await evaluateJudgmentWorkflow(repoRoot, {
+        const options = {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           inputPath: getOption(rest, '--input')
-        });
+        };
+        const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
+        const result = status.applicable === null
+          ? await evaluateJudgmentWorkflow(repoRoot, options)
+          : await evaluateOperationalJudgmentWorkflow(repoRoot, options);
         write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderJudgmentEvaluationSummary(result));
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : status.applicable === null
+            ? renderJudgmentEvaluationSummary(result)
+            : renderJudgmentOperationalEvaluationSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
-      if (subcommand === 'outcome' && nestedAction === 'record') {
-        const result = await recordJudgmentOutcome(repoRoot, {
+      if (subcommand === 'status') {
+        const result = await getJudgmentOperationalStatus(
+          repoRoot,
+          getOption(rest, '--id') ?? getOption(rest, '--story-id')
+        );
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderJudgmentOperationalStatus(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'disposition' && nestedAction === 'record') {
+        const result = await recordJudgmentDisposition(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           runId: getOption(rest, '--run'),
           humanDecision: getOption(rest, '--human-decision'),
           effect: getOption(rest, '--effect'),
+          summary: getOption(rest, '--summary'),
+          evidenceRefs: getOptions(rest, '--evidence'),
+          recordedBy: getOption(rest, '--recorded-by')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderJudgmentDispositionSummary(result));
+        return { exitCode: 0, command, subcommand: 'disposition-record', result };
+      }
+      if (subcommand === 'outcome' && nestedAction === 'record') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const runId = getOption(rest, '--run');
+        const operationalStatus = await getJudgmentOperationalStatus(repoRoot, storyId);
+        if (operationalStatus.applicable === null) {
+          const result = await recordJudgmentOutcome(repoRoot, {
+            storyId,
+            runId,
+            humanDecision: getOption(rest, '--human-decision'),
+            effect: getOption(rest, '--effect'),
+            status: getOption(rest, '--status'),
+            summary: getOption(rest, '--summary'),
+            evidenceRefs: getOptions(rest, '--evidence'),
+            observedOutcomes: getOptions(rest, '--observed-outcome')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderJudgmentOutcomeSummary(result));
+          return { exitCode: 0, command, subcommand: 'outcome-record', result };
+        }
+        if (getOption(rest, '--human-decision') || getOption(rest, '--effect')) {
+          await recordJudgmentDisposition(repoRoot, {
+            storyId,
+            runId,
+            humanDecision: getOption(rest, '--human-decision'),
+            effect: getOption(rest, '--effect'),
+            summary: getOption(rest, '--summary'),
+            evidenceRefs: getOptions(rest, '--evidence'),
+            recordedBy: getOption(rest, '--recorded-by')
+          });
+        }
+        const result = await recordOperationalJudgmentOutcome(repoRoot, {
+          storyId,
+          runId,
           status: getOption(rest, '--status'),
           summary: getOption(rest, '--summary'),
           evidenceRefs: getOptions(rest, '--evidence'),
           observedOutcomes: getOptions(rest, '--observed-outcome')
         });
         write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderJudgmentOutcomeSummary(result));
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderOperationalJudgmentOutcomeSummary(result));
         return { exitCode: 0, command, subcommand: 'outcome-record', result };
       }
-      write(stderr, `Unknown judgment command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      if (subcommand === 'pending') {
+        const result = await listPendingJudgmentWork(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderPendingJudgmentWork(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown judgment command: ${subcommand ?? ''}
+
+${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

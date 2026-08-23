@@ -92,7 +92,8 @@ test('AC4: graphify subprocess killed SIGTERM then SIGKILL with structured stop_
   `;
   const result = await runProcess(process.execPath, ['-e', script], {
     maxWallClockMs: 5000,
-    noProgressDeadlineMs: 100,
+    // Leave enough time for the child to install its SIGTERM handler on loaded CI hosts.
+    noProgressDeadlineMs: 500,
     terminationGraceMs: 60,
     pollIntervalMs: 10,
     maxOutputBytes: 50

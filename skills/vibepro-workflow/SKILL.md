@@ -54,7 +54,19 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
    - `vibepro uiux map <repo> --id <story-id>`
    - `vibepro uiux evidence <repo> --id <story-id>`
    - `vibepro uiux prepare <repo> --id <story-id>`
-13. Plan work from VibePro evidence: `vibepro story plan <repo>`.
+13. Before planning, operate the Development Judgment loop when the Story contains a meaningful engineering choice:
+   - Record applicability after diagnosis/design context and before `story plan`:
+     - Applicable: `vibepro judgment applicability record <repo> --id <story-id> --applicable yes --reason <why judgment is needed> --recorded-by <actor>`
+     - Not applicable for a mechanical change: use the same command with `--applicable no` and a concrete reason. Do not silently skip the decision.
+   - Judgment is normally applicable when the problem frame is uncertain, multiple implementation choices exist, VALUE/SIMPLIFY/VALIDATE would change the batch, or public contract/security/data/topology/UX/performance/scope/release semantics are involved.
+   - When applicable:
+     1. Run `vibepro judgment prepare <repo> --id <story-id>` after context collection.
+     2. Review and edit the generated input. A conservative draft with `problem_frame.status=uncertain` and inactive axes is not a completed judgment.
+     3. Adopt the reviewed meaning explicitly: `vibepro judgment input adopt <repo> --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text>`.
+     4. Evaluate the adopted input: `vibepro judgment evaluate <repo> --id <story-id> --input <adopted-input.json>`.
+     5. Read `vibepro judgment status <repo> --id <story-id>`; resolve an unactionable problem frame or evidence gap rather than treating it as a recommendation.
+   - Then run `vibepro story plan <repo>`. Actionable Judgment is bound into the plan as advisory guidance; it never gains PR, merge, or release authority.
+   - After the plan is consumed, record human adoption and delivery effect with `vibepro judgment disposition record`. Do not invent the later Outcome at this stage.
 14. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`. Use `vibepro task brief|plan|handoff <repo> --task <task-id>` for task-scoped context.
 15. During implementation, checkpoint progress with `vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> <repo> --story-id <story-id>` and check gate state early with `vibepro gate check <repo> --story-id <story-id>` instead of discovering blocks at PR time.
 16. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`. Record verification evidence with `vibepro verify record`, and import CI results with `vibepro verify import-ci <repo> --id <story-id> --pr <n>` instead of rerunning full suites locally when a PR exists.
@@ -77,7 +89,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 23. Create the PR with the target repository's current documented git policy. For the VibePro repository itself, use `gh pr create`; do not require removed VibePro-managed PR creation or Gate flows.
 24. After the PR exists, wait for remote checks, import CI evidence with `vibepro verify import-ci`, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
 25. Merge with the target repository's current documented git policy. For the VibePro repository itself, use the ordinary GitHub merge flow; `vibepro execute merge` has been removed and must not be required or suggested.
-26. After merge, close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
+26. After merge or once outcome evidence exists, run `vibepro judgment pending <repo>` and close each pending run with `vibepro judgment outcome record <repo> --id <story-id> --run <run-id> --status confirmed|mixed|falsified|unknown --summary <text> --evidence <ref>`. Then close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
 
 ## Human Artifact Language
 
@@ -101,6 +113,8 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 
 ## Guardrails
 
+- Do not treat `judgment prepare` as a completed judgment. The generated input is conservative context; review/edit, adopt, evaluate, and bind it through `story plan`.
+- Do not auto-run Judgment from `pr prepare`; PR preparation is a read-only projection point for this advisory loop.
 - Do not treat VibePro diagnosis as truth by itself. Verify with code, tests, runtime logs, or product behavior.
 - Do not patch graph-sensitive runtime, auth, data, or UI state-machine code before checking Graphify impact.
 - Do not skip `codebase-memory-mcp` impact context for broad VibePro core, Gate DAG, Agent Review, auth/security, data/state, route, or workflow changes when the provider is installed and indexed.

@@ -33,7 +33,7 @@ import { evaluateContentBinding } from './content-binding.js';
 import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
 import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
 import { buildExecutionDag } from './managed-worktree.js';
-import { readDevelopmentJudgmentProjection } from './judgment-workflow.js';
+import { readOperationalJudgmentProjection } from './judgment-operations.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -55,7 +55,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     readDrift(root, storyId).catch(() => null),
     readVerificationSummary(root, storyId),
     readReviewSummary(root, storyId),
-    readDevelopmentJudgmentProjection(root, storyId)
+    readOperationalJudgmentProjection(root, storyId)
   ]);
   assertRecordedRuntimeIdentities(verification);
 
@@ -613,6 +613,10 @@ function renderPrBody(preparation) {
   lines.push('### Development Judgment');
   lines.push(`- available: ${developmentJudgment?.available ?? false}`);
   lines.push(`- status: ${developmentJudgment?.status ?? 'not_recorded'}`);
+  lines.push(`- lifecycle: ${developmentJudgment?.lifecycle ?? 'not_started'}`);
+  lines.push(`- applicable: ${developmentJudgment?.applicable === null || developmentJudgment?.applicable === undefined ? 'not_recorded' : developmentJudgment.applicable}`);
+  lines.push(`- input adopted: ${developmentJudgment?.input_adopted ?? false}`);
+  lines.push(`- actionable: ${developmentJudgment?.actionable ?? false}`);
   lines.push(`- advisory: ${developmentJudgment?.advisory ?? true}`);
   lines.push(`- blocking: ${developmentJudgment?.blocking ?? false}`);
   if (developmentJudgment?.available) {
@@ -621,10 +625,22 @@ function renderPrBody(preparation) {
     lines.push(`- recommendation: ${developmentJudgment.recommendation ?? 'none'}`);
     lines.push(`- unknowns: ${developmentJudgment.unknown_count ?? 0}`);
     lines.push(`- outcome evaluations: ${developmentJudgment.outcome_count ?? 0}`);
-    lines.push(`- latest outcome: ${developmentJudgment.latest_outcome_status ?? 'none'}`);
+    lines.push(`- latest outcome: ${developmentJudgment.latest_outcome_status ?? developmentJudgment.outcome?.status ?? 'none'}`);
     lines.push(`- artifact: ${developmentJudgment.artifact ?? '-'}`);
   } else if (developmentJudgment?.error) {
     lines.push(`- error: ${developmentJudgment.error}`);
+  }
+  lines.push(`- plan binding: ${developmentJudgment?.plan_binding?.status ?? 'none'}`);
+  lines.push(`- plan effect: ${developmentJudgment?.plan_binding?.effect ?? 'no_effect'}`);
+  lines.push(`- disposition: ${developmentJudgment?.disposition?.human_decision ?? 'none'}`);
+  lines.push(`- disposition effect: ${developmentJudgment?.disposition?.effect ?? 'none'}`);
+  lines.push(`- pending disposition: ${developmentJudgment?.pending_disposition ?? false}`);
+  lines.push(`- pending outcome: ${developmentJudgment?.pending_outcome ?? false}`);
+  if (developmentJudgment?.outcome) {
+    lines.push(`- operational outcome: ${developmentJudgment.outcome.status} — ${developmentJudgment.outcome.summary}`);
+  }
+  for (const action of developmentJudgment?.next_actions ?? []) {
+    lines.push(`- next: ${action}`);
   }
   lines.push('');
   lines.push('### Review');
