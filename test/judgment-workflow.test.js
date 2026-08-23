@@ -96,6 +96,15 @@ test('judgment prepare creates a conservative draft and evaluation compiles it i
 
 test('judgment CLI prepares, evaluates and records outcomes while PR prepare only projects the result', async () => {
   const root = await setupRepo();
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root,
+    '--id', STORY_ID,
+    '--applicable', 'yes',
+    '--reason', 'The test exercises the explicit Development Judgment workflow.',
+    '--recorded-by', 'test-agent',
+    '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
@@ -105,10 +114,21 @@ test('judgment CLI prepares, evaluates and records outcomes while PR prepare onl
   assert.equal(prepared.exitCode, 0);
   assert.equal(prepared.result.blocking, false);
 
+  const adopted = await runCli([
+    'judgment', 'input', 'adopt', root,
+    '--id', STORY_ID,
+    '--input', prepared.result.artifact,
+    '--reviewed-by', 'test-agent',
+    '--authority', 'test-contract',
+    '--summary', 'The conservative input is explicitly reviewed for this compatibility test.',
+    '--json'
+  ], silentIo());
+  assert.equal(adopted.exitCode, 0);
+
   const evaluated = await runCli([
     'judgment', 'evaluate', root,
     '--id', STORY_ID,
-    '--input', prepared.result.artifact,
+    '--input', adopted.result.adoption.adopted_input,
     '--json'
   ], silentIo());
   assert.equal(evaluated.exitCode, 0);

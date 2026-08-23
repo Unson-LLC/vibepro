@@ -103,3 +103,7 @@ Recommendationに対して次を追記する。
 VibeProは開発Bounded Context内の詳細判断を保持する。会社全体へ影響する判断のBrainbase昇格は後続のpromotion policyで扱う。
 
 このStoryでは自動同期を実装しない。まずVibePro内で実判断とOutcomeが十分に蓄積されることを優先する。
+
+## Operating loop completion
+
+The advisory DAG is now activated through an explicit lifecycle: applicability -> prepare -> input adoption -> evaluation -> Story plan binding -> disposition -> Outcome -> next-run feedback. The lifecycle remains non-blocking and is never auto-run by PR preparation. See `docs/architecture/vibepro-development-judgment-operating-loop.md`.

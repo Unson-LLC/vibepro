@@ -18,3 +18,16 @@
 The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, readiness/blocking verdicts, review-lifecycle accounting, delivery-efficiency budgets, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles.
 
 Run `vibepro help --language en` for the exact commands in your installed version.
+
+## Development Judgment operating loop
+
+VibePro can now operate Development Judgment as an explicit non-blocking loop rather than an optional report command:
+
+1. record applicability,
+2. prepare and explicitly adopt reviewed meaning,
+3. evaluate the Development Judgment DAG,
+4. bind actionable guidance into Story planning,
+5. record disposition separately from later Outcome,
+6. feed observed Outcome into the next judgment run.
+
+`pr prepare` only projects this lifecycle. Development Judgment never changes PR readiness, merge, or release authority.

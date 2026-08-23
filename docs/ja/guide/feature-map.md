@@ -18,3 +18,16 @@
 過去のrelease noteには次の概念が登場しますが、現行機能ではありません。Gate DAG、check pack、checkpoint、managed execution/merge、自動adjudication、readiness/blocking判定、review lifecycle会計、delivery-efficiency budget、design modernization pipeline、usage/ROI report、自動audit bundle。
 
 installed versionの正確なcommandは `vibepro help --language ja` で確認してください。
+
+## Development Judgment運用ループ
+
+Development Judgmentは任意レポートではなく、明示的な非blockingループとして運用できます。
+
+1. 適用要否を記録する
+2. 保守的draftをレビューし、意味を明示採択する
+3. Development Judgment DAGを評価する
+4. actionableな判断をStory planへbindingする
+5. 採否と後日のOutcomeを時間分離して記録する
+6. 観測Outcomeを次回判断へfeedbackする
+
+`pr prepare`はこのライフサイクルを投影するだけであり、PR readiness、merge、release権限は持ちません。
