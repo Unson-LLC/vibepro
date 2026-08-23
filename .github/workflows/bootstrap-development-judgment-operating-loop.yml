@@ -1,0 +1,59 @@
+name: Bootstrap Development Judgment operating loop
+
+on:
+  push:
+    branches:
+      - feat/development-judgment-operating-loop
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-development-judgment-operating-loop
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/development-judgment-operating-loop
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Apply operating-loop integration
+        run: python3 scripts/bootstrap-judgment-operating-loop.py
+      - name: Regenerate CLI references
+        run: npm run docs:cli
+      - name: Syntax check
+        run: npm run typecheck
+      - name: Focused judgment tests
+        run: node --test --test-concurrency=1 test/judgment-dag.test.js test/senior-judgment-dag.test.js test/judgment-workflow.test.js test/judgment-operating-loop.test.js
+      - name: Full test suite
+        run: npm test
+      - name: TypeScript E2E
+        run: npm run test:e2e:ts
+      - name: E2E product execution lint
+        run: npm run lint:e2e-product-execution
+      - name: Build public documentation
+        run: npm run docs:build
+      - name: Package dry run
+        run: npm run pack:dry-run
+      - name: Remove one-shot bootstrap files
+        run: |
+          git rm scripts/bootstrap-judgment-operating-loop.mjs
+          git rm scripts/bootstrap-judgment-operating-loop.py
+          git rm .github/workflows/bootstrap-development-judgment-operating-loop.yml
+      - name: Commit integrated source
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "feat: complete Development Judgment operating loop"
+          git push origin HEAD:feat/development-judgment-operating-loop
