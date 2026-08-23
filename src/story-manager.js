@@ -12,6 +12,12 @@ import { renderStoryReportHtml } from './story-html.js';
 import { getJourneyStatus } from './journey-map.js';
 import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
+import {
+  applyDevelopmentJudgmentToPlan,
+  readOperationalJudgmentProjection,
+  recordDevelopmentJudgmentPlanConsumption,
+  renderDevelopmentJudgmentPlanMarkdown
+} from './judgment-operations.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const STORY_FIELDS = [
@@ -342,16 +348,40 @@ export async function createStoryPlan(repoRoot, options = {}) {
   const config = await readConfig(root);
   const manifest = await readManifest(root);
   const { catalog, catalogPath } = await readStoryMap(root);
-  const graphIndex = await readStoryPlanGraphIndex(root, config.brainbase?.current_story_id ?? 'story-default');
+  const currentStoryId = config.brainbase?.current_story_id ?? null;
+  const graphIndex = await readStoryPlanGraphIndex(root, currentStoryId ?? 'story-default');
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
   const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
-  const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
+  const basePlan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
+  const judgmentProjection = currentStoryId
+    ? await readOperationalJudgmentProjection(root, currentStoryId)
+    : null;
+  const applied = applyDevelopmentJudgmentToPlan(basePlan, judgmentProjection, { storyId: currentStoryId });
+  const plan = applied.plan;
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });
   const planPath = path.join(storyDir, 'story-plan.json');
   const markdownPath = path.join(storyDir, 'story-plan.md');
-  await writeFile(planPath, `${JSON.stringify(plan, null, 2)}\n`);
-  await writeFile(markdownPath, renderStoryPlan(plan));
+  const planBinding = currentStoryId
+    ? await recordDevelopmentJudgmentPlanConsumption(root, {
+        storyId: currentStoryId,
+        binding: applied.binding,
+        planArtifact: toWorkspaceRelative(root, planPath),
+        planMarkdown: toWorkspaceRelative(root, markdownPath)
+      })
+    : null;
+  if (planBinding) {
+    plan.development_judgment = {
+      ...plan.development_judgment,
+      lifecycle_after_plan: 'consumed_by_plan',
+      binding_id: planBinding.binding_id,
+      binding_artifact: planBinding.artifact,
+      consumed_at: planBinding.consumed_at
+    };
+  }
+  await writeFile(planPath, `${JSON.stringify(plan, null, 2)}
+`);
+  await writeFile(markdownPath, `${renderStoryPlan(plan)}${renderDevelopmentJudgmentPlanMarkdown(plan.development_judgment)}`);
   manifest.artifacts = {
     ...(manifest.artifacts ?? {}),
     story_plan: toWorkspaceRelative(root, planPath),
@@ -362,10 +392,11 @@ export async function createStoryPlan(repoRoot, options = {}) {
     source_catalog: toWorkspaceRelative(root, catalogPath),
     priority_story_count: plan.priority_stories.length,
     question_count: plan.questions.length,
+    development_judgment: plan.development_judgment ?? null,
     artifact: toWorkspaceRelative(root, planPath)
   };
   await writeManifest(root, manifest);
-  return { plan, planPath, markdownPath };
+  return { plan, planPath, markdownPath, planBinding };
 }
 
 async function readStoryPlanGraphIndex(root, storyId) {
@@ -429,6 +460,8 @@ export function renderStoryPlanSummary(result) {
 | 優先Story | ${result.plan.priority_stories.length} |
 | Plan | ${toWorkspaceRelativeFromAny(result.planPath)} |
 | Markdown | ${toWorkspaceRelativeFromAny(result.markdownPath)} |
+| Judgment lifecycle | ${result.plan.development_judgment?.lifecycle_after_plan ?? result.plan.development_judgment?.lifecycle_before_plan ?? 'not_started'} |
+| Judgment plan effect | ${result.plan.development_judgment?.effect ?? 'no_effect'} |
 
 ${renderStoryPlan(result.plan)}`;
 }
