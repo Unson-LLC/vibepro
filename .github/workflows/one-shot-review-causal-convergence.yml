@@ -1,0 +1,72 @@
+name: One-shot causal review convergence
+
+on:
+  push:
+    branches:
+      - feat/review-dag-causal-freshness-convergence
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply causal Review DAG integration
+        run: node scripts/one-shot-review-causal-convergence.mjs
+
+      - name: Regenerate CLI references
+        run: npm run docs:cli
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Focused causal Review DAG tests
+        run: >-
+          node --test --test-concurrency=2
+          test/review-causal-dag.test.js
+          test/review-causal-integration.test.js
+          test/review-inspection-first.test.js
+
+      - name: Full unit suite
+        run: npm test
+
+      - name: TypeScript E2E
+        run: npm run test:e2e:ts
+
+      - name: E2E product execution lint
+        run: npm run lint:e2e-product-execution
+
+      - name: Public documentation build
+        run: npm run docs:build
+
+      - name: Package dry run
+        run: npm run pack:dry-run
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit verified implementation and remove one-shot bootstrap
+        run: |
+          rm -f scripts/one-shot-review-causal-convergence.mjs
+          rm -f scripts/.one-shot-review-causal-convergence.part-*
+          rm -f .github/workflows/one-shot-review-causal-convergence.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: add causal review freshness and convergence"
+          git push origin HEAD:${{ github.ref_name }}
