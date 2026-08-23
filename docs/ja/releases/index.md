@@ -456,3 +456,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:482:start -->
 - [PR #482](https://github.com/Unson-LLC/vibepro/pull/482) — [2026-08](/ja/releases/2026-08): chore: 0.2.0-beta.12を公開準備
 <!-- vibepro-release-index-pr:482:end -->
+
+<!-- vibepro-release-index-pr:483:start -->
+- [PR #483](https://github.com/Unson-LLC/vibepro/pull/483) — [2026-08](/ja/releases/2026-08): feat: complete Development Judgment operating loop
+<!-- vibepro-release-index-pr:483:end -->
