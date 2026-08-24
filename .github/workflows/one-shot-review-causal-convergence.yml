@@ -30,17 +30,26 @@ jobs:
       - name: Apply causal Review DAG integration
         run: node scripts/one-shot-review-causal-convergence.mjs
 
-      - name: Normalize order-independent causal surface assertion
+      - name: Normalize deterministic assertions and CLI contract coverage
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('test/review-causal-dag.test.js')
-          text = path.read_text()
+
+          causal = Path('test/review-causal-dag.test.js')
+          text = causal.read_text()
           before = "assert.deepEqual(first.inspection_surface.map((item) => item.domain), ['spec', 'story', 'implementation', 'test'].sort());"
           after = "assert.deepEqual(first.inspection_surface.map((item) => item.domain).sort(), ['spec', 'story', 'implementation', 'test'].sort());"
           if before not in text:
               raise SystemExit('causal surface assertion anchor not found')
-          path.write_text(text.replace(before, after, 1))
+          causal.write_text(text.replace(before, after, 1))
+
+          cli = Path('test/cli-reference-docs.test.js')
+          text = cli.read_text()
+          before = r"/review record \\[repo\\].*--stage <stage>.*--status <pass\\|needs_changes\\|block>/"
+          after = r"/review record \\[repo\\].*--stage <stage>.*--status <pass\\|needs_changes\\|block\\|runtime_failed>/"
+          if before not in text:
+              raise SystemExit('CLI reference status assertion anchor not found')
+          cli.write_text(text.replace(before, after, 1))
           PY
 
       - name: Regenerate CLI references
