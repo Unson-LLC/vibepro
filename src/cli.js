@@ -89,6 +89,7 @@ import { isBugStory, recordBugDiagnosisNode } from './bug-diagnosis-dag.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
+import { bindTaskAuthority } from './task-authority.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
   assertPreSpecReadinessForFinalSpec,
@@ -240,6 +241,7 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
@@ -347,6 +349,7 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -362,7 +365,7 @@ Usage:
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
-  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace',
+  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
   'workspace', 'store', 'bug', 'verify-first'
 ];
@@ -1337,6 +1340,27 @@ ${renderHelp()}`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'task') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'bind') {
+        const result = await bindTaskAuthority(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          inputPath: getOption(rest, '--input')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.authority, null, 2)}\n`
+          : `Task authority accepted: ${result.authority.story_id} (${result.authority.tasks.length} task(s))\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

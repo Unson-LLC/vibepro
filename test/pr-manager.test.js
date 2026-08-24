@@ -15,6 +15,7 @@ import {
   renderPrPrepareSummary
 } from '../src/pr-manager.js';
 import { writeInferredSpec } from '../src/spec-store.js';
+import { bindTaskAuthority } from '../src/task-authority.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -57,6 +58,47 @@ async function setupRepo({ storyId = 'story-pr-manager-ac', storyDoc = STORY_DOC
   await git(root, ['commit', '-m', 'implement widget rendering']);
   return root;
 }
+
+async function bindTaskForPrepare(root, storyId, allowedPaths) {
+  const inputPath = 'task-authority.json';
+  await writeFile(path.join(root, inputPath), `${JSON.stringify({
+    schema_version: '0.1.0', story_id: storyId,
+    tasks: [{ task_id: 'TASK-001', story_id: storyId, allowed_paths: allowedPaths }]
+  }, null, 2)}\n`);
+  await git(root, ['add', inputPath]);
+  await bindTaskAuthority(root, { storyId, inputPath });
+}
+
+test('task-scoped pr prepare accepts every changed path covered by accepted authority', async () => {
+  const storyId = 'story-pr-manager-task-scope-valid';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await writeFile(path.join(root, 'widget.test.js'), 'export const covered = true;\n');
+  await git(root, ['add', 'widget.test.js']);
+  await git(root, ['commit', '-m', 'add covered test']);
+  await bindTaskForPrepare(root, storyId, ['widget.js', 'widget.test.js']);
+
+  const result = await preparePullRequest(root, { storyId, taskId: 'TASK-001', baseRef: 'main' });
+  assert.deepEqual(result.preparation.task_context.accepted_task.allowed_paths, ['widget.js', 'widget.test.js']);
+});
+
+test('task-scoped pr prepare rejects out-of-scope changes and stale refs', async () => {
+  const storyId = 'story-pr-manager-task-scope-invalid';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await bindTaskForPrepare(root, storyId, ['widget.test.js']);
+
+  await assert.rejects(
+    preparePullRequest(root, { storyId, taskId: 'TASK-001', baseRef: 'main' }),
+    /outside accepted task TASK-001 allowed_paths: widget\.js/
+  );
+  await assert.rejects(
+    preparePullRequest(root, { storyId, taskId: 'TASK-001', baseRef: 'main', headRef: 'main' }),
+    /head.*current HEAD/
+  );
+  await assert.rejects(
+    preparePullRequest(root, { storyId, taskId: 'TASK-001', baseRef: 'missing-base' }),
+    /base ref.*resolve/
+  );
+});
 
 test('pr prepare embeds story_source and traceability, with unmapped clauses shown as unaddressed (non-blocking)', async () => {
   const storyId = 'story-pr-manager-ac';
