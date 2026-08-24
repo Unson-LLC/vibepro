@@ -40,7 +40,7 @@ export default {
       name: 'VibePro',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Linux, Windows',
-      softwareVersion: '0.2.0-beta.13',
+      softwareVersion: '0.2.0-beta.14',
       url: siteUrl,
       codeRepository: 'https://github.com/Unson-LLC/vibepro',
       license: 'https://www.apache.org/licenses/LICENSE-2.0'
