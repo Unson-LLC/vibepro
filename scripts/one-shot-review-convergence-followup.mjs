@@ -3,6 +3,13 @@ import path from 'node:path';
 
 const root = process.cwd();
 
+await patchFile('test/review-causal-integration.test.js', [
+  {
+    before: `    findings: [{ severity: 'high', id: 'scope-a', detail: 'runtime scope is too broad' }],`,
+    after: `    findings: ['high:scope-a:runtime scope is too broad'],`
+  }
+]);
+
 await patchFile('src/agent-review.js', [
   {
     before: `  normalizeReviewRuntimeFailure,\n  updateReviewConvergenceState`,
