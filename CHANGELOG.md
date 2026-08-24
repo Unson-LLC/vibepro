@@ -2542,3 +2542,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:490:end -->
+
+<!-- vibepro-release-pr:491:start -->
+## [#491](https://github.com/Unson-LLC/vibepro/pull/491) fix: project safe agent review instructions
+
+- Author: @sintariran
+- Merged: 2026-08-24T17:08:53Z
+- Commit: `e9385b9846932a37456d62cf85f5ed6092eeec91`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:491:end -->

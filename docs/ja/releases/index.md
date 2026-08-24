@@ -483,3 +483,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:490:start -->
 - [PR #490](https://github.com/Unson-LLC/vibepro/pull/490) — [2026-08](/ja/releases/2026-08): chore: release 0.2.0-beta.15
 <!-- vibepro-release-index-pr:490:end -->
+
+<!-- vibepro-release-index-pr:491:start -->
+- [PR #491](https://github.com/Unson-LLC/vibepro/pull/491) — [2026-08](/ja/releases/2026-08): fix: project safe agent review instructions
+<!-- vibepro-release-index-pr:491:end -->
