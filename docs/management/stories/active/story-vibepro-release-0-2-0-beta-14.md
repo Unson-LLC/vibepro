@@ -36,7 +36,7 @@ PR #486で因果的Review DAGと進展感知型convergenceを`main`へ導入し�
 ## Acceptance Criteria
 
 - [ ] REL14-AC-001: `package.json`と`package-lock.json`のroot versionが`0.2.0-beta.14`で一致する。
-- [ ] REL14-AC-002: release差分はStory・Spec・catalog・version metadataに限定し、`src`、`bin`、依存、公開workflowを変更しない。
+- [ ] REL14-AC-002: release差分の製品実装面はStory・Spec・catalog・version metadataに限定し、版番号を固定する回帰テスト以外の`src`、`bin`、依存、公開workflowを変更しない。
 - [ ] REL14-AC-003: exact-HEADの公開関連テスト、typecheck、package dry-run、必須CIが成功する。
 - [ ] REL14-AC-004: 公開後、npm `gitHead`、`beta` / `latest` dist-tag、Git tag、GitHub prerelease target、fresh install runtimeが同じrelease merge commitへ収束する。
 - [ ] REL14-AC-005: npm公開とdocs投影を別段階として読み戻し、部分失敗を成功へ丸めない。

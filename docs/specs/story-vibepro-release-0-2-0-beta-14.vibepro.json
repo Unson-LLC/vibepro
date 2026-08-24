@@ -14,7 +14,7 @@
         "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL14-AC-001" }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-14.md", "section": "境界" }],
         "code_refs": [{ "file": "package.json", "anchor": "0.2.0-beta.14" }, { "file": "package-lock.json", "anchor": "0.2.0-beta.14" }],
-        "test_refs": [{ "file": "test/post-merge-release.test.js", "case": "PCR-CON-006 rejects an existing version with another gitHead" }]
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "case": "beta.14 release metadata and CLI report the exact candidate version" }]
       },
       "verifiable_by": {
         "code_pattern": [{ "file_glob": "package*.json", "must_contain": "0.2.0-beta.14" }]
