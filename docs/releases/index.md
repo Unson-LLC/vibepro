@@ -474,3 +474,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:488:start -->
 - [PR #488](https://github.com/Unson-LLC/vibepro/pull/488) — [2026-08](/releases/2026-08): chore: release 0.2.0-beta.14
 <!-- vibepro-release-index-pr:488:end -->
+
+<!-- vibepro-release-index-pr:489:start -->
+- [PR #489](https://github.com/Unson-LLC/vibepro/pull/489) — [2026-08](/releases/2026-08): fix: 非マルチテナント適用判定と実装証拠を分離する
+<!-- vibepro-release-index-pr:489:end -->
