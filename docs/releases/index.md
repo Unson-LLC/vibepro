@@ -465,3 +465,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:484:start -->
 - [PR #484](https://github.com/Unson-LLC/vibepro/pull/484) — [2026-08](/releases/2026-08): chore: release 0.2.0-beta.13
 <!-- vibepro-release-index-pr:484:end -->
+
+<!-- vibepro-release-index-pr:486:start -->
+- [PR #486](https://github.com/Unson-LLC/vibepro/pull/486) — [2026-08](/releases/2026-08): feat: add causal Review DAG freshness and progress-sensitive convergence
+<!-- vibepro-release-index-pr:486:end -->
