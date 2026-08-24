@@ -1,14 +1,14 @@
 ---
 story_id: story-vibepro-review-dag-causal-freshness-and-convergence
-title: Review DAG Causal Freshness and Convergence Architecture
+title: Review DAG Causal Freshness and Progress-Sensitive Convergence Architecture
 status: active
 ---
 
-# Review DAG Causal Freshness and Convergence Architecture
+# Review DAG Causal Freshness and Progress-Sensitive Convergence Architecture
 
 ## 決定
 
-Agent Reviewのfreshnessを、reviewerが読んだ全ファイルのbyte一致ではなく、role固有の判断依存と変更domainの因果関係で評価する。
+Agent Reviewのfreshnessを、reviewerが読んだ全ファイルのbyte一致ではなく、role固有の判断依存、記録済みinvalidation surface、変更domainの因果関係で評価する。
 
 ```text
 Inspection Surface
@@ -24,7 +24,9 @@ Invalidation Surface
   変更時にだけ判断をstaleにする面
 ```
 
-Review結果は引き続きcontent-bound evidenceを持つ。ただし、そのsurfaceが変わった場合でも、変更がroleのdecision dependency domain外なら`causal_reuse`できる。`strict_head`は例外であり、HEAD変更時に必ず再評価する。
+Review結果は引き続きcontent-bound evidenceを持つ。ただし、inspection surfaceが変わっただけでは上流判断を無効化しない。後続freshness判定はartifactに保存された`invalidation_surface`を読み、変更pathとの重なりとrole dependency domainの双方を評価する。
+
+`strict_head`は例外であり、異なる候補HEADへ一切再利用しない。changed-file deltaを取得できない場合、分類不能pathがある場合、または記録済みsurface自体がinconclusiveな場合はfail closedにする。
 
 ## Review DAG
 
@@ -49,7 +51,7 @@ Story
 | release / config | runtime・preview・gate |
 | docs | UX・preview・release関連role |
 
-roleはdomain集合を明示的に持つ。未知roleはstage既定domainへfallbackし、意味の分からない変更を無条件に再利用しない。
+roleはdomain集合を明示的に持つ。未知roleはstage既定domainへfallbackするが、分類不能な変更pathを無条件に再利用しない。
 
 ## Finding delta closure
 
@@ -64,7 +66,7 @@ previous review
   -> delta closure review
 ```
 
-closureで解決していないfinding IDが残る場合、replacement reviewは`pass`になれない。過去reviewとfindingはhistoryへ残り、後のpassで消去しない。
+closureで解決していないfinding IDが残る場合、replacement reviewは`pass`になれない。過去reviewとfindingはhistoryへ残り、後のpassで消去しない。複数commitにまたがる段階的修復では、closure evidence、repair delta、finding dispositionの変化を進展として扱う。
 
 ## Runtime failure
 
@@ -78,19 +80,49 @@ runtime_failed:
   execution_error
 ```
 
-`runtime_failed`はreview未完了として扱うが、product codeの欠陥とは数えない。次行動は「実装を直す」ではなく「正しいrequestでreview runtimeを再実行する」。
+`runtime_failed`はreview未完了として扱うが、product codeの欠陥とは数えない。次行動は「実装を直す」ではなく「正しいrequestでreview runtimeを再実行する」。runtime retryが成功してpassへ変わった場合は、runtime stateの進展としてconvergenceを更新する。
 
-## Convergence
+## Progress-sensitive convergence
 
-各review event後に次を正規化する。
+### Event cursor
+
+waveは完了したreview recordによってだけ進む。HEAD、status poll、derived freshnessの再読込は観測でありreview waveではない。
 
 ```text
-unresolved(stage, role, status, dependency domains)
-finding ids
-runtime failures
+completed review records
+  -> normalized event set
+  -> event_cursor
 ```
 
-これらからHEADを含まないsemantic signatureを作る。review event cursorが進んだにもかかわらず同じsemantic signatureが3 wave続いた場合、状態を`review_nonconvergent`へ遷移させる。
+HEADだけが変わりevent cursorが同じ場合、head churnは記録するが`wave_count`と`no_progress_count`は増やさない。
+
+### Progress signature
+
+単なるunresolved role ID集合では進展を正しく測れない。各review event後、次を正規化する。
+
+```text
+unresolved role state
+finding content and disposition
+runtime failure state
+inspection summary / evidence / inputs
+judgment delta
+dependency domains / invalidation surface
+repair and closure delta
+```
+
+これらから`progress_signature`を作る。前waveからsignatureが変われば進展ありとして`no_progress_count=0`へ戻し、変化理由を記録する。
+
+```text
+progress reasons:
+  unresolved_roles_changed
+  finding_state_changed
+  runtime_state_changed
+  review_evidence_changed
+  dependency_surface_changed
+  repair_delta_changed
+```
+
+完了review waveが進んだにもかかわらずprogress signatureが同じ状態を3回観測した場合だけ、`review_nonconvergent`へ遷移させる。
 
 ```text
 converging
@@ -98,7 +130,17 @@ converging
   -> review_nonconvergent
 ```
 
-status pollだけではevent cursorが変わらないためwaveを増やさない。`review_nonconvergent`では同じroleの再dispatchを停止し、review契約またはruntime defectを別Storyへ切り出す。
+## Dispatch control
+
+`review_nonconvergent`は自動waiverではない。通常の`review prepare`はrolesを空にし、automatic redispatchを停止する。明示的にroleを指定した人間主導retryだけは許可する。
+
+```text
+review_nonconvergent
+  -> automatic prepare: no roles
+  -> explicit human role retry: allowed
+```
+
+これにより、証跡ループを止めながら復旧経路を失わない。
 
 ## Artifact
 
@@ -109,6 +151,8 @@ causal_review
   inspection_surface
   decision_dependencies
   invalidation_surface
+  unknown_inspection_surface
+  classification_status
   dependency_domains
 
 delta_closure
@@ -122,10 +166,26 @@ convergence/current.json
 convergence/history/*.json
 ```
 
+convergence artifactは次を持つ。
+
+```text
+event_cursor
+wave_count
+no_progress_count
+head_churn_count
+progress_signature
+component_hashes
+progress_detected
+progress_reasons
+next_action
+```
+
 ## 権限境界
 
 - reviewは引き続き独立subagent evidenceを要求できる
 - strict HEADは最終認証で維持する
-- causal reuseはPR readinessを勝手にpassへ変えず、既存passの有効性だけを保持する
+- causal reuseは既存passの有効性だけを保持し、`needs_changes`、`block`、未解決findingをpassへ変換しない
+- classification不明またはdelta解決不能はfail closedにする
 - `review_nonconvergent`は自動waiverではない
+- CIは検証者であり、実装branchの生成者・書換者にしない
 - merge、release、例外受容の最終権限は人間・CI・repository rulesに残る
