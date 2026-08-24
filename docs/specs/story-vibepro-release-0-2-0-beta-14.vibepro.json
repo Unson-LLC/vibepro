@@ -11,9 +11,10 @@
       "type": "contract",
       "statement": "package.json and the root package in package-lock.json declare version 0.2.0-beta.14.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "id": "REL14-AC-001" }],
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-14.md", "section": "境界" }],
-        "code_refs": [{ "file": "package.json", "anchor": "0.2.0-beta.14" }, { "file": "package-lock.json", "anchor": "0.2.0-beta.14" }]
+        "code_refs": [{ "file": "package.json", "anchor": "0.2.0-beta.14" }, { "file": "package-lock.json", "anchor": "0.2.0-beta.14" }],
+        "test_refs": [{ "file": "test/post-merge-release.test.js", "case": "PCR-CON-006 rejects an existing version with another gitHead" }]
       },
       "verifiable_by": {
         "code_pattern": [{ "file_glob": "package*.json", "must_contain": "0.2.0-beta.14" }]
@@ -24,9 +25,10 @@
       "type": "invariant",
       "statement": "The release change does not modify runtime source, dependencies, binaries, or the post-merge publishing workflow.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "id": "REL14-AC-002" }],
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-14.md", "section": "境界" }],
-        "code_refs": [{ "file": ".github/workflows/post-merge-release.yml", "anchor": "Post-merge continuous release" }]
+        "code_refs": [{ "file": ".github/workflows/post-merge-release.yml", "anchor": "Post-merge continuous release" }],
+        "test_refs": [{ "file": "test/post-merge-release.test.js", "case": "post-merge release uses immutable pre-merge base code for fork validation" }]
       },
       "verifiable_by": {
         "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "post-merge release" }]
@@ -37,7 +39,7 @@
       "type": "scenario",
       "statement": "After the release PR is merged, the existing post-merge workflow publishes npm, reconciles tags and the GitHub prerelease, and projects documentation.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "id": "REL14-AC-003" }],
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-14.md", "section": "実行順序" }],
         "code_refs": [{ "file": ".github/workflows/post-merge-release.yml", "anchor": "publish-npm" }],
         "test_refs": [{ "file": "test/post-merge-release.test.js", "case": "post-merge release installs dependencies before unconditional docs projection" }]
@@ -51,7 +53,7 @@
       "type": "invariant",
       "statement": "Release completion requires registry, dist-tag, Git tag, GitHub prerelease, fresh-install runtime identity, and documentation readback; missing evidence remains partial.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "id": "REL14-AC-004" }, { "kind": "acceptance_criteria", "id": "REL14-AC-005" }],
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }, { "kind": "acceptance_criteria", "index": 4 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-14.md", "section": "完了判定" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "gitHead" }],
         "test_refs": [{ "file": "test/github-release-convergence.test.js", "case": "GRC-S-2/GRC-S-3/GRC-S-6 create and edit converge prerelease and stable metadata" }]
