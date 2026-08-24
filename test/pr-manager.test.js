@@ -8,7 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { preparePullRequest } from '../src/pr-manager.js';
+import { preparePullRequest, renderPrPrepareSummary } from '../src/pr-manager.js';
 import { writeInferredSpec } from '../src/spec-store.js';
 
 const execFileAsync = promisify(execFile);
@@ -219,6 +219,13 @@ test('pr readiness reports configured but incomplete reviews and blocks PR creat
   assert.equal(preparation.review.status, 'needs_review');
   assert.equal(preparation.gate_status, 'needs_review');
   assert.deepEqual(preparation.blocking_reasons, ['agent_review:needs_review']);
+  assert.equal(preparation.agent_review_instruction.status, 'dispatch_required');
+  assert.equal(preparation.agent_review_instruction.current_stage, 'planning_spec');
+  assert.ok(preparation.agent_review_instruction.roles.length > 0);
+  assert.ok(preparation.agent_review_instruction.next_commands.length > 0);
+  assert.ok(preparation.agent_review_instruction.next_commands.every((command) => (
+    command.includes('--stage planning_spec') || command.includes('vibepro pr prepare')
+  )), 'only the current review stage and the follow-up pr prepare command may be projected');
   assert.equal(
     preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
     'pending'
@@ -232,6 +239,20 @@ test('pr readiness reports configured but incomplete reviews and blocks PR creat
   assert.match(body, /### Review\n- configured: true\n- recorded: false\n- complete: false\n- status: needs_review/);
   assert.match(body, /- blocking reasons: agent_review:needs_review/);
   assert.match(body, /- error: none/);
+  assert.match(body, /- agent review instruction: dispatch_required/);
+  assert.match(body, /- current stage: planning_spec/);
+  for (const command of preparation.agent_review_instruction.next_commands) {
+    assert.match(body, new RegExp(`    ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  }
+  const humanSummary = renderPrPrepareSummary({
+    preparation,
+    artifacts: {
+      json: path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'),
+      pr_body: path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md')
+    }
+  });
+  assert.match(humanSummary, /- agent review instruction: dispatch_required/);
+  assert.match(humanSummary, /- current review stage: planning_spec/);
 
   let createError = '';
   const created = await runCli(
@@ -304,6 +325,7 @@ test('pr readiness marks the execution DAG ready after every configured review p
   assert.equal(preparation.review.complete, true);
   assert.equal(preparation.review.status, 'pass');
   assert.equal(preparation.gate_status, 'ready');
+  assert.equal(preparation.agent_review_instruction, null);
   assert.deepEqual(preparation.blocking_reasons, []);
   assert.equal(
     preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
@@ -382,6 +404,7 @@ test('pr readiness marks the execution DAG ready after every configured review p
   assert.equal(blockedPreparation.review.complete, false);
   assert.equal(blockedPreparation.review.status, 'block');
   assert.equal(blockedPreparation.gate_status, 'blocked');
+  assert.equal(blockedPreparation.agent_review_instruction, null);
   assert.deepEqual(blockedPreparation.blocking_reasons, ['agent_review:block']);
   assert.equal(
     blockedPreparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
@@ -431,6 +454,7 @@ test('pr readiness fails closed when the configured review status cannot be read
   assert.equal(preparation.review.status, 'error');
   assert.match(preparation.review.error.message, /freshness_mode cannot be strict_head/);
   assert.equal(preparation.gate_status, 'blocked');
+  assert.equal(preparation.agent_review_instruction, null);
   assert.deepEqual(preparation.blocking_reasons, ['agent_review:status_unavailable']);
   assert.equal(
     preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
@@ -487,6 +511,7 @@ test('pr readiness stays ready when every review stage is explicitly disabled', 
   assert.equal(preparation.review.status, 'needs_review');
   assert.equal(preparation.review.error, null);
   assert.equal(preparation.gate_status, 'ready');
+  assert.equal(preparation.agent_review_instruction, null);
   assert.deepEqual(preparation.blocking_reasons, []);
   assert.equal(
     preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
