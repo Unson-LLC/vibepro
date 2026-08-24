@@ -69,6 +69,18 @@ test('spec-storeとspec-validatorは同じfresh exact-HEAD非該当証拠だけ�
   }, { mode: 'final', multiTenantApplicabilityEvidence: applicabilityEvidence, expectedHeadCommit: head });
   assert.equal(fresh.ok, true);
   assert.equal(fresh.multi_tenant_architecture.implementation_readiness.status, 'ready');
+
+  await assert.rejects(
+    () => writeMultiTenantContract(repo, storyId, null, { applicabilityEvidence, expectedHeadCommit: head }),
+    /explicit_non_applicability_required/
+  );
+  const undeclared = await validateSpec(repo, {
+    schema_version: '0.1.0', story_id: storyId,
+    story_context: 'account設定の表示順を変更する.', clauses: []
+  }, { mode: 'final', multiTenantApplicabilityEvidence: applicabilityEvidence, expectedHeadCommit: head });
+  assert.equal(undeclared.ok, false);
+  assert.equal(undeclared.multi_tenant_architecture.implementation_readiness.status, 'needs_review');
+  assert.ok(undeclared.errors.some((error) => error.code === 'multi_tenant_applicability_declaration_required'));
 });
 
 test('ContractをStory IDで保存・読込し、不正Contractは保存前に拒否する', async () => {

@@ -66,6 +66,10 @@ export async function readMultiTenantContract(repoRoot, storyId) {
 export async function writeMultiTenantContract(repoRoot, storyId, contract, options = {}) {
   const spec = await readInferredSpec(repoRoot, storyId);
   if (!spec) throw new Error(`accepted Spec not found for Story ${storyId}`);
+  if (contract?.applicability !== false && contract?.applicability !== 'not_applicable'
+      && options.applicabilityEvidence) {
+    throw new Error('multi-tenant Contract rejected: explicit_non_applicability_required');
+  }
 
   const assessment = assessMultiTenantArchitecture({
     storyText: options.storyText ?? spec.story_context ?? '',

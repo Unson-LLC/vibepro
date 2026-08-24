@@ -113,6 +113,17 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     if (options.mode === 'draft') warnings.push(issue);
     else errors.push(issue);
   }
+  if (options.multiTenantApplicabilityEvidence
+      && spec.multi_tenancy?.applicability !== false
+      && spec.multi_tenancy?.applicability !== 'not_applicable') {
+    const issue = {
+      code: 'multi_tenant_applicability_declaration_required',
+      message: 'implementation readiness requires multi_tenancy.applicability: not_applicable',
+      path: 'multi_tenancy.applicability'
+    };
+    if (options.mode === 'draft') warnings.push(issue);
+    else errors.push(issue);
+  }
 
   return {
     ok: errors.length === 0,

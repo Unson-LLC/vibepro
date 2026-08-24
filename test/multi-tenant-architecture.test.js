@@ -74,6 +74,20 @@ test('明示的な非該当は弱い語に上書きされず、fresh exact-HEAD 
     assert.equal(report.status, 'not_applicable', label);
     assert.equal(report.implementation_readiness.status, 'needs_review', label);
   }
+
+  for (const [label, malformedHead] of [
+    ['short-head', 'abc123'],
+    ['nonhex-head', 'z'.repeat(40)]
+  ]) {
+    const report = assessMultiTenantArchitecture({
+      storyText,
+      contract,
+      applicabilityEvidence: { ...freshEvidence, head_commit: malformedHead },
+      expectedHeadCommit: malformedHead
+    });
+    assert.equal(report.implementation_readiness.status, 'needs_review', label);
+    assert.ok(report.implementation_readiness.reasons.includes('invalid_head_commit'), label);
+  }
 });
 
 test('strong signalと不正なcaller projectionは非該当宣言でもfail closedになる', () => {

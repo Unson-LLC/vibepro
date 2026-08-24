@@ -51,13 +51,21 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
 export function assessMultiTenantArchitecture({ storyText = '', contract = null, evidence = null, applicabilityEvidence = null, expectedHeadCommit = null, mode = 'final' } = {}) {
   const applicability = detectMultiTenantApplicability(storyText, { explicit: contract?.applicability });
   if (!applicability.applicable) {
+    const explicitlyNotApplicable = contract?.applicability === false || contract?.applicability === 'not_applicable';
     return {
       applicable: false,
       activation_reasons: applicability.reasons,
       status: 'not_applicable',
       findings: [],
       coverage: { status: 'not_applicable', scanners: {} },
-      implementation_readiness: assessNonApplicabilityEvidence(applicabilityEvidence, expectedHeadCommit),
+      implementation_readiness: explicitlyNotApplicable
+        ? assessNonApplicabilityEvidence(applicabilityEvidence, expectedHeadCommit)
+        : {
+            status: 'needs_review',
+            evidence_status: 'inconclusive',
+            required_surfaces: ['story', 'spec', 'implementation'],
+            reasons: ['explicit_non_applicability_required']
+          },
       views: {}
     };
   }
@@ -72,7 +80,17 @@ export function assessMultiTenantArchitecture({ storyText = '', contract = null,
       }
       return buildReport(applicability, contract, null, findings, mode);
     }
-    if (!contract) return buildReport(applicability, contract, null, findings, mode);
+    if (!contract) {
+      return {
+        ...buildReport(applicability, contract, null, findings, mode),
+        implementation_readiness: {
+          status: 'needs_review',
+          evidence_status: 'inconclusive',
+          required_surfaces: ['story', 'spec', 'implementation'],
+          reasons: ['explicit_non_applicability_required']
+        }
+      };
+    }
   }
   if (!contract || typeof contract !== 'object' || Array.isArray(contract)) {
     error('contract_missing', 'multi_tenancy', 'multi-tenant対象Storyにはmulti_tenancy契約が必要です');
@@ -163,6 +181,8 @@ function assessNonApplicabilityEvidence(evidence, expectedHeadCommit) {
     if (evidence.source !== 'caller') reasons.push('caller_evidence_required');
     if (evidence.status !== 'verified') reasons.push('evidence_not_verified');
     if (!nonEmptyText(expectedHeadCommit)) reasons.push('expected_head_missing');
+    else if (!isCanonicalCommitId(expectedHeadCommit)) reasons.push('invalid_expected_head_commit');
+    if (!isCanonicalCommitId(evidence.head_commit)) reasons.push('invalid_head_commit');
     if (!nonEmptyText(evidence.head_commit) || evidence.head_commit !== expectedHeadCommit) reasons.push('head_mismatch');
     const declaredRequired = arrayAt(evidence.required_surfaces);
     const verified = arrayAt(evidence.verified_surfaces);
@@ -175,6 +195,10 @@ function assessNonApplicabilityEvidence(evidence, expectedHeadCommit) {
     required_surfaces: required,
     reasons: [...new Set(reasons)]
   };
+}
+
+function isCanonicalCommitId(value) {
+  return typeof value === 'string' && /^[0-9a-f]{40}$/i.test(value);
 }
 
 export function scanMultiTenantEvidence(contract, evidence) {
