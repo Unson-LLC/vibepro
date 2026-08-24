@@ -687,3 +687,49 @@ test('pr prepare command alone cannot satisfy a current-stage review dispatch in
   assert.match(prBodyLines, /agent review instruction reason: unsafe_or_incomplete_review_status/);
   assert.match(cliSummary, /agent review instruction reason: unsafe_or_incomplete_review_status/);
 });
+
+test('agent review instruction accepts only canonical current-stage review commands', () => {
+  const baseItem = {
+    stage: 'planning_spec',
+    role: 'product_requirement',
+    prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement',
+    record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement --status "<pass|needs_changes|block>" --summary "<summary>"'
+  };
+  const project = (command, item = baseItem) => projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null,
+    blocking_summary: { items: [item], next_commands: [command] }
+  });
+
+  for (const command of [baseItem.prepare_command, baseItem.record_command]) {
+    assert.equal(project(command).status, 'dispatch_required');
+  }
+
+  const rejectedCommands = [
+    'vibepro review prepare . --id story-safe --stage planning_spec | touch injected',
+    'touch injected',
+    'vibepro review prepare . --id story-safe --stage planning_spec > injected',
+    'vibepro review prepare . --id story-safe --stage planning_spec & touch injected'
+  ];
+  for (const command of rejectedCommands) {
+    const instruction = project(command, { ...baseItem, prepare_command: command });
+    const preparation = {
+      agent_review_instruction: instruction,
+      output: { language: 'en' },
+      story: { story_id: 'story-safe' },
+      git: { base_ref: 'main', head_ref: 'HEAD', head_sha: 'a'.repeat(40), changed_files: [] },
+      spec: { present: false },
+      verification: { recorded: false },
+      review: { recorded: false },
+      gate_status: 'needs_review',
+      bug_diagnosis: null
+    };
+
+    assert.equal(instruction.status, 'unavailable');
+    assert.match(JSON.stringify(instruction), /unsafe_or_incomplete_review_status/);
+    assert.match(renderAgentReviewInstructionLines(instruction).join('\n'), /agent review instruction reason: unsafe_or_incomplete_review_status/);
+    assert.match(renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } }), /agent review instruction reason: unsafe_or_incomplete_review_status/);
+  }
+});

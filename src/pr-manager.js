@@ -339,7 +339,9 @@ export function projectAgentReviewInstruction(review) {
   ));
   const safeIdentifiers = [currentStage, ...roles].every(isSafeReviewInstructionIdentifier);
   const safeCommands = selectedCommands.every(isSafeReviewInstructionCommand);
-  const hasCurrentStageReviewCommand = selectedCommands.some((command) => allowedCommands.has(command));
+  const hasCurrentStageReviewCommand = selectedCommands.some((command) => (
+    allowedCommands.has(command) && isCanonicalCurrentStageReviewCommand(command, currentStage, roles)
+  ));
   if (!currentStage || roles.length === 0 || !hasCurrentStageReviewCommand || !safeIdentifiers || !safeCommands) {
     return {
       status: 'unavailable',
@@ -364,7 +366,31 @@ function isSafeReviewInstructionIdentifier(value) {
 function isSafeReviewInstructionCommand(value) {
   if (typeof value !== 'string' || !value.trim()) return false;
   if (/[\u0000-\u0008\u000a-\u001f\u007f]/.test(value)) return false;
-  return !/(?:`|\$\(|\$\{|;|&&|\|\|)/.test(value);
+  if (/(?:`|\$\(|\$\{)/.test(value)) return false;
+  let quote = null;
+  for (const character of value) {
+    if (quote) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if ('|><&;'.includes(character)) return false;
+  }
+  return quote === null;
+}
+
+function isCanonicalCurrentStageReviewCommand(command, currentStage, roles) {
+  if (!isSafeReviewInstructionCommand(command)) return false;
+  const prepare = command.match(/^vibepro review prepare \. --id ([A-Za-z0-9][A-Za-z0-9._-]*) --stage ([A-Za-z0-9][A-Za-z0-9._-]*)(?<roles>(?: --role [A-Za-z0-9][A-Za-z0-9._-]*)+)$/);
+  if (prepare) {
+    const commandRoles = [...prepare.groups.roles.matchAll(/ --role ([A-Za-z0-9][A-Za-z0-9._-]*)/g)].map((match) => match[1]);
+    return prepare[2] === currentStage && commandRoles.every((role) => roles.includes(role));
+  }
+  const record = command.match(/^vibepro review record \. --id ([A-Za-z0-9][A-Za-z0-9._-]*) --stage ([A-Za-z0-9][A-Za-z0-9._-]*) --role ([A-Za-z0-9][A-Za-z0-9._-]*)(?: |$)/);
+  return Boolean(record && record[2] === currentStage && roles.includes(record[3]));
 }
 
 export function renderAgentReviewInstructionLines(instruction) {
