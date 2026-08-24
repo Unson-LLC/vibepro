@@ -42,6 +42,69 @@ test('Story固有の境界シグナルがある場合だけmulti-tenant契約を
   assert.ok(conflictingOverride.reasons.includes('explicit_non_applicability_conflict'));
 });
 
+test('明示的な非該当は弱い語に上書きされず、fresh exact-HEAD caller evidenceだけが実装readyになる', () => {
+  const contract = { applicability: 'not_applicable' };
+  const storyText = 'account設定の表示順を変更する。';
+  const expectedHeadCommit = 'a'.repeat(40);
+  const freshEvidence = {
+    source: 'caller',
+    status: 'verified',
+    head_commit: expectedHeadCommit,
+    required_surfaces: ['story', 'spec', 'implementation'],
+    verified_surfaces: ['story', 'spec', 'implementation']
+  };
+
+  const ready = assessMultiTenantArchitecture({
+    storyText,
+    contract,
+    applicabilityEvidence: freshEvidence,
+    expectedHeadCommit
+  });
+  assert.equal(ready.status, 'not_applicable');
+  assert.equal(ready.implementation_readiness.status, 'ready');
+
+  for (const [label, applicabilityEvidence] of [
+    ['missing', null],
+    ['stale', { ...freshEvidence, status: 'stale' }],
+    ['wrong-head', { ...freshEvidence, head_commit: 'b'.repeat(40) }],
+    ['self-asserted', { ...freshEvidence, source: 'contract' }],
+    ['missing-surface', { ...freshEvidence, verified_surfaces: ['story', 'spec'] }]
+  ]) {
+    const report = assessMultiTenantArchitecture({ storyText, contract, applicabilityEvidence, expectedHeadCommit });
+    assert.equal(report.status, 'not_applicable', label);
+    assert.equal(report.implementation_readiness.status, 'needs_review', label);
+  }
+
+  for (const [label, malformedHead] of [
+    ['short-head', 'abc123'],
+    ['nonhex-head', 'z'.repeat(40)]
+  ]) {
+    const report = assessMultiTenantArchitecture({
+      storyText,
+      contract,
+      applicabilityEvidence: { ...freshEvidence, head_commit: malformedHead },
+      expectedHeadCommit: malformedHead
+    });
+    assert.equal(report.implementation_readiness.status, 'needs_review', label);
+    assert.ok(report.implementation_readiness.reasons.includes('invalid_head_commit'), label);
+  }
+});
+
+test('strong signalと不正なcaller projectionは非該当宣言でもfail closedになる', () => {
+  const expectedHeadCommit = 'a'.repeat(40);
+  const strong = assessMultiTenantArchitecture({
+    storyText: 'tenant_idでcross-tenant storage境界を分離する。',
+    contract: { applicability: 'not_applicable' },
+    applicabilityEvidence: {
+      source: 'caller', status: 'verified', head_commit: expectedHeadCommit,
+      required_surfaces: ['story'], verified_surfaces: ['story']
+    },
+    expectedHeadCommit
+  });
+  assert.equal(strong.status, 'invalid');
+  assert.ok(strong.findings.some((finding) => finding.code === 'applicability_evidence_inconsistent'));
+});
+
 test('共有・専用・顧客管理の代表契約をreadyと判定して6ビューへ投影する', async () => {
   for (const name of ['pooled', 'dedicated', 'customer-managed']) {
     const contract = await fixture(name);

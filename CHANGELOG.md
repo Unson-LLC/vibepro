@@ -2479,3 +2479,45 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:486:end -->
+
+<!-- vibepro-release-pr:488:start -->
+## [#488](https://github.com/Unson-LLC/vibepro/pull/488) chore: release 0.2.0-beta.14
+
+- Author: @sintariran
+- Merged: 2026-08-24T04:00:45Z
+- Commit: `fb35ee06d9a91b1bab7d7dab0584deb62a3b2086`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:488:end -->
+
+<!-- vibepro-release-pr:489:start -->
+## [#489](https://github.com/Unson-LLC/vibepro/pull/489) fix: 非マルチテナント適用判定と実装証拠を分離する
+
+- Author: @sintariran
+- Merged: 2026-08-24T14:53:38Z
+- Commit: `877dd461695edb52e138a811078551705799d433`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:489:end -->
