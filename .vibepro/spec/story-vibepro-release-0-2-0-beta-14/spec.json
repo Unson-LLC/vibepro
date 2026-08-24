@@ -14,7 +14,7 @@
         "story_refs": [
           {
             "kind": "acceptance_criteria",
-            "index": 0
+            "id": "REL14-AC-001"
           }
         ],
         "architecture_refs": [
@@ -49,7 +49,7 @@
         ]
       },
       "first_seen_at": "2026-08-24T02:14:34.308Z",
-      "last_revised_at": "2026-08-24T02:16:48.894Z"
+      "last_revised_at": "2026-08-24T02:26:33.590Z"
     },
     {
       "id": "INV-001",
@@ -59,7 +59,7 @@
         "story_refs": [
           {
             "kind": "acceptance_criteria",
-            "index": 1
+            "id": "REL14-AC-002"
           }
         ],
         "architecture_refs": [
@@ -90,7 +90,7 @@
         ]
       },
       "first_seen_at": "2026-08-24T02:14:34.308Z",
-      "last_revised_at": "2026-08-24T02:16:48.894Z"
+      "last_revised_at": "2026-08-24T02:26:33.590Z"
     },
     {
       "id": "S-001",
@@ -100,7 +100,7 @@
         "story_refs": [
           {
             "kind": "acceptance_criteria",
-            "index": 2
+            "id": "REL14-AC-003"
           }
         ],
         "architecture_refs": [
@@ -131,7 +131,7 @@
         ]
       },
       "first_seen_at": "2026-08-24T02:14:34.308Z",
-      "last_revised_at": "2026-08-24T02:16:48.894Z"
+      "last_revised_at": "2026-08-24T02:26:33.590Z"
     },
     {
       "id": "INV-002",
@@ -141,11 +141,11 @@
         "story_refs": [
           {
             "kind": "acceptance_criteria",
-            "index": 3
+            "id": "REL14-AC-004"
           },
           {
             "kind": "acceptance_criteria",
-            "index": 4
+            "id": "REL14-AC-005"
           }
         ],
         "architecture_refs": [
@@ -176,7 +176,7 @@
         ]
       },
       "first_seen_at": "2026-08-24T02:14:34.308Z",
-      "last_revised_at": "2026-08-24T02:16:48.894Z"
+      "last_revised_at": "2026-08-24T02:26:33.590Z"
     }
   ],
   "diagrams": [
@@ -186,6 +186,6 @@
       "mermaid": "flowchart LR\n  A[Exact HEAD CI] --> B[Merge]\n  B --> C[Post-merge release]\n  C --> D[npm and dist-tags]\n  C --> E[Git tag and GitHub prerelease]\n  C --> F[Docs projection]\n  D --> G[Fresh install readback]\n  E --> G"
     }
   ],
-  "generated_at": "2026-08-24T02:16:48.893Z",
-  "previous_spec_id": "2026-08-24T02:14:44.342Z"
+  "generated_at": "2026-08-24T02:26:33.589Z",
+  "previous_spec_id": "2026-08-24T02:16:48.893Z"
 }
