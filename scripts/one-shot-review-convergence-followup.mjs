@@ -1,16 +1,7 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { gunzipSync } from 'node:zlib';
 
 const root = process.cwd();
-const payloadPath = path.join(root, 'scripts', '.one-shot-review-convergence-followup.payload');
-const encoded = await readFile(payloadPath, 'utf8');
-const files = JSON.parse(gunzipSync(Buffer.from(encoded.trim(), 'base64')).toString('utf8'));
-for (const [relativePath, content] of Object.entries(files)) {
-  const target = path.join(root, relativePath);
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, content, 'utf8');
-}
 
 await patchFile('src/agent-review.js', [
   {
