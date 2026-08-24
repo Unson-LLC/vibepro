@@ -33,5 +33,12 @@ canonical task planは`authority.status = "accepted"`、正規化済み`tasks`�
 ## PR selection
 
 `pr prepare --task X`はcanonical task planがaccepted authorityであり、Xが
-そのtasksに存在する場合だけ続行する。失敗時はaccepted authorityとgenerated
-proposalを混同せず、canonical pathと修復用`task bind` commandを示す。
+そのtasksに存在する場合だけ続行する。選択時にはcanonical schema、accepted status、
+tracked inputのrepo相対pathと現在内容のSHA-256、入力とcanonical双方のStory・Task
+schema、一意性、allowed path境界を再検証する。
+
+さらにbase refはHEADのancestor、head refは現在のHEADでなければならない。
+`base...HEAD`の全変更pathが選択Taskの`allowed_paths`（exact path、directory prefix、
+`*` / `**` glob）に含まれる場合だけprepareを続行する。Task未指定経路にはこの検証を
+適用しない。失敗時はaccepted authorityとgenerated proposalを混同せず、canonical
+pathと修復用`task bind` commandを示す。

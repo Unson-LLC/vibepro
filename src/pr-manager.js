@@ -28,7 +28,7 @@ import { getAgentReviewStatus } from './agent-review.js';
 import { bindStoryTraceability, buildAcceptedSpecClauseMap, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
-import { assertSelectedTaskAccepted, readTaskAuthorities } from './task-authority.js';
+import { assertSelectedTaskAccepted, assertSelectedTaskScope, readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
 import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
@@ -87,7 +87,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     verificationTrustStatus
   });
   const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
-  await assertSelectedTaskAccepted(root, storyId, options.taskId);
+  const selectedTaskAuthority = await assertSelectedTaskAccepted(root, storyId, options.taskId);
+  const selectedTaskScope = await assertSelectedTaskScope(root, selectedTaskAuthority?.selected, git);
   const multiTenantArchitecture = assessMultiTenantArchitecture({
     storyText: storySource?.content ?? '',
     contract: spec?.multi_tenancy ?? null,
@@ -101,7 +102,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     created_at: new Date().toISOString(),
     runtime_identity: runtimeIdentity,
     story,
-    task_context: options.taskId || options.groupId ? { task_id: options.taskId ?? null, group_id: options.groupId ?? null } : null,
+    task_context: options.taskId || options.groupId ? {
+      task_id: options.taskId ?? null,
+      group_id: options.groupId ?? null,
+      accepted_task: selectedTaskAuthority?.selected ?? null,
+      accepted_scope: selectedTaskScope
+    } : null,
     task_authorities: taskAuthorities,
     output: { language },
     git,

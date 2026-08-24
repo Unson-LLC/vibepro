@@ -15,6 +15,9 @@ digestを保存する。
 
 accepted authorityが存在する場合、診断writerは常にgenerated proposal側へrouteする。
 PR managerは`--task`指定時だけaccepted authorityを必須とし、Task未指定経路は変えない。
+Task選択時は保存済みcanonicalだけを信用せず、tracked inputの現在digestとschemaを
+再読して一致を確認する。PR範囲は現在HEADに固定し、baseがancestorであることと、
+`base...HEAD`の全変更pathが選択Taskのallowed paths内であることをfail closedで確認する。
 
 ## 非採用
 

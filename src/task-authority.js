@@ -9,6 +9,7 @@ import { toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 const DOCUMENT_FIELDS = new Set(['schema_version', 'story_id', 'tasks']);
+const ACCEPTED_DOCUMENT_FIELDS = new Set(['schema_version', 'story_id', 'authority', 'provenance', 'tasks']);
 const TASK_FIELDS = new Set(['task_id', 'story_id', 'title', 'allowed_paths', 'acceptance_criteria', 'depends_on', 'status']);
 
 export async function bindTaskAuthority(repoRoot, { storyId, inputPath }) {
@@ -88,15 +89,57 @@ export async function readTaskAuthorities(repoRoot, storyId, storySource = null)
 export async function assertSelectedTaskAccepted(repoRoot, storyId, taskId) {
   if (!taskId) return null;
   const route = await resolveArtifactRoute(repoRoot, 'task_plan', { storyId });
-  const accepted = await readAcceptedTaskAuthority(repoRoot, canonicalTaskJsonPath(repoRoot, route, storyId));
-  if (!accepted.present) {
-    throw new Error(`task ${taskId} is not in accepted authority for ${storyId}; run vibepro task bind ${repoRoot} --id ${storyId} --input <tracked-json>`);
+  const filePath = canonicalTaskJsonPath(repoRoot, route, storyId);
+  let document;
+  try {
+    document = JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') throw new Error(`task ${taskId} is not in accepted authority for ${storyId}; run vibepro task bind ${repoRoot} --id ${storyId} --input <tracked-json>`);
+    throw new Error(`accepted task authority must be valid JSON: ${error.message}`);
   }
+  const accepted = await validateAcceptedTaskAuthority(repoRoot, storyId, filePath, document);
   const selected = accepted.tasks.find((task) => task.id === taskId);
   if (!selected) {
     throw new Error(`task ${taskId} is not in accepted authority for ${storyId}; accepted tasks: ${accepted.tasks.map((task) => task.id).join(', ') || 'none'}`);
   }
   return { accepted, selected };
+}
+
+export async function assertSelectedTaskScope(repoRoot, selected, git) {
+  if (!selected) return null;
+  const root = path.resolve(repoRoot);
+  const baseSha = await resolveRequiredGitRef(root, git.base_ref, 'base');
+  const headSha = await resolveRequiredGitRef(root, git.head_ref, 'head');
+  const currentHead = await resolveRequiredGitRef(root, 'HEAD', 'current HEAD');
+  if (headSha !== currentHead || git.head_sha !== currentHead) {
+    throw new Error(`task-scoped pr prepare head must resolve to current HEAD; ${git.head_ref}=${headSha}, HEAD=${currentHead}`);
+  }
+  const mergeBase = (await execFileAsync('git', ['merge-base', baseSha, headSha], { cwd: root, encoding: 'utf8' }).catch(() => ({ stdout: '' }))).stdout.trim();
+  if (!mergeBase || mergeBase !== baseSha) {
+    throw new Error(`task-scoped pr prepare base ref is stale or not an ancestor of HEAD: ${git.base_ref}`);
+  }
+  const { stdout } = await execFileAsync('git', ['diff', '--name-only', `${baseSha}...${headSha}`], { cwd: root, encoding: 'utf8' });
+  const changedPaths = stdout.split('\n').map((value) => value.trim()).filter(Boolean);
+  const outside = changedPaths.filter((changedPath) => !selected.allowed_paths.some((allowedPath) => matchesAllowedPath(changedPath, allowedPath)));
+  if (outside.length > 0) {
+    throw new Error(`changes outside accepted task ${selected.id} allowed_paths: ${outside.join(', ')}`);
+  }
+  return { base_sha: baseSha, head_sha: headSha, changed_paths: changedPaths };
+}
+
+async function resolveRequiredGitRef(repoRoot, ref, label) {
+  try {
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--verify', `${ref}^{commit}`], { cwd: repoRoot, encoding: 'utf8' });
+    return stdout.trim();
+  } catch {
+    throw new Error(`task-scoped pr prepare ${label} ref must resolve to a commit: ${ref}`);
+  }
+}
+
+function matchesAllowedPath(changedPath, allowedPath) {
+  if (!allowedPath.includes('*')) return changedPath === allowedPath || changedPath.startsWith(`${allowedPath.replace(/\/$/, '')}/`);
+  const escaped = allowedPath.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replaceAll('**', '\u0000').replaceAll('*', '[^/]*').replaceAll('\u0000', '.*');
+  return new RegExp(`^${escaped}$`).test(changedPath);
 }
 
 function canonicalTaskJsonPath(repoRoot, route, storyId) {
@@ -157,6 +200,48 @@ function validateAuthorityInput(document, storyId) {
       ...(task.status == null ? {} : { status: String(task.status) })
     };
   }).sort((a, b) => a.task_id.localeCompare(b.task_id));
+}
+
+async function validateAcceptedTaskAuthority(repoRoot, storyId, filePath, document) {
+  if (!document || Array.isArray(document) || typeof document !== 'object') throw new Error('accepted task authority must be an object');
+  const unknownFields = Object.keys(document).filter((key) => !ACCEPTED_DOCUMENT_FIELDS.has(key));
+  if (unknownFields.length > 0) throw new Error(`unknown accepted task authority field: ${unknownFields.join(', ')}`);
+  if (document.schema_version !== '0.1.0') throw new Error('accepted task authority schema_version must be 0.1.0');
+  if (document.story_id !== storyId) throw new Error(`accepted task authority story_id must exactly match ${storyId}`);
+  if (!document.authority || Array.isArray(document.authority) || Object.keys(document.authority).some((key) => !['status', 'scope'].includes(key))) {
+    throw new Error('accepted task authority authority schema is invalid');
+  }
+  if (document.authority?.status !== 'accepted' || document.authority?.scope !== 'story') {
+    throw new Error('accepted task authority requires accepted status and story scope');
+  }
+  if (!document.provenance || Array.isArray(document.provenance) || Object.keys(document.provenance).some((key) => !['input_path', 'input_sha256'].includes(key))) {
+    throw new Error('accepted task authority provenance schema is invalid');
+  }
+  const inputPath = document.provenance?.input_path;
+  if (typeof inputPath !== 'string') throw new Error('accepted task authority provenance input_path must be repo-relative');
+  const input = await resolveTrackedInput(path.resolve(repoRoot), inputPath);
+  if (input.relativePath !== inputPath.replaceAll('\\', '/')) throw new Error('accepted task authority provenance input_path must be normalized and repo-relative');
+  const bytes = await readFile(input.absolutePath);
+  const digest = createHash('sha256').update(bytes).digest('hex');
+  if (!/^[a-f0-9]{64}$/.test(document.provenance?.input_sha256 ?? '') || document.provenance.input_sha256 !== digest) {
+    throw new Error('accepted task authority provenance digest must match current tracked input content');
+  }
+  let source;
+  try {
+    source = JSON.parse(bytes.toString('utf8'));
+  } catch (error) {
+    throw new Error(`accepted task authority tracked input must remain valid JSON: ${error.message}`);
+  }
+  const sourceTasks = validateAuthorityInput(source, storyId);
+  const canonicalTasks = validateAuthorityInput({ schema_version: document.schema_version, story_id: document.story_id, tasks: document.tasks }, storyId);
+  if (JSON.stringify(canonicalTasks) !== JSON.stringify(sourceTasks)) throw new Error('accepted task authority tasks must match current tracked input');
+  return {
+    authority: 'accepted', path: toWorkspaceRelative(repoRoot, filePath), present: true,
+    task_count: canonicalTasks.length,
+    status_counts: countStatuses(canonicalTasks.map((task) => ({ status: task.status ?? 'accepted' }))),
+    provenance: document.provenance,
+    tasks: canonicalTasks.map((task) => ({ id: task.task_id, story_id: task.story_id, status: task.status ?? 'accepted', allowed_paths: task.allowed_paths, acceptance_criteria: task.acceptance_criteria ?? [] }))
+  };
 }
 
 function validateAllowedPath(value, taskId) {

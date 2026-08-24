@@ -117,6 +117,37 @@ test('selected task validation fails closed outside accepted authority', async (
   await assert.rejects(assertSelectedTaskAccepted(root, STORY_ID, 'TASK-999'), /accepted tasks: TASK-001/);
 });
 
+test('selected task validation rejects stale or tampered accepted authority', async () => {
+  const root = await repo();
+  const input = await trackedInput(root);
+  const bound = await bindTaskAuthority(root, { storyId: STORY_ID, inputPath: input });
+  const canonical = JSON.parse(await readFile(bound.artifacts.canonical_json, 'utf8'));
+
+  for (const [label, mutate, pattern] of [
+    ['schema', (document) => { document.schema_version = '9.9.9'; }, /schema_version/],
+    ['status', (document) => { document.authority.status = 'generated_proposal'; }, /accepted status/],
+    ['digest', (document) => { document.provenance.input_sha256 = '0'.repeat(64); }, /digest.*match/],
+    ['input escape', (document) => { document.provenance.input_path = '../outside.json'; }, /inside the repository/],
+    ['duplicate', (document) => { document.tasks.push({ ...document.tasks[0] }); }, /duplicate task_id/],
+    ['cross story', (document) => { document.tasks[0].story_id = 'story-other'; }, /story_id must exactly match/],
+    ['allowed path escape', (document) => { document.tasks[0].allowed_paths = ['../outside.js']; }, /allowed_paths/],
+    ['valid-looking task divergence', (document) => { document.tasks[0].allowed_paths = ['src/other.js']; }, /tasks must match/],
+    ['unknown canonical field', (document) => { document.unexpected = true; }, /unknown accepted/]
+  ]) {
+    const tampered = structuredClone(canonical);
+    mutate(tampered);
+    await writeFile(bound.artifacts.canonical_json, `${JSON.stringify(tampered, null, 2)}\n`);
+    await assert.rejects(assertSelectedTaskAccepted(root, STORY_ID, 'TASK-001'), pattern, label);
+  }
+
+  await writeFile(bound.artifacts.canonical_json, `${JSON.stringify(canonical, null, 2)}\n`);
+  await writeFile(path.join(root, input), `${JSON.stringify({
+    schema_version: '0.1.0', story_id: STORY_ID,
+    tasks: [{ task_id: 'TASK-001', story_id: STORY_ID, allowed_paths: ['src/changed.js'] }]
+  }, null, 2)}\n`);
+  await assert.rejects(assertSelectedTaskAccepted(root, STORY_ID, 'TASK-001'), /digest.*match/);
+});
+
 test('task bind CLI writes JSON result', async () => {
   const root = await repo();
   const input = await trackedInput(root);

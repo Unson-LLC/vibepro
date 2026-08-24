@@ -215,7 +215,11 @@ test('pr prepare --task accepts only explicitly bound authority without changing
   await writeFile(path.join(root, input), `${JSON.stringify({
     schema_version: '0.1.0',
     story_id: STORY_ID,
-    tasks: [{ task_id: 'TASK-001', story_id: STORY_ID, allowed_paths: ['fixture-1.js'] }]
+    tasks: [{
+      task_id: 'TASK-001',
+      story_id: STORY_ID,
+      allowed_paths: Array.from({ length: 12 }, (_, index) => `fixture-${index + 1}.js`)
+    }]
   }, null, 2)}\n`);
   await git(root, ['add', input]);
   const bound = await runCli(['task', 'bind', root, '--id', STORY_ID, '--input', input, '--json']);
