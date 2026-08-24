@@ -28,7 +28,7 @@ import { getAgentReviewStatus } from './agent-review.js';
 import { bindStoryTraceability, buildAcceptedSpecClauseMap, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
-import { readTaskAuthorities } from './task-authority.js';
+import { assertSelectedTaskAccepted, readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
 import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
@@ -87,6 +87,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     verificationTrustStatus
   });
   const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
+  await assertSelectedTaskAccepted(root, storyId, options.taskId);
   const multiTenantArchitecture = assessMultiTenantArchitecture({
     storyText: storySource?.content ?? '',
     contract: spec?.multi_tenancy ?? null,
@@ -708,6 +709,7 @@ function renderPrBody(preparation) {
   lines.push('');
   lines.push('### タスク権限');
   lines.push(renderHumanTaskAuthority(taskAuthorities?.human));
+  lines.push(renderAcceptedTaskAuthority(taskAuthorities?.accepted));
   lines.push(renderGeneratedTaskAuthority(taskAuthorities?.generated));
   lines.push('');
   lines.push('### Development Judgment');
@@ -807,6 +809,15 @@ function renderHumanTaskAuthority(authority) {
   if (!authority?.present) return '- 人間作成タスク: 未検出';
   const counts = formatStatusCounts(authority.status_counts);
   return `- 人間作成タスク: ${authority.task_count}件${counts ? ` (${counts})` : ''} — ${authority.path}`;
+}
+
+function renderAcceptedTaskAuthority(authority) {
+  if (!authority?.present) return '- 受理済みauthority: 未検出';
+  const counts = formatStatusCounts(authority.status_counts);
+  const provenance = authority.provenance
+    ? `; input=${authority.provenance.input_path}@${authority.provenance.input_sha256}`
+    : '';
+  return `- 受理済みauthority: ${authority.task_count}件${counts ? ` (${counts})` : ''}${provenance} — ${authority.path}`;
 }
 
 function renderGeneratedTaskAuthority(authority) {

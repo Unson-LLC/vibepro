@@ -205,3 +205,47 @@ test('pr prepare fails closed when canonical traceability cannot be refreshed', 
   const blocked = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--base', 'main', '--json']);
   assert.equal(blocked.exitCode, 1);
 });
+
+test('pr prepare --task accepts only explicitly bound authority without changing review readiness', async () => {
+  const root = await setupRepo();
+  const unbound = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--task', 'TASK-001', '--base', 'main', '--json']);
+  assert.equal(unbound.exitCode, 1);
+
+  const input = 'accepted-tasks.json';
+  await writeFile(path.join(root, input), `${JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    tasks: [{ task_id: 'TASK-001', story_id: STORY_ID, allowed_paths: ['fixture-1.js'] }]
+  }, null, 2)}\n`);
+  await git(root, ['add', input]);
+  const bound = await runCli(['task', 'bind', root, '--id', STORY_ID, '--input', input, '--json']);
+  assert.equal(bound.exitCode, 0);
+
+  const baseline = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  const selected = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--task', 'TASK-001', '--base', 'main', '--json']);
+  assert.equal(selected.exitCode, 0);
+  assert.equal(selected.result.preparation.task_authorities.accepted.task_count, 1);
+  assert.equal(selected.result.preparation.task_authorities.generated.present, false);
+  assert.equal(selected.result.preparation.gate_status, baseline.result.preparation.gate_status);
+  assert.equal(selected.result.preparation.review.status, baseline.result.preparation.review.status);
+  assert.deepEqual(selected.result.preparation.review.summary, baseline.result.preparation.review.summary);
+  assert.deepEqual(
+    selected.result.preparation.review.stages.map(({ stage, status }) => ({ stage, status })),
+    baseline.result.preparation.review.stages.map(({ stage, status }) => ({ stage, status }))
+  );
+  assert.deepEqual(
+    {
+      status: selected.result.preparation.agent_review_instruction?.status,
+      current_stage: selected.result.preparation.agent_review_instruction?.current_stage,
+      roles: selected.result.preparation.agent_review_instruction?.roles
+    },
+    {
+      status: baseline.result.preparation.agent_review_instruction?.status,
+      current_stage: baseline.result.preparation.agent_review_instruction?.current_stage,
+      roles: baseline.result.preparation.agent_review_instruction?.roles
+    }
+  );
+
+  const unknown = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--task', 'TASK-999', '--base', 'main', '--json']);
+  assert.equal(unknown.exitCode, 1);
+});
