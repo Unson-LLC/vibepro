@@ -1,9 +1,11 @@
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
 import {
   getAgentReviewStatus,
@@ -11,7 +13,8 @@ import {
   recordAgentReview
 } from '../src/agent-review.js';
 import { initWorkspace } from '../src/workspace.js';
-import { run } from '../src/shell.js';
+
+const execFileAsync = promisify(execFile);
 
 test('code-only delta keeps upstream product judgment current but invalidates runtime descendants using recorded surfaces', async () => {
   const repo = await setupRepo();
@@ -192,9 +195,9 @@ const specPath = 'docs/specs/story-test.md';
 
 async function setupRepo() {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-review-causal-integration-'));
-  await run('git', ['init'], { cwd: repo });
-  await run('git', ['config', 'user.email', 'test@example.com'], { cwd: repo });
-  await run('git', ['config', 'user.name', 'Test'], { cwd: repo });
+  await execFileAsync('git', ['init'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo });
   await initWorkspace(repo);
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await mkdir(path.join(repo, 'test'), { recursive: true });
@@ -209,8 +212,8 @@ async function setupRepo() {
 }
 
 async function commitAll(repo, message) {
-  await run('git', ['add', '-A'], { cwd: repo });
-  await run('git', ['commit', '-m', message], { cwd: repo });
+  await execFileAsync('git', ['add', '-A'], { cwd: repo });
+  await execFileAsync('git', ['commit', '-m', message], { cwd: repo });
 }
 
 async function recordPass(repo, {
