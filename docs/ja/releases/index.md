@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-23 | [`0.2.0-beta.13`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.13) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-22 | [`0.2.0-beta.12`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.12) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-21 | [`0.2.0-beta.11`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.11) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-17 | [`0.2.0-beta.10`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.10) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -460,3 +461,11 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:483:start -->
 - [PR #483](https://github.com/Unson-LLC/vibepro/pull/483) — [2026-08](/ja/releases/2026-08): feat: complete Development Judgment operating loop
 <!-- vibepro-release-index-pr:483:end -->
+
+<!-- vibepro-release-index-pr:484:start -->
+- [PR #484](https://github.com/Unson-LLC/vibepro/pull/484) — [2026-08](/ja/releases/2026-08): chore: release 0.2.0-beta.13
+<!-- vibepro-release-index-pr:484:end -->
+
+<!-- vibepro-release-index-pr:486:start -->
+- [PR #486](https://github.com/Unson-LLC/vibepro/pull/486) — [2026-08](/ja/releases/2026-08): feat: add causal Review DAG freshness and progress-sensitive convergence
+<!-- vibepro-release-index-pr:486:end -->
