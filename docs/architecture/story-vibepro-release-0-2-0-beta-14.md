@@ -7,7 +7,7 @@ PR #486で`main`へ入ったReview DAGの収束修正を、既存のpost-merge r
 
 ## 境界
 
-- release PRは`package.json`と`package-lock.json`のroot version、およびStory・Architecture・Specだけを変更する。
+- release PRは`package.json`と`package-lock.json`のroot version、Story・Architecture・Specとそのcatalog登録、および版番号固定の回帰テストだけを変更する。
 - `src`、`bin`、依存、`.github/workflows/post-merge-release.yml`、公開スクリプトは変更しない。
 - npm publish、dist-tag、Git tag、GitHub prerelease、docs投影は既存のpost-merge workflowを正本とする。
 - ローカルnpm認証は公開権限の根拠にせず、GitHub ActionsのEnvironmentとtrusted publishing境界を維持する。
