@@ -18,6 +18,7 @@ import {
   evaluateReviewCausalInvalidation,
   getReviewDependencyDomains,
   normalizeReviewRuntimeFailure,
+  readReviewConvergenceState,
   updateReviewConvergenceState
 } from './review-causal-dag.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
@@ -241,21 +242,30 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectReviewGitContext(root, storyId);
   const explicitRoles = Array.isArray(options.roles) && options.roles.length > 0;
+  const convergenceState = await readReviewConvergenceState(path.dirname(reviewDir));
+  const convergenceBlocked = !explicitRoles && convergenceState?.status === 'review_nonconvergent';
   const currentSummary = await buildStageSummary(root, storyId, stage, {
     currentGitContext: gitContext,
     reviewPolicy,
     roles: configuredRoles
   });
-  const roles = explicitRoles
-    ? configuredRoles
-    : configuredRoles.filter((role) => {
-        const current = currentSummary.roles.find((item) => item.role === role);
-        return current?.effective_status !== 'pass';
-      });
+  const roles = convergenceBlocked
+    ? []
+    : explicitRoles
+      ? configuredRoles
+      : configuredRoles.filter((role) => {
+          const current = currentSummary.roles.find((item) => item.role === role);
+          return current?.effective_status !== 'pass';
+        });
   const causalReviewPlan = {
     schema_version: '0.1.0',
     model: REVIEW_CAUSAL_MODEL,
     unresolved_only: !explicitRoles,
+    dispatch_allowed: !convergenceBlocked,
+    convergence_status: convergenceState?.status ?? 'not_recorded',
+    stop_reason: convergenceBlocked
+      ? convergenceState?.next_action ?? 'Review is nonconvergent; stop automatic redispatch and escalate the unresolved state.'
+      : null,
     roles: Object.fromEntries(roles.map((role) => {
       const current = currentSummary.roles.find((item) => item.role === role);
       return [role, {
@@ -304,7 +314,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       ]
     },
     parallel_dispatch: {
-      required: true,
+      required: roles.length > 0,
       mode: 'policy_aware_parallel_reviews',
       subagent_count: roles.length,
       artifact: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
@@ -314,7 +324,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
         rule: 'Dispatch only this stage in parallel; wait for all roles to close and record before starting any later stage.'
       },
       coordinator_behavior: {
-        expected: 'dispatch_parallel_subagents',
+        expected: convergenceBlocked ? 'stop_nonconvergent' : 'dispatch_parallel_subagents',
         user_confirmation_required_by_vibepro: false,
         runner_policy_may_require_user_delegation: false,
         serial_stage_barrier: 'complete_stage_before_next_stage',
@@ -1286,9 +1296,14 @@ export function renderAgentReviewStatusSummary(status) {
   const convergenceRows = convergence
     ? [
         `- status: ${convergence.status}`,
-        `- repeat count: ${convergence.repeat_count}`,
+        `- wave count: ${convergence.wave_count ?? 0}`,
+        `- no-progress count: ${convergence.no_progress_count ?? convergence.repeat_count ?? 0}`,
         `- head churn count: ${convergence.head_churn_count}`,
-        `- semantic signature: ${convergence.snapshot?.semantic_signature ?? '-'}`,
+        `- event advanced: ${convergence.event_advanced ?? false}`,
+        `- progress detected: ${convergence.progress_detected ?? false}`,
+        `- progress reasons: ${(convergence.progress_reasons ?? []).join(', ') || 'none'}`,
+        `- event cursor: ${convergence.snapshot?.event_cursor ?? '-'}`,
+        `- progress signature: ${convergence.snapshot?.progress_signature ?? convergence.snapshot?.semantic_signature ?? '-'}`,
         `- next action: ${convergence.next_action ?? 'none'}`
       ].join('\n')
     : '- unavailable';
@@ -1368,7 +1383,7 @@ export function renderAgentReviewPrSection(agentReviews) {
     `- unmet required reviews: ${agentReviews.summary?.unmet_required_review_count ?? 0}`,
     `- checkpoint required reviews: ${agentReviews.summary?.checkpoint_required_review_count ?? 0}`,
     `- unmet checkpoint reviews: ${agentReviews.summary?.unmet_checkpoint_review_count ?? 0}`,
-    `- convergence: ${agentReviews.convergence?.status ?? 'unavailable'} (repeat=${agentReviews.convergence?.repeat_count ?? 0}, head_churn=${agentReviews.convergence?.head_churn_count ?? 0})`,
+    `- convergence: ${agentReviews.convergence?.status ?? 'unavailable'} (wave=${agentReviews.convergence?.wave_count ?? 0}, no_progress=${agentReviews.convergence?.no_progress_count ?? agentReviews.convergence?.repeat_count ?? 0}, head_churn=${agentReviews.convergence?.head_churn_count ?? 0}, progress=${agentReviews.convergence?.progress_detected ?? false})`,
     agentReviews.convergence?.next_action ? `- convergence next action: ${agentReviews.convergence.next_action}` : '- convergence next action: none',
     renderParallelDispatchPrRows(agentReviews.parallel_dispatch),
     unmetRows.join('\n') || '- PR-final roles passed or not required',
@@ -2484,12 +2499,13 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
   }
   if (contentBinding?.status === 'stale') {
     const changedFiles = contentBinding.content_binding?.changed_files ?? [];
-    if (result.causal_review && changedFiles.length > 0) {
+    if (result.causal_review) {
       const causalInvalidation = evaluateReviewCausalInvalidation({
         stage: result.stage,
         role: result.role,
         strictHead: result.freshness_policy?.effective_mode === 'strict_head',
-        changedFiles
+        changedFiles,
+        causalReview: result.causal_review
       });
       if (causalInvalidation.reusable) {
         return {

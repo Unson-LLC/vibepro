@@ -662,7 +662,8 @@ function renderPrBody(preparation) {
     ? ` (pass=${review.summary.pass ?? 0}, needs_review=${review.summary.needs_review ?? 0}, block=${review.summary.block ?? 0})`
     : '';
   lines.push(`- status: ${review.status ?? 'unknown'}${reviewCounts}`);
-  lines.push(`- convergence: ${review.convergence?.status ?? 'unavailable'} (repeat=${review.convergence?.repeat_count ?? 0}, head_churn=${review.convergence?.head_churn_count ?? 0})`);
+  lines.push(`- convergence: ${review.convergence?.status ?? 'unavailable'} (wave=${review.convergence?.wave_count ?? 0}, no_progress=${review.convergence?.no_progress_count ?? review.convergence?.repeat_count ?? 0}, head_churn=${review.convergence?.head_churn_count ?? 0}, progress=${review.convergence?.progress_detected ?? false})`);
+  lines.push(`- convergence progress reasons: ${(review.convergence?.progress_reasons ?? []).join(', ') || 'none'}`);
   if (review.convergence?.next_action) lines.push(`- convergence next action: ${review.convergence.next_action}`);
   lines.push(`- blocking reasons: ${preparation.blocking_reasons?.join(', ') || 'none'}`);
   lines.push(`- error: ${formatReviewError(review.error)}`);

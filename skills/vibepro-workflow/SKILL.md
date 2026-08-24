@@ -74,10 +74,13 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 18. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
 19. Run causal parallel subagent review:
    - Start with `vibepro review status <repo> --id <story-id>`. Dispatch only the roles listed in `blocking_summary.items`; never recreate a role that remains `pass` through `current`, `reused_merge_delta`, or `causal_reuse`.
+   - A HEAD-only change is an observation, not a completed review wave. Do not increase convergence attempts until a review record is completed.
+   - Treat finding content/disposition, inspection evidence, judgment delta, recorded invalidation surface, closure evidence, and runtime state as progress. A changed progress signature resets the no-progress counter.
+   - If changed paths are unclassified or the changed-file delta cannot be resolved, fail closed; do not claim `causal_reuse`.
    - A changed implementation or test does not by itself invalidate upstream product requirement or architecture judgments. Follow each role's causal invalidation reason instead of treating every new HEAD as a full-review reset.
    - When closing a concrete prior finding, use `--resolved-finding <finding-id>:<evidence-ref>` and inspect the fix delta plus causal descendants. Do not re-prove unrelated pass claims.
    - If a reviewer returns no body, opens the wrong request, times out, or fails to execute, record `--status runtime_failed --runtime-failure-kind empty_result|wrong_request|timeout|execution_error`. Do not convert review-runtime failure into a product finding.
-   - If `review status` reports `review_nonconvergent`, stop redispatching the same role set. Preserve the unresolved roles, split the VibePro review-contract/runtime defect into its own Story, and return control to the parent Program instead of continuing an evidence loop.
+   - If `review status` reports `review_nonconvergent`, stop redispatching the same role set. Preserve the unresolved roles, split the VibePro review-contract/runtime defect into its own Story, and return control to the parent Program instead of continuing an evidence loop. Automatic `review prepare` must return no roles in this state; only an explicit human-directed role retry may continue.
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
    - Before spawning, run `vibepro review authorize` for each role with the intended model, risk closure, judgment delta, reusable evidence, and freeze state. Spawn only roles whose authorization returns `action: dispatch`; a stop means no subagent is started.

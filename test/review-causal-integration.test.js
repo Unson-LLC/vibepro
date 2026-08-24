@@ -106,7 +106,7 @@ test('resolved-finding replacement is recorded as delta closure and preserves or
     role: 'scope_risk',
     status: 'needs_changes',
     summary: 'Scope finding requires a focused repair.',
-    findings: [{ severity: 'high', id: 'scope-a', detail: 'runtime scope is too broad' }],
+    findings: ['high:scope-a:runtime scope is too broad'],
     inspectionSummary: 'Inspected Story, Spec, and runtime implementation.',
     inspectionInputs: [storyPath, specPath, 'src/runtime.js'],
     judgmentDeltas: ['assumed bounded scope -> found an unbounded runtime path'],
