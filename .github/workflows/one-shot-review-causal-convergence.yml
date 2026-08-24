@@ -45,8 +45,8 @@ jobs:
 
           cli = Path('test/cli-reference-docs.test.js')
           text = cli.read_text()
-          before = r"/review record \\[repo\\].*--stage <stage>.*--status <pass\\|needs_changes\\|block>/"
-          after = r"/review record \\[repo\\].*--stage <stage>.*--status <pass\\|needs_changes\\|block\\|runtime_failed>/"
+          before = r"/review record \[repo\].*--stage <stage>.*--status <pass\|needs_changes\|block>/"
+          after = r"/review record \[repo\].*--stage <stage>.*--status <pass\|needs_changes\|block\|runtime_failed>/"
           if before not in text:
               raise SystemExit('CLI reference status assertion anchor not found')
           cli.write_text(text.replace(before, after, 1))
