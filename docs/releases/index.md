@@ -487,3 +487,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:491:start -->
 - [PR #491](https://github.com/Unson-LLC/vibepro/pull/491) — [2026-08](/releases/2026-08): fix: project safe agent review instructions
 <!-- vibepro-release-index-pr:491:end -->
+
+<!-- vibepro-release-index-pr:492:start -->
+- [PR #492](https://github.com/Unson-LLC/vibepro/pull/492) — [2026-08](/releases/2026-08): fix: bind PR readiness to canonical Story Tasks
+<!-- vibepro-release-index-pr:492:end -->
