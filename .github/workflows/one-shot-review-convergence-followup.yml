@@ -1,22 +1,23 @@
 name: One-shot review convergence follow-up
-# Triggered only on the temporary staging branch; removed before the clean PR is created.
+# Temporary PR-only materializer. It removes itself before the clean PR is created.
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/review-dag-causal-freshness-convergence
+      - main
 
 permissions:
   contents: write
 
 jobs:
   apply-verify-materialize:
+    if: github.head_ref == 'feat/review-dag-causal-freshness-convergence'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v7
@@ -70,4 +71,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "fix: make causal review convergence progress-sensitive"
-          git push origin HEAD:${{ github.ref_name }}
+          git push origin HEAD:${{ github.head_ref }}
