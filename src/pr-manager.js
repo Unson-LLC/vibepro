@@ -89,6 +89,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const multiTenantArchitecture = assessMultiTenantArchitecture({
     storyText: storySource?.content ?? '',
     contract: spec?.multi_tenancy ?? null,
+    applicabilityEvidence: options.multiTenantApplicabilityEvidence,
+    expectedHeadCommit: git.head_sha,
     mode: 'final'
   });
 

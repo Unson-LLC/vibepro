@@ -124,6 +124,39 @@ test('pr prepare summarizes multi-tenant contract, six views, findings, and revi
   assert.match(body, /unconfirmed: none/);
 });
 
+test('pr prepare projects non-applicability readiness from caller evidence bound to current HEAD', async () => {
+  const storyId = 'story-pr-manager-tenant-na';
+  const storyDoc = STORY_DOC
+    .replaceAll('story-pr-manager-ac', storyId)
+    .replace('# Story', '# Story\n\naccount設定の表示順を変更する。');
+  const root = await setupRepo({ storyId, storyDoc });
+  await writeInferredSpec(root, storyId, {
+    schema_version: '0.1.0', story_id: storyId, clauses: [],
+    multi_tenancy: { applicability: 'not_applicable' }
+  });
+  const { stdout } = await git(root, ['rev-parse', 'HEAD']);
+  const head = stdout.trim();
+  const evidence = {
+    source: 'caller', status: 'verified', head_commit: head,
+    required_surfaces: ['story', 'spec', 'implementation'],
+    verified_surfaces: ['story', 'spec', 'implementation']
+  };
+
+  await preparePullRequest(root, {
+    storyId, baseRef: 'main', multiTenantApplicabilityEvidence: evidence
+  });
+  const fresh = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(fresh.multi_tenant_architecture.status, 'not_applicable');
+  assert.equal(fresh.multi_tenant_architecture.implementation_readiness.status, 'ready');
+
+  await preparePullRequest(root, {
+    storyId, baseRef: 'main', multiTenantApplicabilityEvidence: { ...evidence, head_commit: 'b'.repeat(40) }
+  });
+  const wrongHead = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
+  assert.equal(wrongHead.multi_tenant_architecture.implementation_readiness.status, 'needs_review');
+  assert.ok(wrongHead.multi_tenant_architecture.implementation_readiness.reasons.includes('head_mismatch'));
+});
+
 test('pr prepare rejects legacy verification evidence without runtime identity before writing judgment', async () => {
   const storyId = 'story-pr-manager-legacy-runtime';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
