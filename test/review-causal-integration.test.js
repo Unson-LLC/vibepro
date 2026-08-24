@@ -244,6 +244,7 @@ function strongAgent(id) {
     executionMode: 'parallel_subagent',
     agentId: `agent-${id}`,
     agentSessionId: `session-${id}`,
+    implementationSessionId: `implementation-${id}`,
     reviewerIdentity: 'separate_session',
     agentClosed: true,
     agentCloseEvidence: `close-${id}`
