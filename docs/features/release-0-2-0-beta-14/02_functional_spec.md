@@ -1,35 +1,65 @@
-# Functional Spec: VibePro 0.2.0-beta.14 release
+<!-- vibepro-projection story_id=story-vibepro-release-0-2-0-beta-14 feature_slug=release-0-2-0-beta-14 ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-release-0-2-0-beta-14/spec.json source_sha256=81da0ce8dffa6bd94cde161da9786918825d2f1a8903c3a922f3e2d464d851f9 renderer=functional_spec_markdown@1 direct_edit=false -->
+- Canonical ownership: generated
 
-- Story: `story-vibepro-release-0-2-0-beta-14`
-- Scope: release metadata only
+# Functional Spec
 
-## C-001 Version consistency
+- Story: story-vibepro-release-0-2-0-beta-14
+- Status: -
+- Clauses: 4
 
-`package.json`と`package-lock.json`のroot packageは`0.2.0-beta.14`を宣言する。
+## C-001
 
-- AC: `REL14-AC-001`
-- Code: `package.json`, `package-lock.json`
-- Test: `node -p "require('./package.json').version"`
+package.json and the root package in package-lock.json declare version 0.2.0-beta.14.
 
-## INV-001 Focused release surface
+### Origin refs
 
-release commitはStory、Spec、catalog、version metadataだけを変更し、`src`、`bin`、依存、公開workflowの挙動を変更しない。
+- {"anchor":"0.2.0-beta.14","file":"package-lock.json"}
+- {"anchor":"0.2.0-beta.14","file":"package.json"}
+- {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"境界"}
+- {"id":"REL14-AC-001","kind":"acceptance_criteria"}
 
-- AC: `REL14-AC-002`
-- Verification: `git diff --name-only origin/main...HEAD`
+## INV-001
 
-## V-001 Exact-head validation
+The release change does not modify runtime source, dependencies, binaries, or the post-merge publishing workflow.
 
-公開関連テスト、typecheck、package dry-run、必須CIをrelease headへ結び付ける。証拠が欠落・失敗・古い・不一致ならfull validationへfallbackする。
+### Origin refs
 
-- AC: `REL14-AC-003`
-- Code: `.github/workflows/post-merge-release.yml`, `scripts/post-merge-release.mjs`
-- Test: `test/post-merge-release.test.js`, `test/github-release-convergence.test.js`
+- {"anchor":"Post-merge continuous release","file":".github/workflows/post-merge-release.yml"}
+- {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"境界"}
+- {"id":"REL14-AC-002","kind":"acceptance_criteria"}
 
-## INV-002 Public surface convergence
+## INV-002
 
-公開完了はnpm `gitHead`、`beta` / `latest` dist-tag、Git tag、GitHub prerelease target、fresh install runtime、docs投影をrelease merge commitへ照合して判定する。
+Release completion requires registry, dist-tag, Git tag, GitHub prerelease, fresh-install runtime identity, and documentation readback; missing evidence remains partial.
 
-- AC: `REL14-AC-004`, `REL14-AC-005`
-- Code: `scripts/post-merge-release.mjs`
-- Evidence: GitHub Actions、npm registry、GitHub Release、公開マニュアル
+### Origin refs
+
+- {"anchor":"gitHead","file":"scripts/post-merge-release.mjs"}
+- {"case":"GRC-S-2/GRC-S-3/GRC-S-6 create and edit converge prerelease and stable metadata","file":"test/github-release-convergence.test.js"}
+- {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"完了判定"}
+- {"id":"REL14-AC-004","kind":"acceptance_criteria"}
+- {"id":"REL14-AC-005","kind":"acceptance_criteria"}
+
+## S-001
+
+After the release PR is merged, the existing post-merge workflow publishes npm, reconciles tags and the GitHub prerelease, and projects documentation.
+
+### Origin refs
+
+- {"anchor":"publish-npm","file":".github/workflows/post-merge-release.yml"}
+- {"case":"post-merge release installs dependencies before unconditional docs projection","file":"test/post-merge-release.test.js"}
+- {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"実行順序"}
+- {"id":"REL14-AC-003","kind":"acceptance_criteria"}
+
+## Diagrams
+
+### Release convergence
+
+flowchart LR
+  A[Exact HEAD CI] --> B[Merge]
+  B --> C[Post-merge release]
+  C --> D[npm and dist-tags]
+  C --> E[Git tag and GitHub prerelease]
+  C --> F[Docs projection]
+  D --> G[Fresh install readback]
+  E --> G
