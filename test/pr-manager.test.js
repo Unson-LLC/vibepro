@@ -650,3 +650,40 @@ test('unavailable instruction has the same reason in JSON and both human summary
   assert.match(prBodyLines, /agent review instruction reason: unsafe_or_incomplete_review_status/);
   assert.match(cliSummary, /agent review instruction reason: unsafe_or_incomplete_review_status/);
 });
+
+test('pr prepare command alone cannot satisfy a current-stage review dispatch instruction', () => {
+  const instruction = projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null,
+    blocking_summary: {
+      items: [{
+        stage: 'planning_spec',
+        role: 'product_requirement',
+        prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement',
+        record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement'
+      }],
+      next_commands: ['vibepro pr prepare . --story-id story-safe --base main']
+    }
+  });
+  const preparation = {
+    agent_review_instruction: instruction,
+    output: { language: 'en' },
+    story: { story_id: 'story-safe' },
+    git: { base_ref: 'main', head_ref: 'HEAD', head_sha: 'a'.repeat(40), changed_files: [] },
+    spec: { present: false },
+    verification: { recorded: false },
+    review: { recorded: false },
+    gate_status: 'needs_review',
+    bug_diagnosis: null
+  };
+  const json = JSON.stringify({ agent_review_instruction: instruction });
+  const prBodyLines = renderAgentReviewInstructionLines(instruction).join('\n');
+  const cliSummary = renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } });
+
+  assert.equal(instruction.status, 'unavailable');
+  assert.match(json, /unsafe_or_incomplete_review_status/);
+  assert.match(prBodyLines, /agent review instruction reason: unsafe_or_incomplete_review_status/);
+  assert.match(cliSummary, /agent review instruction reason: unsafe_or_incomplete_review_status/);
+});

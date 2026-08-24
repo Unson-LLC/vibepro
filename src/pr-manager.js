@@ -339,7 +339,8 @@ export function projectAgentReviewInstruction(review) {
   ));
   const safeIdentifiers = [currentStage, ...roles].every(isSafeReviewInstructionIdentifier);
   const safeCommands = selectedCommands.every(isSafeReviewInstructionCommand);
-  if (!currentStage || roles.length === 0 || selectedCommands.length === 0 || !safeIdentifiers || !safeCommands) {
+  const hasCurrentStageReviewCommand = selectedCommands.some((command) => allowedCommands.has(command));
+  if (!currentStage || roles.length === 0 || !hasCurrentStageReviewCommand || !safeIdentifiers || !safeCommands) {
     return {
       status: 'unavailable',
       reason: 'unsafe_or_incomplete_review_status',
