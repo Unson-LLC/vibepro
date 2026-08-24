@@ -1,4 +1,5 @@
 name: One-shot review convergence follow-up
+# Triggered only on the temporary staging branch; removed before the clean PR is created.
 
 on:
   push:
