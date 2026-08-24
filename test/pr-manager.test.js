@@ -8,7 +8,12 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { preparePullRequest, renderPrPrepareSummary } from '../src/pr-manager.js';
+import {
+  preparePullRequest,
+  projectAgentReviewInstruction,
+  renderAgentReviewInstructionLines,
+  renderPrPrepareSummary
+} from '../src/pr-manager.js';
 import { writeInferredSpec } from '../src/spec-store.js';
 
 const execFileAsync = promisify(execFile);
@@ -240,7 +245,7 @@ test('pr readiness reports configured but incomplete reviews and blocks PR creat
   assert.match(body, /- blocking reasons: agent_review:needs_review/);
   assert.match(body, /- error: none/);
   assert.match(body, /- agent review instruction: dispatch_required/);
-  assert.match(body, /- current stage: planning_spec/);
+  assert.match(body, /- current review stage: planning_spec/);
   for (const command of preparation.agent_review_instruction.next_commands) {
     assert.match(body, new RegExp(`    ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
   }
@@ -526,4 +531,122 @@ test('pr readiness stays ready when every review stage is explicitly disabled', 
   assert.match(body, /### Review\n- configured: false\n- recorded: false\n- complete: false\n- status: needs_review/);
   assert.match(body, /- blocking reasons: none/);
   assert.match(body, /- error: none/);
+});
+
+test('agent review instruction projects only the first incomplete stage from review status', () => {
+  const planningPrepare = 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement';
+  const planningRecord = 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement';
+  const futurePrepare = 'vibepro review prepare . --id story-safe --stage implementation --role code_quality';
+  const instruction = projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null,
+    blocking_summary: {
+      items: [
+        { stage: 'planning_spec', role: 'product_requirement', prepare_command: planningPrepare, record_command: planningRecord },
+        { stage: 'implementation', role: 'code_quality', prepare_command: futurePrepare, record_command: 'future record' }
+      ],
+      next_commands: [planningPrepare, planningRecord, futurePrepare, 'vibepro pr prepare . --story-id story-safe --base main']
+    }
+  });
+
+  assert.deepEqual(instruction.roles, ['product_requirement']);
+  assert.deepEqual(instruction.next_commands, [
+    planningPrepare,
+    planningRecord,
+    'vibepro pr prepare . --story-id story-safe --base main'
+  ]);
+  assert.ok(instruction.next_commands.every((command) => !command.includes('--stage implementation')));
+});
+
+test('agent review instruction fails closed for unsafe or incomplete status commands', () => {
+  const baseReview = {
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null
+  };
+  const unsafe = projectAgentReviewInstruction({
+    ...baseReview,
+    blocking_summary: {
+      items: [{
+        stage: 'planning_spec',
+        role: 'product_requirement',
+        prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec; touch injected',
+        record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement'
+      }],
+      next_commands: ['vibepro review prepare . --id story-safe --stage planning_spec; touch injected']
+    }
+  });
+  const incomplete = projectAgentReviewInstruction({ ...baseReview, blocking_summary: { items: [], next_commands: [] } });
+
+  for (const instruction of [unsafe, incomplete]) {
+    assert.deepEqual(instruction, {
+      status: 'unavailable',
+      reason: 'unsafe_or_incomplete_review_status',
+      current_stage: null,
+      roles: [],
+      next_commands: []
+    });
+  }
+});
+
+test('agent review instruction does not reuse stale status and reprojects needs_changes current work', () => {
+  assert.equal(projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'stale',
+    error: null,
+    blocking_summary: { items: [], next_commands: [] }
+  }), null);
+
+  const recordCommand = 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement';
+  const instruction = projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null,
+    blocking_summary: {
+      items: [{
+        stage: 'planning_spec',
+        role: 'product_requirement',
+        effective_status: 'needs_changes',
+        prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement',
+        record_command: recordCommand
+      }],
+      next_commands: [recordCommand, 'vibepro pr prepare . --story-id story-safe --base main']
+    }
+  });
+  assert.equal(instruction.status, 'dispatch_required');
+  assert.equal(instruction.current_stage, 'planning_spec');
+  assert.deepEqual(instruction.roles, ['product_requirement']);
+});
+
+test('unavailable instruction has the same reason in JSON and both human summary projections', () => {
+  const instruction = projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null,
+    blocking_summary: { items: [], next_commands: [] }
+  });
+  const preparation = {
+    agent_review_instruction: instruction,
+    output: { language: 'en' },
+    story: { story_id: 'story-safe' },
+    git: { base_ref: 'main', head_ref: 'HEAD', head_sha: 'a'.repeat(40), changed_files: [] },
+    spec: { present: false },
+    verification: { recorded: false },
+    review: { recorded: false },
+    gate_status: 'needs_review',
+    bug_diagnosis: null
+  };
+  const json = JSON.stringify({ agent_review_instruction: instruction });
+  const prBodyLines = renderAgentReviewInstructionLines(instruction).join('\n');
+  const cliSummary = renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } });
+
+  assert.match(json, /unsafe_or_incomplete_review_status/);
+  assert.match(prBodyLines, /agent review instruction reason: unsafe_or_incomplete_review_status/);
+  assert.match(cliSummary, /agent review instruction reason: unsafe_or_incomplete_review_status/);
 });

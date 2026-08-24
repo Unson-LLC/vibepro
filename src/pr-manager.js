@@ -322,7 +322,7 @@ async function readReviewSummary(repoRoot, storyId) {
   }
 }
 
-function projectAgentReviewInstruction(review) {
+export function projectAgentReviewInstruction(review) {
   if (!review.configured || review.error || review.complete || review.status !== 'needs_review') return null;
   const blockingItems = Array.isArray(review.blocking_summary?.items)
     ? review.blocking_summary.items
@@ -364,6 +364,17 @@ function isSafeReviewInstructionCommand(value) {
   if (typeof value !== 'string' || !value.trim()) return false;
   if (/[\u0000-\u0008\u000a-\u001f\u007f]/.test(value)) return false;
   return !/(?:`|\$\(|\$\{|;|&&|\|\|)/.test(value);
+}
+
+export function renderAgentReviewInstructionLines(instruction) {
+  if (!instruction) return [];
+  return [
+    `- agent review instruction: ${instruction.status}`,
+    `- current review stage: ${instruction.current_stage ?? 'none'}`,
+    `- current review roles: ${instruction.roles.join(', ') || 'none'}`,
+    ...(instruction.reason ? [`- agent review instruction reason: ${instruction.reason}`] : []),
+    ...instruction.next_commands.map((command) => `    ${command}`)
+  ];
 }
 
 function resolvePrReadiness({ bugDiagnosis, review }) {
@@ -717,17 +728,7 @@ function renderPrBody(preparation) {
   if (review.convergence?.next_action) lines.push(`- convergence next action: ${review.convergence.next_action}`);
   lines.push(`- blocking reasons: ${preparation.blocking_reasons?.join(', ') || 'none'}`);
   lines.push(`- error: ${formatReviewError(review.error)}`);
-  if (preparation.agent_review_instruction) {
-    const instruction = preparation.agent_review_instruction;
-    lines.push(`- agent review instruction: ${instruction.status}`);
-    lines.push(`- current stage: ${instruction.current_stage ?? 'none'}`);
-    lines.push(`- roles: ${instruction.roles.join(', ') || 'none'}`);
-    if (instruction.reason) lines.push(`- instruction reason: ${instruction.reason}`);
-    if (instruction.next_commands.length > 0) {
-      lines.push('- next commands:');
-      for (const command of instruction.next_commands) lines.push(`    ${command}`);
-    }
-  }
+  lines.push(...renderAgentReviewInstructionLines(preparation.agent_review_instruction));
   if (review.recorded) {
     for (const stage of review.stages) {
       lines.push(`  - ${stage.stage}: ${stage.status}${stage.roles.length ? ` (${stage.roles.join(', ')})` : ''}`);
@@ -1009,12 +1010,7 @@ export function renderPrPrepareSummary(result) {
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,
-    ...(preparation.agent_review_instruction ? [
-      `- agent review instruction: ${preparation.agent_review_instruction.status}`,
-      `- current review stage: ${preparation.agent_review_instruction.current_stage ?? 'none'}`,
-      `- current review roles: ${preparation.agent_review_instruction.roles.join(', ') || 'none'}`,
-      ...preparation.agent_review_instruction.next_commands.map((command) => `    ${command}`)
-    ] : []),
+    ...renderAgentReviewInstructionLines(preparation.agent_review_instruction),
     ...(preparation.bug_diagnosis ? [`- bug diagnosis return: ${preparation.bug_diagnosis.return_to_node ?? '-'}`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
