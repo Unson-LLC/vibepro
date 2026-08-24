@@ -10,6 +10,16 @@ import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree.js';
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
+import {
+  REVIEW_CAUSAL_MODEL,
+  buildReviewConvergenceSnapshot,
+  buildReviewDeltaClosure,
+  deriveReviewCausalSurface,
+  evaluateReviewCausalInvalidation,
+  getReviewDependencyDomains,
+  normalizeReviewRuntimeFailure,
+  updateReviewConvergenceState
+} from './review-causal-dag.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 import {
   selectRiskAdaptiveReviewCoverage
@@ -48,9 +58,9 @@ const REVIEW_STAGE_SERIAL_ORDER = [
   'preview',
   'gate'
 ];
-const REVIEW_STATUSES = new Set(['pass', 'needs_changes', 'block']);
+const REVIEW_STATUSES = new Set(['pass', 'needs_changes', 'block', 'runtime_failed']);
 const PASSING_ROLE_STATUS = new Set(['pass']);
-const CURRENT_REVIEW_BINDING_STATUSES = new Set(['current', 'reused_merge_delta']);
+const CURRENT_REVIEW_BINDING_STATUSES = new Set(['current', 'reused_merge_delta', 'causal_reuse']);
 const VERIFIED_REVIEW_PROVENANCE_STATUSES = new Set(['verified_agent']);
 const REVIEW_PROVENANCE_SYSTEMS = new Set(['codex', 'claude_code', 'human', 'other', 'unknown']);
 const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
@@ -226,10 +236,39 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   await assertInitializedWorkspace(root, 'review prepare');
   const language = await resolveHumanOutputLanguage(root, options);
   const reviewPolicy = await readAgentReviewPolicy(root);
-  const roles = normalizeRequestedRoles(reviewPolicy, stage, options.roles);
+  const configuredRoles = normalizeRequestedRoles(reviewPolicy, stage, options.roles);
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectReviewGitContext(root, storyId);
+  const explicitRoles = Array.isArray(options.roles) && options.roles.length > 0;
+  const currentSummary = await buildStageSummary(root, storyId, stage, {
+    currentGitContext: gitContext,
+    reviewPolicy,
+    roles: configuredRoles
+  });
+  const roles = explicitRoles
+    ? configuredRoles
+    : configuredRoles.filter((role) => {
+        const current = currentSummary.roles.find((item) => item.role === role);
+        return current?.effective_status !== 'pass';
+      });
+  const causalReviewPlan = {
+    schema_version: '0.1.0',
+    model: REVIEW_CAUSAL_MODEL,
+    unresolved_only: !explicitRoles,
+    roles: Object.fromEntries(roles.map((role) => {
+      const current = currentSummary.roles.find((item) => item.role === role);
+      return [role, {
+        dependency_domains: getReviewDependencyDomains(stage, role),
+        previous_status: current?.effective_status ?? 'missing',
+        previous_binding_status: current?.binding_status ?? null,
+        open_finding_ids: (current?.findings ?? []).map((finding) => finding.id).filter(Boolean),
+        instruction: ['needs_changes', 'block'].includes(current?.effective_status)
+          ? 'Review only the finding closure delta and its causal descendants; do not recreate unaffected pass evidence.'
+          : 'Review the role-specific decision dependencies and mandatory lenses.'
+      }];
+    }))
+  };
   const prPrepareArtifact = await readJsonIfExists(await resolvePrArtifactFile(root, storyId));
   const boundedArtifactHandoff = buildBoundedArtifactHandoff(prPrepareArtifact?.artifact_budget);
   const plan = {
@@ -245,6 +284,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: buildCoordinatorInstructions(language),
     mandatory_review_lenses: MANDATORY_REVIEW_LENSES,
+    causal_review: causalReviewPlan,
     agent_skill_discipline: {
       contract: 'vibepro_agent_skill_contract',
       required: true,
@@ -291,7 +331,8 @@ export async function prepareAgentReview(repoRoot, options = {}) {
         role,
         artifact: toWorkspaceRelative(root, getReviewRequestPath(reviewDir, role)),
         prompt_summary: buildRolePromptSummary(stage, role, language),
-        model_policy: rolePolicy.model_policy ?? null
+        model_policy: rolePolicy.model_policy ?? null,
+        causal_review: causalReviewPlan.roles[role] ?? null
       };
     })
   };
@@ -349,6 +390,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
         return finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });
       }
     }
+    const previousResult = await readJsonIfExists(resultPath);
     const inspection = buildInspectionBlock(options);
     const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
     const freshnessPolicy = await resolveReviewFreshnessPolicy(root, storyId, stage, reviewPolicy, role, options);
@@ -362,6 +404,24 @@ export async function recordAgentReview(repoRoot, options = {}) {
       artifacts,
       excludeSurfacePaths: generatedProjectionPaths
     });
+    const causalReview = deriveReviewCausalSurface({
+      stage,
+      role,
+      inspectionInputs: inspection.inputs,
+      artifacts,
+      contentBinding,
+      previousCausalReview: previousResult?.causal_review,
+      strictHead: freshnessPolicy.effective_mode === 'strict_head'
+    });
+    const deltaClosure = buildReviewDeltaClosure({
+      previousReview: previousResult,
+      resolvedFindings: options.resolvedFindings,
+      currentHeadSha: gitContext.head_sha,
+      closureInputs: inspection.inputs
+    });
+    const runtimeFailure = status === 'runtime_failed'
+      ? normalizeReviewRuntimeFailure(options.runtimeFailureKind, options.runtimeFailureDetail)
+      : null;
     const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
     let result = {
     schema_version: '0.1.0',
@@ -384,6 +444,9 @@ export async function recordAgentReview(repoRoot, options = {}) {
     git_context: gitContext,
     freshness_policy: freshnessPolicy,
     content_binding: contentBinding,
+    causal_review: causalReview,
+    delta_closure: deltaClosure,
+    runtime_failure: runtimeFailure,
     source_fingerprint: sourceFingerprint,
     ...(options.runtimeDispatchId ? { runtime_dispatch_id: options.runtimeDispatchId } : {}),
     agent_provenance: buildAgentProvenance(root, {
@@ -394,6 +457,16 @@ export async function recordAgentReview(repoRoot, options = {}) {
     };
     const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
     if (operationIdempotencyKey) result.operation_idempotency_key = operationIdempotencyKey;
+    if (status === 'runtime_failed' && result.findings.length > 0) {
+      throw new Error('review record --status runtime_failed cannot include product findings; use --runtime-failure-kind and --runtime-failure-detail.');
+    }
+    if (status === 'pass'
+      && deltaClosure.mode === 'delta_closure'
+      && deltaClosure.unresolved_finding_ids.length > 0) {
+      throw new Error(
+        `review record ${stage}:${role} pass cannot close while previous finding(s) remain unresolved: ${deltaClosure.unresolved_finding_ids.join(', ')}`
+      );
+    }
     if (requiresInspectionForPass(result) && !result.inspection.summary) {
       throw new Error(
         `review record ${stage}:${role} pass requires --inspection-summary <text> so gate evidence is auditable.`
@@ -599,6 +672,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   for (const stage of stages) {
     stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
+  const convergence = await buildAndPersistReviewConvergence(root, storyId, currentGitContext, stageSummaries);
   const latestPrPrepare = await readJsonIfExists(await resolvePrArtifactFile(root, storyId));
   const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummaries);
   const views = buildReviewStatusViews({
@@ -612,12 +686,18 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
     includeAll: options.all === true,
     includeHistory: options.history === true
   });
+  if (convergence.status === 'review_nonconvergent') {
+    views.blocking_summary.next_commands = [convergence.next_action];
+  }
   return {
     schema_version: '0.1.0',
     story_id: storyId,
-    status: resolveOverallStatus(stageSummaries),
+    status: convergence.status === 'review_nonconvergent'
+      ? 'review_nonconvergent'
+      : resolveOverallStatus(stageSummaries),
     current_git_context: currentGitContext,
     stages: stageSummaries,
+    convergence,
     required_current: views.required_current,
     optional: views.optional,
     history: views.history,
@@ -637,6 +717,16 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
 async function collectReviewGitContext(repoRoot, storyId) {
   const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(repoRoot, { storyId });
   return collectGitContext(repoRoot, { userExcludePaths: generatedProjectionPaths });
+}
+
+async function buildAndPersistReviewConvergence(repoRoot, storyId, currentGitContext, stageSummaries) {
+  const gateDir = await getReviewStageDir(repoRoot, storyId, 'gate');
+  const reviewRoot = path.dirname(gateDir);
+  const snapshot = buildReviewConvergenceSnapshot({
+    headSha: currentGitContext?.head_sha ?? null,
+    stageSummaries
+  });
+  return updateReviewConvergenceState(reviewRoot, snapshot);
 }
 
 function buildReviewStatusViews({
@@ -887,7 +977,11 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
       strictHeadAuthorized: isStrictHeadBindingAuthorizedNow(reviewPolicy, validationSequenceState, requirement.stage, requirement.role)
     }),
     artifact: role?.artifact ?? null,
-    history_artifacts: role?.history_artifacts ?? []
+    history_artifacts: role?.history_artifacts ?? [],
+    binding_status: role?.binding_status ?? null,
+    causal_invalidation: role?.causal_invalidation ?? null,
+    delta_closure: role?.delta_closure ?? null,
+    runtime_failure: role?.runtime_failure ?? null
   };
 }
 
@@ -988,13 +1082,15 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
   ];
 
   const hasAnyRequiredReviews = requiredReviews.length > 0 || checkpointRequiredReviews.length > 0;
-  const status = !hasAnyRequiredReviews
+  const baseStatus = !hasAnyRequiredReviews
     ? 'not_required'
     : allUnmetReviews.some((item) => item.status === 'block')
       ? 'block'
       : allUnmetReviews.length > 0
         ? 'needs_review'
         : 'pass';
+  const convergence = await buildAndPersistReviewConvergence(root, storyId, currentGitContext, stageSummaries);
+  const status = convergence.status === 'review_nonconvergent' ? 'review_nonconvergent' : baseStatus;
   return {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -1007,6 +1103,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     unmet_required_reviews: allUnmetRequiredReviews,
     unmet_checkpoint_reviews: allUnmetCheckpointReviews,
     stages: stageSummaries,
+    convergence,
     // Violations are read from their own append-only ledger, never from the
     // review results, so a later passing re-run cannot hide an earlier one.
     surface_violations: await readReviewSurfaceViolationSummary(root, storyId, {
@@ -1025,7 +1122,8 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
       source_unmet_checkpoint_review_count: unmetCheckpointReviews.length,
       stage_count: stageSummaries.length,
       stale_result_count: stageSummaries.reduce((sum, stage) => sum + stage.stale_count, 0),
-      block_result_count: stageSummaries.reduce((sum, stage) => sum + stage.block_count, 0)
+      block_result_count: stageSummaries.reduce((sum, stage) => sum + stage.block_count, 0),
+      runtime_failed_result_count: stageSummaries.reduce((sum, stage) => sum + (stage.runtime_failed_count ?? 0), 0)
     }
   };
 }
@@ -1112,7 +1210,10 @@ export function renderAgentReviewRecordSummary(result) {
 - agent provenance: ${result.review.agent_provenance.system}/${result.review.agent_provenance.execution_mode}/${result.review.agent_provenance.evidence_strength}
 - freshness: ${result.review.freshness_policy?.effective_mode ?? result.review.content_binding?.mode ?? '-'} (${result.review.freshness_policy?.source ?? 'legacy'})
 - freshness reason: ${result.review.freshness_policy?.reason ?? result.review.content_binding?.reason ?? '-'}
-- inspected surface: ${(result.review.content_binding?.surface_files ?? []).map((file) => file.path).join(', ') || '-'}
+- inspected surface: ${(result.review.causal_review?.inspection_surface ?? []).map((file) => file.path).join(', ') || '-'}
+- decision dependencies: ${(result.review.causal_review?.decision_dependencies ?? []).map((file) => file.path).join(', ') || '-'}
+- delta closure: ${result.review.delta_closure?.mode ?? 'full_review'}
+- runtime failure: ${result.review.runtime_failure?.kind ?? 'none'}
 - artifact: ${result.artifact}
 - history artifact: ${historyArtifact}
 
@@ -1179,8 +1280,18 @@ export function renderAgentReviewStatusSummary(status) {
     ? `- ${prPrepareFreshness.status}: ${prPrepareFreshness.reason ?? 'unknown'}`
     : '- unknown';
   const rows = status.stages.map((stage) => (
-    `- ${stage.stage}: ${stage.status} (${stage.roles.filter((role) => role.effective_status === 'pass').length}/${stage.roles.length} pass, stale=${stage.stale_count})`
+    `- ${stage.stage}: ${stage.status} (${stage.roles.filter((role) => role.effective_status === 'pass').length}/${stage.roles.length} pass, stale=${stage.stale_count}, runtime_failed=${stage.runtime_failed_count ?? 0})`
   ));
+  const convergence = status.convergence;
+  const convergenceRows = convergence
+    ? [
+        `- status: ${convergence.status}`,
+        `- repeat count: ${convergence.repeat_count}`,
+        `- head churn count: ${convergence.head_churn_count}`,
+        `- semantic signature: ${convergence.snapshot?.semantic_signature ?? '-'}`,
+        `- next action: ${convergence.next_action ?? 'none'}`
+      ].join('\n')
+    : '- unavailable';
   return `# Agent Review Status
 
 - story: ${status.story_id}
@@ -1211,6 +1322,10 @@ ${historyRows}
 ## PR Prepare Freshness
 
 ${prPrepareFreshnessRow}
+
+## Convergence
+
+${convergenceRows}
 
 ## Stage Summary
 
@@ -1253,6 +1368,8 @@ export function renderAgentReviewPrSection(agentReviews) {
     `- unmet required reviews: ${agentReviews.summary?.unmet_required_review_count ?? 0}`,
     `- checkpoint required reviews: ${agentReviews.summary?.checkpoint_required_review_count ?? 0}`,
     `- unmet checkpoint reviews: ${agentReviews.summary?.unmet_checkpoint_review_count ?? 0}`,
+    `- convergence: ${agentReviews.convergence?.status ?? 'unavailable'} (repeat=${agentReviews.convergence?.repeat_count ?? 0}, head_churn=${agentReviews.convergence?.head_churn_count ?? 0})`,
+    agentReviews.convergence?.next_action ? `- convergence next action: ${agentReviews.convergence.next_action}` : '- convergence next action: none',
     renderParallelDispatchPrRows(agentReviews.parallel_dispatch),
     unmetRows.join('\n') || '- PR-final roles passed or not required',
     checkpointRows.join('\n') || '- checkpoint roles passed or not required',
@@ -1759,6 +1876,21 @@ function formatReviewValue(value) {
   return JSON.stringify(value);
 }
 
+function renderCausalReviewScope(plan, role, language = 'ja') {
+  const scope = plan?.causal_review?.roles?.[role];
+  if (!scope) return '';
+  const title = language === 'en' ? 'Causal Review Scope' : '因果的Review Scope';
+  return `
+## ${title}
+
+- dependency domains: ${(scope.dependency_domains ?? []).join(', ') || '-'}
+- previous status: ${scope.previous_status ?? 'missing'}
+- previous binding: ${scope.previous_binding_status ?? '-'}
+- open finding ids: ${(scope.open_finding_ids ?? []).join(', ') || '-'}
+- instruction: ${scope.instruction ?? '-'}
+`;
+}
+
 function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = plan?.output?.language ?? 'ja' }) {
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
   const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
@@ -1776,6 +1908,7 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = pl
 - Role: ${role}
 ${renderGitContextHeader(plan.git_context, language)}
 ${evidenceReuseInput}
+${renderCausalReviewScope(plan, role, language)}
 
 ## Review Focus
 ${buildRolePromptSummary(stage, role, language)}
@@ -1829,6 +1962,7 @@ ${agentSkillDiscipline}
 - Role: ${role}
 ${renderGitContextHeader(plan.git_context, language)}
 ${evidenceReuseInput}
+${renderCausalReviewScope(plan, role, language)}
 
 ## レビュー観点
 ${buildRolePromptSummary(stage, role, language)}
@@ -2138,6 +2272,10 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       binding_status: binding?.status ?? null,
       merge_delta_reuse: binding?.merge_delta_reuse ?? null,
       content_binding: binding?.content_binding ?? null,
+      causal_review: result?.causal_review ?? null,
+      causal_invalidation: binding?.causal_invalidation ?? null,
+      delta_closure: result?.delta_closure ?? null,
+      runtime_failure: result?.runtime_failure ?? null,
       freshness_policy: result?.freshness_policy ?? null,
       provenance_status: provenance?.status ?? null,
       provenance_reason: provenance?.reason ?? null,
@@ -2169,6 +2307,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
     unverified_agent_count: roles.filter((role) => role.effective_status === 'unverified_agent').length,
     block_count: roles.filter((role) => role.effective_status === 'block').length,
     needs_changes_count: roles.filter((role) => role.effective_status === 'needs_changes').length,
+    runtime_failed_count: roles.filter((role) => role.effective_status === 'runtime_failed').length,
     next_actions: buildStageNextActions({
       storyId,
       stage,
@@ -2304,8 +2443,10 @@ function buildStageNextActions({ storyId, stage, roles, parallelDispatchPrepared
     }
     if (role.effective_status === 'missing') {
       actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
+    } else if (role.effective_status === 'runtime_failed') {
+      actions.push(`Retry review runtime for ${stage}:${role.role} (${role.runtime_failure?.kind ?? 'execution_error'}); do not modify product code unless a separate product finding exists: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     } else if (role.effective_status === 'stale') {
-      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
+      actions.push(`Replace causally invalidated ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     } else if (role.effective_status === 'unverified_agent') {
       actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     } else if (role.effective_status === 'needs_changes' || role.effective_status === 'block') {
@@ -2342,6 +2483,27 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
     return contentBinding;
   }
   if (contentBinding?.status === 'stale') {
+    const changedFiles = contentBinding.content_binding?.changed_files ?? [];
+    if (result.causal_review && changedFiles.length > 0) {
+      const causalInvalidation = evaluateReviewCausalInvalidation({
+        stage: result.stage,
+        role: result.role,
+        strictHead: result.freshness_policy?.effective_mode === 'strict_head',
+        changedFiles
+      });
+      if (causalInvalidation.reusable) {
+        return {
+          status: 'causal_reuse',
+          reason: causalInvalidation.reason,
+          causal_invalidation: causalInvalidation,
+          content_binding: recordedContentBinding
+        };
+      }
+      return {
+        ...contentBinding,
+        causal_invalidation: causalInvalidation
+      };
+    }
     return contentBinding;
   }
   if (contentBinding?.status === 'strict_head' && currentGitContext.head_sha && recorded.head_sha !== currentGitContext.head_sha) {

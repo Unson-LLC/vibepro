@@ -286,10 +286,20 @@ async function readReviewSummary(repoRoot, storyId) {
       status: status.status ?? null,
       error: null,
       summary: status.summary ?? null,
+      convergence: status.convergence ?? null,
       stages: (status.stages ?? []).map((stage) => ({
         stage: stage.stage,
         status: stage.status,
-        roles: (stage.roles ?? []).map((role) => role.role ?? role.name ?? role).filter(Boolean)
+        roles: (stage.roles ?? []).map((role) => role.role ?? role.name ?? role).filter(Boolean),
+        role_details: (stage.roles ?? []).map((role) => ({
+          role: role.role ?? role.name ?? null,
+          effective_status: role.effective_status ?? null,
+          binding_status: role.binding_status ?? null,
+          stale_reason: role.stale_reason ?? null,
+          causal_invalidation: role.causal_invalidation ?? null,
+          delta_closure: role.delta_closure ?? null,
+          runtime_failure: role.runtime_failure ?? null
+        }))
       }))
     };
   } catch (error) {
@@ -300,6 +310,7 @@ async function readReviewSummary(repoRoot, storyId) {
       status: 'error',
       error: { message: String(error?.message ?? error) },
       summary: null,
+      convergence: null,
       stages: []
     };
   }
@@ -651,11 +662,18 @@ function renderPrBody(preparation) {
     ? ` (pass=${review.summary.pass ?? 0}, needs_review=${review.summary.needs_review ?? 0}, block=${review.summary.block ?? 0})`
     : '';
   lines.push(`- status: ${review.status ?? 'unknown'}${reviewCounts}`);
+  lines.push(`- convergence: ${review.convergence?.status ?? 'unavailable'} (repeat=${review.convergence?.repeat_count ?? 0}, head_churn=${review.convergence?.head_churn_count ?? 0})`);
+  if (review.convergence?.next_action) lines.push(`- convergence next action: ${review.convergence.next_action}`);
   lines.push(`- blocking reasons: ${preparation.blocking_reasons?.join(', ') || 'none'}`);
   lines.push(`- error: ${formatReviewError(review.error)}`);
   if (review.recorded) {
     for (const stage of review.stages) {
       lines.push(`  - ${stage.stage}: ${stage.status}${stage.roles.length ? ` (${stage.roles.join(', ')})` : ''}`);
+      for (const role of stage.role_details ?? []) {
+        if (role.binding_status === 'causal_reuse' || role.runtime_failure || role.delta_closure?.mode === 'delta_closure') {
+          lines.push(`    - ${role.role}: effective=${role.effective_status ?? '-'}, binding=${role.binding_status ?? '-'}, delta=${role.delta_closure?.mode ?? 'full_review'}, runtime_failure=${role.runtime_failure?.kind ?? 'none'}`);
+        }
+      }
     }
   } else {
     lines.push('- next: no review recorded (`vibepro review prepare` / `vibepro review record`)');
