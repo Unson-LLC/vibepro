@@ -1,4 +1,4 @@
-<!-- vibepro-projection story_id=story-vibepro-release-0-2-0-beta-14 feature_slug=release-0-2-0-beta-14 ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-release-0-2-0-beta-14/spec.json source_sha256=71d5e63ba12c7c1815357c8a0d852b1445852caab2169eed98e028dd43d401dc renderer=functional_spec_markdown@1 direct_edit=false -->
+<!-- vibepro-projection story_id=story-vibepro-release-0-2-0-beta-14 feature_slug=release-0-2-0-beta-14 ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-release-0-2-0-beta-14/spec.json source_sha256=737947734b43d2953b063809131a6f6e9336cd4b590798091b5c68e0308ff689 renderer=functional_spec_markdown@1 direct_edit=false -->
 - Canonical ownership: generated
 
 # Functional Spec
@@ -13,11 +13,11 @@ package.json and the root package in package-lock.json declare version 0.2.0-bet
 
 ### Origin refs
 
+- {"ac_id":"REL14-AC-001","kind":"acceptance_criteria"}
 - {"anchor":"0.2.0-beta.14","file":"package-lock.json"}
 - {"anchor":"0.2.0-beta.14","file":"package.json"}
 - {"case":"PCR-CON-006 rejects an existing version with another gitHead","file":"test/post-merge-release.test.js"}
 - {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"境界"}
-- {"id":"REL14-AC-001","kind":"acceptance_criteria"}
 
 ## INV-001
 
@@ -25,10 +25,10 @@ The release change does not modify runtime source, dependencies, binaries, or th
 
 ### Origin refs
 
+- {"ac_id":"REL14-AC-002","kind":"acceptance_criteria"}
 - {"anchor":"Post-merge continuous release","file":".github/workflows/post-merge-release.yml"}
 - {"case":"post-merge release uses immutable pre-merge base code for fork validation","file":"test/post-merge-release.test.js"}
 - {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"境界"}
-- {"id":"REL14-AC-002","kind":"acceptance_criteria"}
 
 ## INV-002
 
@@ -36,11 +36,11 @@ Release completion requires registry, dist-tag, Git tag, GitHub prerelease, fres
 
 ### Origin refs
 
+- {"ac_id":"REL14-AC-004","kind":"acceptance_criteria"}
+- {"ac_id":"REL14-AC-005","kind":"acceptance_criteria"}
 - {"anchor":"gitHead","file":"scripts/post-merge-release.mjs"}
 - {"case":"GRC-S-2/GRC-S-3/GRC-S-6 create and edit converge prerelease and stable metadata","file":"test/github-release-convergence.test.js"}
 - {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"完了判定"}
-- {"id":"REL14-AC-004","kind":"acceptance_criteria"}
-- {"id":"REL14-AC-005","kind":"acceptance_criteria"}
 
 ## S-001
 
@@ -48,10 +48,10 @@ After the release PR is merged, the existing post-merge workflow publishes npm, 
 
 ### Origin refs
 
+- {"ac_id":"REL14-AC-003","kind":"acceptance_criteria"}
 - {"anchor":"publish-npm","file":".github/workflows/post-merge-release.yml"}
 - {"case":"post-merge release installs dependencies before unconditional docs projection","file":"test/post-merge-release.test.js"}
 - {"file":"docs/architecture/story-vibepro-release-0-2-0-beta-14.md","section":"実行順序"}
-- {"id":"REL14-AC-003","kind":"acceptance_criteria"}
 
 ## Diagrams
 
