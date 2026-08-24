@@ -7,7 +7,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { assertSelectedTaskAccepted, bindTaskAuthority, readTaskAuthorities } from '../src/task-authority.js';
+import { assertSelectedTaskAccepted, assertSelectedTaskScope, bindTaskAuthority, readTaskAuthorities } from '../src/task-authority.js';
 import { createStoryTasks } from '../src/story-task-generator.js';
 
 const execFileAsync = promisify(execFile);
@@ -146,6 +146,52 @@ test('selected task validation rejects stale or tampered accepted authority', as
     tasks: [{ task_id: 'TASK-001', story_id: STORY_ID, allowed_paths: ['src/changed.js'] }]
   }, null, 2)}\n`);
   await assert.rejects(assertSelectedTaskAccepted(root, STORY_ID, 'TASK-001'), /digest.*match/);
+});
+
+async function commitTaskScopeFiles(root, files) {
+  const { stdout: baseBranch } = await execFileAsync('git', ['branch', '--show-current'], { cwd: root, encoding: 'utf8' });
+  await execFileAsync('git', ['switch', '-c', 'feature/task-scope'], { cwd: root });
+  for (const [relativePath, content] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(root, relativePath)), { recursive: true });
+    await writeFile(path.join(root, relativePath), content);
+  }
+  await execFileAsync('git', ['add', '.'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'task scope changes'], { cwd: root });
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
+  return { base_ref: baseBranch.trim(), head_ref: 'HEAD', head_sha: stdout.trim() };
+}
+
+test('task scope globstar accepts zero or nested directory segments', async () => {
+  const prefixRoot = await repo();
+  const prefixGit = await commitTaskScopeFiles(prefixRoot, {
+    'src/a.js': 'export const a = true;\n',
+    'src/deep/b.js': 'export const b = true;\n'
+  });
+  await assert.doesNotReject(assertSelectedTaskScope(prefixRoot, {
+    id: 'TASK-001', allowed_paths: ['src/**/*.js']
+  }, prefixGit));
+
+  const repositoryRoot = await repo();
+  const rootGit = await commitTaskScopeFiles(repositoryRoot, {
+    'a.js': 'export const a = true;\n',
+    'deep/b.js': 'export const b = true;\n'
+  });
+  await assert.doesNotReject(assertSelectedTaskScope(repositoryRoot, {
+    id: 'TASK-001', allowed_paths: ['**/*.js']
+  }, rootGit));
+});
+
+test('task scope globstar still rejects wrong extensions and outside prefixes', async () => {
+  for (const [files, pattern] of [
+    [{ 'src/a.txt': 'not javascript\n' }, 'src/a.txt'],
+    [{ 'other/a.js': 'export const outside = true;\n' }, 'other/a.js']
+  ]) {
+    const root = await repo();
+    const git = await commitTaskScopeFiles(root, files);
+    await assert.rejects(assertSelectedTaskScope(root, {
+      id: 'TASK-001', allowed_paths: ['src/**/*.js']
+    }, git), new RegExp(`outside accepted task TASK-001 allowed_paths: ${pattern.replace('.', '\\.')}`));
+  }
 });
 
 test('task bind CLI writes JSON result', async () => {

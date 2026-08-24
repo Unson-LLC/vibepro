@@ -138,8 +138,23 @@ async function resolveRequiredGitRef(repoRoot, ref, label) {
 
 function matchesAllowedPath(changedPath, allowedPath) {
   if (!allowedPath.includes('*')) return changedPath === allowedPath || changedPath.startsWith(`${allowedPath.replace(/\/$/, '')}/`);
-  const escaped = allowedPath.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replaceAll('**', '\u0000').replaceAll('*', '[^/]*').replaceAll('\u0000', '.*');
-  return new RegExp(`^${escaped}$`).test(changedPath);
+  let pattern = '';
+  for (let index = 0; index < allowedPath.length;) {
+    if (allowedPath.startsWith('**/', index)) {
+      pattern += '(?:.*/)?';
+      index += 3;
+    } else if (allowedPath.startsWith('**', index)) {
+      pattern += '.*';
+      index += 2;
+    } else if (allowedPath[index] === '*') {
+      pattern += '[^/]*';
+      index += 1;
+    } else {
+      pattern += allowedPath[index].replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+      index += 1;
+    }
+  }
+  return new RegExp(`^${pattern}$`).test(changedPath);
 }
 
 function canonicalTaskJsonPath(repoRoot, route, storyId) {
