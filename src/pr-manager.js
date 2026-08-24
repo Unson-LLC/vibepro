@@ -65,6 +65,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const storySource = await findStorySource(root, story).catch(() => null);
   const bugDiagnosis = await readLatestBugDiagnosis(root, story);
   const readiness = resolvePrReadiness({ bugDiagnosis, review });
+  const agentReviewInstruction = projectAgentReviewInstruction(review);
   const executionDag = buildExecutionDag({
     managedWorktree: { mode: 'disabled' },
     agentReviewApplicable: review.configured,
@@ -115,6 +116,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     bug_diagnosis: bugDiagnosis,
     execution_dag: executionDag,
     gate_status: readiness.status,
+    agent_review_instruction: agentReviewInstruction,
     blocking_reasons: readiness.reasons,
     story_source: summarizeStorySource(storySource),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
@@ -289,6 +291,7 @@ async function readReviewSummary(repoRoot, storyId) {
       error: null,
       summary: status.summary ?? null,
       convergence: status.convergence ?? null,
+      blocking_summary: status.blocking_summary ?? null,
       stages: (status.stages ?? []).map((stage) => ({
         stage: stage.stage,
         status: stage.status,
@@ -313,9 +316,93 @@ async function readReviewSummary(repoRoot, storyId) {
       error: { message: String(error?.message ?? error) },
       summary: null,
       convergence: null,
+      blocking_summary: null,
       stages: []
     };
   }
+}
+
+export function projectAgentReviewInstruction(review) {
+  if (!review.configured || review.error || review.complete || review.status !== 'needs_review') return null;
+  const blockingItems = Array.isArray(review.blocking_summary?.items)
+    ? review.blocking_summary.items
+    : [];
+  const nextCommands = Array.isArray(review.blocking_summary?.next_commands)
+    ? review.blocking_summary.next_commands
+    : [];
+  const currentStage = blockingItems[0]?.stage ?? null;
+  const currentItems = blockingItems.filter((item) => item.stage === currentStage);
+  const roles = [...new Set(currentItems.map((item) => item.role).filter(Boolean))];
+  const allowedCommands = new Set(currentItems.flatMap((item) => [item.prepare_command, item.record_command]).filter(Boolean));
+  const selectedCommands = nextCommands.filter((command) => (
+    allowedCommands.has(command) || String(command).startsWith('vibepro pr prepare ')
+  ));
+  const safeIdentifiers = [currentStage, ...roles].every(isSafeReviewInstructionIdentifier);
+  const safeCommands = selectedCommands.every(isSafeReviewInstructionCommand);
+  const selectedReviewCommands = selectedCommands.filter((command) => allowedCommands.has(command));
+  const canonicalReviewCommands = selectedReviewCommands.every((command) => (
+    isCanonicalCurrentStageReviewCommand(command, currentStage, roles)
+  ));
+  if (!currentStage || roles.length === 0 || selectedReviewCommands.length === 0 || !canonicalReviewCommands || !safeIdentifiers || !safeCommands) {
+    return {
+      status: 'unavailable',
+      reason: 'unsafe_or_incomplete_review_status',
+      current_stage: null,
+      roles: [],
+      next_commands: []
+    };
+  }
+  return {
+    status: 'dispatch_required',
+    current_stage: currentStage,
+    roles,
+    next_commands: selectedCommands
+  };
+}
+
+function isSafeReviewInstructionIdentifier(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(value);
+}
+
+function isSafeReviewInstructionCommand(value) {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  if (/[\u0000-\u0008\u000a-\u001f\u007f]/.test(value)) return false;
+  if (/(?:`|\$\(|\$\{)/.test(value)) return false;
+  let quote = null;
+  for (const character of value) {
+    if (quote) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if ('|><&;'.includes(character)) return false;
+  }
+  return quote === null;
+}
+
+function isCanonicalCurrentStageReviewCommand(command, currentStage, roles) {
+  if (!isSafeReviewInstructionCommand(command)) return false;
+  const prepare = command.match(/^vibepro review prepare \. --id ([A-Za-z0-9][A-Za-z0-9._-]*) --stage ([A-Za-z0-9][A-Za-z0-9._-]*)(?<roles>(?: --role [A-Za-z0-9][A-Za-z0-9._-]*)+)$/);
+  if (prepare) {
+    const commandRoles = [...prepare.groups.roles.matchAll(/ --role ([A-Za-z0-9][A-Za-z0-9._-]*)/g)].map((match) => match[1]);
+    return prepare[2] === currentStage && commandRoles.every((role) => roles.includes(role));
+  }
+  const record = command.match(/^vibepro review record \. --id ([A-Za-z0-9][A-Za-z0-9._-]*) --stage ([A-Za-z0-9][A-Za-z0-9._-]*) --role ([A-Za-z0-9][A-Za-z0-9._-]*)(?: |$)/);
+  return Boolean(record && record[2] === currentStage && roles.includes(record[3]));
+}
+
+export function renderAgentReviewInstructionLines(instruction) {
+  if (!instruction) return [];
+  return [
+    `- agent review instruction: ${instruction.status}`,
+    `- current review stage: ${instruction.current_stage ?? 'none'}`,
+    `- current review roles: ${instruction.roles.join(', ') || 'none'}`,
+    ...(instruction.reason ? [`- agent review instruction reason: ${instruction.reason}`] : []),
+    ...instruction.next_commands.map((command) => `    ${command}`)
+  ];
 }
 
 function resolvePrReadiness({ bugDiagnosis, review }) {
@@ -669,6 +756,7 @@ function renderPrBody(preparation) {
   if (review.convergence?.next_action) lines.push(`- convergence next action: ${review.convergence.next_action}`);
   lines.push(`- blocking reasons: ${preparation.blocking_reasons?.join(', ') || 'none'}`);
   lines.push(`- error: ${formatReviewError(review.error)}`);
+  lines.push(...renderAgentReviewInstructionLines(preparation.agent_review_instruction));
   if (review.recorded) {
     for (const stage of review.stages) {
       lines.push(`  - ${stage.stage}: ${stage.status}${stage.roles.length ? ` (${stage.roles.join(', ')})` : ''}`);
@@ -950,6 +1038,7 @@ export function renderPrPrepareSummary(result) {
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,
+    ...renderAgentReviewInstructionLines(preparation.agent_review_instruction),
     ...(preparation.bug_diagnosis ? [`- bug diagnosis return: ${preparation.bug_diagnosis.return_to_node ?? '-'}`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
