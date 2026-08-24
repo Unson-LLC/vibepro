@@ -38,7 +38,7 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
     return { applicable: false, status: 'not_applicable', reasons: [onlyPresentationChange ? 'presentation_only' : 'local_only'] };
   }
   if (explicit === false || explicit === 'not_applicable') {
-    if (reasons.length === 0 && !(hasActor || hasBoundary)) return { applicable: false, status: 'not_applicable', reasons: ['explicit_non_applicability'] };
+    if (reasons.length === 0) return { applicable: false, status: 'not_applicable', reasons: ['explicit_non_applicability'] };
     return { applicable: true, status: 'needs_review', reasons: [...new Set([...reasons, 'explicit_non_applicability_conflict'])] };
   }
   if (reasons.length > 0) return { applicable: true, status: 'applicable', reasons: [...new Set(reasons)] };
@@ -48,16 +48,30 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
   return { applicable: false, status: 'not_applicable', reasons: ['no_multi_tenant_signal'] };
 }
 
-export function assessMultiTenantArchitecture({ storyText = '', contract = null, evidence = null, mode = 'final' } = {}) {
+export function assessMultiTenantArchitecture({ storyText = '', contract = null, evidence = null, applicabilityEvidence = null, expectedHeadCommit = null, mode = 'final' } = {}) {
   const applicability = detectMultiTenantApplicability(storyText, { explicit: contract?.applicability });
   if (!applicability.applicable) {
-    return { applicable: false, activation_reasons: applicability.reasons, status: 'not_applicable', findings: [], coverage: { status: 'not_applicable', scanners: {} }, views: {} };
+    return {
+      applicable: false,
+      activation_reasons: applicability.reasons,
+      status: 'not_applicable',
+      findings: [],
+      coverage: { status: 'not_applicable', scanners: {} },
+      implementation_readiness: assessNonApplicabilityEvidence(applicabilityEvidence, expectedHeadCommit),
+      views: {}
+    };
   }
   const findings = [];
   const error = (code, path, message, extra = {}) => findings.push({ severity: 'error', code, path, message, ...extra });
   const review = (code, path, message, extra = {}) => findings.push({ severity: 'review', code, path, message, ...extra });
   if (applicability.status === 'needs_review') {
     review('applicability_ambiguous', 'story_context', 'マルチテナント適用要否を確定できる境界シグナルが不足しています');
+    if (contract?.applicability === false || contract?.applicability === 'not_applicable') {
+      if (applicabilityEvidence?.status === 'verified') {
+        error('applicability_evidence_inconsistent', 'applicability_evidence', '強いmulti-tenantシグナルと非該当証拠が矛盾しています');
+      }
+      return buildReport(applicability, contract, null, findings, mode);
+    }
     if (!contract) return buildReport(applicability, contract, null, findings, mode);
   }
   if (!contract || typeof contract !== 'object' || Array.isArray(contract)) {
@@ -139,6 +153,28 @@ export function assessMultiTenantArchitecture({ storyText = '', contract = null,
   const scan = scanMultiTenantEvidence(contract, effectiveEvidence);
   findings.push(...scan.findings);
   return buildReport(applicability, contract, effectiveEvidence, findings, mode, scan.coverage);
+}
+
+function assessNonApplicabilityEvidence(evidence, expectedHeadCommit) {
+  const required = ['story', 'spec', 'implementation'];
+  const reasons = [];
+  if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) reasons.push('evidence_missing');
+  else {
+    if (evidence.source !== 'caller') reasons.push('caller_evidence_required');
+    if (evidence.status !== 'verified') reasons.push('evidence_not_verified');
+    if (!nonEmptyText(expectedHeadCommit)) reasons.push('expected_head_missing');
+    if (!nonEmptyText(evidence.head_commit) || evidence.head_commit !== expectedHeadCommit) reasons.push('head_mismatch');
+    const declaredRequired = arrayAt(evidence.required_surfaces);
+    const verified = arrayAt(evidence.verified_surfaces);
+    if (JSON.stringify(uniqueSorted(declaredRequired)) !== JSON.stringify(uniqueSorted(required))) reasons.push('required_surfaces_inconsistent');
+    for (const surface of required) if (!verified.includes(surface)) reasons.push(`surface_unverified:${surface}`);
+  }
+  return {
+    status: reasons.length === 0 ? 'ready' : 'needs_review',
+    evidence_status: reasons.length === 0 ? 'fresh_exact_head' : 'inconclusive',
+    required_surfaces: required,
+    reasons: [...new Set(reasons)]
+  };
 }
 
 export function scanMultiTenantEvidence(contract, evidence) {

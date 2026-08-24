@@ -35,6 +35,42 @@ test('曖昧なStoryをneeds_reviewへ保ち、copy-onlyと一般CLIは対象外
   );
 });
 
+test('spec-storeとspec-validatorは同じfresh exact-HEAD非該当証拠だけを受理する', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-tenant-na-'));
+  const storyId = 'story-tenant-na';
+  const head = 'a'.repeat(40);
+  const contract = { applicability: 'not_applicable' };
+  const applicabilityEvidence = {
+    source: 'caller', status: 'verified', head_commit: head,
+    required_surfaces: ['story', 'spec', 'implementation'],
+    verified_surfaces: ['story', 'spec', 'implementation']
+  };
+  await writeInferredSpec(repo, storyId, {
+    schema_version: '0.1.0', story_id: storyId,
+    story_context: 'account設定の表示順を変更する。', clauses: []
+  });
+
+  await assert.rejects(
+    () => writeMultiTenantContract(repo, storyId, contract),
+    /evidence_missing/
+  );
+  await writeMultiTenantContract(repo, storyId, contract, { applicabilityEvidence, expectedHeadCommit: head });
+
+  const missing = await validateSpec(repo, {
+    schema_version: '0.1.0', story_id: storyId,
+    story_context: 'account設定の表示順を変更する.', clauses: [], multi_tenancy: contract
+  }, { mode: 'final', expectedHeadCommit: head });
+  assert.equal(missing.ok, false);
+  assert.ok(missing.errors.some((error) => error.code === 'multi_tenant_applicability_evidence_inconclusive'));
+
+  const fresh = await validateSpec(repo, {
+    schema_version: '0.1.0', story_id: storyId,
+    story_context: 'account設定の表示順を変更する.', clauses: [], multi_tenancy: contract
+  }, { mode: 'final', multiTenantApplicabilityEvidence: applicabilityEvidence, expectedHeadCommit: head });
+  assert.equal(fresh.ok, true);
+  assert.equal(fresh.multi_tenant_architecture.implementation_readiness.status, 'ready');
+});
+
 test('ContractをStory IDで保存・読込し、不正Contractは保存前に拒否する', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-tenant-contract-'));
   const storyId = 'story-tenant-contract-storage';

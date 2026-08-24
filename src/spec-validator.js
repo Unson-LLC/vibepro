@@ -88,6 +88,8 @@ export async function validateSpec(repoRoot, spec, options = {}) {
   const multiTenantArchitecture = assessMultiTenantArchitecture({
     storyText: options.storyContext ?? spec.story_context ?? '',
     contract: spec.multi_tenancy ?? null,
+    applicabilityEvidence: options.multiTenantApplicabilityEvidence,
+    expectedHeadCommit: options.expectedHeadCommit,
     mode: options.mode ?? 'final'
   });
   if (multiTenantArchitecture.applicable) {
@@ -100,6 +102,16 @@ export async function validateSpec(repoRoot, spec, options = {}) {
       if (finding.severity === 'error' && options.mode !== 'draft') errors.push(issue);
       else warnings.push(issue);
     }
+  }
+  if ((spec.multi_tenancy?.applicability === false || spec.multi_tenancy?.applicability === 'not_applicable')
+      && multiTenantArchitecture.implementation_readiness?.status !== 'ready') {
+    const issue = {
+      code: 'multi_tenant_applicability_evidence_inconclusive',
+      message: `implementation readiness: ${multiTenantArchitecture.implementation_readiness?.reasons?.join(', ') ?? 'unknown'}`,
+      path: 'multi_tenancy.applicability'
+    };
+    if (options.mode === 'draft') warnings.push(issue);
+    else errors.push(issue);
   }
 
   return {
