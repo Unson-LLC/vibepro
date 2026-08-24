@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-0-2-0-beta-15",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "release_source": {
+    "pull_request": 489,
+    "merge_sha": "877dd461695edb52e138a811078551705799d433",
+    "base_sha": "bf2ed3f591be098d2f7c9f9180a824547fcb246e"
+  },
+  "clauses": [
+    {
+      "id": "REL15-C-001",
+      "type": "contract",
+      "statement": "package.json, package-lock.json, the lockfile root package, and CLI declare 0.2.0-beta.15.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL15-AC-001" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-15.md", "section": "境界" }],
+        "code_refs": [{ "file": "package.json", "anchor": "0.2.0-beta.15" }, { "file": "package-lock.json", "anchor": "0.2.0-beta.15" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "case": "beta.15 release metadata and CLI report the exact candidate version" }]
+      }
+    },
+    {
+      "id": "REL15-INV-001",
+      "type": "invariant",
+      "statement": "The release diff does not modify product source, workflows, dependencies, or .vibepro runtime artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL15-AC-002" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-15.md", "section": "境界" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "case": "beta.15 release metadata and CLI report the exact candidate version" }]
+      }
+    },
+    {
+      "id": "REL15-INV-002",
+      "type": "invariant",
+      "statement": "The release source is PR 489 merge SHA 877dd461695edb52e138a811078551705799d433 included by base bf2ed3f591be098d2f7c9f9180a824547fcb246e, not beta.14.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL15-AC-003" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-release-0-2-0-beta-15.md", "section": "目的" }]
+      }
+    }
+  ]
+}
