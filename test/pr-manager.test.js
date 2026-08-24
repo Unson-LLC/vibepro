@@ -733,3 +733,38 @@ test('agent review instruction accepts only canonical current-stage review comma
     assert.match(renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } }), /agent review instruction reason: unsafe_or_incomplete_review_status/);
   }
 });
+
+test('agent review instruction fails closed when canonical and invalid review commands are mixed', () => {
+  const canonical = 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement';
+  const project = (extraItem, extraCommand) => projectAgentReviewInstruction({
+    configured: true,
+    complete: false,
+    status: 'needs_review',
+    error: null,
+    blocking_summary: {
+      items: [{
+        stage: 'planning_spec',
+        role: 'product_requirement',
+        prepare_command: canonical,
+        record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement'
+      }, extraItem],
+      next_commands: [canonical, extraCommand]
+    }
+  });
+
+  const arbitrary = 'touch injected';
+  const wrongRole = 'vibepro review prepare . --id story-safe --stage planning_spec --role code_quality';
+  const futureStage = 'vibepro review prepare . --id story-safe --stage implementation --role product_requirement';
+  for (const instruction of [
+    project({ stage: 'planning_spec', role: 'product_requirement', prepare_command: arbitrary }, arbitrary),
+    project({ stage: 'planning_spec', role: 'product_requirement', prepare_command: wrongRole }, wrongRole),
+    project({ stage: 'planning_spec', role: 'product_requirement', prepare_command: futureStage }, futureStage)
+  ]) {
+    assert.equal(instruction.status, 'unavailable');
+    assert.equal(instruction.reason, 'unsafe_or_incomplete_review_status');
+    assert.deepEqual(instruction.next_commands, []);
+  }
+
+  const validRecord = 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement';
+  assert.equal(project({ stage: 'planning_spec', role: 'product_requirement', record_command: validRecord }, validRecord).status, 'dispatch_required');
+});
