@@ -72,7 +72,15 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 16. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`. Record verification evidence with `vibepro verify record`, and import CI results with `vibepro verify import-ci <repo> --id <story-id> --pr <n>` instead of rerunning full suites locally when a PR exists.
 17. Read the `pr prepare --summary-json` or `--view` output first, then `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready. Also inspect `decision-index.json` and `evidence-plan.json` when present so skipped or depth-limited artifacts are not mistaken for missing evidence.
 18. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-19. Run parallel subagent review:
+19. Run causal parallel subagent review:
+   - Start with `vibepro review status <repo> --id <story-id>`. Dispatch only the roles listed in `blocking_summary.items`; never recreate a role that remains `pass` through `current`, `reused_merge_delta`, or `causal_reuse`.
+   - A HEAD-only change is an observation, not a completed review wave. Do not increase convergence attempts until a review record is completed.
+   - Treat finding content/disposition, inspection evidence, judgment delta, recorded invalidation surface, closure evidence, and runtime state as progress. A changed progress signature resets the no-progress counter.
+   - If changed paths are unclassified or the changed-file delta cannot be resolved, fail closed; do not claim `causal_reuse`.
+   - A changed implementation or test does not by itself invalidate upstream product requirement or architecture judgments. Follow each role's causal invalidation reason instead of treating every new HEAD as a full-review reset.
+   - When closing a concrete prior finding, use `--resolved-finding <finding-id>:<evidence-ref>` and inspect the fix delta plus causal descendants. Do not re-prove unrelated pass claims.
+   - If a reviewer returns no body, opens the wrong request, times out, or fails to execute, record `--status runtime_failed --runtime-failure-kind empty_result|wrong_request|timeout|execution_error`. Do not convert review-runtime failure into a product finding.
+   - If `review status` reports `review_nonconvergent`, stop redispatching the same role set. Preserve the unresolved roles, split the VibePro review-contract/runtime defect into its own Story, and return control to the parent Program instead of continuing an evidence loop. Automatic `review prepare` must return no roles in this state; only an explicit human-directed role retry may continue.
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
    - Before spawning, run `vibepro review authorize` for each role with the intended model, risk closure, judgment delta, reusable evidence, and freeze state. Spawn only roles whose authorization returns `action: dispatch`; a stop means no subagent is started.
@@ -114,6 +122,9 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 ## Guardrails
 
 - Do not treat `judgment prepare` as a completed judgment. The generated input is conservative context; review/edit, adopt, evaluate, and bind it through `story plan`.
+- Do not use HEAD change alone as a reason to recreate every Agent Review. Use causal invalidation and preserve upstream pass judgments when only downstream implementation/test surfaces changed.
+- Do not retry the same unresolved review state indefinitely. `review_nonconvergent` is a stop condition, not another dispatch instruction.
+- Do not classify subagent empty results, wrong requests, timeouts, or execution errors as product findings. Record `runtime_failed` and retry the review runtime.
 - Do not auto-run Judgment from `pr prepare`; PR preparation is a read-only projection point for this advisory loop.
 - Do not treat VibePro diagnosis as truth by itself. Verify with code, tests, runtime logs, or product behavior.
 - Do not patch graph-sensitive runtime, auth, data, or UI state-machine code before checking Graphify impact.
