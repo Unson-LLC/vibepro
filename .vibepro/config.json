@@ -1581,6 +1581,20 @@
         "feature_slug": "release-0-2-0-beta-14"
       },
       {
+        "story_id": "story-vibepro-beta16-release",
+        "title": "0.2.0-beta.16 を npm へ出荷する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-25",
+        "due_at": null,
+        "category": "release",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "release-0-2-0-beta-16"
+      },
+      {
         "story_id": "story-vibepro-test-each-lineage",
         "title": "Accepted Specでtest.eachのケースを解決する",
         "ssot": "local",
