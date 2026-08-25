@@ -517,14 +517,17 @@ function verificationProjectionFor(testRefs, requiredScopes, verification, trust
       const commandScope = command.scope ?? 'local_test';
       const targets = command.observation?.targets ?? [];
       const scenarios = command.observation?.scenarios ?? [];
-      return commandScope === scope && command.trust_status === 'trusted' && testRefs.some((ref) => targets.includes(ref.file) && (scenarios.length === 0 || scenarios.includes(ref.case)));
+      return commandScope === scope && testRefs.some((ref) => targets.includes(ref.file) && (scenarios.length === 0 || scenarios.includes(ref.case)));
     });
     if (matching.length === 0) return [scope, { status: 'missing' }];
-    const states = matching.map((command) => command.evidence_state ?? (command.status === 'pass' ? 'verified' : command.status === 'needs_setup' ? 'not_collected' : 'failed'));
+    const states = matching.map((command) => {
+      const state = command.evidence_state ?? (command.status === 'pass' ? 'verified' : command.status === 'needs_setup' ? 'not_collected' : 'failed');
+      return state === 'verified' && command.trust_status !== 'trusted' ? 'untrusted' : state;
+    });
     for (const state of ['failed', 'partial', 'not_collected']) {
       if (states.includes(state)) return [scope, { status: state }];
     }
-    return [scope, { status: states.includes('verified') ? 'verified' : 'missing' }];
+    return [scope, { status: states.includes('verified') ? 'verified' : states.includes('untrusted') ? 'untrusted' : 'missing' }];
   }));
   return {
     status: scopes.every((scope) => projected[scope].status === 'verified') ? 'verified' : 'mapped-but-unverified',

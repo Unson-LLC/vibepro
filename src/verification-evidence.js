@@ -140,7 +140,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     };
     const commands = [
       command,
-      ...existing.commands.filter((item) => item.kind !== command.kind)
+      ...existing.commands.filter((item) => item.kind !== command.kind || (item.scope ?? 'local_test') !== command.scope)
     ];
     const nextEvidence = {
       schema_version: '0.1.0',
@@ -160,10 +160,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   };
 }
 
-export function normalizeVerificationScope(value) {
+export function normalizeVerificationScope(value, commandName = 'verify record') {
   const scope = value ?? 'local_test';
   if (!VERIFICATION_SCOPES.has(scope)) {
-    throw new Error(`verify record --scope must be one of: ${[...VERIFICATION_SCOPES].join(', ')}`);
+    throw new Error(`${commandName} --scope must be one of: ${[...VERIFICATION_SCOPES].join(', ')}`);
   }
   return scope;
 }

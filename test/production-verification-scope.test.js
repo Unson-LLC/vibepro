@@ -1,7 +1,7 @@
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -83,4 +83,53 @@ test('verification recorder persists scope and rejects contradictory evidence st
   assert.equal(normalizeEvidenceState(undefined, 'pass'), 'verified');
   assert.equal(normalizeEvidenceState('not_collected', 'needs_setup'), 'not_collected');
   assert.throws(() => normalizeEvidenceState('not_collected', 'pass'), /contradicts/);
+});
+
+test('real record and pr prepare preserve production not_collected beside local verification', async () => {
+  const root = await setupRepo();
+  const common = ['--id', STORY_ID, '--kind', 'unit', '--target', TEST_PATH, '--scenario', CASE];
+  let result = await runCli(['verify', 'run', root, ...common, '--scope', 'local_test', '--', 'node', '--test', TEST_PATH]);
+  assert.equal(result.exitCode, 0, result.stderr);
+  result = await runCli(['verify', 'record', root, ...common, '--status', 'needs_setup', '--command', 'production observation not collected', '--scope', 'production', '--evidence-state', 'not_collected']);
+  assert.equal(result.exitCode, 0, result.stderr);
+
+  const evidence = JSON.parse(await readFile(path.join(root, '.vibepro/pr', STORY_ID, 'verification-evidence.json'), 'utf8'));
+  assert.deepEqual(evidence.commands.map(({ kind, scope, evidence_state }) => ({ kind, scope, evidence_state })), [
+    { kind: 'unit', scope: 'production', evidence_state: 'not_collected' },
+    { kind: 'unit', scope: 'local_test', evidence_state: 'verified' }
+  ]);
+
+  result = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--base', 'HEAD', '--json']);
+  assert.equal(result.exitCode, 0, result.stderr);
+  const preparation = JSON.parse(await readFile(path.join(root, '.vibepro/pr', STORY_ID, 'pr-prepare.json'), 'utf8'));
+  const ac = preparation.traceability.acceptance_criteria[0];
+  assert.equal(ac.verification.status, 'mapped-but-unverified');
+  assert.equal(ac.verification.scopes.production.status, 'not_collected');
+  const body = await readFile(path.join(root, '.vibepro/pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /verification\/production: not_collected/);
+});
+
+test('verify run rejects invalid scope before executing argv', async () => {
+  const root = await setupRepo();
+  const marker = path.join(root, 'must-not-run.txt');
+  let stderr = '';
+  const result = await runCli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit', '--scope', 'staging',
+    '--', process.execPath, '-e', `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'ran')`, TEST_PATH
+  ], { stderr: { write(chunk) { stderr += chunk; } } });
+  assert.notEqual(result.exitCode, 0);
+  assert.match(stderr, /verify run --scope must be one of/);
+  await assert.rejects(access(marker), /ENOENT/);
+});
+
+test('explicit local scope replaces a legacy scope-less record of the same kind', async () => {
+  const root = await setupRepo();
+  const args = ['verify', 'record', root, '--id', STORY_ID, '--kind', 'unit', '--status', 'needs_setup', '--command', 'not collected'];
+  let result = await runCli(args);
+  assert.equal(result.exitCode, 0);
+  result = await runCli([...args, '--scope', 'local_test', '--evidence-state', 'not_collected']);
+  assert.equal(result.exitCode, 0);
+  const evidence = JSON.parse(await readFile(path.join(root, '.vibepro/pr', STORY_ID, 'verification-evidence.json'), 'utf8'));
+  assert.equal(evidence.commands.length, 1);
+  assert.equal(evidence.commands[0].scope, 'local_test');
 });

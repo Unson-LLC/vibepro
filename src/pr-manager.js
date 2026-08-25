@@ -192,6 +192,8 @@ async function readVerificationSummary(repoRoot, storyId) {
   const commands = (evidence.commands ?? []).map((command) => ({
     kind: command.kind,
     status: command.status,
+    scope: command.scope ?? 'local_test',
+    evidence_state: command.evidence_state ?? (command.status === 'pass' ? 'verified' : command.status === 'needs_setup' ? 'not_collected' : 'failed'),
     command: command.command ?? null,
     summary: command.summary ?? null,
     summary_authority: command.summary ? 'agent_provided_non_authoritative' : null,
