@@ -500,3 +500,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:493:start -->
 - [PR #493](https://github.com/Unson-LLC/vibepro/pull/493) — [2026-08](/releases/2026-08): chore: prepare 0.2.0-beta.16 release
 <!-- vibepro-release-index-pr:493:end -->
+
+<!-- vibepro-release-index-pr:495:start -->
+- [PR #495](https://github.com/Unson-LLC/vibepro/pull/495) — [2026-08](/releases/2026-08): fix: make verification progress deadline test deterministic
+<!-- vibepro-release-index-pr:495:end -->
