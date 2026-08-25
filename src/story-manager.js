@@ -14,8 +14,15 @@ import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, rea
 import { readStoryTasks } from './story-task-generator.js';
 import {
   applyDevelopmentJudgmentToPlan,
+  adoptJudgmentInput,
+  evaluateOperationalJudgmentWorkflow,
+  getJudgmentOperationalStatus,
+  prepareOperationalJudgmentInput,
   readOperationalJudgmentProjection,
   recordDevelopmentJudgmentPlanConsumption,
+  recordJudgmentApplicability,
+  recordJudgmentDisposition,
+  recordOperationalJudgmentOutcome,
   renderDevelopmentJudgmentPlanMarkdown
 } from './judgment-operations.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
@@ -349,6 +356,9 @@ export async function createStoryPlan(repoRoot, options = {}) {
   const manifest = await readManifest(root);
   const { catalog, catalogPath } = await readStoryMap(root);
   const currentStoryId = config.brainbase?.current_story_id ?? null;
+  const judgmentProgress = currentStoryId
+    ? await advanceJudgmentBeforePlan(root, currentStoryId, options)
+    : [];
   const graphIndex = await readStoryPlanGraphIndex(root, currentStoryId ?? 'story-default');
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
   const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
@@ -396,7 +406,85 @@ export async function createStoryPlan(repoRoot, options = {}) {
     artifact: toWorkspaceRelative(root, planPath)
   };
   await writeManifest(root, manifest);
-  return { plan, planPath, markdownPath, planBinding };
+  const judgmentClosure = currentStoryId
+    ? await closeJudgmentAfterPlan(root, currentStoryId, planBinding, options)
+    : null;
+  return { plan, planPath, markdownPath, planBinding, judgmentProgress, judgmentClosure };
+}
+
+async function advanceJudgmentBeforePlan(root, storyId, options) {
+  const progress = [];
+  let status = await getJudgmentOperationalStatus(root, storyId);
+  if (status.lifecycle === 'not_started' && options.judgmentApplicable != null) {
+    const applicability = await recordJudgmentApplicability(root, {
+      storyId,
+      applicable: options.judgmentApplicable,
+      reason: options.judgmentReason,
+      recordedBy: options.judgmentActor
+    });
+    progress.push({ action: 'applicability_recorded', artifact: applicability.record.artifact });
+    status = applicability.status;
+  }
+  if (status.lifecycle === 'applicable_not_prepared') {
+    const prepared = await prepareOperationalJudgmentInput(root, { storyId });
+    progress.push({ action: 'input_prepared', artifact: prepared.artifact });
+    status = await getJudgmentOperationalStatus(root, storyId);
+  }
+  if (status.lifecycle === 'draft_prepared' && options.judgmentInput) {
+    const adopted = await adoptJudgmentInput(root, {
+      storyId,
+      inputPath: options.judgmentInput,
+      reviewedBy: options.judgmentReviewedBy,
+      authority: options.judgmentAuthority,
+      summary: options.judgmentReviewSummary
+    });
+    progress.push({ action: 'input_adopted', artifact: adopted.adoption.artifact });
+    status = adopted.status;
+  }
+  if (status.lifecycle === 'input_reviewed') {
+    const evaluated = await evaluateOperationalJudgmentWorkflow(root, {
+      storyId,
+      inputPath: status.adoption.adopted_input
+    });
+    progress.push({ action: 'judgment_evaluated', artifact: evaluated.operational.artifact });
+  }
+  return progress;
+}
+
+async function closeJudgmentAfterPlan(root, storyId, planBinding, options) {
+  let status = await getJudgmentOperationalStatus(root, storyId);
+  let disposition = null;
+  let outcome = null;
+  if (status.lifecycle === 'consumed_by_plan' && options.judgmentHumanDecision) {
+    disposition = await recordJudgmentDisposition(root, {
+      storyId,
+      runId: status.run_id,
+      humanDecision: options.judgmentHumanDecision,
+      effect: options.judgmentEffect ?? planBinding?.effect ?? 'no_effect',
+      summary: options.judgmentDispositionSummary,
+      evidenceRefs: options.judgmentEvidenceRefs,
+      recordedBy: options.judgmentActor
+    });
+    status = disposition.status;
+  }
+  if (status.lifecycle === 'outcome_pending' && options.judgmentOutcomeStatus) {
+    if (options.judgmentOutcomeStatus !== 'unknown' && !(options.judgmentEvidenceRefs?.length)) {
+      throw new Error('story plan requires --judgment-evidence for a confirmed, mixed, or falsified outcome');
+    }
+    outcome = await recordOperationalJudgmentOutcome(root, {
+      storyId,
+      runId: status.run_id,
+      status: options.judgmentOutcomeStatus,
+      summary: options.judgmentOutcomeSummary,
+      evidenceRefs: options.judgmentEvidenceRefs,
+      observedOutcomes: options.judgmentObservedOutcomes
+    });
+  }
+  return {
+    disposition: disposition?.disposition ?? null,
+    outcome: outcome?.outcome ?? null,
+    status: await getJudgmentOperationalStatus(root, storyId)
+  };
 }
 
 async function readStoryPlanGraphIndex(root, storyId) {

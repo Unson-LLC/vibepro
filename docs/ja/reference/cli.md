@@ -69,7 +69,7 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # deprecated compatibility entry; routes to story diagnose
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]

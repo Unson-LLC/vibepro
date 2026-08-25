@@ -238,7 +238,7 @@ Usage:
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # deprecated compatibility entry; routes to story diagnose
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
@@ -346,7 +346,7 @@ Usage:
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
@@ -1333,7 +1333,23 @@ ${renderHelp()}`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'plan') {
-        const result = await createStoryPlan(repoRoot, { limit: parseNumberOption(rest, '--limit') });
+        const result = await createStoryPlan(repoRoot, {
+          limit: parseNumberOption(rest, '--limit'),
+          judgmentApplicable: getOption(rest, '--judgment-applicable'),
+          judgmentReason: getOption(rest, '--judgment-reason'),
+          judgmentActor: getOption(rest, '--judgment-actor'),
+          judgmentInput: getOption(rest, '--judgment-input'),
+          judgmentReviewedBy: getOption(rest, '--judgment-reviewed-by'),
+          judgmentAuthority: getOption(rest, '--judgment-authority'),
+          judgmentReviewSummary: getOption(rest, '--judgment-review-summary'),
+          judgmentHumanDecision: getOption(rest, '--judgment-human-decision'),
+          judgmentEffect: getOption(rest, '--judgment-effect'),
+          judgmentDispositionSummary: getOption(rest, '--judgment-disposition-summary'),
+          judgmentOutcomeStatus: getOption(rest, '--judgment-outcome-status'),
+          judgmentOutcomeSummary: getOption(rest, '--judgment-outcome-summary'),
+          judgmentEvidenceRefs: getOptions(rest, '--judgment-evidence'),
+          judgmentObservedOutcomes: getOptions(rest, '--judgment-observed-outcome')
+        });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.plan, null, 2)}\n`
           : renderStoryPlanSummary(result));
