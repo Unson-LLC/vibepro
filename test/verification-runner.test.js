@@ -624,26 +624,29 @@ test('executeCommand kills a silent command on the no-progress deadline independ
   assert.ok(elapsedMs < 5000, `expected the no-progress deadline to kill well under the 10000ms wall clock, took ${elapsedMs}ms`);
 });
 
-test('executeCommand: sustained streaming output extends the no-progress deadline past its own length', async () => {
+test('executeCommand: sustained test-completion progress extends the no-progress deadline', async () => {
   const script = [
     'let i = 0;',
     'const t = setInterval(() => {',
     '  i += 1;',
-    "  process.stdout.write('x');",
-    '  if (i >= 6) { clearInterval(t); process.exit(0); }',
-    '}, 40);'
+    "  process.stdout.write(`# tests ${i}\\n# pass ${i}\\n# fail 0\\n`);",
+    '  if (i >= 15) { clearInterval(t); process.exit(0); }',
+    '}, 50);'
   ].join('\n');
+  const startedAt = Date.now();
   const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
     timeoutMs: 5000,
-    // Shorter than the ~240ms total run time but generous enough to absorb Node startup
-    // latency: only sustained silence, not the mere passage of time, should kill this.
-    noProgressDeadlineMs: 400,
+    // The child runs for ~750ms, so surviving this 500ms deadline proves that increasing,
+    // parseable test-completion counts extend it; mere stdout liveness is not enough.
+    noProgressDeadlineMs: 500,
     maxOutputBytes: 1_000_000,
     env: process.env
   });
+  const elapsedMs = Date.now() - startedAt;
   assert.equal(result.exitCode, 0);
   assert.equal(result.timedOut, false);
-  assert.equal(result.stdout.length, 6);
+  assert.ok(elapsedMs > 500, `expected genuine progress to keep the process alive past the 500ms deadline, took ${elapsedMs}ms`);
+  assert.match(result.stdout, /# tests 15\n# pass 15\n# fail 0/);
 });
 
 test('a partially sampled worktree does not report a change that did not happen, and says so', () => {
