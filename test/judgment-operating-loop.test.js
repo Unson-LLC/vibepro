@@ -234,6 +234,59 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
   assert.deepEqual(nextPrepared.result.input.development_cycle.adopted_batches, []);
 });
 
+test('story plan advances the judgment loop and persists explicit disposition and outcome', async () => {
+  const root = await setupRepo('story-plan-loop');
+
+  const prepared = await runCli([
+    'story', 'plan', root,
+    '--judgment-applicable', 'yes',
+    '--judgment-reason', 'The plan must select between meaningful implementation choices.',
+    '--judgment-actor', 'test-agent',
+    '--json'
+  ], silentIo());
+  assert.equal(prepared.exitCode, 0);
+  assert.deepEqual(
+    prepared.result.judgmentProgress.map((entry) => entry.action),
+    ['applicability_recorded', 'input_prepared']
+  );
+  assert.equal(prepared.result.judgmentClosure.status.lifecycle, 'draft_prepared');
+
+  const adoptedInput = await createActionableInput(
+    root,
+    prepared.result.judgmentClosure.status.draft.artifact
+  );
+  const closed = await runCli([
+    'story', 'plan', root,
+    '--judgment-input', adoptedInput,
+    '--judgment-reviewed-by', 'test-agent',
+    '--judgment-authority', 'story-and-repository-evidence',
+    '--judgment-review-summary', 'Reviewed the problem frame, constraint, and viable option.',
+    '--judgment-human-decision', 'accepted',
+    '--judgment-effect', 'changed_plan',
+    '--judgment-disposition-summary', 'Accepted the VALUE guidance and applied it to the plan.',
+    '--judgment-outcome-status', 'confirmed',
+    '--judgment-outcome-summary', 'The generated plan retained the intended judgment binding.',
+    '--judgment-evidence', '.vibepro/stories/story-plan.json',
+    '--judgment-observed-outcome', 'plan_binding:Development Judgment is bound to the Story plan',
+    '--judgment-actor', 'test-agent',
+    '--json'
+  ], silentIo());
+
+  assert.equal(closed.exitCode, 0);
+  assert.deepEqual(
+    closed.result.judgmentProgress.map((entry) => entry.action),
+    ['input_adopted', 'judgment_evaluated']
+  );
+  assert.equal(closed.result.plan.development_judgment.status, 'applied');
+  assert.equal(closed.result.judgmentClosure.disposition.human_decision, 'accepted');
+  assert.equal(closed.result.judgmentClosure.disposition.effect, 'changed_plan');
+  assert.equal(closed.result.judgmentClosure.outcome.status, 'confirmed');
+  assert.equal(closed.result.judgmentClosure.status.lifecycle, 'closed');
+
+  const pending = await runCli(['judgment', 'pending', root, '--json'], silentIo());
+  assert.equal(pending.result.pending_count, 0);
+});
+
 test('not-applicable judgment remains explicit, non-blocking, and does not inject a plan task', async () => {
   const root = await setupRepo('not-applicable');
   const applicability = await runCli([
