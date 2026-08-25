@@ -89,6 +89,7 @@ import { isBugStory, recordBugDiagnosisNode } from './bug-diagnosis-dag.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
+import { bindTaskAuthority } from './task-authority.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
   assertPreSpecReadinessForFinalSpec,
@@ -237,9 +238,10 @@ Usage:
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # deprecated compatibility entry; routes to story diagnose
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
@@ -344,9 +346,10 @@ Usage:
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -362,7 +365,7 @@ Usage:
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
-  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace',
+  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
   'workspace', 'store', 'bug', 'verify-first'
 ];
@@ -1330,13 +1333,50 @@ ${renderHelp()}`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'plan') {
-        const result = await createStoryPlan(repoRoot, { limit: parseNumberOption(rest, '--limit') });
+        const result = await createStoryPlan(repoRoot, {
+          limit: parseNumberOption(rest, '--limit'),
+          judgmentApplicable: getOption(rest, '--judgment-applicable'),
+          judgmentReason: getOption(rest, '--judgment-reason'),
+          judgmentActor: getOption(rest, '--judgment-actor'),
+          judgmentInput: getOption(rest, '--judgment-input'),
+          judgmentReviewedBy: getOption(rest, '--judgment-reviewed-by'),
+          judgmentAuthority: getOption(rest, '--judgment-authority'),
+          judgmentReviewSummary: getOption(rest, '--judgment-review-summary'),
+          judgmentHumanDecision: getOption(rest, '--judgment-human-decision'),
+          judgmentEffect: getOption(rest, '--judgment-effect'),
+          judgmentDispositionSummary: getOption(rest, '--judgment-disposition-summary'),
+          judgmentOutcomeStatus: getOption(rest, '--judgment-outcome-status'),
+          judgmentOutcomeSummary: getOption(rest, '--judgment-outcome-summary'),
+          judgmentEvidenceRefs: getOptions(rest, '--judgment-evidence'),
+          judgmentObservedOutcomes: getOptions(rest, '--judgment-observed-outcome')
+        });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.plan, null, 2)}\n`
           : renderStoryPlanSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'task') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'bind') {
+        const result = await bindTaskAuthority(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          inputPath: getOption(rest, '--input')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.authority, null, 2)}\n`
+          : `Task authority accepted: ${result.authority.story_id} (${result.authority.tasks.length} task(s))\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

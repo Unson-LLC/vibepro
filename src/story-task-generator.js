@@ -57,6 +57,7 @@ async function readTaskStateIfExists(tasksJsonPath) {
 
 function shouldPreserveCanonicalTasks(taskState) {
   if (!taskState) return false;
+  if (taskState.authority?.status === 'accepted') return true;
   if (taskState.source_run?.run_id === 'story-plan') return true;
   return (taskState.tasks ?? []).some((task) => task.source_type === 'story_plan_candidate');
 }

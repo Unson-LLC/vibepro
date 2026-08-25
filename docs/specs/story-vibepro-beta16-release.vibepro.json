@@ -1,0 +1,50 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-beta16-release",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "release_source": {
+    "pull_requests": [491, 492, 494],
+    "merge_shas": [
+      "e9385b9846932a37456d62cf85f5ed6092eeec91",
+      "495b7fbc2724bd13c3f9d82c80b916dd4dd782e8",
+      "feb4426600ddb48ec91fdd0bbbb47eca18915601"
+    ],
+    "base_sha": "3db04f430fe017aef42a456ef6c18434ad8b4407",
+    "includes_release_history_projection": true
+  },
+  "clauses": [
+    {
+      "id": "REL16-C-001",
+      "type": "contract",
+      "statement": "package.json, package-lock.json, the lockfile root package, and CLI declare 0.2.0-beta.16.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL16-AC-001" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-beta16-release.md", "section": "境界" }],
+        "code_refs": [{ "file": "package.json", "anchor": "0.2.0-beta.16" }, { "file": "package-lock.json", "anchor": "0.2.0-beta.16" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "case": "beta.16 release metadata and CLI report the exact candidate version" }]
+      }
+    },
+    {
+      "id": "REL16-INV-001",
+      "type": "invariant",
+      "statement": "The release diff does not modify product source, workflows, dependencies, existing Stories, or .vibepro runtime artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL16-AC-002" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-beta16-release.md", "section": "境界" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "case": "beta.16 release metadata and CLI report the exact candidate version" }]
+      }
+    },
+    {
+      "id": "REL16-INV-002",
+      "type": "invariant",
+      "statement": "The release source includes PR 491 at e9385b9846932a37456d62cf85f5ed6092eeec91, PR 492 at 495b7fbc2724bd13c3f9d82c80b916dd4dd782e8, PR 494 at feb4426600ddb48ec91fdd0bbbb47eca18915601, and their release-history projection in base 3db04f430fe017aef42a456ef6c18434ad8b4407.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "REL16-AC-003" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-beta16-release.md", "section": "目的" }]
+      }
+    }
+  ]
+}

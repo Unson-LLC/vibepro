@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-24 | [`0.2.0-beta.15`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.15) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-24 | [`0.2.0-beta.14`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.14) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-23 | [`0.2.0-beta.13`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.13) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-22 | [`0.2.0-beta.12`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.12) | npm `beta` / `latest` | Post-merge continuous release |
@@ -478,3 +479,19 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:489:start -->
 - [PR #489](https://github.com/Unson-LLC/vibepro/pull/489) — [2026-08](/releases/2026-08): fix: 非マルチテナント適用判定と実装証拠を分離する
 <!-- vibepro-release-index-pr:489:end -->
+
+<!-- vibepro-release-index-pr:490:start -->
+- [PR #490](https://github.com/Unson-LLC/vibepro/pull/490) — [2026-08](/releases/2026-08): chore: release 0.2.0-beta.15
+<!-- vibepro-release-index-pr:490:end -->
+
+<!-- vibepro-release-index-pr:491:start -->
+- [PR #491](https://github.com/Unson-LLC/vibepro/pull/491) — [2026-08](/releases/2026-08): fix: project safe agent review instructions
+<!-- vibepro-release-index-pr:491:end -->
+
+<!-- vibepro-release-index-pr:492:start -->
+- [PR #492](https://github.com/Unson-LLC/vibepro/pull/492) — [2026-08](/releases/2026-08): fix: bind PR readiness to canonical Story Tasks
+<!-- vibepro-release-index-pr:492:end -->
+
+<!-- vibepro-release-index-pr:494:start -->
+- [PR #494](https://github.com/Unson-LLC/vibepro/pull/494) — [2026-08](/releases/2026-08): fix: Judgmentを通常計画フローへ接続
+<!-- vibepro-release-index-pr:494:end -->
