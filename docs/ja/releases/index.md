@@ -491,3 +491,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:492:start -->
 - [PR #492](https://github.com/Unson-LLC/vibepro/pull/492) — [2026-08](/ja/releases/2026-08): fix: bind PR readiness to canonical Story Tasks
 <!-- vibepro-release-index-pr:492:end -->
+
+<!-- vibepro-release-index-pr:494:start -->
+- [PR #494](https://github.com/Unson-LLC/vibepro/pull/494) — [2026-08](/ja/releases/2026-08): fix: Judgmentを通常計画フローへ接続
+<!-- vibepro-release-index-pr:494:end -->
