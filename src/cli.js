@@ -205,8 +205,8 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
-  vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--scope <local_test|production>] [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
+  vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--scope <local_test|production>] [--evidence-state <verified|failed|partial|not_collected>] [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
@@ -320,8 +320,8 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
-  vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--scope <local_test|production>] [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--no-progress-deadline-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
+  vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--scope <local_test|production>] [--evidence-state <verified|failed|partial|not_collected>] [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
@@ -767,6 +767,7 @@ async function dispatchCli(argv, io = {}) {
           kind: getOption(verifyArgs, '--kind'),
           status: getOption(verifyArgs, '--status'),
           summary: getOption(verifyArgs, '--summary'),
+          scope: getOption(verifyArgs, '--scope'),
           targets: getOptions(verifyArgs, '--target'),
           scenarios: getOptions(verifyArgs, '--scenario'),
           observed: getOptions(verifyArgs, '--observed'),
@@ -796,6 +797,8 @@ async function dispatchCli(argv, io = {}) {
           status: getOption(rest, '--status'),
           command: getOption(rest, '--command'),
           summary: getOption(rest, '--summary'),
+          scope: getOption(rest, '--scope'),
+          evidenceState: getOption(rest, '--evidence-state'),
           artifact: getOption(rest, '--artifact'),
           targets: getOptions(rest, '--target'),
           scenarios: getOptions(rest, '--scenario'),

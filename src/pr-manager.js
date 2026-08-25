@@ -612,7 +612,7 @@ async function gitOptional(repoRoot, args) {
 // PR body rendering
 // ---------------------------------------------------------------------------
 
-function renderPrBody(preparation) {
+export function renderPrBody(preparation) {
   const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
@@ -648,9 +648,13 @@ function renderPrBody(preparation) {
     lines.push('- no acceptance criteria found in the story document');
   } else {
     for (const clause of acceptanceCriteria) {
-      const marker = clause.status === 'unmapped' ? '未対応' : clause.status;
+      const marker = clause.status === 'unmapped' ? '未対応' : (clause.verification?.status ?? clause.verification_status ?? clause.status);
       lines.push(`- [${marker}] ${clause.id}: ${clause.text}`);
       if (clause.spec_clause_ids?.length) lines.push(`  - spec clauses: ${clause.spec_clause_ids.join(', ')}`);
+      if (clause.verification?.required_scopes?.length) lines.push(`  - required verification scopes: ${clause.verification.required_scopes.join(', ')}`);
+      for (const [scope, state] of Object.entries(clause.verification?.scopes ?? {})) {
+        lines.push(`  - verification/${scope}: ${state.status}`);
+      }
       for (const testRef of clause.mapped_test_provenance ?? []) {
         lines.push(`  - test: \`${testRef.file}\` — \`${testRef.case}\` @ \`${testRef.blob_oid ?? 'missing'}\` (HEAD \`${testRef.head_sha ?? 'unknown'}\`)`);
       }

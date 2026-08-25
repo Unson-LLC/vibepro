@@ -328,6 +328,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     // `summary` is the first thing a reader (and some consumers) look at, so the runner's
     // own account of the run stays on every record.
     summary: composeSummary(options.summary, buildSummary(options.kind, status, execution, runCounts, durationMs)),
+    scope: options.scope,
     artifact: toWorkspaceRelative(root, artifactPath),
     targets: options.targets ?? [],
     scenarios: options.scenarios ?? [],

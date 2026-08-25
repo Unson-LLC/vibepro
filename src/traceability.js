@@ -271,6 +271,8 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
     mapping_source: 'accepted_spec',
     lineage_status: 'unresolved',
     verification_status: verificationStatusFor([], verification, verificationTrustStatus),
+    verification: verificationProjectionFor([], [], verification, verificationTrustStatus),
+    required_verification_scopes: [],
     reason_codes: [],
     weak_mapping_reason: null
   }));
@@ -332,7 +334,12 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
       }
     }
 
+    const declaredScopes = clause?.verification?.required_scopes;
+    if (declaredScopes !== undefined && (!Array.isArray(declaredScopes) || declaredScopes.length === 0 || declaredScopes.some((scope) => scope !== 'local_test' && scope !== 'production'))) {
+      clauseReasons.push('verification_scope_invalid');
+    }
     const uniqueReasons = [...new Set(clauseReasons)];
+    const requiredScopes = normalizeRequiredVerificationScopes(declaredScopes);
     if (uniqueReasons.length > 0) failures.push({ clause_id: clauseId, reason_codes: uniqueReasons });
     for (const acId of referencedAcIds) {
       const item = itemsById.get(acId);
@@ -342,6 +349,7 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
       item.mapped_tests.push(...testProvenance.map((entry) => entry.file));
       item.mapped_files.push(...testProvenance.map((entry) => entry.file));
       item.reason_codes.push(...uniqueReasons);
+      item.required_verification_scopes.push(...requiredScopes);
     }
   }
 
@@ -350,11 +358,14 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
     item.mapped_tests = [...new Set(item.mapped_tests)];
     item.mapped_files = [...new Set(item.mapped_files)];
     item.reason_codes = [...new Set([...globalReasons, ...item.reason_codes])];
+    item.required_verification_scopes = [...new Set(item.required_verification_scopes)];
     if (item.spec_clause_ids.length === 0) item.reason_codes.push('accepted_spec_clause_missing');
     const lineageReasons = item.reason_codes.filter((code) => code !== 'verification_evidence_untrusted');
     item.lineage_status = lineageReasons.length === 0 ? 'resolved' : 'invalid';
     item.status = item.lineage_status === 'resolved' ? 'mapped' : 'unmapped';
-    item.verification_status = verificationStatusFor(item.mapped_test_provenance, verification, verificationTrustStatus);
+    item.verification = verificationProjectionFor(item.mapped_test_provenance, item.required_verification_scopes, verification, verificationTrustStatus);
+    item.verification_status = item.verification.status === 'verified' ? 'verified'
+      : item.verification.status === 'untrusted' ? 'untrusted' : 'unverified';
     if (item.verification_status === 'untrusted') item.reason_codes.push('verification_evidence_untrusted');
     item.reason_codes = [...new Set(item.reason_codes)];
   }
@@ -488,6 +499,38 @@ function verificationStatusFor(testRefs, verification, trustStatus) {
     return testRefs.some((ref) => targets.includes(ref.file) && (scenarios.length === 0 || scenarios.includes(ref.case)));
   });
   return passed ? 'verified' : 'unverified';
+}
+
+function normalizeRequiredVerificationScopes(scopes) {
+  if (!Array.isArray(scopes) || scopes.length === 0) return ['local_test'];
+  return scopes.filter((scope) => scope === 'local_test' || scope === 'production');
+}
+
+function verificationProjectionFor(testRefs, requiredScopes, verification, trustStatus) {
+  const scopes = normalizeRequiredVerificationScopes(requiredScopes);
+  if (trustStatus !== 'trusted') {
+    return { status: verification?.recorded ? 'untrusted' : 'mapped-but-unverified', required_scopes: scopes, scopes: Object.fromEntries(scopes.map((scope) => [scope, { status: 'missing' }])) };
+  }
+  const commands = verification?.commands ?? [];
+  const projected = Object.fromEntries(scopes.map((scope) => {
+    const matching = commands.filter((command) => {
+      const commandScope = command.scope ?? 'local_test';
+      const targets = command.observation?.targets ?? [];
+      const scenarios = command.observation?.scenarios ?? [];
+      return commandScope === scope && command.trust_status === 'trusted' && testRefs.some((ref) => targets.includes(ref.file) && (scenarios.length === 0 || scenarios.includes(ref.case)));
+    });
+    if (matching.length === 0) return [scope, { status: 'missing' }];
+    const states = matching.map((command) => command.evidence_state ?? (command.status === 'pass' ? 'verified' : command.status === 'needs_setup' ? 'not_collected' : 'failed'));
+    for (const state of ['failed', 'partial', 'not_collected']) {
+      if (states.includes(state)) return [scope, { status: state }];
+    }
+    return [scope, { status: states.includes('verified') ? 'verified' : 'missing' }];
+  }));
+  return {
+    status: scopes.every((scope) => projected[scope].status === 'verified') ? 'verified' : 'mapped-but-unverified',
+    required_scopes: scopes,
+    scopes: projected
+  };
 }
 
 function extractStoryScenarioIds(storyText) {
