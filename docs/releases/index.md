@@ -504,3 +504,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:495:start -->
 - [PR #495](https://github.com/Unson-LLC/vibepro/pull/495) — [2026-08](/releases/2026-08): fix: make verification progress deadline test deterministic
 <!-- vibepro-release-index-pr:495:end -->
+
+<!-- vibepro-release-index-pr:499:start -->
+- [PR #499](https://github.com/Unson-LLC/vibepro/pull/499) — [2026-08](/releases/2026-08): fix: subagent回復ループを3回で収束させる
+<!-- vibepro-release-index-pr:499:end -->
