@@ -80,6 +80,10 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
    - A changed implementation or test does not by itself invalidate upstream product requirement or architecture judgments. Follow each role's causal invalidation reason instead of treating every new HEAD as a full-review reset.
    - When closing a concrete prior finding, use `--resolved-finding <finding-id>:<evidence-ref>` and inspect the fix delta plus causal descendants. Do not re-prove unrelated pass claims.
    - If a reviewer returns no body, opens the wrong request, times out, or fails to execute, record `--status runtime_failed --runtime-failure-kind empty_result|wrong_request|timeout|execution_error`. Do not convert review-runtime failure into a product finding.
+   - Keep one owner for each requested role. Wait at most 60 seconds at a time, then inspect the worker status, current HEAD, and cumulative diff before deciding what to do next. A wait timeout is an observation, not permission to create a replacement owner.
+   - Count consecutive no-progress observations for the same owner and record the count in the coordinator transcript or task progress. For counts 1 and 2, resume that same owner with the current objective and observed repository state. Do not redispatch the role under a new id.
+   - At count 3, stop waiting and stop redispatching. Carry forward the objective, current HEAD, cumulative diff, and unresolved conditions; then let the parent coordinator perform direct verification. If independence is still required, report an explicit block instead of creating another reviewer.
+   - Before every wait or retry, test the success criteria against the current exact HEAD. If they are already satisfied, close the worker when the runtime supports it and continue without another worker.
    - If `review status` reports `review_nonconvergent`, stop redispatching the same role set. Preserve the unresolved roles, split the VibePro review-contract/runtime defect into its own Story, and return control to the parent Program instead of continuing an evidence loop. Automatic `review prepare` must return no roles in this state; only an explicit human-directed role retry may continue.
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
@@ -91,6 +95,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
+
 20. Close the adjudication gates before PR create when `pr prepare` reports `gate:evidence_adjudication` or `gate:judgment_dag_adjudication` unresolved: `vibepro adjudicate prepare <repo> --id <story-id>` (and `--judgment`), dispatch the generated request to an **independent fresh-context subagent** (not the implementing agent), record verdicts with `vibepro adjudicate record`, and close `not_verifiable_by_automation` / `needs_human_judgment` entries with accepted decision records. Verdicts are head-bound and fail closed; see `vibepro-gate-evidence` for the full playbook.
 21. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
 22. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
@@ -98,6 +103,31 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 24. After the PR exists, wait for remote checks, import CI evidence with `vibepro verify import-ci`, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
 25. Merge with the target repository's current documented git policy. For the VibePro repository itself, use the ordinary GitHub merge flow; `vibepro execute merge` has been removed and must not be required or suggested.
 26. After merge or once outcome evidence exists, run `vibepro judgment pending <repo>` and close each pending run with `vibepro judgment outcome record <repo> --id <story-id> --run <run-id> --status confirmed|mixed|falsified|unknown --summary <text> --evidence <ref>`. Then close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
+
+## Subagent recovery policy
+
+The following block is the distributed, machine-tested recovery contract for coordinator runtimes. Host runtimes may provide stronger cancellation or wake-up primitives, but must not weaken these convergence rules.
+
+<!-- subagent-recovery-policy:start -->
+```json
+{
+  "owner_strategy": "same_owner",
+  "wait_timeout_seconds": 60,
+  "no_progress_limit": 3,
+  "before_limit_action": "resume_same_owner",
+  "at_limit_action": "parent_direct_verification",
+  "exact_head_success_action": "stop",
+  "carry_forward_fields": [
+    "objective",
+    "head_sha",
+    "cumulative_diff",
+    "unresolved_conditions"
+  ]
+}
+```
+<!-- subagent-recovery-policy:end -->
+
+This policy governs coordinator behavior because VibePro cannot terminate or replace a subagent owned by the Codex/Claude host. When a host does not expose bounded wait, resume, status, or close operations, record that capability boundary and follow the parent-direct-verification or explicit-block path locally.
 
 ## Human Artifact Language
 
