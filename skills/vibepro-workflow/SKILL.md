@@ -196,6 +196,44 @@ Do not:
 
 Do not stash, reset, restore, or overwrite a dirty worktree before classifying it. Protect unrelated user changes. Prefer a clean feature branch or isolated worktree. Only files inside the accepted scope may enter the PR.
 
+## Common Rationalizations
+
+- “HEADが変わったので全部やり直す” — changed contentだけを再検証する。
+- “レビューで見つけたので同じStoryへ入れる” — blocking条件を満たさなければfollow-upへ送る。
+- “証跡が多いほど安全” — 未解決リスクを減らさない証跡は作業ではない。
+- “fresh taskをもう一度作れば通る” — 入力が揺れるならtest harnessを固定する。
+- “旧Gateがneeds_reviewなのでPRを作れない” — 旧Gate投影は参考情報であり、実ブロッカーではない。
+
+## Red Flags
+
+次のいずれかが起きたら、製品開発ではなくVibePro運用がループしている。
+
+- 同じStoryでreview dispatchが5回を超えた。
+- 文書だけの変更でruntime E2Eを再実行しようとしている。
+- exact HEADだけを理由に、内容が変わっていないテストやレビューを失効させた。
+- review runtimeのtimeoutや誤入力を製品不具合として数えた。
+- 受入条件と無関係なfindingを現在のStoryへ追加した。
+- PR作成前に複数段階のGateを再開しようとしている。
+
+この場合はdispatchを止め、受入範囲・影響テスト・具体的なblocking findingだけで現在のPRを判断する。
+
+## Verification
+
+完了報告には次だけを含める。
+
+1. 受入条件に対して何を直したか。
+2. 変更内容を直接覆うテストと結果。
+3. 未解決の具体的blocker。
+4. PRとCIの状態。
+5. follow-upへ分離したfinding。
+
+次を完了証拠として数えない。
+
+- review件数、
+- 同じテストの反復回数、
+- repeated exact HEAD、
+- generated artifactの総量。
+
 ## Reporting
 
 Report outcomes, not ceremony:
