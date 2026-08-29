@@ -6,63 +6,74 @@ import test from 'node:test';
 
 const skillPath = path.resolve('skills/vibepro-workflow/SKILL.md');
 
-test('VibePro workflow publishes a bounded same-owner subagent recovery policy', async () => {
-  const policy = await readRecoveryPolicy();
+test('VibePro workflow publishes the minimal-core convergence contract', async () => {
+  const policy = await readConvergencePolicy();
 
-  assert.equal(policy.owner_strategy, 'same_owner');
-  assert.equal(policy.no_progress_limit, 3);
-  assert.ok(Number.isFinite(policy.wait_timeout_seconds));
-  assert.ok(policy.wait_timeout_seconds > 0);
-  assert.equal(policy.before_limit_action, 'resume_same_owner');
-  assert.equal(policy.at_limit_action, 'parent_direct_verification');
-  assert.equal(policy.exact_head_success_action, 'stop');
-  assert.deepEqual(policy.carry_forward_fields, [
-    'objective',
-    'head_sha',
-    'cumulative_diff',
-    'unresolved_conditions'
+  assert.deepEqual(policy.workflow, [
+    'story',
+    'spec',
+    'implement',
+    'affected_tests',
+    'single_review_wave',
+    'github_pr',
+    'ci',
+    'merge'
   ]);
+  assert.equal(policy.review_waves, 1);
+  assert.equal(policy.max_parallel_review_roles, 3);
+  assert.equal(policy.max_total_review_dispatches, 5);
+  assert.equal(policy.verification_scope_during_development, 'affected_tests');
+  assert.equal(policy.full_suite_location, 'ci');
+  assert.deepEqual(policy.exact_head_scope, ['ci', 'release_readback']);
+  assert.equal(policy.legacy_gate_projection, 'informational_only');
+  assert.equal(policy.pr_command, 'gh pr create');
 });
 
-test('three consecutive no-progress waits converge without owner proliferation', async () => {
-  const policy = await readRecoveryPolicy();
-  const owners = new Set(['reviewer-1']);
-  const actions = [];
+test('review findings converge instead of expanding the current Story', async () => {
+  const policy = await readConvergencePolicy();
 
-  for (let noProgressCount = 1; noProgressCount <= policy.no_progress_limit; noProgressCount += 1) {
-    const action = noProgressCount < policy.no_progress_limit
-      ? policy.before_limit_action
-      : policy.at_limit_action;
-    actions.push(action);
-    if (action === 'resume_same_owner') owners.add('reviewer-1');
-  }
+  assert.equal(policy.blocking_finding_action, 'fix_then_reverify_affected_surface');
+  assert.equal(policy.non_blocking_finding_action, 'follow_up_story');
+  assert.equal(
+    policy.review_runtime_failure_action,
+    'report_runtime_failure_without_product_finding'
+  );
 
-  assert.deepEqual(actions, [
-    'resume_same_owner',
-    'resume_same_owner',
-    'parent_direct_verification'
-  ]);
-  assert.equal(owners.size, 1);
-  assert.notEqual(actions.at(-1), 'dispatch_replacement_owner');
+  const dispatches = Array.from(
+    { length: policy.max_total_review_dispatches + 2 },
+    (_, index) => index + 1
+  );
+  const executed = dispatches.filter((count) => count <= policy.max_total_review_dispatches);
+  assert.equal(executed.length, 5);
+  assert.equal(executed.at(-1), policy.max_total_review_dispatches);
 });
 
-test('exact-HEAD success stops before another wait or dispatch', async () => {
-  const policy = await readRecoveryPolicy();
-  const currentHead = 'abc123';
-  const verifiedHead = 'abc123';
-  const actions = [];
+test('E2E uses a deterministic fixture and at most one real fresh-task smoke', async () => {
+  const policy = await readConvergencePolicy();
 
-  if (currentHead === verifiedHead) actions.push(policy.exact_head_success_action);
-  else actions.push('wait_or_dispatch');
-
-  assert.deepEqual(actions, ['stop']);
+  assert.equal(policy.e2e.deterministic_fixture_required, true);
+  assert.equal(policy.e2e.fresh_task_smoke_max, 1);
 });
 
-async function readRecoveryPolicy() {
+test('workflow no longer publishes the removed review-lifecycle loop', async () => {
+  const skill = await readFile(skillPath, 'utf8');
+
+  assert.doesNotMatch(skill, /subagent-recovery-policy:start/);
+  assert.doesNotMatch(skill, /vibepro review authorize/);
+  assert.doesNotMatch(skill, /vibepro review start/);
+  assert.doesNotMatch(skill, /vibepro review close/);
+  assert.doesNotMatch(skill, /vibepro review repair/);
+  assert.doesNotMatch(skill, /gate_status\.ready_for_pr_create/);
+  assert.match(skill, /A new commit SHA alone does not invalidate an unrelated test or review\./);
+  assert.match(skill, /Treat any legacy Gate status[\s\S]*as informational only\./);
+  assert.match(skill, /gh pr create/);
+});
+
+async function readConvergencePolicy() {
   const skill = await readFile(skillPath, 'utf8');
   const match = skill.match(
-    /<!-- subagent-recovery-policy:start -->\s*```json\s*([\s\S]*?)\s*```\s*<!-- subagent-recovery-policy:end -->/
+    /<!-- minimal-core-convergence-policy:start -->\s*```json\s*([\s\S]*?)\s*```\s*<!-- minimal-core-convergence-policy:end -->/
   );
-  assert.ok(match, 'workflow Skill must include its machine-testable subagent recovery policy');
+  assert.ok(match, 'workflow Skill must include its machine-tested convergence policy');
   return JSON.parse(match[1]);
 }
