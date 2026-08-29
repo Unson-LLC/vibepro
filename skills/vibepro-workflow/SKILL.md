@@ -1,252 +1,210 @@
 ---
 name: vibepro-workflow
-description: Use when working with VibePro CLI, Graphify, Story diagnosis, task planning, PR preparation, Gate evidence, or VibePro review artifacts.
+description: Use when a repository uses VibePro for Story, Spec, verification, review, or PR evidence. Enforces the minimal-core workflow and prevents evidence/review loops.
 ---
 
-# VibePro Workflow
+# VibePro Minimal-Core Workflow
 
-## Purpose
+## Authority
 
-Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. The CLI creates evidence; this Skill tells the agent how to use that evidence without skipping the intended order.
+`AGENTS.md` and `docs/management/REBUILD.md` are the authority for this Skill.
 
-When working on the VibePro repository itself, its current `AGENTS.md` takes precedence. Self-dogfood is permanently retired there: use the ordinary git flow (`branch -> test -> gh pr create -> review -> merge`) and do not require removed VibePro-managed PR, Gate, execution, or merge commands.
+VibePro is a small development aid. It exists to keep these four things connected:
 
-## When to Use
+1. what the user asked for,
+2. what was designed,
+3. what changed,
+4. what was verified.
 
-Use this Skill when the task mentions VibePro, Story/Spec/Architecture, Graphify, Gate DAG, PR preparation, Agent Review, diagnosis packages, review cockpit, or VibePro-managed evidence under `.vibepro/`.
+It is not a workflow engine, a merge authority, or an evidence-collection game. Removed mechanisms must not be rebuilt through agent instructions.
 
-Also use it when the user asks whether VibePro work is done, PR-ready, verified, reviewable, or safe to merge. In those cases the answer must be grounded in current VibePro artifacts and repository state, not a general impression.
+The standard development loop is:
 
-## Operating Order
+> Story → Spec → implement → affected tests → one review wave → GitHub PR → CI → merge
 
-1. Confirm the target repository and current branch.
-2. Initialize only when needed: `vibepro init <repo> --language ja`.
-3. Before manually adding or editing human-facing VibePro artifacts, resolve the output language from `.vibepro/config.json` `output.language` or the explicit CLI `--language` override.
-4. Select or create the Story before diagnosing or changing code.
-5. Import impact context before impact-sensitive work:
-   - Run Graphify when artifact-level graph context is useful: `vibepro graph <repo> --run-graphify`.
-   - Use `vibepro-codebase-memory` when `codebase-memory-mcp` is available and changed-file topology, symbols, routes, call paths, or risk hints would affect implementation, tests, review roles, or split boundaries.
-6. Diagnose and derive the repo context:
-   - Before final Architecture/Spec on workflow-heavy or cross-surface stories, use design-input diagnosis: `vibepro story diagnose <repo> --id <story-id> --pre-architecture --run-graphify`
-   - Before implementation or PR readiness, rerun the consistency gates after Architecture/Spec exist.
-   - `vibepro story derive <repo> --run-graphify`
-   - `vibepro story map <repo>`
-7. When the user asks for a purpose-level check, use diagnosis packages instead of guessing the scanner set. Run `vibepro check list` for the current registry, then `vibepro check <pack> <repo>`. Registered packs include `ui`, `security`, `performance`, `architecture`, `pr-readiness` (`--base <ref> --head <ref>`), `launch-readiness`, `agent-harness`, `public-discovery`, `self-dogfood`, `oss-readiness`, `regression-risk`, and `all`.
-8. For performance improvement stories, define and record Story-level performance evidence before claiming speedups:
-   - `vibepro performance define <repo> --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> --evidence-source <type>`
-   - `vibepro performance record <repo> --id <story-id> --metric-id <id> --label before|after --status completed --duration-ms <ms> --evidence-source <type:ref:summary>`
-   - `vibepro performance compare <repo> --id <story-id>`
-9. For existing UI modernization, derive the product-local Design System before screen implementation:
-   - Run Graphify first when available: `vibepro graph <repo> --run-graphify`.
-   - Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code`.
-   - Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json` before accepting the DS as an implementation constraint.
-   - Treat `.vibepro/design-system/<ds-id>/design-system.json`, `semantic-tokens.json`, `component-roles.json`, `component-states.json`, `screen-patterns.json`, `cta-policy.json`, `density-policy.json`, `navigation-policy.json`, `anti-patterns.json`, and `implementation-mapping.json` as product-local DS evidence.
-10. For screen-level UI modernization, create the story-specific design decision space before screen implementation:
-   - `vibepro design-modernize derive-system <repo> --id <story-id> --product <name> --routes <csv> --brief <text>`
-   - `vibepro design-modernize plan <repo> --id <story-id> --product <name> --routes <csv> --base-url <url>`
-   - Treat `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json` as implementation constraints.
-   - External Design System bundles, screenshots, and image-generated ideas are visual hypotheses. The VibePro-derived Design System, current UI evidence, Story/Spec, and Gate DAG remain authoritative.
-11. When you receive a Story, judge whether UI/UX intake applies — before implementation, for every story. `gate:uiux_intake_judgment` in `pr prepare` fails closed on the absence of this judgment (not on the intake itself):
-   - If the story carries UI/UX intent (screens, routes, visual/interaction/UX changes, vague design briefs), run `vibepro uiux intake template <repo> --id <story-id>`, fill it, then `vibepro uiux intake validate <repo> --id <story-id>`. The coverage artifact satisfies the gate.
-   - If you judge intake not applicable (no UI/UX intent), record that judgment with its reason: `vibepro decision record <repo> --id <story-id> --type intake_not_applicable --summary <text> --reason <why intake does not apply>`. Silence is not an option; an unreasoned skip blocks PR preparation.
-12. For UI/UX requests that start from user intent rather than existing screens, use the uiux preparation cockpit before implementation:
-   - `vibepro uiux intake template <repo> --id <story-id>` then fill and `vibepro uiux intake validate <repo> --id <story-id>`
-   - `vibepro uiux map <repo> --id <story-id>`
-   - `vibepro uiux evidence <repo> --id <story-id>`
-   - `vibepro uiux prepare <repo> --id <story-id>`
-13. Before planning, operate the Development Judgment loop when the Story contains a meaningful engineering choice:
-   - Record applicability after diagnosis/design context and before `story plan`:
-     - Applicable: `vibepro judgment applicability record <repo> --id <story-id> --applicable yes --reason <why judgment is needed> --recorded-by <actor>`
-     - Not applicable for a mechanical change: use the same command with `--applicable no` and a concrete reason. Do not silently skip the decision.
-   - Judgment is normally applicable when the problem frame is uncertain, multiple implementation choices exist, VALUE/SIMPLIFY/VALIDATE would change the batch, or public contract/security/data/topology/UX/performance/scope/release semantics are involved.
-   - When applicable:
-     1. Run `vibepro judgment prepare <repo> --id <story-id>` after context collection.
-     2. Review and edit the generated input. A conservative draft with `problem_frame.status=uncertain` and inactive axes is not a completed judgment.
-     3. Adopt the reviewed meaning explicitly: `vibepro judgment input adopt <repo> --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text>`.
-     4. Evaluate the adopted input: `vibepro judgment evaluate <repo> --id <story-id> --input <adopted-input.json>`.
-     5. Read `vibepro judgment status <repo> --id <story-id>`; resolve an unactionable problem frame or evidence gap rather than treating it as a recommendation.
-   - Then run `vibepro story plan <repo>`. Actionable Judgment is bound into the plan as advisory guidance; it never gains PR, merge, or release authority.
-   - After the plan is consumed, record human adoption and delivery effect with `vibepro judgment disposition record`. Do not invent the later Outcome at this stage.
-14. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`. Use `vibepro task brief|plan|handoff <repo> --task <task-id>` for task-scoped context.
-15. During implementation, checkpoint progress with `vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> <repo> --story-id <story-id>` and check gate state early with `vibepro gate check <repo> --story-id <story-id>` instead of discovering blocks at PR time.
-16. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`. Record verification evidence with `vibepro verify record`, and import CI results with `vibepro verify import-ci <repo> --id <story-id> --pr <n>` instead of rerunning full suites locally when a PR exists.
-17. Read the `pr prepare --summary-json` or `--view` output first, then `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready. Also inspect `decision-index.json` and `evidence-plan.json` when present so skipped or depth-limited artifacts are not mistaken for missing evidence.
-18. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-19. Run causal parallel subagent review:
-   - Start with `vibepro review status <repo> --id <story-id>`. Dispatch only the roles listed in `blocking_summary.items`; never recreate a role that remains `pass` through `current`, `reused_merge_delta`, or `causal_reuse`.
-   - A HEAD-only change is an observation, not a completed review wave. Do not increase convergence attempts until a review record is completed.
-   - Treat finding content/disposition, inspection evidence, judgment delta, recorded invalidation surface, closure evidence, and runtime state as progress. A changed progress signature resets the no-progress counter.
-   - If changed paths are unclassified or the changed-file delta cannot be resolved, fail closed; do not claim `causal_reuse`.
-   - A changed implementation or test does not by itself invalidate upstream product requirement or architecture judgments. Follow each role's causal invalidation reason instead of treating every new HEAD as a full-review reset.
-   - When closing a concrete prior finding, use `--resolved-finding <finding-id>:<evidence-ref>` and inspect the fix delta plus causal descendants. Do not re-prove unrelated pass claims.
-   - If a reviewer returns no body, opens the wrong request, times out, or fails to execute, record `--status runtime_failed --runtime-failure-kind empty_result|wrong_request|timeout|execution_error`. Do not convert review-runtime failure into a product finding.
-   - Keep one owner for each requested role. Wait at most 60 seconds at a time, then inspect the worker status, current HEAD, and cumulative diff before deciding what to do next. A wait timeout is an observation, not permission to create a replacement owner.
-   - Count consecutive no-progress observations for the same owner and record the count in the coordinator transcript or task progress. For counts 1 and 2, resume that same owner with the current objective and observed repository state. Do not redispatch the role under a new id.
-   - At count 3, stop waiting and stop redispatching. Carry forward the objective, current HEAD, cumulative diff, and unresolved conditions; then let the parent coordinator perform direct verification. If independence is still required, report an explicit block instead of creating another reviewer.
-   - Before every wait or retry, test the success criteria against the current exact HEAD. If they are already satisfied, close the worker when the runtime supports it and continue without another worker.
-   - If `review status` reports `review_nonconvergent`, stop redispatching the same role set. Preserve the unresolved roles, split the VibePro review-contract/runtime defect into its own Story, and return control to the parent Program instead of continuing an evidence loop. Automatic `review prepare` must return no roles in this state; only an explicit human-directed role retry may continue.
-   - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
-   - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
-   - Before spawning, run `vibepro review authorize` for each role with the intended model, risk closure, judgment delta, reusable evidence, and freeze state. Spawn only roles whose authorization returns `action: dispatch`; a stop means no subagent is started.
-   - After an authorized spawn returns the real subagent id, immediately register it with `vibepro review start --dispatch-authorization <id>`. Authorized reservations count against the Story-wide budget so parallel coordinators cannot overbook it. Close each lifecycle with `vibepro review close --close-reason completed` after the subagent returns. Use `vibepro review repair <repo> --story-id <id>` to generate the repair command sequence for incomplete review evidence.
-   - After each subagent returns, close/shutdown that review subagent before recording the result. Do not leave review subagents running.
-   - Record every result with `vibepro review record` and include subagent provenance plus closed lifecycle evidence:
-     - Codex: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id> --agent-closed` plus `--agent-thread-id` or `--agent-call-id` when available.
-     - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
-   - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
-   - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
+For the VibePro repository itself, always use the ordinary GitHub flow: branch, test, `gh pr create`, review, merge.
 
-20. Close the adjudication gates before PR create when `pr prepare` reports `gate:evidence_adjudication` or `gate:judgment_dag_adjudication` unresolved: `vibepro adjudicate prepare <repo> --id <story-id>` (and `--judgment`), dispatch the generated request to an **independent fresh-context subagent** (not the implementing agent), record verdicts with `vibepro adjudicate record`, and close `not_verifiable_by_automation` / `needs_human_judgment` entries with accepted decision records. Verdicts are head-bound and fail closed; see `vibepro-gate-evidence` for the full playbook.
-21. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
-22. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
-23. Create the PR with the target repository's current documented git policy. For the VibePro repository itself, use `gh pr create`; do not require removed VibePro-managed PR creation or Gate flows.
-24. After the PR exists, wait for remote checks, import CI evidence with `vibepro verify import-ci`, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
-25. Merge with the target repository's current documented git policy. For the VibePro repository itself, use the ordinary GitHub merge flow; `vibepro execute merge` has been removed and must not be required or suggested.
-26. After merge or once outcome evidence exists, run `vibepro judgment pending <repo>` and close each pending run with `vibepro judgment outcome record <repo> --id <story-id> --run <run-id> --status confirmed|mixed|falsified|unknown --summary <text> --evidence <ref>`. Then close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
+## Completion Definition
 
-## Subagent recovery policy
+Work is complete when all of the following are true:
 
-The following block is the distributed, machine-tested recovery contract for coordinator runtimes. Host runtimes may provide stronger cancellation or wake-up primitives, but must not weaken these convergence rules.
+- the accepted Story scope is implemented,
+- the acceptance criteria directly affected by the change are verified,
+- no unresolved finding can break the accepted scope, security boundary, data integrity, or rollback safety,
+- a PR exists and CI is green,
+- any useful but out-of-scope finding has been moved to a follow-up Story instead of being absorbed into the current Story.
 
-<!-- subagent-recovery-policy:start -->
+More evidence is not progress by itself. A new artifact, review, or test run counts as progress only when it reduces a concrete unresolved risk.
+
+## Machine-Tested Convergence Contract
+
+<!-- minimal-core-convergence-policy:start -->
 ```json
 {
-  "owner_strategy": "same_owner",
-  "wait_timeout_seconds": 60,
-  "no_progress_limit": 3,
-  "before_limit_action": "resume_same_owner",
-  "at_limit_action": "parent_direct_verification",
-  "exact_head_success_action": "stop",
-  "carry_forward_fields": [
-    "objective",
-    "head_sha",
-    "cumulative_diff",
-    "unresolved_conditions"
-  ]
+  "schema_version": "1.0",
+  "workflow": [
+    "story",
+    "spec",
+    "implement",
+    "affected_tests",
+    "single_review_wave",
+    "github_pr",
+    "ci",
+    "merge"
+  ],
+  "review_waves": 1,
+  "max_parallel_review_roles": 3,
+  "max_total_review_dispatches": 5,
+  "verification_scope_during_development": "affected_tests",
+  "full_suite_location": "ci",
+  "exact_head_scope": [
+    "ci",
+    "release_readback"
+  ],
+  "e2e": {
+    "deterministic_fixture_required": true,
+    "fresh_task_smoke_max": 1
+  },
+  "blocking_finding_action": "fix_then_reverify_affected_surface",
+  "non_blocking_finding_action": "follow_up_story",
+  "review_runtime_failure_action": "report_runtime_failure_without_product_finding",
+  "legacy_gate_projection": "informational_only",
+  "pr_command": "gh pr create"
 }
 ```
-<!-- subagent-recovery-policy:end -->
+<!-- minimal-core-convergence-policy:end -->
 
-This policy governs coordinator behavior because VibePro cannot terminate or replace a subagent owned by the Codex/Claude host. When a host does not expose bounded wait, resume, status, or close operations, record that capability boundary and follow the parent-direct-verification or explicit-block path locally.
+## Operating Flow
 
-## Human Artifact Language
+### 1. Establish the accepted scope
 
-- Human-facing Story, Journey, Architecture, Spec, Task, Review, Diagnosis, and PR artifacts should be written in the resolved output language.
-- Preserve machine-facing identifiers exactly: JSON keys, schema names, enums, Story IDs, Gate IDs, DAG node IDs, task IDs, role IDs, commands, file paths, package names, and external tool names.
-- Preserve user-provided text and external evidence text unless the artifact explicitly asks for translation or localization.
-- When CLI-generated artifacts are incomplete and the agent fills them manually, match the repository language policy instead of defaulting to English.
+Read the repository instructions and identify one Story. Write or update only the minimum Story and Spec needed to make the requested outcome testable.
 
-## Managed Worktree Execution
+Before implementation, state:
 
-- `vibepro execute start <repo> --story-id <id>` creates or reuses a managed worktree and reports its state (`managed_worktree: preferred/created|reused`). Prefer this over creating git worktrees manually for VibePro work.
-- Use only execution commands that exist in the installed VibePro version. Do not infer that a removed managed merge command is required.
-- Run implementation, verification, review, PR preparation, and PR creation from the reported worktree. Do not claim VibePro created a worktree unless the command output records that state.
-- Create branches from inside the worktree. Running `git switch -c` from another checkout (for example the canonical repo) creates the branch in the wrong place.
+- the user-visible outcome,
+- the acceptance criteria that prove it,
+- the files or runtime surfaces expected to change,
+- what is explicitly outside the Story.
 
-## Context Economy
+Do not add a newly discovered improvement to the current Story merely because it is nearby.
 
-- Do not read full PR artifacts into agent context first. Start from `vibepro pr prepare <repo> --story-id <id> --summary-json` or a limited `--view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>`.
-- Drill down into full JSON artifacts only for the specific gate ids or paths the summary flags.
-- For evidence recording, gate troubleshooting, spec/architecture write validators, and review lifecycle details, use the `vibepro-gate-evidence` Skill.
+### 2. Inspect the relevant code
 
-## Guardrails
+Inspect the implementation path, tests, public contract, and deployment boundary that can actually affect the accepted scope. Use Graphify or codebase-memory only when it changes the implementation or test decision. Do not generate broad artifacts by default.
 
-- Do not treat `judgment prepare` as a completed judgment. The generated input is conservative context; review/edit, adopt, evaluate, and bind it through `story plan`.
-- Do not use HEAD change alone as a reason to recreate every Agent Review. Use causal invalidation and preserve upstream pass judgments when only downstream implementation/test surfaces changed.
-- Do not retry the same unresolved review state indefinitely. `review_nonconvergent` is a stop condition, not another dispatch instruction.
-- Do not classify subagent empty results, wrong requests, timeouts, or execution errors as product findings. Record `runtime_failed` and retry the review runtime.
-- Do not auto-run Judgment from `pr prepare`; PR preparation is a read-only projection point for this advisory loop.
-- Do not treat VibePro diagnosis as truth by itself. Verify with code, tests, runtime logs, or product behavior.
-- Do not patch graph-sensitive runtime, auth, data, or UI state-machine code before checking Graphify impact.
-- Do not skip `codebase-memory-mcp` impact context for broad VibePro core, Gate DAG, Agent Review, auth/security, data/state, route, or workflow changes when the provider is installed and indexed.
-- Do not skip Story -> Architecture -> Spec ordering when the task is a refactor.
-- Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
-- Do not ignore unresolved Gates. Add evidence, split the PR, block, or record a waiver reason.
-- Do not treat an `inconclusive` scanner status as a pass. Zero scanned targets means nothing was examined; only `not_applicable` is a legitimate out-of-scope resolution.
-- Do not record adjudication verdicts from the implementing agent. `gate:evidence_adjudication` and `gate:judgment_dag_adjudication` require an independent fresh-context subagent, and verdicts are head-bound (fail closed on missing or mismatched `head_commit`).
-- Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
-- Do not treat Agent Review Gate as optional. When it is unresolved, the coordinator must prepare, dispatch, record, and rerun the VibePro review flow before calling the work complete.
-- Do not record a passing Agent Review result without Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`). Manual `pass` records are audit notes, not enough to satisfy `gate:agent_review`.
-- Keep JSON artifacts as the machine-readable source of truth. HTML is the human control plane when generated. The GitHub PR body is a concise decision brief, not an audit store.
-- Do not claim user-perceived performance improvement from server logs alone. Use a separate `user_perceived` metric backed by `browser_e2e`, `client_marker`, or `manual_observation`.
-- Do not mix server readiness, API completion, DOM visibility, snapshot visibility, and interactive readiness as the same completion condition. Define them as separate metrics.
-- Do not treat type-check or a superficially rendered UI as enough when UI code introduces `/api/...` calls. Network Contract Gate requires matching Next.js routes and network-aware flow evidence for API 4xx/5xx.
-- Do not treat Story-level E2E existence as enough for UI-heavy changes. Clickable-looking controls on the changed screen need an interaction contract: save/mutate, visible state change, navigation, scroll/focus, disabled, or explicit unfinished state.
-- Do not skip `design-system derive` for existing products that need a reusable DS. Screen-level modernization should not invent product semantics when current routes, CTAs, states, style tokens, or Graphify evidence can define them.
-- Do not treat `.vibepro/design-system/<ds-id>/design-system.json` as complete unless `evidence-coverage.json` and `ds-gate.json` are reviewed. Missing Graphify/style evidence may be a warning; missing semantic roles or implicit fallback is a design gate problem.
-- Do not implement a generated design proposal directly. For UI modernization, first verify the current route, information architecture, CTA priority, state behavior, and data dependencies against the Derived Design System and `ds-gate.json`.
-- Do not let `ds-gate.json` fall back implicitly. If DS drift, component role, composition, visual hypothesis, or anti-pattern clauses are missing, treat the design-modernize evidence as incomplete.
+### 3. Implement the smallest coherent change
 
-## Git / Worktree Dirty Guardrails
+Use TDD for bug fixes when practical:
 
-- Do not use `git stash`, `git restore`, `git reset`, or checkout changes as the first response to a dirty repository worktree. First classify the dirty state.
-- Before cleaning dirty state, record:
-  - `git status --short --branch`
-  - `git diff --name-status`
-  - `git diff --cached --name-status`
-  - `git diff --stat`
-  - `git diff --cached --stat`
-  - `git reflog --date=iso -8 HEAD`
-  - `git reflog --date=iso -8 <current-branch>`
-- If a checked-out branch moved via an external sync, merge, rebase, or another worktree, verify whether the dirty diff is a stale reverse diff before treating it as user work.
-- A stale reverse diff is likely when the branch reflog advanced from an old commit to `HEAD`, while `git diff --cached` or `git diff` is exactly the inverse of the commits between that old commit and `HEAD`.
-- Prove this before cleanup by comparing the dirty diff with the commit range, for example:
-  - `git diff --stat <old-commit> HEAD`
-  - `git diff --stat HEAD <old-commit>`
-  - `git diff --name-status <old-commit> HEAD`
-  - `git diff --name-status HEAD <old-commit>`
-- If the dirty state is a proven stale reverse diff, say so explicitly and then synchronize the worktree/index to `HEAD` with the least destructive command that resolves the observed state. Do not preserve it as a stash unless the user asks for archival.
-- If the dirty state contains files or hunks that do not match the stale reverse diff, treat them as possible user work and do not clean them without reporting the exact files and asking for direction when needed.
+1. reproduce the accepted failure,
+2. add the smallest failing test,
+3. implement the smallest fix,
+4. run the affected tests.
 
-## Common Rationalizations
+Do not expand the Story to repair every issue found during inspection.
 
-- "The code looks done, so VibePro can be skipped." Reject this; VibePro readiness is based on Story/Spec/Architecture, verification evidence, Agent Review, and Gate DAG status.
-- "The change is small, so no Story or evidence is needed." Small changes can still affect contracts, generated artifacts, and review gates.
-- "Tests passed once, so PR readiness is proven." Tests must be current-head evidence and still need the relevant VibePro gates to close.
-- "Manual review is enough for Agent Review Gate." Required Agent Review needs Codex/Claude Code parallel subagent provenance and closed lifecycle evidence unless a waiver is explicitly recorded outside the gate.
-- "The PR body says it is verified." PR body text is not the source of truth; inspect `pr-prepare.json`, `decision-index.json`, `evidence-plan.json`, Gate DAG evidence, and verification artifacts.
+### 4. Verify only what changed
 
-## Red Flags
+During development, run affected tests only.
 
-- `gate_status.ready_for_pr_create` is false or missing.
-- `gate:agent_review`, `gate:artifact_consistency`, `gate:definition_of_done`, `gate:network_contract`, `gate:e2e`, or any critical required gate is unresolved.
-- The answer cites HTML artifacts but not their JSON sidecars.
-- Verification evidence predates the current git head or omits the changed path.
-- Agent Review records have `manual_review` provenance where the gate required parallel subagents.
-- Dirty worktree files are cleaned or hidden before they are classified.
+Use this dependency rule:
 
-## Verification
+- implementation changed → rerun tests covering that implementation,
+- test fixture changed → rerun the tests consuming that fixture,
+- executable public contract changed → rerun the contract tests,
+- documentation wording changed → do not rerun runtime E2E unless the documentation is executable input,
+- CI or release configuration changed → run the relevant configuration or release checks.
 
-Before saying VibePro confirmed the work, name the exact VibePro command or artifact inspected, including `.vibepro/pr/<story-id>/pr-prepare.json` and the relevant Gate DAG node. For implementation work, rerun `vibepro pr prepare` after verification evidence and review records are updated, then confirm `gate_status.ready_for_pr_create=true` and `overall_status=ready_for_review`.
+The full suite belongs in CI unless the user explicitly requests a local release rehearsal or the change can only be proven locally.
 
-## Key Artifacts
+Evidence is bound to the content it tested. A new commit SHA alone does not invalidate an unrelated test or review.
 
-- `.vibepro/stories/story-map.md`: repo Story map for human review.
-- `.vibepro/stories/story-plan.md`: candidate work items.
-- `.vibepro/pr/<story-id>/pr-prepare.json`: PR readiness source of truth; check `gate_status`.
-- `.vibepro/pr/<story-id>/decision-index.json`: compact index of Story, decisions, review path, and evidence references.
-- `.vibepro/pr/<story-id>/evidence-plan.json`: evidence-depth policy, generated artifacts, skipped artifacts, and required follow-up evidence.
-- `.vibepro/pr/<story-id>/verification-evidence.json`: current-head verification commands and imported CI evidence.
-- `.vibepro/pr/<story-id>/pr-body.md`: concise GitHub decision brief; not the full audit log.
-- `.vibepro/pr/<story-id>/review-cockpit.html`: first screen for human decision when generated.
-- `.vibepro/pr/<story-id>/human-review.json`: machine-readable human decision template.
-- `.vibepro/pr/<story-id>/gate-dag.json`: Gate dependency evidence. `gate-dag.html` is an optional view.
-- `.vibepro/pr/<story-id>/split-plan.json`: split lanes and Graphify investigation scope. `split-plan.html` is an optional view.
-- `.vibepro/pr/<story-id>/pr-create.json`: PR create or existing-PR refresh lifecycle evidence.
-- `docs/management/audit-artifacts/<story-id>/`: canonical persisted audit artifacts written at merge time.
-- `.vibepro/uiux/<story-id>/`: uiux intake, map, evidence, and prepare artifacts for intent-first UI/UX work.
-- `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`: required parallel subagent dispatch instructions when Agent Review Gate is unresolved.
-- `.vibepro/adjudication/<story-id>/adjudication.json` / `judgment-adjudication.json`: head-bound adjudication verdicts for AC clauses and judgment items; `adjudication-request.md` / `judgment-adjudication-request.md` are the subagent dispatch requests.
-- `.vibepro/guard/bypass-log.jsonl`: audit log of Release Surface Guard bypasses.
-- `.vibepro/checks/<pack>/<run-id>/check.json`: purpose-level diagnosis package evidence.
-- `.vibepro/checks/<pack>/<run-id>/check.md`: human-readable diagnosis package report.
-- `.vibepro/checks/ui/<run-id>/check.json`: UI check evidence, including `flow_design.interactive_contract_hits`.
-- `.vibepro/pr/<story-id>/performance-runs/*.json`: Story-level performance evidence runs.
-- `.vibepro/design-system/<ds-id>/design-system.json`: product-local Design System derived from current evidence.
-- `.vibepro/design-system/<ds-id>/evidence-coverage.json`: route/style/Graphify/semantic coverage findings for the native DS.
-- `.vibepro/design-system/<ds-id>/ds-gate.json`: explicit DS gate with fallback disabled.
-- `.vibepro/design-system/<ds-id>/implementation-mapping.json`: route/component/file mapping for implementation handoff.
-- `.vibepro/design-modernize/<story-id>/design-system-derivation.json`: product semantics and Derived Design System derivation.
-- `.vibepro/design-modernize/<story-id>/derived-design-system.json`: semantic tokens, component roles, CTA hierarchy, anti-patterns, and visual hypothesis policy.
-- `.vibepro/design-modernize/<story-id>/design-modernize.json`: screen modernization plan and Design Quality DAG.
-- `.vibepro/design-modernize/<story-id>/ds-gate.json`: explicit DS drift and UX regression gate clauses.
+### 5. Run one review wave
+
+After the implementation and affected tests are stable, run at most one review wave. Use no more than three independent roles in parallel. Good default lenses are:
+
+- user value and acceptance criteria,
+- architecture and safety boundary,
+- test and regression coverage.
+
+Classify every finding immediately:
+
+#### Blocking
+
+A finding is blocking only when it directly demonstrates one of these:
+
+- an acceptance criterion is not met,
+- a security or tenant boundary can be violated,
+- data can be corrupted or lost,
+- the changed release or rollback path cannot complete safely,
+- CI cannot validate the change.
+
+Fix the blocker, rerun only the affected tests, and ask only the reviewer whose conclusion was changed to confirm the delta. This is not a new review wave.
+
+#### Follow-up
+
+Everything else is a follow-up finding. Record it in a separate Story or issue and continue the current PR. Examples include unrelated cleanup, broader architecture improvements, additional documentation polish, and risks that existed before the current Story and are not worsened by it.
+
+A review runtime timeout, empty response, or wrong request is a review-system failure. It must not be converted into a product defect. Report it once and continue with direct verification or an explicit human review.
+
+If total review dispatches reach five, stop dispatching. Treat the review process itself as defective, record a follow-up, and decide the current PR only from the accepted scope, tests, and concrete unresolved blockers.
+
+### 6. Use deterministic E2E
+
+E2E inputs must be fixed fixtures: exact tool name, exact arguments, exact expected result shape, and exact evidence path. Do not ask an agent to recreate the test protocol from prose on every run.
+
+Use one real fresh-task smoke test only when the change affects an agent host, hook, process boundary, authentication path, deployment, or another runtime integration that a deterministic test cannot fully simulate.
+
+Do not recreate fresh tasks until one happens to match. A mismatch in test instructions is a test-harness defect, not a product regression.
+
+### 7. Prepare and open the PR
+
+`vibepro pr prepare` may be used to generate a concise Story, Spec, verification, and review summary. Treat any legacy Gate status, stale-review projection, next-review command, or lifecycle count in that output as informational only. It must not create additional work or block the PR.
+
+Open or refresh the PR with the repository's normal GitHub command. For VibePro itself:
+
+```bash
+gh pr create
+```
+
+After the PR exists:
+
+1. let CI run the full suite,
+2. fix only real failures caused by the diff,
+3. obtain the normal repository review,
+4. merge when CI and the concrete blockers are clear.
+
+Do not import CI evidence and then restart the local review workflow.
+
+## Forbidden Workflow Patterns
+
+Do not:
+
+- restart every review stage because HEAD changed,
+- require exact-HEAD evidence during normal implementation,
+- require all configured review stages to pass before opening a PR,
+- use review lifecycle authorization, start, close, repair, or budget accounting,
+- create replacement reviewers for the same role after a timeout,
+- rerun the full local suite after a documentation-only change,
+- regenerate Story, Spec, Architecture, Task, Gate, and E2E artifacts after every fix,
+- keep a Story open to absorb newly discovered non-blocking work,
+- treat generated audit artifacts as release authority,
+- use VibePro-managed merge or execution machinery.
+
+## Dirty Worktree Safety
+
+Do not stash, reset, restore, or overwrite a dirty worktree before classifying it. Protect unrelated user changes. Prefer a clean feature branch or isolated worktree. Only files inside the accepted scope may enter the PR.
+
+## Reporting
+
+Report outcomes, not ceremony:
+
+- what user-visible problem was fixed,
+- which files changed,
+- which affected tests passed,
+- which concrete blockers remain,
+- PR URL and CI state,
+- follow-up Stories created for out-of-scope findings.
+
+Do not present review counts, repeated exact HEADs, or artifact volume as the primary measure of progress.
