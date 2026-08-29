@@ -190,6 +190,7 @@ Do not:
 - regenerate Story, Spec, Architecture, Task, Gate, and E2E artifacts after every fix,
 - keep a Story open to absorb newly discovered non-blocking work,
 - treat generated audit artifacts as release authority,
+- run `vibepro execute start`; the execution orchestrator is retired,
 - use VibePro-managed merge or execution machinery.
 
 ## Dirty Worktree Safety
