@@ -28,26 +28,35 @@ jobs:
 
           test_path = Path('test/vibepro-cli.test.js')
           test_source = test_path.read_text(encoding='utf-8')
-          old_assertions = r'''  assert.match(installedContent, /VIBEPRO_CODEX_START/);
-          assert.match(installedContent, /review-cockpit\.html/);
-          assert.match(installedContent, /vibepro pr create/);
-          assert.match(installedContent, /agent-harness/);
-          assert.match(installedContent, /vibepro-gate-evidence/);
-          assert.match(installedContent, /server logs alone/);'''
-          new_assertions = r'''  assert.match(installedContent, /VIBEPRO_CODEX_START/);
-          assert.match(installedContent, /Story → Spec → implement → affected tests → one review wave → GitHub PR → CI → merge/);
-          assert.match(installedContent, /not a workflow engine/);
-          assert.match(installedContent, /optional convenience, not required authority/);
-          assert.match(installedContent, /full suite belongs in CI/);
-          assert.doesNotMatch(installedContent, /review-cockpit\.html/);
-          assert.doesNotMatch(installedContent, /agent-harness/);
-          assert.doesNotMatch(installedContent, /vibepro-gate-evidence/);'''
-          if old_assertions not in test_source:
-              raise SystemExit('stale Codex-install assertion block was not found')
-          test_source = test_source.replace(old_assertions, new_assertions, 1)
 
-          old_forced = r'''  assert.match(forcedContent, /Story \/ Architecture \/ Spec/);'''
-          new_forced = r'''  assert.match(forcedContent, /Story → Spec → implement → affected tests/);'''
+          anchor = '  assert.match(installedContent, /VIBEPRO_CODEX_START/);'
+          obsolete_lines = [
+              r'  assert.match(installedContent, /review-cockpit\.html/);',
+              r'  assert.match(installedContent, /vibepro pr create/);',
+              r'  assert.match(installedContent, /agent-harness/);',
+              r'  assert.match(installedContent, /vibepro-gate-evidence/);',
+              r'  assert.match(installedContent, /server logs alone/);',
+          ]
+          for line in [anchor, *obsolete_lines]:
+              if line not in test_source:
+                  raise SystemExit(f'stale assertion was not found: {line}')
+
+          replacement_lines = [
+              anchor,
+              '  assert.match(installedContent, /Story → Spec → implement → affected tests → one review wave → GitHub PR → CI → merge/);',
+              '  assert.match(installedContent, /not a workflow engine/);',
+              '  assert.match(installedContent, /optional convenience, not required authority/);',
+              '  assert.match(installedContent, /full suite belongs in CI/);',
+              r'  assert.doesNotMatch(installedContent, /review-cockpit\.html/);',
+              r'  assert.doesNotMatch(installedContent, /agent-harness/);',
+              r'  assert.doesNotMatch(installedContent, /vibepro-gate-evidence/);',
+          ]
+          test_source = test_source.replace(anchor, '\n'.join(replacement_lines), 1)
+          for line in obsolete_lines:
+              test_source = test_source.replace(f'{line}\n', '', 1)
+
+          old_forced = r'  assert.match(forcedContent, /Story \/ Architecture \/ Spec/);'
+          new_forced = '  assert.match(forcedContent, /Story → Spec → implement → affected tests/);'
           if old_forced not in test_source:
               raise SystemExit('stale forced-install assertion was not found')
           test_source = test_source.replace(old_forced, new_forced, 1)
@@ -55,10 +64,14 @@ jobs:
 
           template_path = Path('agent-instructions/codex/AGENTS.vibepro.md')
           template_source = template_path.read_text(encoding='utf-8')
-          compatibility_note = '''Compatibility note: `review-cockpit.html`, `agent-harness`, and `vibepro-gate-evidence` may still exist in older installations or as optional tools; they are not required control planes. Do not claim user-perceived performance from server logs alone.\n\n'''
+          compatibility_note = 'Compatibility note: `review-cockpit.html`, `agent-harness`, and `vibepro-gate-evidence` may still exist in older installations or as optional tools; they are not required control planes. Do not claim user-perceived performance from server logs alone.\n\n'
           if compatibility_note not in template_source:
               raise SystemExit('temporary compatibility note was not found')
-          template_path.write_text(template_source.replace(compatibility_note, '', 1), encoding='utf-8')
+          template_source = template_source.replace(compatibility_note, '', 1)
+          for retired_marker in ('review-cockpit.html', 'agent-harness', 'vibepro-gate-evidence', 'server logs alone'):
+              if retired_marker in template_source:
+                  raise SystemExit(f'retired marker remains in distributed template: {retired_marker}')
+          template_path.write_text(template_source, encoding='utf-8')
           PY
 
       - name: Commit the contract correction
