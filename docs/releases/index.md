@@ -521,3 +521,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:503:start -->
 - [PR #503](https://github.com/Unson-LLC/vibepro/pull/503) — [2026-08](/releases/2026-08): fix: Minimal Core契約をCodex配布面まで収束させる
 <!-- vibepro-release-index-pr:503:end -->
+
+<!-- vibepro-release-index-pr:504:start -->
+- [PR #504](https://github.com/Unson-LLC/vibepro/pull/504) — [2026-08](/releases/2026-08): feat: bind Brainbase runtime context and emit verified learning
+<!-- vibepro-release-index-pr:504:end -->
