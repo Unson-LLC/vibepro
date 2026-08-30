@@ -24,6 +24,12 @@ import {
   reviewSessionLearnings
 } from './session-learning.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
+import {
+  bindBrainbaseContext,
+  createBrainbaseKnowledgeEvent,
+  renderBrainbaseContextBinding,
+  renderBrainbaseKnowledgeEvent
+} from './brainbase-integration.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
 import { collectWorkspaceStatus, renderWorkspaceStatus } from './workspace-status.js';
@@ -247,6 +253,8 @@ Usage:
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
+  vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -353,6 +361,8 @@ Usage:
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
+  vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -365,7 +375,7 @@ Usage:
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
-  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace', 'task',
+  'harness', 'skills', 'codex', 'brainbase', 'integration', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
   'workspace', 'store', 'bug', 'verify-first'
 ];
@@ -1470,6 +1480,38 @@ ${renderHelp()}`);
       write(stderr, `Unknown pr command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
+
+if (command === 'integration') {
+  const provider = rest[0];
+  const action = rest[1];
+  const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+  if (provider !== 'brainbase') {
+    write(stderr, `Unknown integration provider: ${provider ?? ''}\n\n${renderHelp()}`);
+    return { exitCode: 1, command, subcommand: provider };
+  }
+  if (action === 'bind') {
+    const result = await bindBrainbaseContext(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      input: getOption(rest, '--input')
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseContextBinding(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'event') {
+    const result = await createBrainbaseKnowledgeEvent(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      summary: getOption(rest, '--summary')
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseKnowledgeEvent(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  write(stderr, `Unknown Brainbase integration action: ${action ?? ''}\n\n${renderHelp()}`);
+  return { exitCode: 1, command, subcommand: `${provider}-${action ?? ''}` };
+}
 
     if (command === 'brainbase') {
       const repoRoot = rest[0] ?? process.cwd();
