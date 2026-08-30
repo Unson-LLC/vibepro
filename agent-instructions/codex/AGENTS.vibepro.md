@@ -37,4 +37,6 @@ Do not use or require retired contracts such as:
 - automatic audit bundles
 - raw `gh pr create` prohibition
 
+Compatibility note: `review-cockpit.html`, `agent-harness`, and `vibepro-gate-evidence` may still exist in older installations or as optional tools; they are not required control planes. Do not claim user-perceived performance from server logs alone.
+
 For bug fixes, use the repository's current VibePro bug diagnosis contract when it applies, then return to the same minimal loop. For repository-local decisions, the target repository's own `AGENTS.md` remains authoritative; this managed block only defines VibePro-specific behavior.
