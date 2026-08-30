@@ -74,7 +74,10 @@ base branchは `origin/main` に固定せず、対象リポジトリの実際の
 - プロダクト意図とトレーサビリティ: `story`, `spec`, `trace`, `decision`
 - 証跡: `verify`, `review`, `guard`
 - PR引き渡し: `pr prepare`, `pr create`
-- 連携とartifact保守: `brainbase`, `artifacts`
+- 旧NocoDBポートフォリオ連携: `brainbase`
+- artifact保守: `artifacts`
+
+`brainbase`コマンドは、過去のNocoDB Story／ポートフォリオ連携を互換維持するために残しています。現行BrainbaseのJudgment Resolver、Knowledge Resolver、Graph、Knowledge Event APIとStoryを接続するコマンドではありません。新しいBrainbase連携は、この旧コマンドを暗黙に拡張せず、明示的にversion化したadapter契約として実装します。
 
 正確なコマンド一覧は `vibepro help --language ja` を正本としてください。1.0まではCLIと証跡schemaが変わる可能性があります。
 

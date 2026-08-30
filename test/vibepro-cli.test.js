@@ -1248,11 +1248,13 @@ test('codex commands install and verify VibePro AGENTS instructions', async () =
   assert.equal(install.result.status, 'installed');
   const installedContent = await readFile(agentsPath, 'utf8');
   assert.match(installedContent, /VIBEPRO_CODEX_START/);
-  assert.match(installedContent, /review-cockpit\.html/);
-  assert.match(installedContent, /vibepro pr create/);
-  assert.match(installedContent, /agent-harness/);
-  assert.match(installedContent, /vibepro-gate-evidence/);
-  assert.match(installedContent, /server logs alone/);
+  assert.match(installedContent, /Story → Spec → implement → affected tests → one review wave → GitHub PR → CI → merge/);
+  assert.match(installedContent, /not a workflow engine/);
+  assert.match(installedContent, /optional convenience, not required authority/);
+  assert.match(installedContent, /full suite belongs in CI/);
+  assert.doesNotMatch(installedContent, /review-cockpit\.html/);
+  assert.doesNotMatch(installedContent, /agent-harness/);
+  assert.doesNotMatch(installedContent, /vibepro-gate-evidence/);
 
   const ok = await runCli(['codex', 'verify', repo]);
   assert.equal(ok.result.overall_status, 'ok');
@@ -1281,7 +1283,7 @@ test('codex commands install and verify VibePro AGENTS instructions', async () =
   const forcedContent = await readFile(agentsPath, 'utf8');
   assert.match(forcedContent, /# Existing/);
   assert.doesNotMatch(forcedContent, /STALE_VIBEPRO_BLOCK/);
-  assert.match(forcedContent, /Story \/ Architecture \/ Spec/);
+  assert.match(forcedContent, /Story → Spec → implement → affected tests/);
 });
 
 test('init fails when bootstrapped story already exists', async () => {

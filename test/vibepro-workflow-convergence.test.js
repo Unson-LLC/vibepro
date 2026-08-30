@@ -5,6 +5,8 @@ import path from 'node:path';
 import test from 'node:test';
 
 const skillPath = path.resolve('skills/vibepro-workflow/SKILL.md');
+const codexTemplatePath = path.resolve('agent-instructions/codex/AGENTS.vibepro.md');
+const distributedWorkflowPaths = [skillPath, codexTemplatePath];
 
 test('VibePro workflow publishes the minimal-core convergence contract', async () => {
   const policy = await readConvergencePolicy();
@@ -55,18 +57,37 @@ test('E2E uses a deterministic fixture and at most one real fresh-task smoke', a
   assert.equal(policy.e2e.fresh_task_smoke_max, 1);
 });
 
-test('workflow no longer publishes the removed review-lifecycle loop', async () => {
-  const skill = await readFile(skillPath, 'utf8');
+test('all distributed workflow surfaces converge on the minimal core', async () => {
+  for (const surfacePath of distributedWorkflowPaths) {
+    const surface = await readFile(surfacePath, 'utf8');
 
-  assert.doesNotMatch(skill, /subagent-recovery-policy:start/);
-  assert.doesNotMatch(skill, /vibepro review authorize/);
-  assert.doesNotMatch(skill, /vibepro review start/);
-  assert.doesNotMatch(skill, /vibepro review close/);
-  assert.doesNotMatch(skill, /vibepro review repair/);
-  assert.doesNotMatch(skill, /gate_status\.ready_for_pr_create/);
-  assert.match(skill, /A new commit SHA alone does not invalidate an unrelated test or review\./);
-  assert.match(skill, /Treat any legacy Gate status[\s\S]*as informational only\./);
-  assert.match(skill, /gh pr create/);
+    assert.match(
+      surface,
+      /Story[^\n]*→[^\n]*Spec[^\n]*→[^\n]*implement[^\n]*→[^\n]*affected tests[^\n]*→[^\n]*one review wave[^\n]*→[^\n]*GitHub PR[^\n]*→[^\n]*CI[^\n]*→[^\n]*merge/i,
+      `${surfacePath} must publish the minimal-core loop`
+    );
+    assert.match(surface, /legacy Gate[\s\S]*informational only/i);
+    assert.match(surface, /gh pr create/);
+
+    assert.doesNotMatch(surface, /subagent-recovery-policy:start/);
+    assert.doesNotMatch(surface, /Prefer `vibepro execute start/);
+    assert.doesNotMatch(surface, /Run every listed `vibepro review prepare/);
+    assert.doesNotMatch(surface, /do not call the work complete until `gate:agent_review` passes/i);
+    assert.doesNotMatch(surface, /gate_status\.ready_for_pr_create/);
+    assert.doesNotMatch(surface, /gate_status\.agent_review_instruction/);
+    assert.doesNotMatch(surface, /Do not call raw `gh pr create`/);
+    assert.doesNotMatch(surface, /Use VibePro as the Story \/ Architecture \/ Spec \/ Graphify \/ Gate control plane/);
+  }
+});
+
+test('Codex installation guidance does not reintroduce removed authority', async () => {
+  const template = await readFile(codexTemplatePath, 'utf8');
+
+  assert.match(template, /VibePro is not a workflow engine, merge authority, safety decision engine/);
+  assert.match(template, /VibePro does not authorize deploys, production writes, secret access, or external actions/);
+  assert.match(template, /`vibepro pr create` is optional convenience, not required authority/);
+  assert.match(template, /Do not use or require retired contracts/);
+  assert.match(template, /raw `gh pr create` prohibition/);
 });
 
 async function readConvergencePolicy() {
