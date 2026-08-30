@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-08-25 | [`0.2.0-beta.16`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.16) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-24 | [`0.2.0-beta.15`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.15) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-24 | [`0.2.0-beta.14`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.14) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-23 | [`0.2.0-beta.13`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.13) | npm `beta` / `latest` | Post-merge continuous release |
@@ -495,3 +496,19 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:494:start -->
 - [PR #494](https://github.com/Unson-LLC/vibepro/pull/494) — [2026-08](/releases/2026-08): fix: Judgmentを通常計画フローへ接続
 <!-- vibepro-release-index-pr:494:end -->
+
+<!-- vibepro-release-index-pr:493:start -->
+- [PR #493](https://github.com/Unson-LLC/vibepro/pull/493) — [2026-08](/releases/2026-08): chore: prepare 0.2.0-beta.16 release
+<!-- vibepro-release-index-pr:493:end -->
+
+<!-- vibepro-release-index-pr:495:start -->
+- [PR #495](https://github.com/Unson-LLC/vibepro/pull/495) — [2026-08](/releases/2026-08): fix: make verification progress deadline test deterministic
+<!-- vibepro-release-index-pr:495:end -->
+
+<!-- vibepro-release-index-pr:499:start -->
+- [PR #499](https://github.com/Unson-LLC/vibepro/pull/499) — [2026-08](/releases/2026-08): fix: subagent回復ループを3回で収束させる
+<!-- vibepro-release-index-pr:499:end -->
+
+<!-- vibepro-release-index-pr:500:start -->
+- [PR #500](https://github.com/Unson-LLC/vibepro/pull/500) — [2026-08](/releases/2026-08): fix: stop evidence loops with the minimal-core workflow
+<!-- vibepro-release-index-pr:500:end -->
