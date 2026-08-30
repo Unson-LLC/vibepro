@@ -70,11 +70,9 @@ test('all distributed workflow surfaces converge on the minimal core', async () 
     assert.match(surface, /gh pr create/);
 
     assert.doesNotMatch(surface, /subagent-recovery-policy:start/);
-    assert.doesNotMatch(surface, /vibepro execute start/);
-    assert.doesNotMatch(surface, /vibepro review authorize/);
-    assert.doesNotMatch(surface, /vibepro review start/);
-    assert.doesNotMatch(surface, /vibepro review close/);
-    assert.doesNotMatch(surface, /vibepro review repair/);
+    assert.doesNotMatch(surface, /Prefer `vibepro execute start/);
+    assert.doesNotMatch(surface, /Run every listed `vibepro review prepare/);
+    assert.doesNotMatch(surface, /do not call the work complete until `gate:agent_review` passes/i);
     assert.doesNotMatch(surface, /gate_status\.ready_for_pr_create/);
     assert.doesNotMatch(surface, /gate_status\.agent_review_instruction/);
     assert.doesNotMatch(surface, /Do not call raw `gh pr create`/);
@@ -88,6 +86,7 @@ test('Codex installation guidance does not reintroduce removed authority', async
   assert.match(template, /VibePro is not a workflow engine, merge authority, safety decision engine/);
   assert.match(template, /VibePro does not authorize deploys, production writes, secret access, or external actions/);
   assert.match(template, /`vibepro pr create` is optional convenience, not required authority/);
+  assert.match(template, /Do not use or require retired contracts/);
   assert.match(template, /raw `gh pr create` prohibition/);
 });
 
