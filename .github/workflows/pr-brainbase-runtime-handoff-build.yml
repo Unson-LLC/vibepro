@@ -1,0 +1,179 @@
+name: Build Brainbase runtime handoff integration
+
+on:
+  push:
+    branches:
+      - codex/brainbase-runtime-handoff-v1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brainbase-runtime-handoff-v1
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: codex/brainbase-runtime-handoff-v1
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - run: npm install
+      - name: Wire the new namespace into the CLI and docs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import textwrap
+
+          cli = Path('src/cli.js')
+          text = cli.read_text()
+
+          import_anchor = "import { createBrainbaseImport } from './brainbase-importer.js';\n"
+          import_block = textwrap.dedent("""\
+          import { createBrainbaseImport } from './brainbase-importer.js';
+          import {
+            bindBrainbaseContext,
+            createBrainbaseKnowledgeEvent,
+            renderBrainbaseContextBinding,
+            renderBrainbaseKnowledgeEvent
+          } from './brainbase-integration.js';
+          """)
+          if "from './brainbase-integration.js'" not in text:
+              if text.count(import_anchor) != 1:
+                  raise SystemExit('Brainbase importer import anchor missing or duplicated')
+              text = text.replace(import_anchor, import_block, 1)
+
+          legacy_usage = "  vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]"
+          integration_usage = (
+              "  vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]\n"
+              "  vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]"
+          )
+          if integration_usage not in text:
+              if text.count(legacy_usage) != 2:
+                  raise SystemExit(f'expected two legacy Brainbase usage lines, got {text.count(legacy_usage)}')
+              text = text.replace(legacy_usage, legacy_usage + "\n" + integration_usage)
+
+          old_commands = "  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'trace', 'task',"
+          new_commands = "  'harness', 'skills', 'codex', 'brainbase', 'integration', 'pr', 'story', 'trace', 'task',"
+          if new_commands not in text:
+              if old_commands not in text:
+                  raise SystemExit('TOP_LEVEL_COMMANDS anchor missing')
+              text = text.replace(old_commands, new_commands, 1)
+
+          command_anchor = "    if (command === 'brainbase') {\n"
+          command_block = textwrap.dedent("""\
+              if (command === 'integration') {
+                const provider = rest[0];
+                const action = rest[1];
+                const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+                if (provider !== 'brainbase') {
+                  write(stderr, `Unknown integration provider: ${provider ?? ''}\\n\\n${renderHelp()}`);
+                  return { exitCode: 1, command, subcommand: provider };
+                }
+                if (action === 'bind') {
+                  const result = await bindBrainbaseContext(repoRoot, {
+                    storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+                    input: getOption(rest, '--input')
+                  });
+                  write(stdout, hasFlag(rest, '--json')
+                    ? `${JSON.stringify(result, null, 2)}\\n`
+                    : renderBrainbaseContextBinding(result));
+                  return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+                }
+                if (action === 'event') {
+                  const result = await createBrainbaseKnowledgeEvent(repoRoot, {
+                    storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+                    summary: getOption(rest, '--summary')
+                  });
+                  write(stdout, hasFlag(rest, '--json')
+                    ? `${JSON.stringify(result, null, 2)}\\n`
+                    : renderBrainbaseKnowledgeEvent(result));
+                  return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+                }
+                write(stderr, `Unknown Brainbase integration action: ${action ?? ''}\\n\\n${renderHelp()}`);
+                return { exitCode: 1, command, subcommand: `${provider}-${action ?? ''}` };
+              }
+
+          """)
+          if "if (command === 'integration')" not in text:
+              if text.count(command_anchor) != 1:
+                  raise SystemExit('legacy Brainbase command anchor missing or duplicated')
+              text = text.replace(command_anchor, command_block + command_anchor, 1)
+
+          cli.write_text(text)
+
+          sections = {
+              'README.md': textwrap.dedent("""\
+          <!-- BRAINBASE_RUNTIME_HANDOFF_START -->
+          ## Brainbase runtime handoff
+
+          `vibepro brainbase` remains the legacy NocoDB Story/portfolio adapter. Current Brainbase integration uses a separate namespace and never asks VibePro to recalculate Judgment:
+
+          ```bash
+          vibepro integration brainbase bind . --id <story-id> --input <handoff.json>
+          # implement, then record computed verification for the same git state
+          vibepro integration brainbase event . --id <story-id> --summary "<verified reusable learning>"
+          ```
+
+          `bind` accepts a managed Brainbase Judgment receipt plus matching `knowledge.resolve` routing receipts and actual retrieval references. It writes only canonical pointers and content digests under `.vibepro/integrations/`; it does not copy source bodies or Personal Knowledge.
+
+          `event` fails unless computed passing verification was recorded after the context binding and still matches the current git fingerprint. It creates a local `knowledge_event.v1` development-learning candidate with Graph promotion and external action disabled. Recording is delegated to Brainbase's `brainbase_knowledge_event_record` MCP tool so the global Host can audit the write.
+          <!-- BRAINBASE_RUNTIME_HANDOFF_END -->
+          """),
+              'README.ja.md': textwrap.dedent("""\
+          <!-- BRAINBASE_RUNTIME_HANDOFF_START -->
+          ## Brainbase runtime handoff
+
+          `vibepro brainbase`は旧NocoDB Story/portfolio adapterのまま残します。現在のBrainbase連携は別namespaceを使い、VibeProからJudgmentを再計算しません。
+
+          ```bash
+          vibepro integration brainbase bind . --id <story-id> --input <handoff.json>
+          # 実装し、同じgit状態へcomputed verificationを記録
+          vibepro integration brainbase event . --id <story-id> --summary "<検証済みの再利用可能な学習>"
+          ```
+
+          `bind`はBrainbase Hostが確定したmanaged Judgment receipt、対応する`knowledge.resolve` routing receipt、実取得したcanonical参照を検証します。`.vibepro/integrations/`へ保存するのはpointerとcontent digestだけで、本文やPersonal Knowledgeは複製しません。
+
+          `event`はcontext束縛後に実行され、current git fingerprintと一致するcomputed passing verificationがなければ失敗します。生成するのはGraph昇格とexternal actionを禁止したlocal `knowledge_event.v1`候補です。Brainbaseへの記録は`brainbase_knowledge_event_record` MCP toolへ委譲し、global Hostの監査を通します。
+          <!-- BRAINBASE_RUNTIME_HANDOFF_END -->
+          """)
+          }
+          for filename, section in sections.items():
+              path = Path(filename)
+              current = path.read_text()
+              if '<!-- BRAINBASE_RUNTIME_HANDOFF_START -->' not in current:
+                  path.write_text(current.rstrip() + '\n\n' + section.strip() + '\n')
+
+          PY
+      - run: npm run docs:cli
+      - name: Verify focused and full contracts
+        run: |
+          npm run typecheck
+          node --test test/brainbase-integration.test.js
+          npm test
+          npm run docs:build
+          git diff --check
+      - name: Commit CLI wiring
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "CLI wiring already present"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            src/cli.js \
+            README.md \
+            README.ja.md \
+            docs/reference/cli.md \
+            docs/ja/reference/cli.md
+          git commit -m "feat: wire Brainbase runtime handoff CLI"
+          HUSKY=0 git push origin HEAD:codex/brainbase-runtime-handoff-v1
