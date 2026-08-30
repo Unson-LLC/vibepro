@@ -1,0 +1,72 @@
+name: Temporary Minimal Core Contract Fix
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-contract:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'codex/vibepro-brainbase-minimal-core-distribution'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: codex/vibepro-brainbase-minimal-core-distribution
+          fetch-depth: 0
+
+      - name: Align the Codex install test with Minimal Core
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          test_path = Path('test/vibepro-cli.test.js')
+          test_source = test_path.read_text(encoding='utf-8')
+          old_assertions = r'''  assert.match(installedContent, /VIBEPRO_CODEX_START/);
+          assert.match(installedContent, /review-cockpit\.html/);
+          assert.match(installedContent, /vibepro pr create/);
+          assert.match(installedContent, /agent-harness/);
+          assert.match(installedContent, /vibepro-gate-evidence/);
+          assert.match(installedContent, /server logs alone/);'''
+          new_assertions = r'''  assert.match(installedContent, /VIBEPRO_CODEX_START/);
+          assert.match(installedContent, /Story → Spec → implement → affected tests → one review wave → GitHub PR → CI → merge/);
+          assert.match(installedContent, /not a workflow engine/);
+          assert.match(installedContent, /optional convenience, not required authority/);
+          assert.match(installedContent, /full suite belongs in CI/);
+          assert.doesNotMatch(installedContent, /review-cockpit\.html/);
+          assert.doesNotMatch(installedContent, /agent-harness/);
+          assert.doesNotMatch(installedContent, /vibepro-gate-evidence/);'''
+          if old_assertions not in test_source:
+              raise SystemExit('stale Codex-install assertion block was not found')
+          test_source = test_source.replace(old_assertions, new_assertions, 1)
+
+          old_forced = r'''  assert.match(forcedContent, /Story \/ Architecture \/ Spec/);'''
+          new_forced = r'''  assert.match(forcedContent, /Story → Spec → implement → affected tests/);'''
+          if old_forced not in test_source:
+              raise SystemExit('stale forced-install assertion was not found')
+          test_source = test_source.replace(old_forced, new_forced, 1)
+          test_path.write_text(test_source, encoding='utf-8')
+
+          template_path = Path('agent-instructions/codex/AGENTS.vibepro.md')
+          template_source = template_path.read_text(encoding='utf-8')
+          compatibility_note = '''Compatibility note: `review-cockpit.html`, `agent-harness`, and `vibepro-gate-evidence` may still exist in older installations or as optional tools; they are not required control planes. Do not claim user-perceived performance from server logs alone.\n\n'''
+          if compatibility_note not in template_source:
+              raise SystemExit('temporary compatibility note was not found')
+          template_path.write_text(template_source.replace(compatibility_note, '', 1), encoding='utf-8')
+          PY
+
+      - name: Commit the contract correction
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add test/vibepro-cli.test.js agent-instructions/codex/AGENTS.vibepro.md
+          git diff --cached --check
+          git commit -m "test: align Codex installation with Minimal Core"
+          git push origin HEAD:codex/vibepro-brainbase-minimal-core-distribution
