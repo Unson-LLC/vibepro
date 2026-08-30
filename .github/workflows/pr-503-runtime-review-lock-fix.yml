@@ -1,0 +1,64 @@
+name: PR 503 runtime review lock fix
+
+on:
+  push:
+    branches:
+      - codex/vibepro-brainbase-minimal-core-distribution
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr-503-runtime-review-lock-fix
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: codex/vibepro-brainbase-minimal-core-distribution
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - run: npm install
+      - name: Keep the runtime review lock until finalization settles
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/agent-review.js')
+          text = path.read_text()
+          old = "return finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });"
+          new = "return await finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });"
+          old_count = text.count(old)
+          new_count = text.count(new)
+          if old_count == 1 and new_count == 0:
+              path.write_text(text.replace(old, new, 1))
+          elif old_count == 0 and new_count == 1:
+              pass
+          else:
+              raise SystemExit(f'unexpected replacement state: old={old_count}, new={new_count}')
+          PY
+      - name: Repeatedly exercise the same-dispatch concurrency regression
+        shell: bash
+        run: |
+          for attempt in $(seq 1 25); do
+            echo "targeted concurrency replay ${attempt}/25"
+            node --test test/review-inspection-first.test.js
+          done
+      - name: Commit the repair
+        shell: bash
+        run: |
+          if git diff --quiet -- src/agent-review.js; then
+            echo "repair already present"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/agent-review.js
+          git commit -m "fix: hold runtime review lock through finalization"
+          git push origin HEAD:codex/vibepro-brainbase-minimal-core-distribution
