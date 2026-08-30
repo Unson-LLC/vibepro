@@ -105,3 +105,19 @@ npm run docs:build
 ```
 
 VibePro is licensed under Apache-2.0.
+
+<!-- BRAINBASE_RUNTIME_HANDOFF_START -->
+## Brainbase runtime handoff
+
+`vibepro brainbase` remains the legacy NocoDB Story/portfolio adapter. Current Brainbase integration uses a separate namespace and never asks VibePro to recalculate Judgment:
+
+```bash
+vibepro integration brainbase bind . --id <story-id> --input <handoff.json>
+# implement, then record computed verification for the same git state
+vibepro integration brainbase event . --id <story-id> --summary "<verified reusable learning>"
+```
+
+`bind` accepts a managed Brainbase Judgment receipt plus matching `knowledge.resolve` routing receipts and actual retrieval references. It writes only canonical pointers and content digests under `.vibepro/integrations/`; it does not copy source bodies or Personal Knowledge.
+
+`event` fails unless computed passing verification was recorded after the context binding and still matches the current git fingerprint. It creates a local `knowledge_event.v1` development-learning candidate with Graph promotion and external action disabled. Recording is delegated to Brainbase's `brainbase_knowledge_event_record` MCP tool so the global Host can audit the write.
+<!-- BRAINBASE_RUNTIME_HANDOFF_END -->

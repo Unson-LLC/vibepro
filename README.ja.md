@@ -105,3 +105,19 @@ npm run docs:build
 ```
 
 VibeProはApache-2.0で公開しています。
+
+<!-- BRAINBASE_RUNTIME_HANDOFF_START -->
+## Brainbase runtime handoff
+
+`vibepro brainbase`は旧NocoDB Story/portfolio adapterのまま残します。現在のBrainbase連携は別namespaceを使い、VibeProからJudgmentを再計算しません。
+
+```bash
+vibepro integration brainbase bind . --id <story-id> --input <handoff.json>
+# 実装し、同じgit状態へcomputed verificationを記録
+vibepro integration brainbase event . --id <story-id> --summary "<検証済みの再利用可能な学習>"
+```
+
+`bind`はBrainbase Hostが確定したmanaged Judgment receipt、対応する`knowledge.resolve` routing receipt、実取得したcanonical参照を検証します。`.vibepro/integrations/`へ保存するのはpointerとcontent digestだけで、本文やPersonal Knowledgeは複製しません。
+
+`event`はcontext束縛後に実行され、current git fingerprintと一致するcomputed passing verificationがなければ失敗します。生成するのはGraph昇格とexternal actionを禁止したlocal `knowledge_event.v1`候補です。Brainbaseへの記録は`brainbase_knowledge_event_record` MCP toolへ委譲し、global Hostの監査を通します。
+<!-- BRAINBASE_RUNTIME_HANDOFF_END -->
