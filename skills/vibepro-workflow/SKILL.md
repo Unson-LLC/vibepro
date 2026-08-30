@@ -24,6 +24,10 @@ The standard development loop is:
 
 For the VibePro repository itself, always use the ordinary GitHub flow: branch, test, `gh pr create`, review, merge.
 
+## When to Use
+
+Use this Skill when a repository uses VibePro to connect a Story, Spec, implementation, verification, review, or PR. Also use it when deciding whether VibePro-managed evidence is current, sufficient, or blocking delivery.
+
 ## Completion Definition
 
 Work is complete when all of the following are true:
@@ -74,7 +78,7 @@ More evidence is not progress by itself. A new artifact, review, or test run cou
 ```
 <!-- minimal-core-convergence-policy:end -->
 
-## Operating Flow
+## Workflow
 
 ### 1. Establish the accepted scope
 
