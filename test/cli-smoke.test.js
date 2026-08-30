@@ -62,6 +62,7 @@ const SMOKE = {
   skills: { setup: 'story', args: (r) => ['skills', 'list', r] },
   codex: { setup: 'story', args: (r) => ['codex', 'verify', r] },
   brainbase: { setup: 'none', args: () => ['brainbase'] },
+  integration: { setup: 'none', args: () => ['integration', 'unknown'] },
   pr: { setup: 'story', args: (r) => ['pr', 'prepare', r, '--base', 'main'] },
   task: { setup: 'story', args: (r) => ['task', 'bind', r, '--id', 'story-x', '--input', 'missing.json'] },
   story: { setup: 'story', args: (r) => ['story', 'add', r, '--id', 'story-y', '--title', 'Y', '--view', 'dev', '--period', '2026-W18'] },
