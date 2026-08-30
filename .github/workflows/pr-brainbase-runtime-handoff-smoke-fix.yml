@@ -1,0 +1,47 @@
+name: Fix Brainbase runtime handoff smoke coverage
+
+on:
+  push:
+    branches:
+      - codex/brainbase-runtime-handoff-v1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brainbase-runtime-handoff-smoke-fix
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: codex/brainbase-runtime-handoff-v1
+          fetch-depth: 0
+      - name: Add integration command smoke coverage and remove this one-shot workflow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('test/cli-smoke.test.js')
+          text = path.read_text()
+          anchor = "  brainbase: { setup: 'none', args: () => ['brainbase'] },\n"
+          entry = "  integration: { setup: 'none', args: () => ['integration', 'unknown'] },\n"
+          if entry not in text:
+              if text.count(anchor) != 1:
+                  raise SystemExit('brainbase smoke anchor missing or duplicated')
+              text = text.replace(anchor, anchor + entry, 1)
+              path.write_text(text)
+
+          Path('.github/workflows/pr-brainbase-runtime-handoff-smoke-fix.yml').unlink()
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add test/cli-smoke.test.js
+          git rm .github/workflows/pr-brainbase-runtime-handoff-smoke-fix.yml
+          git commit -m "test: cover Brainbase integration CLI smoke"
+          HUSKY=0 git push origin HEAD:codex/brainbase-runtime-handoff-v1
