@@ -2710,3 +2710,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:502:end -->
+
+<!-- vibepro-release-pr:503:start -->
+## [#503](https://github.com/Unson-LLC/vibepro/pull/503) fix: Minimal Core契約をCodex配布面まで収束させる
+
+- Author: @sintariran
+- Merged: 2026-08-30T14:32:58Z
+- Commit: `afc13d90d296fbc358e21fb327753ba364468279`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:503:end -->

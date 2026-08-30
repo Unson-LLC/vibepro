@@ -517,3 +517,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:502:start -->
 - [PR #502](https://github.com/Unson-LLC/vibepro/pull/502) — [2026-08](/ja/releases/2026-08): chore: prepare 0.2.0-beta.17 release
 <!-- vibepro-release-index-pr:502:end -->
+
+<!-- vibepro-release-index-pr:503:start -->
+- [PR #503](https://github.com/Unson-LLC/vibepro/pull/503) — [2026-08](/ja/releases/2026-08): fix: Minimal Core契約をCodex配布面まで収束させる
+<!-- vibepro-release-index-pr:503:end -->
