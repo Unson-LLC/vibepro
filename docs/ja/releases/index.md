@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-30 | [`0.2.0-beta.17`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.17) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-25 | [`0.2.0-beta.16`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.16) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-24 | [`0.2.0-beta.15`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.15) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-24 | [`0.2.0-beta.14`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.14) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -512,3 +513,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:500:start -->
 - [PR #500](https://github.com/Unson-LLC/vibepro/pull/500) — [2026-08](/ja/releases/2026-08): fix: stop evidence loops with the minimal-core workflow
 <!-- vibepro-release-index-pr:500:end -->
+
+<!-- vibepro-release-index-pr:502:start -->
+- [PR #502](https://github.com/Unson-LLC/vibepro/pull/502) — [2026-08](/ja/releases/2026-08): chore: prepare 0.2.0-beta.17 release
+<!-- vibepro-release-index-pr:502:end -->
