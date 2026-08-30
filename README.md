@@ -74,7 +74,10 @@ Use the repository's actual default branch instead of assuming `origin/main`.
 - Product intent and traceability: `story`, `spec`, `trace`, `decision`
 - Evidence: `verify`, `review`, `guard`
 - PR handoff: `pr prepare`, `pr create`
-- Integration and artifact maintenance: `brainbase`, `artifacts`
+- Legacy NocoDB portfolio adapter: `brainbase`
+- Artifact maintenance: `artifacts`
+
+The `brainbase` command is retained for the historical NocoDB Story/portfolio adapter. It does not connect a Story to the current Brainbase Judgment Resolver, Knowledge Resolver, Graph, or Knowledge Event APIs. New Brainbase integrations must use explicit versioned adapter contracts rather than extending this legacy command by implication.
 
 Run `vibepro help --language en` for the authoritative command list. The CLI and evidence schemas may still change before 1.0.
 
