@@ -508,3 +508,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:499:start -->
 - [PR #499](https://github.com/Unson-LLC/vibepro/pull/499) — [2026-08](/releases/2026-08): fix: subagent回復ループを3回で収束させる
 <!-- vibepro-release-index-pr:499:end -->
+
+<!-- vibepro-release-index-pr:500:start -->
+- [PR #500](https://github.com/Unson-LLC/vibepro/pull/500) — [2026-08](/releases/2026-08): fix: stop evidence loops with the minimal-core workflow
+<!-- vibepro-release-index-pr:500:end -->

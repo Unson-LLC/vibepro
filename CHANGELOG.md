@@ -2668,3 +2668,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:499:end -->
+
+<!-- vibepro-release-pr:500:start -->
+## [#500](https://github.com/Unson-LLC/vibepro/pull/500) fix: stop evidence loops with the minimal-core workflow
+
+- Author: @sintariran
+- Merged: 2026-08-30T02:25:13Z
+- Commit: `ca32dc1ae1a54f5a2beff1eef9d50dbde27cded9`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:500:end -->
