@@ -2689,3 +2689,66 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:500:end -->
+
+<!-- vibepro-release-pr:502:start -->
+## [#502](https://github.com/Unson-LLC/vibepro/pull/502) chore: prepare 0.2.0-beta.17 release
+
+- Author: @sintariran
+- Merged: 2026-08-30T02:42:48Z
+- Commit: `1c3bebb6824d79c8e49ef66c9271c61c35c7cd29`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:502:end -->
+
+<!-- vibepro-release-pr:503:start -->
+## [#503](https://github.com/Unson-LLC/vibepro/pull/503) fix: Minimal Core契約をCodex配布面まで収束させる
+
+- Author: @sintariran
+- Merged: 2026-08-30T14:32:58Z
+- Commit: `afc13d90d296fbc358e21fb327753ba364468279`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:503:end -->
+
+<!-- vibepro-release-pr:504:start -->
+## [#504](https://github.com/Unson-LLC/vibepro/pull/504) feat: bind Brainbase runtime context and emit verified learning
+
+- Author: @sintariran
+- Merged: 2026-08-30T23:46:16Z
+- Commit: `ba100550ebab0cec5f3804b471a09bc46610b896`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:504:end -->

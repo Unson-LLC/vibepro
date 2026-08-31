@@ -397,7 +397,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     if (options.runtimeDispatchId) {
       const existing = await readJsonIfExists(resultPath);
       if (existing?.runtime_dispatch_id === options.runtimeDispatchId) {
-        return finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });
+        return await finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });
       }
     }
     const previousResult = await readJsonIfExists(resultPath);

@@ -74,7 +74,10 @@ base branchは `origin/main` に固定せず、対象リポジトリの実際の
 - プロダクト意図とトレーサビリティ: `story`, `spec`, `trace`, `decision`
 - 証跡: `verify`, `review`, `guard`
 - PR引き渡し: `pr prepare`, `pr create`
-- 連携とartifact保守: `brainbase`, `artifacts`
+- 旧NocoDBポートフォリオ連携: `brainbase`
+- artifact保守: `artifacts`
+
+`brainbase`コマンドは、過去のNocoDB Story／ポートフォリオ連携を互換維持するために残しています。現行BrainbaseのJudgment Resolver、Knowledge Resolver、Graph、Knowledge Event APIとStoryを接続するコマンドではありません。新しいBrainbase連携は、この旧コマンドを暗黙に拡張せず、明示的にversion化したadapter契約として実装します。
 
 正確なコマンド一覧は `vibepro help --language ja` を正本としてください。1.0まではCLIと証跡schemaが変わる可能性があります。
 
@@ -102,3 +105,19 @@ npm run docs:build
 ```
 
 VibeProはApache-2.0で公開しています。
+
+<!-- BRAINBASE_RUNTIME_HANDOFF_START -->
+## Brainbase runtime handoff
+
+`vibepro brainbase`は旧NocoDB Story/portfolio adapterのまま残します。現在のBrainbase連携は別namespaceを使い、VibeProからJudgmentを再計算しません。
+
+```bash
+vibepro integration brainbase bind . --id <story-id> --input <handoff.json>
+# 実装し、同じgit状態へcomputed verificationを記録
+vibepro integration brainbase event . --id <story-id> --summary "<検証済みの再利用可能な学習>"
+```
+
+`bind`はBrainbase Hostが確定したmanaged Judgment receipt、対応する`knowledge.resolve` routing receipt、実取得したcanonical参照を検証します。`.vibepro/integrations/`へ保存するのはpointerとcontent digestだけで、本文やPersonal Knowledgeは複製しません。
+
+`event`はcontext束縛後に実行され、current git fingerprintと一致するcomputed passing verificationがなければ失敗します。生成するのはGraph昇格とexternal actionを禁止したlocal `knowledge_event.v1`候補です。Brainbaseへの記録は`brainbase_knowledge_event_record` MCP toolへ委譲し、global Hostの監査を通します。
+<!-- BRAINBASE_RUNTIME_HANDOFF_END -->
