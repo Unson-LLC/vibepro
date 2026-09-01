@@ -15,6 +15,8 @@ const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
 const PASS_STATUSES = new Set(['pass', 'passed', 'success', 'ok']);
 const FAIL_STATUSES = new Set(['fail', 'failed', 'error']);
+const VERIFICATION_SCOPES = new Set(['local_test', 'production']);
+const EVIDENCE_STATES = new Set(['verified', 'failed', 'partial', 'not_collected']);
 const EVIDENCE_LOCK_TIMEOUT_MS = 10000;
 const EVIDENCE_LOCK_STALE_MS = 60000;
 
@@ -39,6 +41,8 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   if (!ALLOWED_STATUSES.has(options.status)) {
     throw new Error(`verify record --status must be one of: ${[...ALLOWED_STATUSES].join(', ')}`);
   }
+  const scope = normalizeVerificationScope(options.scope);
+  const evidenceState = normalizeEvidenceState(options.evidenceState, options.status);
   const runtimeIdentity = await assertRuntimeIntegrity({
     purpose: 'evidence_generation',
     env: options.env
@@ -108,6 +112,8 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     const command = {
       kind: options.kind,
       status: options.status,
+      scope,
+      evidence_state: evidenceState,
       command: options.command ?? null,
       summary: options.summary ?? options.status,
       artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
@@ -134,7 +140,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     };
     const commands = [
       command,
-      ...existing.commands.filter((item) => item.kind !== command.kind)
+      ...existing.commands.filter((item) => item.kind !== command.kind || (item.scope ?? 'local_test') !== command.scope)
     ];
     const nextEvidence = {
       schema_version: '0.1.0',
@@ -152,6 +158,28 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     runtime_identity: runtimeIdentity,
     artifact: toWorkspaceRelative(root, evidencePath)
   };
+}
+
+export function normalizeVerificationScope(value, commandName = 'verify record') {
+  const scope = value ?? 'local_test';
+  if (!VERIFICATION_SCOPES.has(scope)) {
+    throw new Error(`${commandName} --scope must be one of: ${[...VERIFICATION_SCOPES].join(', ')}`);
+  }
+  return scope;
+}
+
+export function normalizeEvidenceState(value, status) {
+  const derived = PASS_STATUSES.has(status) ? 'verified'
+    : FAIL_STATUSES.has(status) ? 'failed'
+      : 'not_collected';
+  const state = value ?? derived;
+  if (!EVIDENCE_STATES.has(state)) {
+    throw new Error(`verify record --evidence-state must be one of: ${[...EVIDENCE_STATES].join(', ')}`);
+  }
+  if (PASS_STATUSES.has(status) !== (state === 'verified')) {
+    throw new Error(`verify record --status ${status} contradicts --evidence-state ${state}`);
+  }
+  return state;
 }
 
 function resolveComputedRecording(options) {

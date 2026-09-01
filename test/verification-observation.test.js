@@ -50,6 +50,7 @@ test('verify record persists structured observation from CLI options', async () 
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
     '--command', 'node --test test/widgets.test.js',
+    '--scope', 'local_test', '--evidence-state', 'verified',
     '--target', 'src/widgets.js', '--target', 'test/widgets.test.js',
     '--scenario', 'widget creation returns 201',
     '--observed', 'tests_passed=4', '--observed', 'exit_code=0'
@@ -61,6 +62,8 @@ test('verify record persists structured observation from CLI options', async () 
   assert.equal(command.observation.values.tests_passed, '4');
   assert.equal(command.observation.values.exit_code, '0');
   assert.equal(command.observation_check.status, 'recorded');
+  assert.equal(command.scope, 'local_test');
+  assert.equal(command.evidence_state, 'verified');
 });
 
 test('verify record rejects malformed --observed input', async () => {
@@ -247,4 +250,3 @@ test('observation_check is not_applicable for needs_setup claims', async () => {
   const command = evidence.commands.find((item) => item.kind === 'e2e');
   assert.equal(command.observation_check.status, 'not_applicable');
 });
-

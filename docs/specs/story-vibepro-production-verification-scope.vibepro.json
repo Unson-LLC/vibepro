@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-production-verification-scope",
+  "generated_by": {
+    "caller": "codex-owner",
+    "stage": "accepted"
+  },
+  "clauses": [
+    {
+      "id": "VPVS-C-001",
+      "type": "invariant",
+      "statement": "Required verification scopes are projected per AC and fail closed.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "VPVS-AC-001" },
+          { "kind": "acceptance_criteria", "ac_id": "VPVS-AC-002" },
+          { "kind": "acceptance_criteria", "ac_id": "VPVS-AC-004" }
+        ],
+        "test_refs": [
+          { "file": "test/production-verification-scope.test.js", "case": "projects local pass and production not_collected as mapped-but-unverified" }
+        ]
+      },
+      "verification": { "required_scopes": ["local_test", "production"] },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/production-verification-scope.test.js", "must_contain": "mapped-but-unverified" }
+        ]
+      }
+    },
+    {
+      "id": "VPVS-C-002",
+      "type": "invariant",
+      "statement": "PR body renders native structured AC verification states.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "VPVS-AC-003" }
+        ],
+        "test_refs": [
+          { "file": "test/production-verification-scope.test.js", "case": "PR body renders structured AC and production evidence states" }
+        ]
+      },
+      "verification": { "required_scopes": ["local_test", "production"] },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/production-verification-scope.test.js", "must_contain": "verification/production" }
+        ]
+      }
+    },
+    {
+      "id": "VPVS-C-003",
+      "type": "invariant",
+      "statement": "CLI records scope and evidence state with contradiction checks.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "VPVS-AC-005" }
+        ],
+        "test_refs": [
+          { "file": "test/production-verification-scope.test.js", "case": "verification recorder persists scope and rejects contradictory evidence state" }
+        ]
+      },
+      "verification": { "required_scopes": ["local_test"] },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/production-verification-scope.test.js", "must_contain": "evidence_state" }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-production-verification-scope",
+  "tasks": [
+    { "task_id": "VPVS-TASK-001", "story_id": "story-vibepro-production-verification-scope", "kind": "contract", "status": "done", "summary": "Story, Architecture, accepted Specを固定する" },
+    { "task_id": "VPVS-TASK-002", "story_id": "story-vibepro-production-verification-scope", "kind": "test", "status": "done", "summary": "traceability、PR本文、recorderのRedを固定する" },
+    { "task_id": "VPVS-TASK-003", "story_id": "story-vibepro-production-verification-scope", "kind": "implementation", "status": "done", "summary": "構造化scope/statusを実装する" },
+    { "task_id": "VPVS-TASK-004", "story_id": "story-vibepro-production-verification-scope", "kind": "verification", "status": "done", "summary": "focused、関連、full、typecheck、buildを分離確認する" }
+  ]
+}

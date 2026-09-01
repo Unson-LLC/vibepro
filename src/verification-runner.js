@@ -13,6 +13,7 @@ import {
   assertCommandMatchesVerificationKind,
   assertCommandNamedTestPathsExist,
   classifyRunnerArtifactProbe,
+  normalizeVerificationScope,
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
 } from './verification-evidence.js';
@@ -140,6 +141,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   if (!ALLOWED_KINDS.has(options.kind)) {
     throw new Error(`verify run --kind must be one of: ${[...ALLOWED_KINDS].join(', ')}`);
   }
+  const scope = normalizeVerificationScope(options.scope, 'verify run');
   if (options.status !== undefined && options.status !== null) {
     throw new Error(
       'verify run does not accept --status: the status is computed from the exit code of the executed command. '
@@ -328,6 +330,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     // `summary` is the first thing a reader (and some consumers) look at, so the runner's
     // own account of the run stays on every record.
     summary: composeSummary(options.summary, buildSummary(options.kind, status, execution, runCounts, durationMs)),
+    scope,
     artifact: toWorkspaceRelative(root, artifactPath),
     targets: options.targets ?? [],
     scenarios: options.scenarios ?? [],
