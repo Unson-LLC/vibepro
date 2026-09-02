@@ -41,7 +41,9 @@
         "text": {
           "type": "string",
           "minLength": 4,
-          "description": "Plain prose / single bullet. No markdown headings. <= 280 chars per slot item recommended."
+          "maxLength": 280,
+          "pattern": "^(?!\\s*(?:#{1,6}\\s|[-+*]\\s|>\\s|[0-9]+\\.\\s|```|~~~|<))[^\\r\\n]+$",
+          "description": "Single-line plain prose only. Markdown block structure is rejected. Maximum 280 characters."
         },
         "citations": {
           "type": "object",

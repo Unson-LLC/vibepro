@@ -34,6 +34,9 @@ import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-
 import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
 import { buildExecutionDag } from './managed-worktree.js';
 import { readOperationalJudgmentProjection } from './judgment-operations.js';
+import { readNarrative } from './report-store.js';
+import { buildReportFingerprint } from './report-fingerprint.js';
+import { validateReportNarrative } from './report-validator.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -133,7 +136,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   await mkdir(path.dirname(jsonPath), { recursive: true });
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`, 'utf8');
-  const body = renderPrBody(preparation);
+  const narrative = await readNarrative(root, storyId, 'pr-body');
+  const narrativeProjection = await assessNarrativeProjection(root, storyId, narrative);
+  const body = renderPrBody(preparation, narrativeProjection);
   await writeFile(bodyPath, body, 'utf8');
 
   await recordManifestPrPrepare(root, storyId, { jsonPath, bodyPath }).catch(() => null);
@@ -612,7 +617,62 @@ async function gitOptional(repoRoot, args) {
 // PR body rendering
 // ---------------------------------------------------------------------------
 
-function renderPrBody(preparation) {
+async function assessNarrativeProjection(repoRoot, storyId, narrative) {
+  if (!narrative) return { narrative: null, narrativeStatus: 'missing' };
+  const fingerprint = await buildReportFingerprint(repoRoot, { kind: 'pr-body', storyId });
+  const validation = await validateReportNarrative(repoRoot, narrative, fingerprint, { expectedStoryId: storyId });
+  if (!validation.ok) {
+    return { narrative: null, narrativeStatus: 'invalid' };
+  }
+  if (!sameInputsDigest(narrative.inputs_digest, fingerprint.inputs_digest)) {
+    return { narrative: null, narrativeStatus: 'stale' };
+  }
+  return { narrative, narrativeStatus: 'current' };
+}
+
+function sameInputsDigest(saved, current) {
+  if (!saved || !current) return false;
+  return JSON.stringify(saved) === JSON.stringify(current);
+}
+
+function renderPrNarrative(narrative, status = 'missing') {
+  if (status === 'stale' || status === 'invalid') {
+    const reason = status === 'stale'
+      ? '保存済み説明は現在の証拠と一致しないため表示していません。`vibepro report write` で再生成してください。'
+      : '保存済み説明は現在の検証規則を満たさないため表示していません。`vibepro report write` で再生成してください。';
+    return `### 保存済みの判断説明\n\n> ⚠️ ${reason}\n\n`;
+  }
+  if (!Array.isArray(narrative?.narrative_slots) || narrative.narrative_slots.length === 0) return '';
+
+  const grouped = new Map();
+  for (const item of narrative.narrative_slots) {
+    if (!item || typeof item.slot !== 'string' || typeof item.text !== 'string') continue;
+    if (!grouped.has(item.slot)) grouped.set(item.slot, []);
+    grouped.get(item.slot).push(item);
+  }
+
+  const sections = [];
+  const caller = narrative.generated_by?.caller ?? 'unknown';
+  const summary = grouped.get('summary')?.[0];
+  if (summary) sections.push(`#### 要約 (${summary.id} by ${caller})\n${summary.text.trim()}`);
+
+  const reviewFocus = grouped.get('review_focus') ?? [];
+  if (reviewFocus.length > 0) {
+    sections.push(`#### レビュー焦点\n${reviewFocus.map((item) => `- (${item.id}) ${item.text.trim()}`).join('\n')}`);
+  }
+
+  const risks = grouped.get('risks_synthesis')?.[0];
+  if (risks) sections.push(`#### リスク\n- (${risks.id}) ${risks.text.trim()}`);
+
+  const openQuestions = grouped.get('open_questions') ?? [];
+  if (openQuestions.length > 0) {
+    sections.push(`#### 未確定事項\n${openQuestions.map((item) => `- (${item.id}) ${item.text.trim()}`).join('\n')}`);
+  }
+
+  return sections.length > 0 ? `### 保存済みの判断説明\n\n${sections.join('\n\n')}\n\n` : '';
+}
+
+function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
   const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
@@ -620,6 +680,8 @@ function renderPrBody(preparation) {
   lines.push(`Story: \`${story.story_id}\``);
   if (story.ssot) lines.push(`SSOT: ${story.ssot}`);
   lines.push('');
+  const narrativeSection = renderPrNarrative(narrative, narrativeStatus);
+  if (narrativeSection) lines.push(narrativeSection.trimEnd(), '');
   lines.push('### VibePro runtime identity');
   lines.push(`- package: \`${preparation.runtime_identity.package.name}@${preparation.runtime_identity.package.exact_version ?? preparation.runtime_identity.package.version}\``);
   lines.push(`- source: \`${preparation.runtime_identity.source_kind}\` at \`${preparation.runtime_identity.package.root}\``);

@@ -1771,7 +1771,9 @@ if (command === 'integration') {
             stage: parsed.generated_by?.stage ?? 'ai_synthesis'
           },
           previous_report_id: previousNarrative ? (previousNarrative.generated_at ?? null) : null,
-          inputs_digest: parsed.inputs_digest ?? fingerprint.inputs_digest
+          // The digest is verification metadata, not caller-authored prose.
+          // Always bind the saved narrative to the fingerprint VibePro read.
+          inputs_digest: fingerprint.inputs_digest
         };
         const stabilized = stabilizeTalkingPointIds(seeded, previousNarrative);
         await writeNarrative(repoRoot, storyId, kind, stabilized);

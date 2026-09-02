@@ -179,7 +179,17 @@ function buildInputsDigest(fingerprint) {
     git_sha: sha256(fingerprint.git),
     traceability_sha: sha256(fingerprint.traceability),
     drift_sha: sha256(fingerprint.drift),
-    spec_sha: sha256(fingerprint.inferred_spec)
+    spec_sha: sha256(fingerprint.inferred_spec),
+    verification_sha: sha256({
+      recorded: fingerprint.verification?.recorded ?? false,
+      commands: fingerprint.verification?.commands ?? []
+    }),
+    review_sha: sha256({
+      configured: fingerprint.review?.configured ?? false,
+      recorded: fingerprint.review?.recorded ?? false,
+      complete: fingerprint.review?.complete ?? false,
+      status: fingerprint.review?.status ?? null
+    })
   };
 }
 

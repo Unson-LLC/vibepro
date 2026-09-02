@@ -1,0 +1,268 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-narrative-projection",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "検証済みの pr-body 説明が保存されているStoryで pr prepare を実行すると、生成された pr-body.md は専用欄へ summary、review_focus、risks_synthesis、open_questions をTalking Point ID付きで表示する。",
+      "rationale": "保存と表示を同じStory IDで接続し、要求文と現在状態を分離して読めるようにするため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-001"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-002"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-pr-narrative-projection.md",
+            "section": "境界"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "readNarrative"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "renderPrNarrative"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "valid narrative is stored with stable TP ids and rendered into pr-body.md"
+          }
+        ]
+      },
+      "confidence": 1,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "保存済みの判断説明"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/report-pipeline.test.js",
+            "must_cover": "valid narrative is stored with stable TP ids and rendered into pr-body.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-02T16:39:36.114Z",
+      "last_revised_at": "2026-09-02T17:01:44.648Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "pr-body 説明が保存されていないStoryでは、pr prepare は空の説明欄を生成せず既存のPR本文骨格を維持する。",
+      "rationale": "説明機能を利用していない既存Storyの出力互換性を保つため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-003"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-pr-narrative-projection.md",
+            "section": "互換性・ロールバック"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "if (!Array.isArray(narrative?.narrative_slots)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "pr prepare keeps the fixed body unchanged when no narrative is stored"
+          }
+        ]
+      },
+      "confidence": 1,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/report-pipeline.test.js",
+            "must_cover": "pr prepare keeps the fixed body unchanged when no narrative is stored"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-02T16:39:36.114Z",
+      "last_revised_at": "2026-09-02T17:01:44.648Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "PR本文の保存済み判断説明は要約、レビュー焦点、リスク、未確定事項の固定見出しを使用し、各説明には保存時に安定化されたTalking Point IDを表示する。",
+      "rationale": "レビュー時に状態説明の種類と追跡IDを一目で区別できる固定契約が必要なため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-002"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-004"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-pr-narrative-projection.md",
+            "section": "表示契約"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "#### レビュー焦点"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "#### 未確定事項"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "valid narrative is stored with stable TP ids and rendered into pr-body.md"
+          }
+        ]
+      },
+      "confidence": 1,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "#### 未確定事項"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/report-pipeline.test.js",
+            "must_cover": "valid narrative is stored with stable TP ids and rendered into pr-body.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-02T16:39:36.114Z",
+      "last_revised_at": "2026-09-02T17:01:44.648Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "保存済み説明の入力指紋が現在のStory、HEAD、トレーサビリティ、Spec、ドリフト、検証、レビュー状態と一致しない場合、pr prepare は古い説明本文を表示せず再生成が必要だと明示する。",
+      "rationale": "過去の検証状態に基づく説明を現在の判断資料として誤表示しないため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-005"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-pr-narrative-projection.md",
+            "section": "表示契約"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "assessNarrativeProjection"
+          },
+          {
+            "file": "src/report-fingerprint.js",
+            "anchor": "buildInputsDigest"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "pr prepare suppresses stale narrative and shows an explicit refresh warning"
+          }
+        ]
+      },
+      "confidence": 1,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/report-pipeline.test.js",
+            "must_cover": "pr prepare suppresses stale narrative and shows an explicit refresh warning"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-02T17:00:00.000Z",
+      "last_revised_at": "2026-09-02T17:01:44.648Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "説明スロット本文は単一行かつ280文字以内の平文に限定し、Markdown構造を含む入力と呼び出し側が指定した未検証のinputs_digestを採用しない。",
+      "rationale": "固定PR本文骨格と証拠への拘束を、生成者の入力から決定的に保護するため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-006"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-pr-narrative-projection.md",
+            "section": "表示契約"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/report-validator.js",
+            "anchor": "slot_text_structure"
+          },
+          {
+            "file": "src/cli.js",
+            "anchor": "inputs_digest: fingerprint.inputs_digest"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "report write rejects prose that can inject markdown structure"
+          },
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "report write ignores a caller-supplied inputs digest and stores the verified fingerprint"
+          }
+        ]
+      },
+      "confidence": 1,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/report-pipeline.test.js",
+            "must_cover": "report write rejects prose that can inject markdown structure"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-02T17:00:00.000Z",
+      "last_revised_at": "2026-09-02T17:01:44.648Z"
+    }
+  ],
+  "open_questions": [],
+  "generated_at": "2026-09-02T16:40:30.976Z",
+  "previous_spec_id": "2026-09-02T16:40:30.976Z"
+}

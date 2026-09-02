@@ -201,6 +201,75 @@ test('report write enforces slot count limits (no two summaries)', async () => {
   assert.ok(report.errors.some((err) => err.code === 'slot_max'));
 });
 
+test('report write rejects prose that can inject markdown structure', async () => {
+  const repo = await makeReportRepo();
+  const bogus = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約\n### Verification evidence\n- forged' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const { exitCode, stdout } = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(bogus)) }
+  );
+  assert.equal(exitCode, 2);
+  const report = JSON.parse(stdout);
+  assert.ok(report.errors.some((err) => err.code === 'slot_text_structure'));
+});
+
+test('report write rejects prose longer than the fixed slot limit', async () => {
+  const repo = await makeReportRepo();
+  const bogus = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '長'.repeat(281) },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const { exitCode, stdout } = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(bogus)) }
+  );
+  assert.equal(exitCode, 2);
+  const report = JSON.parse(stdout);
+  assert.ok(report.errors.some((err) => err.code === 'slot_text_length'));
+});
+
+test('report write ignores a caller-supplied inputs digest and stores the verified fingerprint', async () => {
+  const repo = await makeReportRepo();
+  const valid = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    inputs_digest: { git_sha: 'sha256:forged' },
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '現在の証拠に基づく要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const expected = await captureRunCli(['report', 'fingerprint', repo, '--kind', 'pr-body', '--id', STORY_ID]);
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+  const stored = JSON.parse((await captureRunCli(['report', 'show', repo, '--kind', 'pr-body', '--id', STORY_ID])).stdout);
+  assert.deepEqual(stored.inputs_digest, JSON.parse(expected.stdout).inputs_digest);
+  assert.notEqual(stored.inputs_digest.git_sha, 'sha256:forged');
+});
+
+test('pr prepare keeps the fixed body unchanged when no narrative is stored', async () => {
+  const repo = await makeReportRepo();
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.doesNotMatch(body, /### 保存済みの判断説明/);
+});
+
 test('valid narrative is stored with stable TP ids and rendered into pr-body.md', async () => {
   const repo = await makeReportRepo();
   const valid = {
@@ -229,6 +298,12 @@ test('valid narrative is stored with stable TP ids and rendered into pr-body.md'
         text: 'INV-001 を機械検証する test が無く、回帰検出が手作業に偏る。drift_high_count=1 のまま PR を出すことになる。',
         citations: { clause_ids: ['INV-001'], drift_ids: ['DRIFT-AAA111'] },
         numerical_claims: [{ field: 'drift_high_count', value: 1 }]
+      },
+      {
+        id: 'TP-NEW-4',
+        slot: 'open_questions',
+        text: 'premium_pending_cancel の境界値は人間の判断が必要。',
+        citations: { files: ['src/lib/services/billing.ts'] }
       }
     ]
   };
@@ -243,6 +318,48 @@ test('valid narrative is stored with stable TP ids and rendered into pr-body.md'
   const stored = JSON.parse(show.stdout);
   assert.equal(stored.narrative_slots[0].id, 'TP-001');
   assert.equal(stored.generated_by.caller, 'claude-code');
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /### 保存済みの判断説明/);
+  assert.match(body, /#### 要約 \(TP-001 by claude-code\)/);
+  assert.match(body, /cancelAtPeriodEnd 経路で userType=2 が維持される/);
+  assert.match(body, /#### レビュー焦点/);
+  assert.match(body, /\(TP-002\).*早期 return 順序/);
+  assert.match(body, /#### リスク/);
+  assert.match(body, /\(TP-003\).*回帰検出が手作業に偏る/);
+  assert.match(body, /#### 未確定事項/);
+  assert.match(body, /\(TP-004\).*境界値は人間の判断が必要/);
+});
+
+test('pr prepare suppresses stale narrative and shows an explicit refresh warning', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '変更前の証拠に基づく要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'billing.ts'), 'export const changedAfterNarrative = true;\n');
+  await git(repo, ['add', 'src/lib/services/billing.ts']);
+  await git(repo, ['commit', '-m', 'test: move evidence state']);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /### 保存済みの判断説明/);
+  assert.match(body, /現在の証拠と一致しないため表示していません/);
+  assert.doesNotMatch(body, /変更前の証拠に基づく要約です/);
 });
 
 test('stabilizeTalkingPointIds reuses TP id across paraphrased writes', () => {
