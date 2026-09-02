@@ -308,6 +308,8 @@ test('report write rejects prose that can inject markdown structure', async () =
     '安全な _強調_ 説明',
     '安全な ~~取消~~ 説明',
     '安全な [リンク](https://example.com)',
+    '[](https://example.com)',
+    '![](https://example.com/image.png)',
     '安全な [説明][ref] 説明',
     '安全な ![画像][ref] 説明',
     '安全な [ref] 説明',
