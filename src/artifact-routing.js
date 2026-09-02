@@ -510,9 +510,15 @@ async function assertProjectionLineage(target, route, projection) {
 }
 
 function renderTasksMarkdown(data) {
-  const tasks = [...(data.tasks ?? [])].sort((a, b) => compareCodePoints(a.id, b.id));
-  const ids = new Set(); for (const task of tasks) { if (ids.has(task.id)) throw new ArtifactRoutingError('duplicate_task_id', `Duplicate task id: ${task.id}`); ids.add(task.id); }
-  return `# Tasks\n\n${tasks.map((t) => `## ${t.id}: ${t.title ?? ''}\n\n- story_id: ${t.story_id ?? data.story?.story_id ?? ''}\n- status: ${t.status ?? ''}\n- target_files: ${(t.target_files ?? []).join(', ')}\n- dependencies: ${(t.dependencies ?? []).join(', ')}\n- acceptance_criteria:\n${(t.acceptance_criteria ?? []).map((v) => `  - ${v}`).join('\n')}`).join('\n\n')}\n`;
+  const tasks = [...(data.tasks ?? [])].sort((a, b) => compareCodePoints(a.id ?? a.task_id, b.id ?? b.task_id));
+  const ids = new Set(); for (const task of tasks) { const id = task.id ?? task.task_id; if (ids.has(id)) throw new ArtifactRoutingError('duplicate_task_id', `Duplicate task id: ${id}`); ids.add(id); }
+  return `# Tasks\n\n${tasks.map((t) => {
+    const title = t.title ?? '';
+    const status = t.status ?? '';
+    const targetFiles = (t.target_files ?? t.allowed_paths ?? []).join(', ');
+    const dependencies = (t.dependencies ?? t.depends_on ?? []).join(', ');
+    return `## ${t.id ?? t.task_id ?? ''}:${title ? ` ${title}` : ''}\n\n- story_id: ${t.story_id ?? data.story_id ?? data.story?.story_id ?? ''}\n- status:${status ? ` ${status}` : ''}\n- target_files:${targetFiles ? ` ${targetFiles}` : ''}\n- dependencies:${dependencies ? ` ${dependencies}` : ''}\n- acceptance_criteria:\n${(t.acceptance_criteria ?? []).map((v) => `  - ${v}`).join('\n')}`;
+  }).join('\n\n')}\n`;
 }
 function renderGateSummary(data) { const gates = data.gates ?? data.nodes ?? []; return `# Gate Summary\n\n- Status: ${data.status ?? data.overall_status ?? data.gate_status ?? 'unknown'}\n- Ready: ${data.ready_for_pr_create ?? data.ready ?? 'unknown'}\n- Unresolved: ${data.unresolved_gate_count ?? gates.filter((g) => !['pass', 'passed', 'complete'].includes(g.status)).length}\n\n## Gates\n\n${gates.length ? [...gates].sort((a, b) => String(a.id ?? a.name).localeCompare(String(b.id ?? b.name), 'en')).map((g) => `- ${g.id ?? g.name}: ${g.status ?? 'unknown'}${g.reason ? ` — ${g.reason}` : ''}`).join('\n') : '- No gate entries'}\n`; }
 function renderReleaseSummary(data) { const gate = data.gate_status ?? data.gateStatus ?? data.pr_context?.gate_status ?? data.status ?? 'unknown'; const pr = data.pull_request ?? data.pr ?? {}; return `# Release Summary\n\n- Story: ${data.story_id ?? data.story?.story_id ?? '-'}\n- Status: ${data.status ?? data.overall_status ?? '-'}\n- Gate: ${typeof gate === 'object' ? gate.status ?? 'unknown' : gate}\n- PR: ${pr.url ?? data.url ?? '-'}\n- Ready for create: ${data.ready_for_pr_create ?? '-'}\n- Merge status: ${data.merge_status ?? pr.merge_state_status ?? '-'}\n`; }

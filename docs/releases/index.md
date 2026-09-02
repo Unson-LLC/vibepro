@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-02 | [`0.2.0-beta.19`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.19) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-31 | [`0.2.0-beta.18`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.18) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-30 | [`0.2.0-beta.17`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.17) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-25 | [`0.2.0-beta.16`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.16) | npm `beta` / `latest` | Post-merge continuous release |
@@ -534,3 +535,35 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:511:start -->
 - [PR #511](https://github.com/Unson-LLC/vibepro/pull/511) — [2026-09](/releases/2026-09): fix: 外部処理の再投入を証跡ベースで収束させる
 <!-- vibepro-release-index-pr:511:end -->
+
+<!-- vibepro-release-index-pr:512:start -->
+- [PR #512](https://github.com/Unson-LLC/vibepro/pull/512) — [2026-09](/releases/2026-09): chore: prepare 0.2.0-beta.19 release
+<!-- vibepro-release-index-pr:512:end -->
+
+<!-- vibepro-release-index-pr:513:start -->
+- [PR #513](https://github.com/Unson-LLC/vibepro/pull/513) — [2026-09](/releases/2026-09): docs: 判断DAG実証系としてのVibePro ProfileとProof Ledgerを正本化
+<!-- vibepro-release-index-pr:513:end -->
+
+<!-- vibepro-release-index-pr:515:start -->
+- [PR #515](https://github.com/Unson-LLC/vibepro/pull/515) — [2026-09](/releases/2026-09): test: pin adopted-input digest guard, promote VPJ-DAG-004 to P2
+<!-- vibepro-release-index-pr:515:end -->
+
+<!-- vibepro-release-index-pr:516:start -->
+- [PR #516](https://github.com/Unson-LLC/vibepro/pull/516) — [2026-09](/releases/2026-09): docs: mark adjudication design and Stories historical after PR #430
+<!-- vibepro-release-index-pr:516:end -->
+
+<!-- vibepro-release-index-pr:514:start -->
+- [PR #514](https://github.com/Unson-LLC/vibepro/pull/514) — [2026-09](/releases/2026-09): docs(skill): add Development Judgment loop step to vibepro-workflow
+<!-- vibepro-release-index-pr:514:end -->
+
+<!-- vibepro-release-index-pr:517:start -->
+- [PR #517](https://github.com/Unson-LLC/vibepro/pull/517) — [2026-09](/releases/2026-09): docs: Proof Ledger の解消済み gap を記録（PR #514/#515/#516）
+<!-- vibepro-release-index-pr:517:end -->
+
+<!-- vibepro-release-index-pr:519:start -->
+- [PR #519](https://github.com/Unson-LLC/vibepro/pull/519) — [2026-09](/releases/2026-09): docs(skill): Development Judgment の適用要否基準を定義し、実運用の入口無効化を台帳へ記録
+<!-- vibepro-release-index-pr:519:end -->
+
+<!-- vibepro-release-index-pr:520:start -->
+- [PR #520](https://github.com/Unson-LLC/vibepro/pull/520) — [2026-09](/releases/2026-09): docs(cli): story plan / judgment applicability のヘルプに適用要否の基準を添える
+<!-- vibepro-release-index-pr:520:end -->

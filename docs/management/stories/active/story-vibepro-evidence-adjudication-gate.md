@@ -15,10 +15,12 @@ architecture_docs:
   - ../../../architecture/vibepro-evidence-adjudication-gate.md
 spec_docs:
   - ../../../specs/vibepro-evidence-adjudication-gate.md
-status: active
+status: historical
 created_at: 2026-07-13
-updated_at: 2026-07-13
+updated_at: 2026-09-02
 ---
+
+> **Historical (2026-09-02)**: The Evidence Adjudication Gate / `vibepro adjudicate` mechanism this Story describes was removed in PR #430. Kept as design history only.
 
 # AC証拠の意味的裁定を独立LLM adjudicatorへ委譲するEvidence Adjudication Gateを追加する
 

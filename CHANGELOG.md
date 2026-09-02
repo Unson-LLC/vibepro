@@ -2794,3 +2794,174 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:511:end -->
+
+<!-- vibepro-release-pr:512:start -->
+## [#512](https://github.com/Unson-LLC/vibepro/pull/512) chore: prepare 0.2.0-beta.19 release
+
+- Author: @sintariran
+- Merged: 2026-09-02T10:33:04Z
+- Commit: `309f5f8d65691fe2acd4030deb19e031b252db9b`
+
+### Change Summary
+
+- add a fail-closed instruction contract for external side-effect retries
+- require read-before-write, terminal receipts, first-failure boundaries, and mutation budgets
+- stop a fourth mutation after three semantic no-progress attempts
+
+### Compatibility
+
+- no breaking changes
+- runtime enforcement remains the host or adapter responsibility
+
+### User Action
+
+- update to `vibepro@0.2.0-beta.19`
+
+<!-- vibepro-release-pr:512:end -->
+
+<!-- vibepro-release-pr:513:start -->
+## [#513](https://github.com/Unson-LLC/vibepro/pull/513) docs: 判断DAG実証系としてのVibePro ProfileとProof Ledgerを正本化
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:24:18Z
+- Commit: `d1664cf5b54452f7290a75716d1783268a360299`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:513:end -->
+
+<!-- vibepro-release-pr:515:start -->
+## [#515](https://github.com/Unson-LLC/vibepro/pull/515) test: pin adopted-input digest guard, promote VPJ-DAG-004 to P2
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:24:59Z
+- Commit: `1d885883a6b711ace62a4f03d4ab768ba6987d60`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:515:end -->
+
+<!-- vibepro-release-pr:516:start -->
+## [#516](https://github.com/Unson-LLC/vibepro/pull/516) docs: mark adjudication design and Stories historical after PR #430
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:25:13Z
+- Commit: `99c255d840c72f92b55261a52b64df87c4fce258`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:516:end -->
+
+<!-- vibepro-release-pr:514:start -->
+## [#514](https://github.com/Unson-LLC/vibepro/pull/514) docs(skill): add Development Judgment loop step to vibepro-workflow
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:29:45Z
+- Commit: `ab9617d51a517d2fc15c1aba0f4794ce34d0bf10`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:514:end -->
+
+<!-- vibepro-release-pr:517:start -->
+## [#517](https://github.com/Unson-LLC/vibepro/pull/517) docs: Proof Ledger の解消済み gap を記録（PR #514/#515/#516）
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:31:13Z
+- Commit: `4bc00b4202fdeea716a38c12fced7e9c7cd765c3`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:517:end -->
+
+<!-- vibepro-release-pr:519:start -->
+## [#519](https://github.com/Unson-LLC/vibepro/pull/519) docs(skill): Development Judgment の適用要否基準を定義し、実運用の入口無効化を台帳へ記録
+
+- Author: @sintariran
+- Merged: 2026-09-02T22:29:46Z
+- Commit: `d75ca7cde62892dbc44e1d48254740f0a777f8cf`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:519:end -->
+
+<!-- vibepro-release-pr:520:start -->
+## [#520](https://github.com/Unson-LLC/vibepro/pull/520) docs(cli): story plan / judgment applicability のヘルプに適用要否の基準を添える
+
+- Author: @sintariran
+- Merged: 2026-09-02T22:44:22Z
+- Commit: `9fff97e665c62498438787e9c394a8725dbf08ca`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:520:end -->

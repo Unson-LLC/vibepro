@@ -8,7 +8,7 @@ VibePro's safety model is based on bounded authority, current-head evidence, ind
 - **Story / Architecture / Spec:** outcome, structural boundary, and testable contract.
 - **Code and runtime:** actual behavior; generated narratives cannot override them.
 - **Verification:** observed outcomes tied to a commit and durable artifact.
-- **Independent reviewer / adjudicator:** inspection and judgment from a separate execution identity.
+- **Independent reviewer:** inspection and judgment from a separate execution identity.
 - **Gate DAG:** readiness synthesis; it reports missing proof but does not invent it.
 
 Brainbase may supply upstream context. Graphify, codebase-memory, Journey packs, external design prompts, and generated screenshots are supporting evidence. None becomes implementation truth merely by being available.

@@ -17,4 +17,4 @@ Graphify and `codebase-memory-mcp` can reveal related files, routes, symbols, ca
 
 Those signals do not close the required evidence for runtime behavior, security correctness, rollback safety, user experience, migrations, or release operations. Use them to decide what to inspect and test next.
 
-After any commit, treat prior verification, review, adjudication, and PR readiness as potentially stale and re-run the current-head gates.
+After any commit, treat prior verification, review, and PR readiness as potentially stale and re-run the current-head gates.

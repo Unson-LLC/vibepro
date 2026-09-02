@@ -19,6 +19,19 @@ function silentIo() {
   };
 }
 
+function capturingIo() {
+  const stderrChunks = [];
+  return {
+    io: {
+      stdout: { write() {} },
+      stderr: { write(chunk) { stderrChunks.push(chunk); } }
+    },
+    stderrText() {
+      return stderrChunks.join('');
+    }
+  };
+}
+
 async function setupRepo(suffix) {
   const root = await mkdtemp(path.join(os.tmpdir(), `vibepro-judgment-ops-${suffix}-`));
   await execFileAsync('git', ['init', '-b', 'main'], { cwd: root });
@@ -285,6 +298,148 @@ test('story plan advances the judgment loop and persists explicit disposition an
 
   const pending = await runCli(['judgment', 'pending', root, '--json'], silentIo());
   assert.equal(pending.result.pending_count, 0);
+});
+
+test('evaluate rejects an adopted input that was mutated on disk after adoption', async () => {
+  const root = await setupRepo('digest-mismatch-evaluate');
+
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root,
+    '--id', STORY_ID,
+    '--applicable', 'yes',
+    '--reason', 'The Story has multiple delivery choices and a meaningful VALUE/SIMPLIFY/VALIDATE decision.',
+    '--recorded-by', 'test-agent',
+    '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
+
+  const prepared = await runCli([
+    'judgment', 'prepare', root,
+    '--id', STORY_ID,
+    '--run-id', 'judgment-ops-run-1',
+    '--json'
+  ], silentIo());
+  assert.equal(prepared.exitCode, 0);
+  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
+
+  const adopted = await runCli([
+    'judgment', 'input', 'adopt', root,
+    '--id', STORY_ID,
+    '--input', adoptedInput,
+    '--reviewed-by', 'test-agent',
+    '--authority', 'story-and-repository-evidence',
+    '--summary', 'Reviewed the problem frame, constraint, and viable option.',
+    '--json'
+  ], silentIo());
+  assert.equal(adopted.exitCode, 0);
+
+  const adoptedPath = path.join(root, adopted.result.adoption.adopted_input);
+  const adoptedContent = JSON.parse(await readFile(adoptedPath, 'utf8'));
+  adoptedContent.decision_profile.materiality = 'high';
+  await writeFile(adoptedPath, `${JSON.stringify(adoptedContent, null, 2)}\n`);
+
+  const capture = capturingIo();
+  const evaluated = await runCli([
+    'judgment', 'evaluate', root,
+    '--id', STORY_ID,
+    '--input', adopted.result.adoption.adopted_input,
+    '--json'
+  ], capture.io);
+  assert.notEqual(evaluated.exitCode, 0);
+  assert.match(capture.stderrText(), /changed after adoption/);
+});
+
+test('re-adopting the same run id with an unchanged input file is idempotent', async () => {
+  const root = await setupRepo('idempotent-readopt');
+
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root,
+    '--id', STORY_ID,
+    '--applicable', 'yes',
+    '--reason', 'The Story has multiple delivery choices and a meaningful VALUE/SIMPLIFY/VALIDATE decision.',
+    '--recorded-by', 'test-agent',
+    '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
+
+  const prepared = await runCli([
+    'judgment', 'prepare', root,
+    '--id', STORY_ID,
+    '--run-id', 'judgment-ops-run-1',
+    '--json'
+  ], silentIo());
+  assert.equal(prepared.exitCode, 0);
+  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
+
+  const adoptArgs = [
+    'judgment', 'input', 'adopt', root,
+    '--id', STORY_ID,
+    '--input', adoptedInput,
+    '--reviewed-by', 'test-agent',
+    '--authority', 'story-and-repository-evidence',
+    '--summary', 'Reviewed the problem frame, constraint, and viable option.',
+    '--json'
+  ];
+
+  const firstAdopt = await runCli(adoptArgs, silentIo());
+  assert.equal(firstAdopt.exitCode, 0);
+  assert.equal(firstAdopt.result.idempotent, false);
+
+  const secondAdopt = await runCli(adoptArgs, silentIo());
+  assert.equal(secondAdopt.exitCode, 0);
+  assert.equal(secondAdopt.result.idempotent, true);
+  assert.equal(secondAdopt.result.adoption.input_sha256, firstAdopt.result.adoption.input_sha256);
+});
+
+test('re-adopting the same run id with a mutated input file is rejected', async () => {
+  const root = await setupRepo('digest-mismatch-readopt');
+
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root,
+    '--id', STORY_ID,
+    '--applicable', 'yes',
+    '--reason', 'The Story has multiple delivery choices and a meaningful VALUE/SIMPLIFY/VALIDATE decision.',
+    '--recorded-by', 'test-agent',
+    '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
+
+  const prepared = await runCli([
+    'judgment', 'prepare', root,
+    '--id', STORY_ID,
+    '--run-id', 'judgment-ops-run-1',
+    '--json'
+  ], silentIo());
+  assert.equal(prepared.exitCode, 0);
+  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
+
+  const firstAdopt = await runCli([
+    'judgment', 'input', 'adopt', root,
+    '--id', STORY_ID,
+    '--input', adoptedInput,
+    '--reviewed-by', 'test-agent',
+    '--authority', 'story-and-repository-evidence',
+    '--summary', 'Reviewed the problem frame, constraint, and viable option.',
+    '--json'
+  ], silentIo());
+  assert.equal(firstAdopt.exitCode, 0);
+
+  const mutatedInput = JSON.parse(await readFile(adoptedInput, 'utf8'));
+  mutatedInput.decision_profile.materiality = 'high';
+  await writeFile(adoptedInput, `${JSON.stringify(mutatedInput, null, 2)}\n`);
+
+  const capture = capturingIo();
+  const secondAdopt = await runCli([
+    'judgment', 'input', 'adopt', root,
+    '--id', STORY_ID,
+    '--input', adoptedInput,
+    '--reviewed-by', 'test-agent',
+    '--authority', 'story-and-repository-evidence',
+    '--summary', 'Reviewed the problem frame, constraint, and viable option again.',
+    '--json'
+  ], capture.io);
+  assert.notEqual(secondAdopt.exitCode, 0);
+  assert.match(capture.stderrText(), /already adopted with a different SHA-256 digest/);
 });
 
 test('not-applicable judgment remains explicit, non-blocking, and does not inject a plan task', async () => {

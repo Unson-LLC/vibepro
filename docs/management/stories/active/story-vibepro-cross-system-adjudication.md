@@ -1,9 +1,12 @@
 ---
 story_id: story-vibepro-cross-system-adjudication
 title: Cross-system adjudication requires a different model family than the implementer
-status: active
+status: historical
+updated_at: 2026-09-02
 reason: Deriving implementer identity from implementation-stage review records was rejected because those records carry the reviewer's system, not the implementer's; an explicit provenance record is the only truthful source. A global config switch to disable the check was rejected because it would make same-system passes an implicit default. The compatible boundary is additive staged rollout - stories with no recorded implementation provenance keep today's behavior except advisory warnings, evidence adjudication stays warning-only, and enforcement applies only to the judgment-DAG path that already exists solely on agent_workflow / workflow_heavy routes. Rollback is removal of the provenance command and the enforcement branch; all new artifacts are additive files under .vibepro/adjudication/<story-id>/. Model-level diversity (--agent-model) is out of scope; the enforced axis is agent_system only.
 ---
+
+> **Historical (2026-09-02)**: The `vibepro adjudicate` mechanism (provenance, cross-system enforcement) this Story describes was removed in PR #430. Kept as design history only.
 
 # Story: Cross-system adjudication requires a different model family than the implementer
 

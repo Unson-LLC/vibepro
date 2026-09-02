@@ -1,0 +1,905 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "vibepro_judgment_proof_ledger",
+  "system": "vibepro",
+  "system_role": "product-development judgment: hypothesis, evidence, refutation, decision lineage, outcome feedback",
+  "portfolio": {
+    "goal": "異なる領域で実装されている判断DAGを相互比較し、判断の再現性・反証可能性・権限分離・実行追跡・結果評価・学習能力を継続的に高める",
+    "sibling_systems": [
+      "brainbase",
+      "zeims",
+      "keiba",
+      "fx",
+      "tech-knight"
+    ],
+    "aggregator": "Brainbase Graph SSOT (cross-system proof ledger)"
+  },
+  "proof_depth_scale": {
+    "P0": "concept or design only; or implemented without a test that fails when the rule breaks",
+    "P1": "deterministic unit test on the module",
+    "P2": "integrated path exercised end-to-end through the CLI or the standard workflow in tests",
+    "P3": "replay or backtest against recorded real artifacts",
+    "P4": "forward or shadow use on real Stories with outcomes recorded later",
+    "P5": "live: the judgment changed a real delivery and the outcome was observed",
+    "P6": "reproduced in a different experiment system under its own method"
+  },
+  "status_vocabulary": [
+    "design_only",
+    "current_untested",
+    "current_unit",
+    "current_integrated",
+    "forward_validated",
+    "live_validated",
+    "cross_system",
+    "historical",
+    "superseded",
+    "refuted"
+  ],
+  "layers": [
+    "context",
+    "judgment",
+    "authority",
+    "execution",
+    "evaluation"
+  ],
+  "claims": [
+    {
+      "id": "VPJ-DAG-001",
+      "capability": "judgment_graph_acyclicity",
+      "layer": "judgment",
+      "claim": "判断履歴DAGと Senior Judgment 内部グラフは cycle を拒否し、汎用グラフへ退化しない",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/judgment-dag.js",
+          "src/senior-judgment-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-dag.test.js",
+            "names": [
+              "judgment DAG rejects cycles rather than becoming a generic graph"
+            ]
+          },
+          {
+            "file": "test/senior-judgment-dag.test.js",
+            "names": [
+              "SEJ-005/006 invariant pruning affects advice and graph validation rejects cycles"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "edge追加時に全体を再検証する（Kahn topological sort）",
+        "self-reference edge も拒否"
+      ],
+      "not_proven": [
+        "supersedes 関係の実行意味論（superseded node を canonical から外す処理は存在しない）"
+      ],
+      "transfer_targets": {
+        "brainbase": "kernel graph semantics candidate",
+        "keiba": "routing rule → node/depends_on 分解時の受け入れ条件"
+      }
+    },
+    {
+      "id": "VPJ-DAG-002",
+      "capability": "immutable_run_append_only_evaluation",
+      "layer": "evaluation",
+      "claim": "判断 run は immutable（同一 run id の再書込を拒否）で、Outcome は評価として追記され元の決定を書き換えない",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/judgment-dag.js",
+          "src/judgment-workflow.js",
+          "src/senior-judgment-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-dag.test.js",
+            "names": [
+              "judgment evaluation appends observed outcomes without rewriting the decision"
+            ]
+          },
+          {
+            "file": "test/judgment-workflow.test.js",
+            "names": [
+              "judgment prepare creates a conservative draft and evaluation compiles it into a non-blocking durable DAG"
+            ]
+          },
+          {
+            "file": "test/senior-judgment-cli.test.js",
+            "names": [
+              "judgment evaluate writes immutable run evidence and review projections without gate authority"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "history は wx フラグで排他作成、current.json だけが可変ポインタ"
+      ],
+      "not_proven": [
+        "current.json ポインタ改ざんの検知",
+        "git 管理外（.vibepro/* は gitignore）のため履歴の保全は各 checkout 依存"
+      ],
+      "transfer_targets": {
+        "brainbase": "replay does not mutate history fixture",
+        "zeims": "policy 比較用 immutable run"
+      }
+    },
+    {
+      "id": "VPJ-DAG-003",
+      "capability": "run_lineage_parent_and_decision_delta",
+      "layer": "evaluation",
+      "claim": "子 run は current run を parent_run_id として要求され、問題設定・開発モード・推薦・仮説の decision delta が記録される",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/senior-judgment-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/senior-judgment-cli.test.js",
+            "names": [
+              "judgment evaluate enforces lineage and records the decision delta for a valid child run"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "単一直線 lineage（分岐・マージなし）"
+      ],
+      "not_proven": [
+        "分岐する判断系列",
+        "他 Story の run を parent に取る横断 lineage"
+      ],
+      "transfer_targets": {
+        "fx": "champion/candidate 比較の delta 形式",
+        "keiba": "champion artifact lineage"
+      }
+    },
+    {
+      "id": "VPJ-DAG-004",
+      "capability": "adopted_input_digest_binding",
+      "layer": "authority",
+      "claim": "採択済み入力の SHA-256 と評価時の入力バイト列が一致しなければ評価を拒否する",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/judgment-operations.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-operating-loop.test.js",
+            "names": [
+              "evaluate rejects an adopted input that was mutated on disk after adoption",
+              "re-adopting the same run id with an unchanged input file is idempotent",
+              "re-adopting the same run id with a mutated input file is rejected"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "adoptJudgmentInput が input_sha256 を保存し evaluateOperationalJudgmentWorkflow が再計算して比較する"
+      ],
+      "not_proven": [
+        "テストは CLI 黒箱でファイル改変経路のみを固定する。バイト列比較のため意味的に同一な再整形入力も拒否される挙動は未固定"
+      ],
+      "transfer_targets": {
+        "brainbase": "canonical digest / manifest lock と同型",
+        "zeims": "frozen evidence digest と同型"
+      }
+    },
+    {
+      "id": "VPJ-JUD-005",
+      "capability": "development_mode_from_causal_evidence",
+      "layer": "judgment",
+      "claim": "VALUE / SIMPLIFY / VALIDATE は proposal metadata ではなく、制約種別と判断証拠の状態から因果的に導出される",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/senior-judgment-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/senior-judgment-dag.test.js",
+            "names": [
+              "SEJ-MODE-1 verified value constraint with sufficient decision evidence selects VALUE",
+              "SEJ-MODE-EVIDENCE-1 verified structural excess with sufficient decision evidence selects SIMPLIFY",
+              "SEJ-MODE-EVIDENCE-2 verified problem without sufficient decision evidence selects VALIDATE for both constraint kinds",
+              "SEJ-MODE-2/5 ineffective structural addition overrides insufficient decision evidence with SIMPLIFY",
+              "SEJ-MODE-CAUSAL-3 an unverified problem selects VALIDATE independently of legacy proposal metadata"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "senior judgment input schema 0.3.0",
+        "current_constraint.kind と decision_evidence.status が必須"
+      ],
+      "not_proven": [
+        "この3モードが他ドメイン（税務・経営）の判断軸として妥当であること"
+      ],
+      "transfer_targets": {
+        "tech-knight": "施策の VALUE/SIMPLIFY/VALIDATE 分岐は検証仮説として移す"
+      }
+    },
+    {
+      "id": "VPJ-JUD-006",
+      "capability": "stale_evidence_excluded_inconclusive_not_closed",
+      "layer": "judgment",
+      "claim": "freshness が current でない証拠は仮説の支持・反証に数えず、矛盾する現在証拠は inconclusive のまま枝を閉じない",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/senior-judgment-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/senior-judgment-dag.test.js",
+            "names": [
+              "SEJ-003 fresh refuting evidence closes a hypothesis branch without residual evidence demands",
+              "SEJ-003b conflicting current evidence stays inconclusive instead of closing the hypothesis",
+              "SEJ-004 inconclusive evidence routes by materiality, reversibility, and blast radius"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "freshness は呼び出し側が申告する（VibePro が時間経過で stale 化させる処理はない）"
+      ],
+      "not_proven": [
+        "freshness 申告の真正性",
+        "証拠の自動 stale 化"
+      ],
+      "transfer_targets": {
+        "zeims": "stale/revoked evidence 拒否と同型だが VibePro 側は自己申告",
+        "brainbase": "stale evidence cannot be current fixture"
+      }
+    },
+    {
+      "id": "VPJ-JUD-007",
+      "capability": "input_schema_fail_closed",
+      "layer": "context",
+      "claim": "旧 schema（0.2.0）や必須フィールド欠落の判断入力は評価前に拒否される",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/senior-judgment-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/senior-judgment-dag.test.js",
+            "names": [
+              "SEJ-SCHEMA-1 schema 0.3.0 is required for the explicit mode-evidence contract",
+              "SEJ-SCHEMA-2 current constraint kind and decision evidence are mandatory and validated"
+            ]
+          }
+        ]
+      },
+      "conditions": [],
+      "not_proven": [
+        "schema 移行手順の自動化"
+      ],
+      "transfer_targets": {
+        "keiba": "frozen typed contract と同型"
+      }
+    },
+    {
+      "id": "VPJ-AUTH-008",
+      "capability": "judgment_is_advisory_never_release_authority",
+      "layer": "authority",
+      "claim": "判断の有無・内容・Outcome・非該当は pr prepare の投影にのみ現れ、PR readiness・merge・release の権限を変えない",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/judgment-operations.js",
+          "src/judgment-workflow.js",
+          "src/pr-manager.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-dag.test.js",
+            "names": [
+              "development judgment DAG stays non-blocking while preserving causal lineage"
+            ]
+          },
+          {
+            "file": "test/judgment-operating-loop.test.js",
+            "names": [
+              "not-applicable judgment remains explicit, non-blocking, and does not inject a plan task"
+            ]
+          },
+          {
+            "file": "test/judgment-workflow.test.js",
+            "names": [
+              "judgment CLI prepares, evaluates and records outcomes while PR prepare only projects the result"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "全 artifact が advisory:true / blocking:false を持つ",
+        "成果物欠落は unavailable として投影"
+      ],
+      "not_proven": [
+        "advisory を人間が実際に読んで判断を変えたか（P4 以上）"
+      ],
+      "transfer_targets": {
+        "zeims": "judgment receipt does not authorize execution fixture",
+        "tech-knight": "AI推奨と実行権限の分離"
+      }
+    },
+    {
+      "id": "VPJ-AUTH-009",
+      "capability": "meaning_adoption_requires_explicit_authority",
+      "layer": "authority",
+      "claim": "自動生成 draft は評価できず、reviewed-by と authority を明示した採択記録がなければ評価は fail-closed する。適用要否も理由付きで明示記録される",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/judgment-operations.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-operating-loop.test.js",
+            "names": [
+              "standard judgment operation reaches plan consumption, disposition, outcome, and next-run feedback",
+              "not-applicable judgment remains explicit, non-blocking, and does not inject a plan task"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "authority は自由文字列（scope モデルなし）"
+      ],
+      "not_proven": [
+        "authority の scope 検証（誰がどの範囲を採択できるか）",
+        "revoked / stale authority の拒否"
+      ],
+      "transfer_targets": {
+        "zeims": "scoped authority を VibePro へ移す Transfer Hypothesis の対象（inbound）"
+      }
+    },
+    {
+      "id": "VPJ-EVAL-010",
+      "capability": "outcome_feedback_into_next_judgment",
+      "layer": "evaluation",
+      "claim": "disposition と Outcome は時間分離して記録され、confirmed/mixed/falsified/unknown が次回 prepare の history boundary または adopted batch へ反映される",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/judgment-operations.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-operating-loop.test.js",
+            "names": [
+              "standard judgment operation reaches plan consumption, disposition, outcome, and next-run feedback",
+              "story plan advances the judgment loop and persists explicit disposition and outcome"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "Outcome status は人間が CLI で入力するラベル",
+        "自動観測（CI・merge・runtime）からの Outcome 生成は存在しない"
+      ],
+      "not_proven": [
+        "実 Story での Outcome 記録（VPJ-OBS-001: applicability 8 件はすべて not_applicable、評価到達 0 件、Outcome 0 件。P3 以上なし）",
+        "expected_outcomes と観測結果の突合による自動判定"
+      ],
+      "transfer_targets": {
+        "fx": "事前登録した success_criteria と観測結果の突合（inbound）",
+        "brainbase": "outcome references exact graph and run version fixture"
+      }
+    },
+    {
+      "id": "VPJ-EXEC-011",
+      "capability": "actionable_judgment_bound_into_story_plan",
+      "layer": "execution",
+      "claim": "actionable な最新判断だけが story plan へ binding され、mode 別の判断タスクと plan effect を生成する。非該当・unactionable はタスクを注入しない",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/judgment-operations.js",
+          "src/story-manager.js"
+        ],
+        "tests": [
+          {
+            "file": "test/judgment-operating-loop.test.js",
+            "names": [
+              "story plan advances the judgment loop and persists explicit disposition and outcome",
+              "not-applicable judgment remains explicit, non-blocking, and does not inject a plan task"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "plan binding は run id / input hash / source HEAD / mode を持つ"
+      ],
+      "not_proven": [
+        "binding されたタスクが実装 commit に到達したかの追跡（Execution receipt がない）"
+      ],
+      "transfer_targets": {
+        "keiba": "decision → execution 接続の typed contract（inbound）"
+      }
+    },
+    {
+      "id": "VPJ-XSYS-012",
+      "capability": "brainbase_judgment_receipt_binding_and_verified_learning",
+      "layer": "context",
+      "claim": "Brainbase Judgment receipt と routing receipt を canonical pointer と digest だけで束縛し、自己申告・stale・context 以前の verification からは Knowledge Event を作らない",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/brainbase-integration.js"
+        ],
+        "tests": [
+          {
+            "file": "test/brainbase-integration.test.js",
+            "names": [
+              "Brainbase judgment・routing receipt・retrieval referencesをlocal contextへ束縛する",
+              "routingだけ・personal knowledge・未要求entryを受け入れない",
+              "current git stateに一致するcomputed passing evidenceから非昇格Knowledge Eventを生成する",
+              "self-reported・stale・context以前のpassing evidenceからeventを作らない"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "Graph promotion と外部 action は disabled",
+        "記録は Brainbase MCP tool へ委譲"
+      ],
+      "not_proven": [
+        "Brainbase 側で実際に受理・監査されたこと（相手側の証明）",
+        "Development Judgment run 自体の Brainbase 同期"
+      ],
+      "transfer_targets": {
+        "brainbase": "cross-system receipt の最初の実装例（outbound）"
+      }
+    },
+    {
+      "id": "VPJ-REV-013",
+      "capability": "review_causal_convergence_and_delta_scoped_invalidation",
+      "layer": "evaluation",
+      "claim": "レビューは変更差分の因果面で無効化され、進捗のない review wave が続くと nonconvergent として停止する。runtime 失敗は product finding と分離される",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/review-causal-dag.js"
+        ],
+        "tests": [
+          {
+            "file": "test/review-causal-dag.test.js",
+            "names": [
+              "two-file implementation and test fix preserves upstream planning judgments while invalidating descendants",
+              "three completed no-progress review waves after baseline stop as nonconvergent",
+              "runtime failures are separate from product findings",
+              "convergence state is persisted append-only by review event"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "unclassified changed path は fail-closed"
+      ],
+      "not_proven": [
+        "実レビュー運用での収束率（旧機構では収束しなかった実測がある）"
+      ],
+      "transfer_targets": {
+        "fx": "BT/live reconcile の drift 停止条件と比較",
+        "brainbase": "組織 replay の停止条件"
+      }
+    },
+    {
+      "id": "VPJ-LIN-014",
+      "capability": "run_lineage_envelope_provider_identity_integrity",
+      "layer": "execution",
+      "claim": "Run lineage envelope は typed error で不整合 binding を拒否し、provider identity は Run / dispatch を跨いで rebind できない",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/run-lineage.js"
+        ],
+        "tests": [
+          {
+            "file": "test/run-lineage.test.js",
+            "names": [
+              "creates and validates a version 0.1.0 envelope from Run authority",
+              "rejects malformed and mismatched bindings with typed errors",
+              "provider identities cannot be rebound across persisted dispatch or Run envelopes"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "src/ 内に import 元がなく CLI から到達しない（module 単体テストのみ）"
+      ],
+      "not_proven": [
+        "判断 run と review dispatch の lineage が同一 envelope で結ばれること",
+        "実行経路での使用（dormant code）"
+      ],
+      "transfer_targets": {
+        "brainbase": "RunEnvelope / ExecutionReceipt contract の実装候補"
+      }
+    },
+    {
+      "id": "VPJ-HIST-015",
+      "capability": "independent_fresh_context_adjudication",
+      "layer": "authority",
+      "claim": "実装エージェントと別の fresh-context かつ別 model family の裁定者が AC clause と判断項目を反証の立場で裁定し、verdict は HEAD 厳密束縛で fail-closed する",
+      "depth": "P2",
+      "status": "historical",
+      "source": {
+        "implementation": [],
+        "tests": [],
+        "references": [
+          "docs/architecture/vibepro-judgment-dag-adjudication.md",
+          "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
+          "docs/management/P4-FREEZE-HANDOFF.md"
+        ]
+      },
+      "conditions": [
+        "PR #324 / #413 で実装、縮小リファクタ Slice 2（PR #430）で削除"
+      ],
+      "not_proven": [
+        "現行コードでの再現（adjudicate コマンドは存在しない）"
+      ],
+      "removed_in": "PR #430",
+      "transfer_targets": {
+        "brainbase": "promotion_gate plugin として再導入する場合は historical proof としてのみ参照",
+        "fx": "独立裁定・自己裁定禁止と同型"
+      }
+    },
+    {
+      "id": "VPJ-REF-016",
+      "capability": "blocking_gate_dag_with_head_bound_staleness",
+      "layer": "authority",
+      "claim": "判断・証拠要件・policy・review lifecycle・merge 権限を一つの blocking Gate DAG に統合し、HEAD 厳密束縛で stale 化させれば AI delivery は安全かつ反復可能になる",
+      "depth": "P5",
+      "status": "refuted",
+      "source": {
+        "implementation": [],
+        "tests": [],
+        "references": [
+          "docs/management/REBUILD.md",
+          "docs/management/delivery-efficiency-budget-gap-analysis.md",
+          "docs/management/issue-423-gap-analysis.md"
+        ]
+      },
+      "conditions": [
+        "2026-08-06 棚卸し実測: 直近8週マージの84%が自己修繕、1 Story 最大192回 review dispatch、修正 commit ごとの stale 化ループが収束しない"
+      ],
+      "not_proven": [],
+      "refuted_by": "docs/management/REBUILD.md (2026-08-06)",
+      "transfer_targets": {
+        "brainbase": "組織版で同じ統合を再現しないための反証記録",
+        "fx": "層境界違反116件の状態で共通 kernel 化しない根拠と同型"
+      }
+    },
+    {
+      "id": "VPJ-P0-017",
+      "capability": "resource_risk_layer",
+      "layer": "authority",
+      "claim": "判断を実行へ渡す前に資源・リスク・権限 scope を評価する層",
+      "depth": "P0",
+      "status": "design_only",
+      "source": {
+        "implementation": [],
+        "tests": [],
+        "references": [
+          "docs/architecture/development-judgment-dag.md"
+        ]
+      },
+      "conditions": [
+        "senior judgment に materiality / reversibility / blast_radius はあるが、資源配分や authority scope の層は存在しない"
+      ],
+      "not_proven": [
+        "すべて"
+      ],
+      "transfer_targets": {
+        "keiba": "sizing / 制約層（inbound 候補）",
+        "zeims": "scoped authority（inbound 候補）"
+      }
+    },
+    {
+      "id": "VPJ-BUG-018",
+      "capability": "bug_diagnosis_ordered_fail_closed_head_bound",
+      "layer": "authority",
+      "claim": "bug 種別 Story では再現→局所化→根本原因→修正→同一経路再検証の順序付き診断が揃い、かつ現在 HEAD に束縛されていなければ pr prepare が blocked になる",
+      "depth": "P2",
+      "status": "current_integrated",
+      "source": {
+        "implementation": [
+          "src/bug-diagnosis-dag.js",
+          "src/pr-manager.js"
+        ],
+        "tests": [
+          {
+            "file": "test/bug-diagnosis-dag.test.js",
+            "names": [
+              "bug diagnosis fails closed, selects only necessary analyses, and requires same-path reverification"
+            ]
+          },
+          {
+            "file": "test/integration/bug-diagnosis-pr-readiness.test.js",
+            "names": [
+              "passing unit test cannot make a bug Story PR-ready without actual failure-path evidence",
+              "a diagnosis accepted at an older HEAD becomes blocked before PR preparation"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "縮小後に残った唯一の blocking gate",
+        "適用は contract_type が bug_fix / regression_fix / bug の Story のみ"
+      ],
+      "not_proven": [
+        "実バグ修正での誤 block 率（P4 以上）"
+      ],
+      "transfer_targets": {
+        "fx": "原因確定前の対策禁止（verify-first）と同型",
+        "brainbase": "診断 DAG の順序不変条件 fixture"
+      }
+    },
+    {
+      "id": "VPJ-EVID-019",
+      "capability": "verification_evidence_producer_identity_gate",
+      "layer": "context",
+      "claim": "runner が計算した検証観測（digest・worktree fingerprint 等）は内部 receipt を持つ経路だけが記録でき、手入力は self_reported として区別され、artifact と矛盾する pass 申告は記録前に拒否される",
+      "depth": "P1",
+      "status": "current_unit",
+      "source": {
+        "implementation": [
+          "src/verification-evidence.js",
+          "src/verification-runner.js"
+        ],
+        "tests": [
+          {
+            "file": "test/verification-observation.test.js",
+            "names": [
+              "manual generic artifacts cannot impersonate imported CI transcripts"
+            ]
+          },
+          {
+            "file": "test/verification-evidence-artifact-check.test.js",
+            "names": [
+              "pass申告とvitest失敗artifactが矛盾する場合_エラーになり証跡は書き込まれない"
+            ]
+          }
+        ]
+      },
+      "conditions": [
+        "evidence_source ∈ runner_direct / autopilot_run / ci_import / self_reported",
+        "同一 kind の再記録は置換（append-only ではない）"
+      ],
+      "not_proven": [
+        "runner 自体の改ざん耐性",
+        "self_reported 証跡が人間の判断で誤って信用される率"
+      ],
+      "transfer_targets": {
+        "zeims": "forged / reused evidence 拒否と同型（outbound）",
+        "fx": "データ接触台帳の producer identity と比較"
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "VPJ-GAP-001",
+      "summary": "Development Judgment operating loop が同梱 skills/vibepro-workflow/SKILL.md に発火手順として存在しない（docs/guide/feature-map.md にのみ記述）",
+      "evidence": "grep -c judgment skills/vibepro-workflow/SKILL.md == 0 at origin/main 309f5f8d",
+      "related_claims": [
+        "VPJ-AUTH-009",
+        "VPJ-EVAL-010"
+      ],
+      "consequence": "標準手順に従うエージェントは判断ループを実行せず、P4 以上の証拠が蓄積されない",
+      "status": "resolved",
+      "resolved_by": "PR #514 (skills/vibepro-workflow/SKILL.md step 3 + outcome close after merge)",
+      "resolved_at": "2026-09-02"
+    },
+    {
+      "id": "VPJ-GAP-002",
+      "summary": "skills/vibepro-gate-evidence/SKILL.md と docs/guide/agent-review.md が削除済みの adjudicate コマンドと adjudication gate を現行手順として記述している",
+      "evidence": "grep -c adjudicate src/cli.js == 0 at origin/main 309f5f8d",
+      "related_claims": [
+        "VPJ-HIST-015"
+      ],
+      "consequence": "historical proof を current として数える事故の温床",
+      "status": "resolved",
+      "resolved_by": "PR #516 (adjudication removed from skills/vibepro-gate-evidence/SKILL.md and docs/guide/agent-review.md)",
+      "resolved_at": "2026-09-02"
+    },
+    {
+      "id": "VPJ-GAP-003",
+      "summary": "Outcome が人間入力ラベルのみで、expected_outcomes（goal.success_criteria から事前登録済み）と観測結果の突合が存在しない",
+      "evidence": "src/judgment-workflow.js:193 expected_outcomes は生成されるが consumer なし",
+      "related_claims": [
+        "VPJ-EVAL-010"
+      ],
+      "consequence": "FX 型の事前登録・指標凍結の効果を VibePro で検証できない",
+      "status": "open"
+    },
+    {
+      "id": "VPJ-GAP-004",
+      "summary": "採択 authority が自由文字列で scope 検証がない",
+      "evidence": "src/judgment-operations.js adoptJudgmentInput requireText(options.authority)",
+      "related_claims": [
+        "VPJ-AUTH-009",
+        "VPJ-P0-017"
+      ],
+      "consequence": "Zeims 型 scoped-authority の transfer 前提が未整備",
+      "status": "open"
+    },
+    {
+      "id": "VPJ-GAP-006",
+      "summary": "decision record と verification evidence は id / kind による upsert（置換）であり append-only ではない。superseded status は定義されるが遷移ロジックがない",
+      "evidence": "src/decision-records.js recordDecision filters same decision_id; src/verification-evidence.js replaces same kind",
+      "related_claims": [
+        "VPJ-DAG-002"
+      ],
+      "consequence": "「replay does not mutate history」は判断 run にのみ成立し、決定・証跡レコードには成立しない。横断 fixture へ提示する際に範囲を限定する必要がある",
+      "status": "open"
+    },
+    {
+      "id": "VPJ-GAP-007",
+      "summary": "docs/architecture/vibepro-judgment-dag-adjudication.md と関連 Story 4件が status: active のまま、削除済み gate_dag / adjudicate を前提にしている",
+      "evidence": "git grep gate_dag src/pr-manager.js src/cli.js == 0 at origin/main 309f5f8d",
+      "related_claims": [
+        "VPJ-HIST-015"
+      ],
+      "consequence": "observer が design を current と誤読する",
+      "status": "resolved",
+      "resolved_by": "PR #516 (architecture doc and 4 Stories marked status: historical)",
+      "resolved_at": "2026-09-02"
+    },
+    {
+      "id": "VPJ-GAP-008",
+      "summary": "src/run-lineage.js は src 内に consumer がなく dormant。判断 run と review dispatch を結ぶ execution receipt が存在しない",
+      "evidence": "git grep -l run-lineage src/ == 0 at origin/main 309f5f8d",
+      "related_claims": [
+        "VPJ-LIN-014",
+        "VPJ-EXEC-011"
+      ],
+      "consequence": "Execution 層の証明が P1 単体テストに留まる",
+      "status": "open"
+    },
+    {
+      "id": "VPJ-GAP-009",
+      "status": "open",
+      "summary": "judgment applicability の判定基準（何が applicable か）が Skill・CLI help・設計文書に定義されておらず、実運用 8 件すべてが multi-tenant / 権限の観点で not_applicable と記録された",
+      "evidence": "VPJ-OBS-001; grep -i applicab skills/vibepro-workflow/SKILL.md に基準文なし",
+      "related_claims": [
+        "VPJ-AUTH-009",
+        "VPJ-EVAL-010"
+      ],
+      "consequence": "ループが入口で無効化され、P4 以上の証拠が構造的に蓄積されない。観測者は「実運用あり」と誤読しうる"
+    },
+    {
+      "id": "VPJ-GAP-010",
+      "status": "open",
+      "summary": "Codex にインストール済みの vibepro-workflow Skill（~/.codex/skills、2026-08-08 版）は #514 以前で判断ループ手順を含まない",
+      "evidence": "ls -la ~/.codex/skills/vibepro-workflow/SKILL.md → Aug 8; grep -c judgment == 1",
+      "related_claims": [
+        "VPJ-AUTH-009"
+      ],
+      "consequence": "Skill 修正が配布されるまで実運用の挙動は変わらない"
+    }
+  ],
+  "transfer_hypotheses": [
+    {
+      "id": "VPJ-TH-IN-001",
+      "direction": "inbound",
+      "source_system": "fx",
+      "source_proof": "事前登録・評価指標凍結・結果後の基準変更防止",
+      "source_proof_depth": "P5",
+      "target_gap": "VPJ-GAP-003",
+      "hypothesis": "recommendation node の expected_outcomes を判断時点で凍結し、outcome record が各 expected_outcome に対する観測を必須にすれば、後付けの confirmed 判定が減る",
+      "expected_evidence": "outcome record が expected_outcome id ごとの observed 値を持ち、未観測は unknown として残る",
+      "falsifier": "記録負荷だけ増え、Outcome 記録率が現状（0件）から改善しない",
+      "status": "proposed"
+    },
+    {
+      "id": "VPJ-TH-IN-002",
+      "direction": "inbound",
+      "source_system": "zeims",
+      "source_proof": "scope 付き authority と凍結証拠が揃わなければ release しない",
+      "source_proof_depth": "P2",
+      "target_gap": "VPJ-GAP-004",
+      "hypothesis": "judgment input adopt の authority を scope 付き構造（who / what scope / valid_until）にすると、採択と権限の混同が減る",
+      "expected_evidence": "scope 外採択が fail-closed し、既存 CI・人間承認と衝突しない",
+      "falsifier": "既存の人間レビュー＋CI で十分で、追加構造は accepted_divergence になる",
+      "status": "proposed"
+    },
+    {
+      "id": "VPJ-TH-IN-003",
+      "direction": "inbound",
+      "source_system": "keiba",
+      "source_proof": "frozen typed snapshot と層間 input/output 契約",
+      "source_proof_depth": "P3",
+      "target_gap": "VPJ-EXEC-011",
+      "hypothesis": "plan binding から実装 commit までを typed execution receipt で結べば、判断が実行に到達したかを追跡できる",
+      "expected_evidence": "binding id を持つ commit / verify run が判断 run へ逆引きできる",
+      "falsifier": "receipt が増えるだけで disposition 記録率が変わらない",
+      "status": "proposed"
+    },
+    {
+      "id": "VPJ-TH-OUT-001",
+      "direction": "outbound",
+      "source_system": "vibepro",
+      "source_proof": "VPJ-DAG-001 / VPJ-DAG-002 / VPJ-DAG-003",
+      "source_proof_depth": "P2",
+      "target_system": "brainbase",
+      "hypothesis": "acyclic・append-only・immutable run・parent lineage・decision delta の組は Brainbase kernel の judgment graph conformance fixture として流用できる",
+      "expected_evidence": "Brainbase conformance fixture が VibePro のテスト名と同じ不変条件で通る",
+      "falsifier": "Brainbase の 5 層モデルで判断層以外に同じ不変条件が成立しない",
+      "status": "proposed"
+    },
+    {
+      "id": "VPJ-TH-OUT-002",
+      "direction": "outbound",
+      "source_system": "vibepro",
+      "source_proof": "VPJ-AUTH-008 / VPJ-AUTH-009",
+      "source_proof_depth": "P2",
+      "target_system": "tech-knight",
+      "hypothesis": "AI 推奨（advisory）と人間の採択（adoption with authority）と後日の Outcome を三つの別記録に分ければ、経営判断でも推奨と実行権限の混同を防げる",
+      "expected_evidence": "90日プログラムの判断記録が recommendation / adoption / outcome の三記録で残る",
+      "falsifier": "現場運用で三記録が維持されず単一メモへ退化する",
+      "status": "proposed"
+    }
+  ],
+  "observations": [
+    {
+      "id": "VPJ-OBS-001",
+      "observed_at": "2026-09-03",
+      "kind": "forward_use_inventory",
+      "summary": "実 Story での Development Judgment ループの到達段階を、gitignore 外の .vibepro-store / .vibepro（7 repo）と Codex セッションログから集計した",
+      "method": "find */.vibepro-store/**/development-judgment と ~/.codex/sessions/2026/09 の --judgment-applicable grep",
+      "findings": {
+        "applicability_records": 8,
+        "repos": [
+          "vibepro",
+          "brainbase",
+          "growin-brainbase-docs",
+          "techknight",
+          "tech-knight-platform",
+          "Aitle"
+        ],
+        "applicable_yes": 0,
+        "applicable_no": 8,
+        "reached_prepare": 0,
+        "reached_adopt": 0,
+        "reached_evaluate": 0,
+        "reached_disposition": 0,
+        "reached_outcome": 0,
+        "codex_sessions_with_inline_flag_2026_09": 43,
+        "codex_sessions_with_yes": 0,
+        "entry_path": "story plan --judgment-applicable no --judgment-reason <text>（judgment applicability record の直接呼び出しは 0）",
+        "pre_loop_senior_judgment_runs": 1,
+        "pre_loop_run_example": "story-vibepro-public-doc-contract-ci-repair run judgment-public-doc-contract-ci-20260821 (2026-08-20, VALUE / proceed, outcome なし)"
+      },
+      "interpretation": "ループは発火しているが入口で全件 not_applicable になり、判断・採択・Outcome の実運用証拠は 0 件。理由文は「テナント・権限・組織判断を変えないから」という同一の型で、multi-tenant applicability 判定器の語彙と一致する。judgment applicability の基準が Skill・CLI help・設計文書のどこにも定義されていないため、エージェントが別の問いに答えている",
+      "related_gaps": [
+        "VPJ-GAP-009",
+        "VPJ-GAP-010"
+      ],
+      "related_claims": [
+        "VPJ-AUTH-009",
+        "VPJ-EVAL-010"
+      ]
+    }
+  ]
+}

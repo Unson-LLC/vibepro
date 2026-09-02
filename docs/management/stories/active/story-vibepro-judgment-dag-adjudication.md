@@ -15,10 +15,12 @@ architecture_docs:
   - ../../../architecture/vibepro-judgment-dag-adjudication.md
 spec_docs:
   - ../../../specs/vibepro-judgment-dag-adjudication.md
-status: active
+status: historical
 created_at: 2026-07-14
-updated_at: 2026-07-14
+updated_at: 2026-09-02
 ---
+
+> **Historical (2026-09-02)**: The judgment DAG / `vibepro adjudicate` mechanism this Story describes was removed in PR #430. Kept as design history only.
 
 # 判断DAGの各項目を独立LLM judgeにチェックリスト裁定させ、トークン照合を消化条件から降格する
 

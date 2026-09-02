@@ -1636,9 +1636,50 @@
         "category": "quality",
         "artifact_profile": "feature_packet",
         "feature_slug": "public-doc-contract-ci-repair"
+      },
+      {
+        "story_id": "story-vibepro-judgment-system-proof-ledger",
+        "title": "VibeProを判断DAG実証系として観測できるProfileとProof Ledgerを正本化する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-09",
+        "started_at": "2026-09-02",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-workflow-judgment-loop-step",
+        "title": "同梱vibepro-workflowにDevelopment Judgmentループの手順を追加する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-09",
+        "started_at": "2026-09-02",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "workflow-judgment-loop-step"
+      },
+      {
+        "story_id": "story-vibepro-pr-narrative-projection",
+        "title": "保存済みPR説明を生成PR本文へ確実に投影する",
+        "ssot": "local",
+        "status": "active",
+        "contract_type": "bug_fix",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-09",
+        "started_at": "2026-09-03",
+        "due_at": null,
+        "category": "bugfix",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "pr-narrative-projection"
       }
     ],
-    "current_story_id": "story-vibepro-release-0-2-0-beta-14"
+    "current_story_id": "story-vibepro-pr-narrative-projection"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }
