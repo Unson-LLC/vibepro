@@ -1648,6 +1648,20 @@
         "started_at": "2026-09-02",
         "due_at": null,
         "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-workflow-judgment-loop-step",
+        "title": "同梱vibepro-workflowにDevelopment Judgmentループの手順を追加する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-09",
+        "started_at": "2026-09-02",
+        "due_at": null,
+        "category": "quality",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "workflow-judgment-loop-step"
       }
     ],
     "current_story_id": "story-vibepro-release-0-2-0-beta-14"

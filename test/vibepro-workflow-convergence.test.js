@@ -154,6 +154,57 @@ test('failure-boundary expansion carries an explicit unresolved boundary', async
   assert.equal(policy.unsupported_host_action, 'block_mutation_and_open_upstream_issue');
 });
 
+test('vibepro-workflow runs the Development Judgment loop as advisory, before story plan', async () => {
+  const skill = await readFile(skillPath, 'utf8');
+
+  const step2Index = skill.indexOf('### 2. Inspect the relevant code');
+  const judgmentHeadingIndex = skill.indexOf(
+    '### 3. Run the Development Judgment loop (advisory)'
+  );
+  const step4Index = skill.indexOf('### 4. Implement the smallest coherent change');
+  const evaluateIndex = skill.indexOf('judgment evaluate');
+  const dispositionRecordIndex = skill.indexOf('judgment disposition record');
+  const step8Index = skill.indexOf('### 8. Prepare and open the PR');
+  const outcomeRecordIndex = skill.indexOf('judgment outcome record');
+  const step9Index = skill.indexOf('### 9. Bound external side effects');
+
+  assert.ok(step2Index >= 0, 'SKILL.md must keep the "Inspect the relevant code" step');
+  assert.ok(
+    judgmentHeadingIndex >= 0,
+    'SKILL.md must document the Development Judgment loop step'
+  );
+  assert.ok(step4Index >= 0, 'SKILL.md must keep the "Implement the smallest coherent change" step');
+  assert.ok(evaluateIndex >= 0, 'SKILL.md must reference judgment evaluate');
+  assert.ok(dispositionRecordIndex >= 0, 'SKILL.md must reference judgment disposition record');
+  assert.ok(step8Index >= 0, 'SKILL.md must keep the "Prepare and open the PR" step');
+  assert.ok(outcomeRecordIndex >= 0, 'SKILL.md must reference judgment outcome record');
+  assert.ok(step9Index >= 0, 'SKILL.md must keep the "Bound external side effects" step');
+
+  assert.ok(
+    step2Index < judgmentHeadingIndex && judgmentHeadingIndex < step4Index,
+    'the Development Judgment loop heading must sit between step 2 and step 4'
+  );
+  assert.ok(
+    evaluateIndex < dispositionRecordIndex && dispositionRecordIndex < step4Index,
+    'judgment disposition record must be documented after judgment evaluate and before step 4'
+  );
+  assert.ok(
+    step8Index < outcomeRecordIndex && outcomeRecordIndex < step9Index,
+    'judgment outcome record must be documented after step 8 and before step 9'
+  );
+
+  assert.match(skill, /judgment applicability record/);
+  assert.match(skill, /judgment prepare/);
+  assert.match(skill, /judgment input adopt/);
+  assert.match(skill, /judgment evaluate/);
+  assert.match(skill, /judgment disposition record/);
+  assert.match(skill, /judgment outcome record/);
+  assert.match(
+    skill,
+    /ADVISORY: it never changes PR readiness, merge, or release authority/
+  );
+});
+
 test('all distributed workflow surfaces converge on the minimal core', async () => {
   for (const surfacePath of distributedWorkflowPaths) {
     const surface = await readFile(surfacePath, 'utf8');
