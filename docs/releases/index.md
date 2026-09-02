@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-02 | [`0.2.0-beta.19`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.19) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-31 | [`0.2.0-beta.18`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.18) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-30 | [`0.2.0-beta.17`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.17) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-25 | [`0.2.0-beta.16`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.16) | npm `beta` / `latest` | Post-merge continuous release |
@@ -534,3 +535,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:511:start -->
 - [PR #511](https://github.com/Unson-LLC/vibepro/pull/511) — [2026-09](/releases/2026-09): fix: 外部処理の再投入を証跡ベースで収束させる
 <!-- vibepro-release-index-pr:511:end -->
+
+<!-- vibepro-release-index-pr:512:start -->
+- [PR #512](https://github.com/Unson-LLC/vibepro/pull/512) — [2026-09](/releases/2026-09): chore: prepare 0.2.0-beta.19 release
+<!-- vibepro-release-index-pr:512:end -->

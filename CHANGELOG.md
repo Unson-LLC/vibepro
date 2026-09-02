@@ -2794,3 +2794,27 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:511:end -->
+
+<!-- vibepro-release-pr:512:start -->
+## [#512](https://github.com/Unson-LLC/vibepro/pull/512) chore: prepare 0.2.0-beta.19 release
+
+- Author: @sintariran
+- Merged: 2026-09-02T10:33:04Z
+- Commit: `309f5f8d65691fe2acd4030deb19e031b252db9b`
+
+### Change Summary
+
+- add a fail-closed instruction contract for external side-effect retries
+- require read-before-write, terminal receipts, first-failure boundaries, and mutation budgets
+- stop a fourth mutation after three semantic no-progress attempts
+
+### Compatibility
+
+- no breaking changes
+- runtime enforcement remains the host or adapter responsibility
+
+### User Action
+
+- update to `vibepro@0.2.0-beta.19`
+
+<!-- vibepro-release-pr:512:end -->
