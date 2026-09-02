@@ -141,7 +141,34 @@ Do not add a newly discovered improvement to the current Story merely because it
 
 Inspect the implementation path, tests, public contract, and deployment boundary that can actually affect the accepted scope. Use Graphify or codebase-memory only when it changes the implementation or test decision. Do not generate broad artifacts by default.
 
-### 3. Implement the smallest coherent change
+### 3. Run the Development Judgment loop (advisory)
+
+After Story diagnosis and before `vibepro story plan`, run the Development Judgment loop. It is ADVISORY: it never changes PR readiness, merge, or release authority. `not_applicable`, missing, or unactionable Judgment must not block planning or the PR.
+
+1. Record applicability with a reason — non-applicability is an explicit recorded state, not a silent skip:
+   ```bash
+   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text>
+   ```
+2. If applicable, prepare a conservative draft input, then have a human or delegated agent review and adopt it with provenance before it can be evaluated:
+   ```bash
+   vibepro judgment prepare [repo] --id <story-id>
+   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text>
+   ```
+3. Evaluate the adopted input into the Development Judgment DAG:
+   ```bash
+   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json>
+   ```
+   Use `vibepro judgment status [repo] --id <story-id>` at any point to see the current lifecycle state and next action.
+
+Actionable Judgment may inform the plan; `story plan` also accepts the combined `--judgment-*` flags to run applicability, adoption, and evaluation inline. Either form is acceptable.
+
+After `vibepro story plan`, record the disposition — what the human decided and what effect it had on the plan, still advisory only:
+
+```bash
+vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text>
+```
+
+### 4. Implement the smallest coherent change
 
 Use TDD for bug fixes when practical:
 
@@ -152,7 +179,7 @@ Use TDD for bug fixes when practical:
 
 Do not expand the Story to repair every issue found during inspection.
 
-### 4. Verify only what changed
+### 5. Verify only what changed
 
 During development, run affected tests only.
 
@@ -168,7 +195,7 @@ The full suite belongs in CI unless the user explicitly requests a local release
 
 Evidence is bound to the content it tested. A new commit SHA alone does not invalidate an unrelated test or review.
 
-### 5. Run one review wave
+### 6. Run one review wave
 
 After the implementation and affected tests are stable, run at most one review wave. Use no more than three independent roles in parallel. Good default lenses are:
 
@@ -198,7 +225,7 @@ A review runtime timeout, empty response, or wrong request is a review-system fa
 
 If total review dispatches reach five, stop dispatching. Treat the review process itself as defective, record a follow-up, and decide the current PR only from the accepted scope, tests, and concrete unresolved blockers.
 
-### 6. Use deterministic E2E
+### 7. Use deterministic E2E
 
 E2E inputs must be fixed fixtures: exact tool name, exact arguments, exact expected result shape, and exact evidence path. Do not ask an agent to recreate the test protocol from prose on every run.
 
@@ -206,7 +233,7 @@ Use one real fresh-task smoke test only when the change affects an agent host, h
 
 Do not recreate fresh tasks until one happens to match. A mismatch in test instructions is a test-harness defect, not a product regression.
 
-### 7. Prepare and open the PR
+### 8. Prepare and open the PR
 
 `vibepro pr prepare` may be used to generate a concise Story, Spec, verification, and review summary. Treat any legacy Gate status, stale-review projection, next-review command, or lifecycle count in that output as informational only. It must not create additional work or block the PR.
 
@@ -225,7 +252,15 @@ After the PR exists:
 
 Do not import CI evidence and then restart the local review workflow.
 
-### 8. Bound external side effects
+After merge, or once real observation exists, close the loop by recording the Outcome. This feeds the next `judgment prepare` run and remains advisory — it never reopens or blocks the merged PR:
+
+```bash
+vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text>
+```
+
+Use `vibepro judgment pending [repo]` to find Stories with a disposition recorded but no Outcome yet.
+
+### 9. Bound external side effects
 
 When diagnosis or recovery can create an external side effect, define its `success_contract`, `first_failure_boundary`, `terminal_receipt`, and `mutation_budget` before retrying it. An upload, enqueue, or API acceptance is not completion. Report the observed state separately as `accepted`, `processing`, `delivered`, or `verified-complete`; only the last state, backed by the declared terminal receipt, completes the task.
 
