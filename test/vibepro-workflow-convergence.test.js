@@ -194,6 +194,13 @@ test('vibepro-workflow runs the Development Judgment loop as advisory, before st
   );
 
   assert.match(skill, /judgment applicability record/);
+  const criterionIndex = skill.indexOf('**Applicability criterion**');
+  assert.ok(
+    criterionIndex >= 0 && criterionIndex < skill.indexOf('judgment applicability record'),
+    'SKILL.md must define the applicability criterion before the applicability record command'
+  );
+  assert.match(skill, /VALUE \/ SIMPLIFY \/ VALIDATE decision remains/);
+  assert.match(skill, /NOT this criterion/);
   assert.match(skill, /judgment prepare/);
   assert.match(skill, /judgment input adopt/);
   assert.match(skill, /judgment evaluate/);

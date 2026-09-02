@@ -145,6 +145,12 @@ Inspect the implementation path, tests, public contract, and deployment boundary
 
 After Story diagnosis and before `vibepro story plan`, run the Development Judgment loop. It is ADVISORY: it never changes PR readiness, merge, or release authority. `not_applicable`, missing, or unactionable Judgment must not block planning or the PR.
 
+**Applicability criterion** (answer this question, not the multi-tenant or authority question):
+
+- `--applicable yes` when an engineering choice is still open for this Story: two or more viable delivery options (build / fix / delete / consolidate / redesign / retire / measure / experiment), an unverified problem or effect claim, or a structural addition whose value has not been observed. In other words, a VALUE / SIMPLIFY / VALIDATE decision remains to be made.
+- `--applicable no` only when the implementation is fully determined by an already adopted decision (Story, Architecture, Spec, or plan fixes the single option) and no such choice remains. State which decision fixed it in `--reason`.
+- Tenant boundaries, authority, security scope, or "organizational judgment" are NOT this criterion; they belong to the multi-tenant applicability check. Do not default to `no`.
+
 1. Record applicability with a reason — non-applicability is an explicit recorded state, not a silent skip:
    ```bash
    vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text>
