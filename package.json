@@ -53,7 +53,8 @@
     "typecheck": "for f in bin/vibepro.js src/*.js scripts/*.mjs; do node --check \"$f\" || exit 1; done",
     "pack:dry-run": "npm pack --dry-run",
     "prepack": "node scripts/runtime-manifest.mjs generate",
-    "postpack": "node scripts/runtime-manifest.mjs clean"
+    "postpack": "node scripts/runtime-manifest.mjs clean",
+    "proof-ledger:check": "node scripts/check-proof-ledger.mjs"
   },
   "devDependencies": {
     "vitepress": "1.6.4"
