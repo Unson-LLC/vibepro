@@ -551,3 +551,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:516:start -->
 - [PR #516](https://github.com/Unson-LLC/vibepro/pull/516) — [2026-09](/ja/releases/2026-09): docs: mark adjudication design and Stories historical after PR #430
 <!-- vibepro-release-index-pr:516:end -->
+
+<!-- vibepro-release-index-pr:514:start -->
+- [PR #514](https://github.com/Unson-LLC/vibepro/pull/514) — [2026-09](/ja/releases/2026-09): docs(skill): add Development Judgment loop step to vibepro-workflow
+<!-- vibepro-release-index-pr:514:end -->
