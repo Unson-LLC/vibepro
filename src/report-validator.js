@@ -143,8 +143,8 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       errors.push({ code: 'slot_text_length', message: `${locator}.text must be 280 characters or fewer` });
     }
     if (/\r|\n/.test(rawText)
-      || /^\s*(?:(?:[-*_]\s*){3,}$|#{1,6}\s|[-+*]\s|>\s|\d+\.\s|```|~~~|<)/.test(text)
-      || /<[^>]+>|\*\*|__|~~|\*[^*\r\n]+\*|(?:^|[^A-Za-z0-9])_[^_\r\n]+_(?:$|[^A-Za-z0-9])|`|\[[^\]]+\]\([^)]*\)|!?\[[^\]\r\n]+\]\[[^\]\r\n]*\]|\[\^[^\]\r\n]+\]/.test(text)) {
+      || /^\s*(?:(?:[-*_]\s*){3,}$|#{1,6}\s|[-+*]\s|>\s|\d+[.)]\s|```|~~~|<)/.test(text)
+      || /<[^>]+>|\*\*|__|~~|\*[^*\r\n]+\*|(?:^|[^A-Za-z0-9])_[^_\r\n]+_(?:$|[^A-Za-z0-9])|`|!?\[[^\]\r\n]+\](?:\([^)]*\)|\[[^\]\r\n]*\])?/.test(text)) {
       errors.push({
         code: 'slot_text_structure',
         message: `${locator}.text must be single-line prose without markdown structure`
