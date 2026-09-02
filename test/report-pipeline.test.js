@@ -285,6 +285,12 @@ test('report write replaces malformed saved JSON instead of treating it as a pre
   const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
   assert.equal(stored.narrative_slots[0].id, 'TP-001');
   assert.equal(stored.narrative_slots[0].text, replacement.narrative_slots[0].text);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, new RegExp(replacement.narrative_slots[0].text));
+  assert.doesNotMatch(body, /現在の検証規則を満たさないため表示していません/);
 });
 
 test('report write rejects prose that can inject markdown structure', async () => {
