@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
-import { readNarrative, REPORT_KINDS } from './report-store.js';
+import { readNarrativeForRecovery, REPORT_KINDS } from './report-store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,7 +35,7 @@ async function buildPrBodyFingerprint(root, options) {
   const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
   const preparation = await readPrPrepare(jsonPath, storyId);
 
-  const previousNarrative = await readNarrative(root, storyId, 'pr-body');
+  const previousNarrative = await readNarrativeForRecovery(root, storyId, 'pr-body');
   const inferredSpec = await readInferredSpec(root, storyId);
   const drift = await readDrift(root, storyId);
 

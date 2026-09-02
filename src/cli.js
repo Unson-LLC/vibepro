@@ -114,6 +114,7 @@ import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
 import {
   readNarrative,
+  readNarrativeForRecovery,
   REPORT_KINDS,
   stabilizeTalkingPointIds,
   writeNarrative
@@ -1762,7 +1763,7 @@ if (command === 'integration') {
           write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
           return { exitCode: 2, command, subcommand, validation };
         }
-        const previousNarrative = await readNarrative(repoRoot, storyId, kind);
+        const previousNarrative = await readNarrativeForRecovery(repoRoot, storyId, kind);
         const seeded = {
           ...parsed,
           schema_version: '0.1.0',

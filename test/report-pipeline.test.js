@@ -261,6 +261,32 @@ test('pr prepare suppresses malformed saved JSON and refreshes the complete body
   assert.match(body, /### Verification evidence/);
 });
 
+test('report write replaces malformed saved JSON instead of treating it as a previous narrative', async () => {
+  const repo = await makeReportRepo();
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  await mkdir(path.dirname(narrativePath), { recursive: true });
+  await writeFile(narrativePath, '{ malformed narrative');
+
+  const replacement = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '壊れた説明を新しい要約で置き換えます。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const result = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(replacement)) }
+  );
+  assert.equal(result.exitCode, 0, result.stdout);
+
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  assert.equal(stored.narrative_slots[0].id, 'TP-001');
+  assert.equal(stored.narrative_slots[0].text, replacement.narrative_slots[0].text);
+});
+
 test('report write rejects prose that can inject markdown structure', async () => {
   const repo = await makeReportRepo();
   for (const text of [
@@ -276,6 +302,9 @@ test('report write rejects prose that can inject markdown structure', async () =
     '安全な _強調_ 説明',
     '安全な ~~取消~~ 説明',
     '安全な [リンク](https://example.com)',
+    '安全な [説明][ref] 説明',
+    '安全な ![画像][ref] 説明',
+    '安全な [^脚注] 説明',
     '安全な `コード` 説明'
   ]) {
     const bogus = {
