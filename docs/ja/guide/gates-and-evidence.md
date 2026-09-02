@@ -17,4 +17,4 @@ Graphifyと `codebase-memory-mcp` は、関連ファイル、route、symbol、ca
 
 ただし、これらのsignalはruntime behavior、security correctness、rollback safety、UX、migration、release operationに必要な証跡を閉じません。次に何を読み、何を検証するかを決める材料として使います。
 
-commit後は、以前のverification、review、adjudication、PR readinessをstale候補として扱い、current-head gateを再実行します。
+commit後は、以前のverification、review、PR readinessをstale候補として扱い、current-head gateを再実行します。
