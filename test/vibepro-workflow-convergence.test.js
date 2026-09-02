@@ -57,6 +57,103 @@ test('E2E uses a deterministic fixture and at most one real fresh-task smoke', a
   assert.equal(policy.e2e.fresh_task_smoke_max, 1);
 });
 
+test('external side effects require read-before-write and terminal evidence', async () => {
+  const { external_side_effects: policy } = await readConvergencePolicy();
+
+  assert.equal(policy.read_before_write, true);
+  assert.deepEqual(policy.required_retry_context, [
+    'previous_run_id',
+    'first_failure_boundary',
+    'error_code',
+    'observable_delta',
+    'retry_hypothesis',
+    'terminal_receipt_target'
+  ]);
+  assert.equal(policy.retry_requires_observable_delta, true);
+  assert.equal(policy.mutation_budget, 3);
+  assert.equal(policy.completion_state, 'verified-complete');
+  assert.deepEqual(policy.progress_states, [
+    'accepted',
+    'processing',
+    'delivered',
+    'verified-complete'
+  ]);
+  assert.deepEqual(policy.non_terminal_states, ['accepted', 'processing', 'delivered']);
+
+  const unreadablePreviousRun = {
+    previous_run_id: null,
+    first_failure_boundary: null,
+    error_code: null,
+    observable_delta: 'credential_rotated',
+    retry_hypothesis: 'the prior credential was rejected',
+    terminal_receipt_target: 'destination_delivery_receipt'
+  };
+  assert.deepEqual(evaluateRetry(policy, unreadablePreviousRun), {
+    allowed: false,
+    reason: 'required_retry_context_missing',
+    missing: ['previous_run_id', 'first_failure_boundary', 'error_code']
+  });
+
+  const uploadOnly = evaluateExternalAttempt(policy, {
+    status: 'accepted',
+    terminal_receipt: null
+  });
+  assert.equal(uploadOnly.completed, false);
+  assert.equal(uploadOnly.reason, 'terminal_receipt_missing');
+});
+
+test('three identical semantic failures stop the fourth external mutation', async () => {
+  const { external_side_effects: policy } = await readConvergencePolicy();
+  assert.deepEqual(policy.semantic_progress_fields, [
+    'first_failure_boundary',
+    'error_code',
+    'observable_delta',
+    'retry_hypothesis',
+    'terminal_receipt'
+  ]);
+  const attempts = Array.from({ length: 4 }, (_, index) => ({
+    run_id: `run-${index + 1}`,
+    tool_call_succeeded: true,
+    first_failure_boundary: 'tenant_context_resolution',
+    error_code: 'CROSS_TENANT_CANDIDATE',
+    observable_delta: 'canonical_config_verified',
+    terminal_receipt: null
+  }));
+
+  const result = applyMutationBudget(policy, attempts);
+
+  assert.equal(result.executed_mutations, 3);
+  assert.equal(result.fourth_mutation_allowed, false);
+  assert.equal(result.semantic_progress, false);
+  assert.equal(result.outcome, 'root_cause_summary_or_block');
+  assert.equal(policy.semantic_progress_fields.includes('tool_call_succeeded'), false);
+
+  const changingFailures = attempts.map((attempt, index) => ({
+    ...attempt,
+    first_failure_boundary: `stage-${index + 1}`,
+    error_code: `ERROR_${index + 1}`,
+    observable_delta: `change-${index + 1}`,
+    retry_hypothesis: `hypothesis-${index + 1}`
+  }));
+  const budgetOnlyResult = applyMutationBudget(policy, changingFailures);
+  assert.equal(budgetOnlyResult.executed_mutations, 3);
+  assert.equal(budgetOnlyResult.fourth_mutation_allowed, false);
+  assert.equal(budgetOnlyResult.outcome, 'mutation_budget_exhausted');
+});
+
+test('failure-boundary expansion carries an explicit unresolved boundary', async () => {
+  const { external_side_effects: policy } = await readConvergencePolicy();
+
+  assert.equal(policy.scope_expansion.requires_first_failure_boundary, true);
+  assert.deepEqual(policy.scope_expansion.when_boundary_unknown, [
+    'record_expansion_rationale',
+    'carry_forward_unidentified_boundary'
+  ]);
+  assert.equal(policy.enforcement_mode, 'instruction_contract');
+  assert.equal(policy.host_runtime_boundary, 'host_enforces_external_mutation_stop');
+  assert.equal(policy.unsupported_host_action, 'block_mutation_and_open_upstream_issue');
+});
+
 test('all distributed workflow surfaces converge on the minimal core', async () => {
   for (const surfacePath of distributedWorkflowPaths) {
     const surface = await readFile(surfacePath, 'utf8');
@@ -97,4 +194,54 @@ async function readConvergencePolicy() {
   );
   assert.ok(match, 'workflow Skill must include its machine-tested convergence policy');
   return JSON.parse(match[1]);
+}
+
+function evaluateExternalAttempt(policy, attempt) {
+  const completed = attempt.status === policy.completion_state && Boolean(attempt.terminal_receipt);
+  return {
+    completed,
+    reason: completed ? 'terminal_receipt_verified' : 'terminal_receipt_missing'
+  };
+}
+
+function evaluateRetry(policy, retryContext) {
+  const missing = policy.required_retry_context.filter((field) => !retryContext[field]);
+  return missing.length > 0
+    ? { allowed: false, reason: 'required_retry_context_missing', missing }
+    : { allowed: true, reason: 'retry_context_complete', missing: [] };
+}
+
+function applyMutationBudget(policy, attempts) {
+  let executedMutations = 0;
+  let noProgressCount = 0;
+  let previousSemanticState = null;
+
+  for (const attempt of attempts) {
+    if (
+      executedMutations >= policy.mutation_budget ||
+      noProgressCount >= policy.no_progress_limit
+    ) break;
+    executedMutations += 1;
+
+    const semanticState = policy.semantic_progress_fields
+      .map((field) => attempt[field] ?? null)
+      .join('|');
+    if (previousSemanticState === null || previousSemanticState === semanticState) {
+      noProgressCount += 1;
+    } else {
+      noProgressCount = 0;
+    }
+    previousSemanticState = semanticState;
+  }
+
+  return {
+    executed_mutations: executedMutations,
+    fourth_mutation_allowed: executedMutations >= 4,
+    semantic_progress: noProgressCount === 0,
+    outcome: noProgressCount >= policy.no_progress_limit
+      ? 'root_cause_summary_or_block'
+      : executedMutations >= policy.mutation_budget
+        ? 'mutation_budget_exhausted'
+        : 'continue'
+  };
 }

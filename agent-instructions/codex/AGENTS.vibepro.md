@@ -25,6 +25,11 @@ When a repository uses VibePro:
 - Open or refresh the PR through the repository's normal GitHub flow, including `gh pr create` where that is the repository convention. `vibepro pr create` is optional convenience, not required authority.
 - Let CI run the full suite. Fix only failures caused by the proposed change.
 - Merge only through the repository's normal review and permission boundary. VibePro does not authorize deploys, production writes, secret access, or external actions.
+- Before retrying an external side effect, read the previous run and carry its run ID, first failure boundary and error, an observable code/configuration/credential delta, the retry hypothesis, and the terminal receipt target. If those facts cannot be read, stop and report the observability gap.
+- Distinguish `accepted`, `processing`, `delivered`, and `verified-complete`. Upload, enqueue, or API acceptance is not completion; only the declared terminal receipt proves `verified-complete`.
+- Treat tool success as progress only when the failure boundary, error, observable delta, hypothesis, or terminal receipt changes. After three no-progress mutations for the same artifact and operation, forbid a fourth mutation and converge on a root-cause summary or explicit block.
+- Identify the first failure boundary before expanding across hosts, deployments, credentials, or networks. If it remains unknown, record the expansion rationale and carry the unidentified boundary forward.
+- VibePro publishes an instruction contract; it does not intercept external execution. The host or adapter that owns the operation must enforce the mutation stop. If it cannot, do not execute the mutation: block locally, report the missing capability, and open an upstream host issue. Do not claim runtime prevention from this contract alone.
 
 Do not use or require retired contracts such as:
 

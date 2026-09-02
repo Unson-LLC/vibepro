@@ -69,6 +69,50 @@ More evidence is not progress by itself. A new artifact, review, or test run cou
     "deterministic_fixture_required": true,
     "fresh_task_smoke_max": 1
   },
+  "external_side_effects": {
+    "read_before_write": true,
+    "required_retry_context": [
+      "previous_run_id",
+      "first_failure_boundary",
+      "error_code",
+      "observable_delta",
+      "retry_hypothesis",
+      "terminal_receipt_target"
+    ],
+    "retry_requires_observable_delta": true,
+    "mutation_budget": 3,
+    "no_progress_limit": 3,
+    "semantic_progress_fields": [
+      "first_failure_boundary",
+      "error_code",
+      "observable_delta",
+      "retry_hypothesis",
+      "terminal_receipt"
+    ],
+    "at_no_progress_limit": "root_cause_summary_or_block",
+    "progress_states": [
+      "accepted",
+      "processing",
+      "delivered",
+      "verified-complete"
+    ],
+    "non_terminal_states": [
+      "accepted",
+      "processing",
+      "delivered"
+    ],
+    "completion_state": "verified-complete",
+    "scope_expansion": {
+      "requires_first_failure_boundary": true,
+      "when_boundary_unknown": [
+        "record_expansion_rationale",
+        "carry_forward_unidentified_boundary"
+      ]
+    },
+    "enforcement_mode": "instruction_contract",
+    "host_runtime_boundary": "host_enforces_external_mutation_stop",
+    "unsupported_host_action": "block_mutation_and_open_upstream_issue"
+  },
   "blocking_finding_action": "fix_then_reverify_affected_surface",
   "non_blocking_finding_action": "follow_up_story",
   "review_runtime_failure_action": "report_runtime_failure_without_product_finding",
@@ -181,6 +225,18 @@ After the PR exists:
 
 Do not import CI evidence and then restart the local review workflow.
 
+### 8. Bound external side effects
+
+When diagnosis or recovery can create an external side effect, define its `success_contract`, `first_failure_boundary`, `terminal_receipt`, and `mutation_budget` before retrying it. An upload, enqueue, or API acceptance is not completion. Report the observed state separately as `accepted`, `processing`, `delivered`, or `verified-complete`; only the last state, backed by the declared terminal receipt, completes the task.
+
+Read the previous run before writing again. Every retry must carry the previous run ID, first failing stage and error code, an observable code/configuration/credential delta, the hypothesis connecting that delta to the failure, and the terminal receipt to inspect. If the previous run cannot be read, report that missing observability as a blocker instead of guessing that another mutation will help.
+
+Tool success is not semantic progress. Progress exists only when at least one declared semantic field changes: the first failure boundary, error code, observable delta, supported or rejected hypothesis, or terminal receipt. Apply at most three mutations for one artifact and operation. If the same boundary and error persist without semantic progress three times, do not perform a fourth mutation. Carry forward the known facts, rejected hypotheses, unidentified boundary, and next smallest read-only probe, then produce a root-cause summary or explicit block.
+
+Identify the first failure boundary before expanding across hosts, deployments, credentials, or networks. If that boundary cannot be identified, record why the additional surface is necessary and carry the unidentified boundary forward. Terms such as “after synchronization”, “aligned”, or “recovered” require evidence for that claimed state.
+
+VibePro publishes an instruction contract but does not own or intercept external execution. The Codex/Claude host or adapter that can perform the side effect must enforce the stop decision. When the host cannot enforce it, do not execute the mutation: state that capability boundary, block locally, and open an upstream host issue. Do not claim runtime prevention from this Skill alone, and do not weaken the local completion or retry criteria.
+
 ## Forbidden Workflow Patterns
 
 Do not:
@@ -219,6 +275,8 @@ Do not stash, reset, restore, or overwrite a dirty worktree before classifying i
 - review runtimeのtimeoutや誤入力を製品不具合として数えた。
 - 受入条件と無関係なfindingを現在のStoryへ追加した。
 - PR作成前に複数段階のGateを再開しようとしている。
+- 同一artifact・operationでsemantic progressなしの外部mutationを4回目まで実行しようとしている。
+- uploadやAPI受付だけを`verified-complete`として報告しようとしている。
 
 この場合はdispatchを止め、受入範囲・影響テスト・具体的なblocking findingだけで現在のPRを判断する。
 
