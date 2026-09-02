@@ -28,7 +28,7 @@ VibePro は、判断DAGを中核に持つ6つの実証系（Brainbase / VibePro 
 | Execution | actionable 判断を `story plan` へ binding。実装 commit への到達を結ぶ receipt はない（run-lineage は dormant） | P2（binding まで） |
 | Evaluation | disposition と Outcome を時間分離して append。Outcome は次回 prepare の history boundary へ feedback | P2 |
 
-実 Story での run / Outcome はリポジトリ内に0件（`.vibepro/*` は gitignore）。したがって全層とも P3 以上の証明はない。
+実 Story での運用は 2026-09-03 時点で applicability 8 件（7 repo、Codex 43 セッション）が全件 not_applicable で、評価・Outcome への到達は 0 件（Ledger `VPJ-OBS-001`）。したがって全層とも P3 以上の証明はない。
 
 ## non_goals
 
@@ -77,6 +77,7 @@ open:
 2. 採択 authority が自由文字列で scope 検証がない（`VPJ-GAP-004`）。
 3. 決定・検証レコードは upsert で append-only ではない（`VPJ-GAP-006`）。
 4. `run-lineage.js` は dormant で、判断→実装の execution receipt がない（`VPJ-GAP-008`）。
+5. applicability の判定基準が未定義で、実運用は入口で全件 no になっていた（`VPJ-GAP-009`、本Storyで基準を定義）。Codex 側の Skill 配布が 8/8 版で止まっている（`VPJ-GAP-010`）。
 
 resolved（2026-09-02）: `VPJ-GAP-001`（PR #514: workflow Skill に判断ループ手順）、`VPJ-GAP-002` / `VPJ-GAP-007`（PR #516: adjudication 文書を historical 化）、`VPJ-GAP-005`（PR #515: 採択 digest 不一致テスト）。
 

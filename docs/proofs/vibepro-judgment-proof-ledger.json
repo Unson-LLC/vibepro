@@ -395,7 +395,7 @@
         "自動観測（CI・merge・runtime）からの Outcome 生成は存在しない"
       ],
       "not_proven": [
-        "実 Story での Outcome 記録（リポジトリ内に実 run が 0 件、P3 以上なし）",
+        "実 Story での Outcome 記録（VPJ-OBS-001: applicability 8 件はすべて not_applicable、評価到達 0 件、Outcome 0 件。P3 以上なし）",
         "expected_outcomes と観測結果の突合による自動判定"
       ],
       "transfer_targets": {
@@ -776,6 +776,27 @@
       ],
       "consequence": "Execution 層の証明が P1 単体テストに留まる",
       "status": "open"
+    },
+    {
+      "id": "VPJ-GAP-009",
+      "status": "open",
+      "summary": "judgment applicability の判定基準（何が applicable か）が Skill・CLI help・設計文書に定義されておらず、実運用 8 件すべてが multi-tenant / 権限の観点で not_applicable と記録された",
+      "evidence": "VPJ-OBS-001; grep -i applicab skills/vibepro-workflow/SKILL.md に基準文なし",
+      "related_claims": [
+        "VPJ-AUTH-009",
+        "VPJ-EVAL-010"
+      ],
+      "consequence": "ループが入口で無効化され、P4 以上の証拠が構造的に蓄積されない。観測者は「実運用あり」と誤読しうる"
+    },
+    {
+      "id": "VPJ-GAP-010",
+      "status": "open",
+      "summary": "Codex にインストール済みの vibepro-workflow Skill（~/.codex/skills、2026-08-08 版）は #514 以前で判断ループ手順を含まない",
+      "evidence": "ls -la ~/.codex/skills/vibepro-workflow/SKILL.md → Aug 8; grep -c judgment == 1",
+      "related_claims": [
+        "VPJ-AUTH-009"
+      ],
+      "consequence": "Skill 修正が配布されるまで実運用の挙動は変わらない"
     }
   ],
   "transfer_hypotheses": [
@@ -838,6 +859,47 @@
       "expected_evidence": "90日プログラムの判断記録が recommendation / adoption / outcome の三記録で残る",
       "falsifier": "現場運用で三記録が維持されず単一メモへ退化する",
       "status": "proposed"
+    }
+  ],
+  "observations": [
+    {
+      "id": "VPJ-OBS-001",
+      "observed_at": "2026-09-03",
+      "kind": "forward_use_inventory",
+      "summary": "実 Story での Development Judgment ループの到達段階を、gitignore 外の .vibepro-store / .vibepro（7 repo）と Codex セッションログから集計した",
+      "method": "find */.vibepro-store/**/development-judgment と ~/.codex/sessions/2026/09 の --judgment-applicable grep",
+      "findings": {
+        "applicability_records": 8,
+        "repos": [
+          "vibepro",
+          "brainbase",
+          "growin-brainbase-docs",
+          "techknight",
+          "tech-knight-platform",
+          "Aitle"
+        ],
+        "applicable_yes": 0,
+        "applicable_no": 8,
+        "reached_prepare": 0,
+        "reached_adopt": 0,
+        "reached_evaluate": 0,
+        "reached_disposition": 0,
+        "reached_outcome": 0,
+        "codex_sessions_with_inline_flag_2026_09": 43,
+        "codex_sessions_with_yes": 0,
+        "entry_path": "story plan --judgment-applicable no --judgment-reason <text>（judgment applicability record の直接呼び出しは 0）",
+        "pre_loop_senior_judgment_runs": 1,
+        "pre_loop_run_example": "story-vibepro-public-doc-contract-ci-repair run judgment-public-doc-contract-ci-20260821 (2026-08-20, VALUE / proceed, outcome なし)"
+      },
+      "interpretation": "ループは発火しているが入口で全件 not_applicable になり、判断・採択・Outcome の実運用証拠は 0 件。理由文は「テナント・権限・組織判断を変えないから」という同一の型で、multi-tenant applicability 判定器の語彙と一致する。judgment applicability の基準が Skill・CLI help・設計文書のどこにも定義されていないため、エージェントが別の問いに答えている",
+      "related_gaps": [
+        "VPJ-GAP-009",
+        "VPJ-GAP-010"
+      ],
+      "related_claims": [
+        "VPJ-AUTH-009",
+        "VPJ-EVAL-010"
+      ]
     }
   ]
 }

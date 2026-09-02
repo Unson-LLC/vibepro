@@ -31,7 +31,9 @@ Story selected
 
 ### Meaning Plane
 
-- applicabilityを判断する
+- applicabilityを判断する。基準は「このStoryにまだ工学的な選択が残っているか」であり、tenant境界・権限・組織判断の有無ではない
+  - applicable: 実行可能な選択肢が2つ以上ある、問題や効果の主張が未検証、価値未観測の構造追加がある（VALUE / SIMPLIFY / VALIDATE の判断が残る）
+  - not applicable: 採択済みのStory / Architecture / Spec / planが単一の選択肢を固定しており、選択が残っていない（固定した決定を理由に書く）
 - draftのproblem frame、constraint、axes、hypotheses、optionsをレビューする
 - `judgment input adopt`で誰がどの権限根拠により意味を採択したかを固定する
 
