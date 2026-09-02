@@ -539,3 +539,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:512:start -->
 - [PR #512](https://github.com/Unson-LLC/vibepro/pull/512) — [2026-09](/releases/2026-09): chore: prepare 0.2.0-beta.19 release
 <!-- vibepro-release-index-pr:512:end -->
+
+<!-- vibepro-release-index-pr:513:start -->
+- [PR #513](https://github.com/Unson-LLC/vibepro/pull/513) — [2026-09](/releases/2026-09): docs: 判断DAG実証系としてのVibePro ProfileとProof Ledgerを正本化
+<!-- vibepro-release-index-pr:513:end -->

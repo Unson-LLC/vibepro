@@ -2818,3 +2818,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 - update to `vibepro@0.2.0-beta.19`
 
 <!-- vibepro-release-pr:512:end -->
+
+<!-- vibepro-release-pr:513:start -->
+## [#513](https://github.com/Unson-LLC/vibepro/pull/513) docs: 判断DAG実証系としてのVibePro ProfileとProof Ledgerを正本化
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:24:18Z
+- Commit: `d1664cf5b54452f7290a75716d1783268a360299`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:513:end -->
