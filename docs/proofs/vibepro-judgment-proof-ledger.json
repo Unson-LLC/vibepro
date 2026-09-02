@@ -706,7 +706,10 @@
         "VPJ-AUTH-009",
         "VPJ-EVAL-010"
       ],
-      "consequence": "標準手順に従うエージェントは判断ループを実行せず、P4 以上の証拠が蓄積されない"
+      "consequence": "標準手順に従うエージェントは判断ループを実行せず、P4 以上の証拠が蓄積されない",
+      "status": "resolved",
+      "resolved_by": "PR #514 (skills/vibepro-workflow/SKILL.md step 3 + outcome close after merge)",
+      "resolved_at": "2026-09-02"
     },
     {
       "id": "VPJ-GAP-002",
@@ -715,7 +718,10 @@
       "related_claims": [
         "VPJ-HIST-015"
       ],
-      "consequence": "historical proof を current として数える事故の温床"
+      "consequence": "historical proof を current として数える事故の温床",
+      "status": "resolved",
+      "resolved_by": "PR #516 (adjudication removed from skills/vibepro-gate-evidence/SKILL.md and docs/guide/agent-review.md)",
+      "resolved_at": "2026-09-02"
     },
     {
       "id": "VPJ-GAP-003",
@@ -724,7 +730,8 @@
       "related_claims": [
         "VPJ-EVAL-010"
       ],
-      "consequence": "FX 型の事前登録・指標凍結の効果を VibePro で検証できない"
+      "consequence": "FX 型の事前登録・指標凍結の効果を VibePro で検証できない",
+      "status": "open"
     },
     {
       "id": "VPJ-GAP-004",
@@ -734,7 +741,8 @@
         "VPJ-AUTH-009",
         "VPJ-P0-017"
       ],
-      "consequence": "Zeims 型 scoped-authority の transfer 前提が未整備"
+      "consequence": "Zeims 型 scoped-authority の transfer 前提が未整備",
+      "status": "open"
     },
     {
       "id": "VPJ-GAP-006",
@@ -743,7 +751,8 @@
       "related_claims": [
         "VPJ-DAG-002"
       ],
-      "consequence": "「replay does not mutate history」は判断 run にのみ成立し、決定・証跡レコードには成立しない。横断 fixture へ提示する際に範囲を限定する必要がある"
+      "consequence": "「replay does not mutate history」は判断 run にのみ成立し、決定・証跡レコードには成立しない。横断 fixture へ提示する際に範囲を限定する必要がある",
+      "status": "open"
     },
     {
       "id": "VPJ-GAP-007",
@@ -752,7 +761,10 @@
       "related_claims": [
         "VPJ-HIST-015"
       ],
-      "consequence": "observer が design を current と誤読する"
+      "consequence": "observer が design を current と誤読する",
+      "status": "resolved",
+      "resolved_by": "PR #516 (architecture doc and 4 Stories marked status: historical)",
+      "resolved_at": "2026-09-02"
     },
     {
       "id": "VPJ-GAP-008",
@@ -762,7 +774,8 @@
         "VPJ-LIN-014",
         "VPJ-EXEC-011"
       ],
-      "consequence": "Execution 層の証明が P1 単体テストに留まる"
+      "consequence": "Execution 層の証明が P1 単体テストに留まる",
+      "status": "open"
     }
   ],
   "transfer_hypotheses": [
