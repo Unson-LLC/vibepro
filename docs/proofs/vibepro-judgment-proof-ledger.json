@@ -165,19 +165,28 @@
       "capability": "adopted_input_digest_binding",
       "layer": "authority",
       "claim": "採択済み入力の SHA-256 と評価時の入力バイト列が一致しなければ評価を拒否する",
-      "depth": "P0",
-      "status": "current_untested",
+      "depth": "P2",
+      "status": "current_integrated",
       "source": {
         "implementation": [
           "src/judgment-operations.js"
         ],
-        "tests": []
+        "tests": [
+          {
+            "file": "test/judgment-operating-loop.test.js",
+            "names": [
+              "evaluate rejects an adopted input that was mutated on disk after adoption",
+              "re-adopting the same run id with an unchanged input file is idempotent",
+              "re-adopting the same run id with a mutated input file is rejected"
+            ]
+          }
+        ]
       },
       "conditions": [
         "adoptJudgmentInput が input_sha256 を保存し evaluateOperationalJudgmentWorkflow が再計算して比較する"
       ],
       "not_proven": [
-        "digest 不一致で拒否されることを固定するテストが存在しない（実装のみ）"
+        "テストは CLI 黒箱でファイル改変経路のみを固定する。バイト列比較のため意味的に同一な再整形入力も拒否される挙動は未固定"
       ],
       "transfer_targets": {
         "brainbase": "canonical digest / manifest lock と同型",
@@ -726,15 +735,6 @@
         "VPJ-P0-017"
       ],
       "consequence": "Zeims 型 scoped-authority の transfer 前提が未整備"
-    },
-    {
-      "id": "VPJ-GAP-005",
-      "summary": "採択 digest 不一致で評価が拒否される経路にテストがない",
-      "evidence": "grep 'changed after adoption' test/ == 0",
-      "related_claims": [
-        "VPJ-DAG-004"
-      ],
-      "consequence": "P0 に留まり、Brainbase digest fixture の実装元として提示できない"
     },
     {
       "id": "VPJ-GAP-006",
