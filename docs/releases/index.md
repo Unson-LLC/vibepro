@@ -530,3 +530,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:505:start -->
 - [PR #505](https://github.com/Unson-LLC/vibepro/pull/505) — [2026-08](/releases/2026-08): chore: release VibePro 0.2.0-beta.18
 <!-- vibepro-release-index-pr:505:end -->
+
+<!-- vibepro-release-index-pr:511:start -->
+- [PR #511](https://github.com/Unson-LLC/vibepro/pull/511) — [2026-09](/releases/2026-09): fix: 外部処理の再投入を証跡ベースで収束させる
+<!-- vibepro-release-index-pr:511:end -->
