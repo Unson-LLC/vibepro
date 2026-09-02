@@ -41,6 +41,14 @@ export async function validateReportNarrative(repoRoot, narrative, fingerprint, 
       message: `narrative.story_id "${narrative.story_id}" does not match expected "${options.expectedStoryId}"`
     });
   }
+  const caller = narrative.generated_by?.caller;
+  if (caller !== undefined
+    && (typeof caller !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$/.test(caller))) {
+    errors.push({
+      code: 'generated_by_caller',
+      message: 'generated_by.caller must be a single safe identifier of 1-64 characters'
+    });
+  }
   if (!Array.isArray(narrative.narrative_slots)) {
     errors.push({ code: 'slots_missing', message: 'narrative_slots must be an array' });
     return { ok: false, errors, warnings, narrative };
@@ -113,7 +121,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
     }
     if (/\r|\n/.test(text)
       || /^\s*(?:(?:[-*_]\s*){3,}$|#{1,6}\s|[-+*]\s|>\s|\d+\.\s|```|~~~|<)/.test(text)
-      || /<[^>]+>|\*\*|__|`|\[[^\]]+\]\([^)]*\)/.test(text)) {
+      || /<[^>]+>|\*\*|__|~~|\*[^*\r\n]+\*|(?:^|[^A-Za-z0-9])_[^_\r\n]+_(?:$|[^A-Za-z0-9])|`|\[[^\]]+\]\([^)]*\)/.test(text)) {
       errors.push({
         code: 'slot_text_structure',
         message: `${locator}.text must be single-line prose without markdown structure`

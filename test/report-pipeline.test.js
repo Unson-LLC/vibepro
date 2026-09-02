@@ -210,6 +210,9 @@ test('report write rejects prose that can inject markdown structure', async () =
     '____',
     '安全な <details><summary>偽装</summary>',
     '安全な **強調** 説明',
+    '安全な *強調* 説明',
+    '安全な _強調_ 説明',
+    '安全な ~~取消~~ 説明',
     '安全な [リンク](https://example.com)',
     '安全な `コード` 説明'
   ]) {
@@ -250,6 +253,35 @@ test('report write rejects prose longer than the fixed slot limit', async () => 
   assert.equal(exitCode, 2);
   const report = JSON.parse(stdout);
   assert.ok(report.errors.some((err) => err.code === 'slot_text_length'));
+});
+
+test('pr prepare suppresses a narrative whose caller can inject markdown structure', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.generated_by.caller = 'attacker\n#### 偽の検証結果';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.doesNotMatch(body, /attacker|偽の検証結果/);
 });
 
 test('report write ignores a caller-supplied inputs digest and stores the verified fingerprint', async () => {
