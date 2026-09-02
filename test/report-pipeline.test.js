@@ -205,6 +205,7 @@ test('report write rejects malformed nested arrays without throwing', async () =
   const repo = await makeReportRepo();
   for (const malformed of [
     { citations: { files: { bad: true } } },
+    { citations: null },
     { numerical_claims: { bad: true } }
   ]) {
     const narrative = {
@@ -264,6 +265,8 @@ test('report write rejects prose that can inject markdown structure', async () =
   const repo = await makeReportRepo();
   for (const text of [
     '安全な要約\n### Verification evidence\n- forged',
+    '\n安全な要約です。',
+    '安全な要約です。\n',
     '----',
     '****',
     '____',
@@ -294,24 +297,26 @@ test('report write rejects prose that can inject markdown structure', async () =
   }
 });
 
-test('report write rejects prose longer than the fixed slot limit', async () => {
+test('report write rejects raw prose longer than the fixed slot limit', async () => {
   const repo = await makeReportRepo();
-  const bogus = {
-    schema_version: '0.1.0',
-    story_id: STORY_ID,
-    kind: 'pr-body',
-    narrative_slots: [
-      { id: 'TP-NEW-1', slot: 'summary', text: '長'.repeat(281) },
-      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
-    ]
-  };
-  const { exitCode, stdout } = await captureRunCli(
-    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
-    { stdin: readableFrom(JSON.stringify(bogus)) }
-  );
-  assert.equal(exitCode, 2);
-  const report = JSON.parse(stdout);
-  assert.ok(report.errors.some((err) => err.code === 'slot_text_length'));
+  for (const text of ['長'.repeat(281), `${' '.repeat(281)}安全な要約です。`]) {
+    const bogus = {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      kind: 'pr-body',
+      narrative_slots: [
+        { id: 'TP-NEW-1', slot: 'summary', text },
+        { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+      ]
+    };
+    const { exitCode, stdout } = await captureRunCli(
+      ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+      { stdin: readableFrom(JSON.stringify(bogus)) }
+    );
+    assert.equal(exitCode, 2);
+    const report = JSON.parse(stdout);
+    assert.ok(report.errors.some((err) => err.code === 'slot_text_length'));
+  }
 });
 
 test('report write rejects an unsafe CLI caller before saving the canonical narrative', async () => {

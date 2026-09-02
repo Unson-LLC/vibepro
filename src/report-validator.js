@@ -137,11 +137,12 @@ async function validateSlot(repoRoot, slot, index, ctx) {
   if (typeof slot.text !== 'string' || slot.text.trim().length < 4) {
     errors.push({ code: 'slot_text', message: `${locator}.text must be a non-empty string` });
   } else {
+    const rawText = slot.text;
     const text = slot.text.trim();
-    if (text.length > 280) {
+    if (rawText.length > 280) {
       errors.push({ code: 'slot_text_length', message: `${locator}.text must be 280 characters or fewer` });
     }
-    if (/\r|\n/.test(text)
+    if (/\r|\n/.test(rawText)
       || /^\s*(?:(?:[-*_]\s*){3,}$|#{1,6}\s|[-+*]\s|>\s|\d+\.\s|```|~~~|<)/.test(text)
       || /<[^>]+>|\*\*|__|~~|\*[^*\r\n]+\*|(?:^|[^A-Za-z0-9])_[^_\r\n]+_(?:$|[^A-Za-z0-9])|`|\[[^\]]+\]\([^)]*\)/.test(text)) {
       errors.push({
@@ -151,7 +152,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
     }
   }
 
-  const citations = slot.citations ?? {};
+  const citations = slot.citations === undefined ? {} : slot.citations;
   if (!citations || typeof citations !== 'object' || Array.isArray(citations)) {
     errors.push({ code: 'citations_shape', message: `${locator}.citations must be an object` });
     return errors;
