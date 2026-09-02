@@ -563,3 +563,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:519:start -->
 - [PR #519](https://github.com/Unson-LLC/vibepro/pull/519) — [2026-09](/ja/releases/2026-09): docs(skill): Development Judgment の適用要否基準を定義し、実運用の入口無効化を台帳へ記録
 <!-- vibepro-release-index-pr:519:end -->
+
+<!-- vibepro-release-index-pr:520:start -->
+- [PR #520](https://github.com/Unson-LLC/vibepro/pull/520) — [2026-09](/ja/releases/2026-09): docs(cli): story plan / judgment applicability のヘルプに適用要否の基準を添える
+<!-- vibepro-release-index-pr:520:end -->
