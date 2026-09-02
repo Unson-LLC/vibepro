@@ -2965,3 +2965,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:520:end -->
+
+<!-- vibepro-release-pr:521:start -->
+## [#521](https://github.com/Unson-LLC/vibepro/pull/521) fix: 保存済みPR説明を生成本文へ投影
+
+- Author: @sintariran
+- Merged: 2026-09-02T23:06:14Z
+- Commit: `73f3a5b7a0423978c562243bde1e586664680490`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:521:end -->

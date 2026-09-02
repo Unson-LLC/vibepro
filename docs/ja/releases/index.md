@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-09-02 | [`0.2.0-beta.20`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.20) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-02 | [`0.2.0-beta.19`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.19) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-31 | [`0.2.0-beta.18`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.18) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-30 | [`0.2.0-beta.17`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.17) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -567,3 +568,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:520:start -->
 - [PR #520](https://github.com/Unson-LLC/vibepro/pull/520) — [2026-09](/ja/releases/2026-09): docs(cli): story plan / judgment applicability のヘルプに適用要否の基準を添える
 <!-- vibepro-release-index-pr:520:end -->
+
+<!-- vibepro-release-index-pr:521:start -->
+- [PR #521](https://github.com/Unson-LLC/vibepro/pull/521) — [2026-09](/ja/releases/2026-09): fix: 保存済みPR説明を生成本文へ投影
+<!-- vibepro-release-index-pr:521:end -->
