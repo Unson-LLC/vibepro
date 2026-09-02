@@ -114,6 +114,7 @@ import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
 import {
   readNarrative,
+  readNarrativeForRecovery,
   REPORT_KINDS,
   stabilizeTalkingPointIds,
   writeNarrative
@@ -1754,12 +1755,15 @@ if (command === 'integration') {
           taskId: getOption(rest, '--task'),
           groupId: getOption(rest, '--group')
         });
-        const validation = await validateReportNarrative(repoRoot, parsed, fingerprint, { expectedStoryId: storyId });
+        const validation = await validateReportNarrative(repoRoot, parsed, fingerprint, {
+          expectedStoryId: storyId,
+          allowTemporaryIds: true
+        });
         if (!validation.ok) {
           write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
           return { exitCode: 2, command, subcommand, validation };
         }
-        const previousNarrative = await readNarrative(repoRoot, storyId, kind);
+        const previousNarrative = await readNarrativeForRecovery(repoRoot, storyId, kind);
         const seeded = {
           ...parsed,
           schema_version: '0.1.0',
@@ -1771,11 +1775,20 @@ if (command === 'integration') {
             stage: parsed.generated_by?.stage ?? 'ai_synthesis'
           },
           previous_report_id: previousNarrative ? (previousNarrative.generated_at ?? null) : null,
-          inputs_digest: parsed.inputs_digest ?? fingerprint.inputs_digest
+          // The digest is verification metadata, not caller-authored prose.
+          // Always bind the saved narrative to the fingerprint VibePro read.
+          inputs_digest: fingerprint.inputs_digest
         };
         const stabilized = stabilizeTalkingPointIds(seeded, previousNarrative);
+        const finalValidation = await validateReportNarrative(repoRoot, stabilized, fingerprint, {
+          expectedStoryId: storyId
+        });
+        if (!finalValidation.ok) {
+          write(stdout, `${JSON.stringify({ ok: false, errors: finalValidation.errors, warnings: finalValidation.warnings }, null, 2)}\n`);
+          return { exitCode: 2, command, subcommand, validation: finalValidation };
+        }
         await writeNarrative(repoRoot, storyId, kind, stabilized);
-        write(stdout, `${JSON.stringify({ ok: true, story_id: storyId, kind, slots: stabilized.narrative_slots.length, warnings: validation.warnings }, null, 2)}\n`);
+        write(stdout, `${JSON.stringify({ ok: true, story_id: storyId, kind, slots: stabilized.narrative_slots.length, warnings: finalValidation.warnings }, null, 2)}\n`);
         return { exitCode: 0, command, subcommand, narrative: stabilized };
       }
 

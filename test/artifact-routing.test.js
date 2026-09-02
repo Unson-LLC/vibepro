@@ -169,6 +169,24 @@ test('task JSON remains read authority after Markdown regeneration', async () =>
   assert.match(rendered, /source_sha256=[a-f0-9]{64}/);
   assert.ok(rendered.indexOf('## A: first') < rendered.indexOf('## B: second'));
   await assert.rejects(() => writeArtifactProjections(root, route, JSON.stringify({ tasks: [{ id: 'A' }, { id: 'A' }] })), (error) => error.code === 'duplicate_task_id');
+
+  const acceptedContent = JSON.stringify({
+    story_id: storyId,
+    tasks: [{
+      task_id: 'TASK-001',
+      story_id: storyId,
+      title: 'accepted task',
+      allowed_paths: ['src/example.js'],
+      depends_on: ['TASK-000']
+    }]
+  });
+  await writeArtifactProjections(root, route, acceptedContent);
+  const acceptedRendered = await readFile(path.join(root, 'docs/features/payments/06_tasks.md'), 'utf8');
+  assert.match(acceptedRendered, /## TASK-001: accepted task/);
+  assert.match(acceptedRendered, /target_files: src\/example\.js/);
+  assert.match(acceptedRendered, /dependencies: TASK-000/);
+  assert.doesNotMatch(acceptedRendered, /undefined/);
+  assert.doesNotMatch(acceptedRendered, /[ \t]+$/m);
 });
 
 test('artifact resolve text and JSON expose ownership, canonical authority, profile, and renderer', async () => {
@@ -1066,4 +1084,3 @@ test('story derive binds global Graphify import to the configured current Story 
   assert.doesNotMatch(JSON.stringify(result.result), /story-default/);
   await access(path.join(root, '.vibepro/graphify/graph.json'));
 });
-
