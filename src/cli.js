@@ -216,7 +216,7 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
-  vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]
+  vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
@@ -244,7 +244,7 @@ Usage:
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # deprecated compatibility entry; routes to story diagnose
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
@@ -333,7 +333,7 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
-  vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]
+  vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
@@ -354,7 +354,7 @@ Usage:
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
-  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]
+  vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
