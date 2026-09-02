@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-08-31 | [`0.2.0-beta.18`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.18) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-30 | [`0.2.0-beta.17`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.17) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-25 | [`0.2.0-beta.16`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.16) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-08-24 | [`0.2.0-beta.15`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.15) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -525,3 +526,11 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:504:start -->
 - [PR #504](https://github.com/Unson-LLC/vibepro/pull/504) — [2026-08](/ja/releases/2026-08): feat: bind Brainbase runtime context and emit verified learning
 <!-- vibepro-release-index-pr:504:end -->
+
+<!-- vibepro-release-index-pr:505:start -->
+- [PR #505](https://github.com/Unson-LLC/vibepro/pull/505) — [2026-08](/ja/releases/2026-08): chore: release VibePro 0.2.0-beta.18
+<!-- vibepro-release-index-pr:505:end -->
+
+<!-- vibepro-release-index-pr:511:start -->
+- [PR #511](https://github.com/Unson-LLC/vibepro/pull/511) — [2026-09](/ja/releases/2026-09): fix: 外部処理の再投入を証跡ベースで収束させる
+<!-- vibepro-release-index-pr:511:end -->
