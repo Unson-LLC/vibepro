@@ -61,7 +61,7 @@
         ]
       },
       "first_seen_at": "2026-09-02T16:39:36.114Z",
-      "last_revised_at": "2026-09-02T17:01:44.648Z"
+      "last_revised_at": "2026-09-02T17:26:26.512Z"
     },
     {
       "id": "INV-001",
@@ -104,7 +104,7 @@
         ]
       },
       "first_seen_at": "2026-09-02T16:39:36.114Z",
-      "last_revised_at": "2026-09-02T17:01:44.648Z"
+      "last_revised_at": "2026-09-02T17:26:26.512Z"
     },
     {
       "id": "C-001",
@@ -161,12 +161,12 @@
         ]
       },
       "first_seen_at": "2026-09-02T16:39:36.114Z",
-      "last_revised_at": "2026-09-02T17:01:44.648Z"
+      "last_revised_at": "2026-09-02T17:26:26.512Z"
     },
     {
       "id": "INV-002",
       "type": "invariant",
-      "statement": "保存済み説明の入力指紋が現在のStory、HEAD、トレーサビリティ、Spec、ドリフト、検証、レビュー状態と一致しない場合、pr prepare は古い説明本文を表示せず再生成が必要だと明示する。",
+      "statement": "保存済み説明の入力指紋が現在のStory、HEAD、トレーサビリティ、Spec、ドリフト、検証証拠の詳細、レビュー役割別状態と一致しない場合、pr prepare は古い説明本文を表示せず再生成が必要だと明示する。",
       "rationale": "過去の検証状態に基づく説明を現在の判断資料として誤表示しないため。",
       "origin": {
         "story_refs": [
@@ -195,6 +195,14 @@
           {
             "file": "test/report-pipeline.test.js",
             "case": "pr prepare suppresses stale narrative and shows an explicit refresh warning"
+          },
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "pr prepare suppresses narrative when verification evidence changes inside the same passing state"
+          },
+          {
+            "file": "test/report-pipeline.test.js",
+            "case": "pr prepare suppresses narrative when one review role changes inside needs_review"
           }
         ]
       },
@@ -203,17 +211,17 @@
         "test_pattern": [
           {
             "file_glob": "test/report-pipeline.test.js",
-            "must_cover": "pr prepare suppresses stale narrative and shows an explicit refresh warning"
+            "must_cover": "pr prepare suppresses narrative when verification evidence changes inside the same passing state"
           }
         ]
       },
       "first_seen_at": "2026-09-02T17:00:00.000Z",
-      "last_revised_at": "2026-09-02T17:01:44.648Z"
+      "last_revised_at": "2026-09-02T17:26:26.512Z"
     },
     {
       "id": "C-002",
       "type": "contract",
-      "statement": "説明スロット本文は単一行かつ280文字以内の平文に限定し、Markdown構造を含む入力と呼び出し側が指定した未検証のinputs_digestを採用しない。",
+      "statement": "説明スロット本文は単一行かつ280文字以内の平文に限定し、Markdownのブロック構造・インライン記法・HTMLを含む入力と呼び出し側が指定した未検証のinputs_digestを採用しない。",
       "rationale": "固定PR本文骨格と証拠への拘束を、生成者の入力から決定的に保護するため。",
       "origin": {
         "story_refs": [
@@ -259,7 +267,50 @@
         ]
       },
       "first_seen_at": "2026-09-02T17:00:00.000Z",
-      "last_revised_at": "2026-09-02T17:01:44.648Z"
+      "last_revised_at": "2026-09-02T17:26:26.512Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "受理済みTaskの task_id、allowed_paths、depends_on はTask派生表示のID、対象ファイル、依存関係へ正しく投影し、未定義値を表示しない。",
+      "rationale": "受理済みTaskと生成候補Taskの項目名が異なっても、利用者へ同じTask表示契約を提供するため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-007"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-pr-narrative-projection.md",
+            "section": "判断"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/artifact-routing.js",
+            "anchor": "renderTasksMarkdown"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "task JSON remains read authority after Markdown regeneration"
+          }
+        ]
+      },
+      "confidence": 1,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/artifact-routing.test.js",
+            "must_cover": "task JSON remains read authority after Markdown regeneration"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T00:00:00.000Z",
+      "last_revised_at": "2026-09-02T17:26:26.512Z"
     }
   ],
   "open_questions": [],

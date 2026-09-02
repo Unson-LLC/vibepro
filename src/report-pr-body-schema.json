@@ -42,7 +42,7 @@
           "type": "string",
           "minLength": 4,
           "maxLength": 280,
-          "pattern": "^(?!\\s*(?:#{1,6}\\s|[-+*]\\s|>\\s|[0-9]+\\.\\s|```|~~~|<))[^\\r\\n]+$",
+          "pattern": "^(?!.*(?:<[^>]+>|\\*\\*|__|`|\\[[^\\]]+\\]\\([^)]*\\)))(?!\\s*(?:(?:[-*_]\\s*){3,}$|#{1,6}\\s|[-+*]\\s|>\\s|[0-9]+\\.\\s|```|~~~|<))[^\\r\\n]+$",
           "description": "Single-line plain prose only. Markdown block structure is rejected. Maximum 280 characters."
         },
         "citations": {

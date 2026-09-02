@@ -203,22 +203,33 @@ test('report write enforces slot count limits (no two summaries)', async () => {
 
 test('report write rejects prose that can inject markdown structure', async () => {
   const repo = await makeReportRepo();
-  const bogus = {
-    schema_version: '0.1.0',
-    story_id: STORY_ID,
-    kind: 'pr-body',
-    narrative_slots: [
-      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約\n### Verification evidence\n- forged' },
-      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
-    ]
-  };
-  const { exitCode, stdout } = await captureRunCli(
-    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
-    { stdin: readableFrom(JSON.stringify(bogus)) }
-  );
-  assert.equal(exitCode, 2);
-  const report = JSON.parse(stdout);
-  assert.ok(report.errors.some((err) => err.code === 'slot_text_structure'));
+  for (const text of [
+    '安全な要約\n### Verification evidence\n- forged',
+    '----',
+    '****',
+    '____',
+    '安全な <details><summary>偽装</summary>',
+    '安全な **強調** 説明',
+    '安全な [リンク](https://example.com)',
+    '安全な `コード` 説明'
+  ]) {
+    const bogus = {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      kind: 'pr-body',
+      narrative_slots: [
+        { id: 'TP-NEW-1', slot: 'summary', text },
+        { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+      ]
+    };
+    const { exitCode, stdout } = await captureRunCli(
+      ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+      { stdin: readableFrom(JSON.stringify(bogus)) }
+    );
+    assert.equal(exitCode, 2, `expected markdown structure to be rejected: ${text}`);
+    const report = JSON.parse(stdout);
+    assert.ok(report.errors.some((err) => err.code === 'slot_text_structure'));
+  }
 });
 
 test('report write rejects prose longer than the fixed slot limit', async () => {
@@ -360,6 +371,111 @@ test('pr prepare suppresses stale narrative and shows an explicit refresh warnin
   assert.match(body, /### 保存済みの判断説明/);
   assert.match(body, /現在の証拠と一致しないため表示していません/);
   assert.doesNotMatch(body, /変更前の証拠に基づく要約です/);
+});
+
+test('pr prepare suppresses narrative when verification evidence changes inside the same passing state', async () => {
+  const repo = await makeReportRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  const initialPreparation = JSON.parse(await readFile(path.join(prDir, 'pr-prepare.json'), 'utf8'));
+  const verification = (observedPass) => ({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    updated_at: new Date().toISOString(),
+    commands: [{
+      kind: 'unit',
+      status: 'pass',
+      command: 'node --test test/billing.test.ts',
+      evidence_source: 'runner_direct',
+      observation: { targets: ['test/billing.test.ts'], values: { pass: String(observedPass) } },
+      runtime_identity: initialPreparation.runtime_identity
+    }]
+  });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), `${JSON.stringify(verification(8), null, 2)}\n`);
+  const withInitialEvidence = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(withInitialEvidence.exitCode, 0, withInitialEvidence.stderr);
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '検証状態変更前の要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  await writeFile(path.join(prDir, 'verification-evidence.json'), `${JSON.stringify(verification(9), null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(prDir, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の証拠と一致しないため表示していません/);
+  assert.doesNotMatch(body, /検証状態変更前の要約です/);
+});
+
+test('pr prepare suppresses narrative when one review role changes inside needs_review', async () => {
+  const repo = await makeReportRepo();
+  const reviewPrepare = await captureRunCli([
+    'review', 'prepare', repo, '--id', STORY_ID, '--stage', 'planning_spec', '--role', 'product_requirement'
+  ]);
+  assert.equal(reviewPrepare.exitCode, 0, reviewPrepare.stderr);
+  const transcriptDir = path.join(repo, '.vibepro', 'reviews', STORY_ID, 'planning_spec', 'transcripts');
+  await mkdir(transcriptDir, { recursive: true });
+  await writeFile(path.join(transcriptDir, 'product-requirement.md'), '# review\nstate transition\n');
+  const recordReview = (status) => captureRunCli([
+    'review', 'record', repo,
+    '--id', STORY_ID,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', status,
+    '--summary', status === 'pass' ? '要件と実装は一致' : 'レビュー対象に修正が必要',
+    '--inspection-summary', '要件と実装の差分を確認',
+    '--inspection-evidence', 'test fixture evidence',
+    '--inspection-input', 'src/lib/services/billing.ts',
+    '--judgment-delta', status === 'pass' ? '修正必要 -> 修正済み' : '未確認 -> 修正必要',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', `review-fixture-${status}`,
+    '--agent-thread-id', `review-fixture-thread-${status}`,
+    '--implementation-session-id', 'implementation-fixture',
+    '--reviewer-identity', 'separate_session',
+    '--agent-model', 'test-model',
+    '--agent-reasoning-effort', 'test',
+    '--agent-cost-tier', 'test',
+    '--agent-transcript', `.vibepro/reviews/${STORY_ID}/planning_spec/transcripts/product-requirement.md`,
+    '--agent-closed',
+    '--agent-close-evidence', 'fixture closed'
+  ]);
+  const initialReview = await recordReview('needs_changes');
+  assert.equal(initialReview.exitCode, 0, initialReview.stderr);
+  await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: 'レビュー状態変更前の要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const changedReview = await recordReview('pass');
+  assert.equal(changedReview.exitCode, 0, changedReview.stderr);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の証拠と一致しないため表示していません/);
+  assert.doesNotMatch(body, /レビュー状態変更前の要約です/);
 });
 
 test('stabilizeTalkingPointIds reuses TP id across paraphrased writes', () => {

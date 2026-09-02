@@ -135,11 +135,10 @@ function summarizeVerification(verification) {
   return {
     recorded: verification.recorded ?? false,
     updated_at: verification.updated_at ?? null,
-    commands: (verification.commands ?? []).map((command) => ({
-      kind: command.kind,
-      status: command.status,
-      command: command.command ?? null
-    }))
+    // The narrative may synthesize any persisted verification detail, so the
+    // freshness boundary must bind the complete command receipt rather than
+    // only its top-level status and command string.
+    commands: (verification.commands ?? []).map((command) => JSON.parse(JSON.stringify(command)))
   };
 }
 
@@ -150,7 +149,22 @@ function summarizeReview(review) {
     recorded: review.recorded ?? false,
     complete: review.complete ?? false,
     status: review.status ?? null,
-    summary: review.summary ?? null
+    summary: review.summary ?? null,
+    convergence_state: review.convergence?.snapshot ? {
+      exact_signature: review.convergence.snapshot.exact_signature ?? null,
+      semantic_signature: review.convergence.snapshot.semantic_signature ?? null,
+      component_hashes: review.convergence.snapshot.component_hashes ?? null
+    } : null,
+    stages: (review.stages ?? []).map((stage) => ({
+      stage: stage.stage ?? null,
+      status: stage.status ?? null,
+      role_details: (stage.role_details ?? []).map((role) => ({
+        role: role.role ?? null,
+        effective_status: role.effective_status ?? null,
+        binding_status: role.binding_status ?? null,
+        stale_reason: role.stale_reason ?? null
+      }))
+    }))
   };
 }
 
@@ -180,16 +194,8 @@ function buildInputsDigest(fingerprint) {
     traceability_sha: sha256(fingerprint.traceability),
     drift_sha: sha256(fingerprint.drift),
     spec_sha: sha256(fingerprint.inferred_spec),
-    verification_sha: sha256({
-      recorded: fingerprint.verification?.recorded ?? false,
-      commands: fingerprint.verification?.commands ?? []
-    }),
-    review_sha: sha256({
-      configured: fingerprint.review?.configured ?? false,
-      recorded: fingerprint.review?.recorded ?? false,
-      complete: fingerprint.review?.complete ?? false,
-      status: fingerprint.review?.status ?? null
-    })
+    verification_sha: sha256(fingerprint.verification),
+    review_sha: sha256(fingerprint.review)
   };
 }
 

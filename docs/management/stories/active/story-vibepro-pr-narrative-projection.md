@@ -27,8 +27,9 @@ VibePro利用者として、`vibepro report write --kind pr-body` で検証・�
 - AC-002: `summary`、`review_focus`、`risks_synthesis`、`open_questions` を固定見出しとTalking Point ID付きで表示する。
 - AC-003: 説明が存在しない場合は空の専用欄を増やさず、従来のPR本文を維持する。
 - AC-004: 生成PR本文を直接読む回帰テストで、保存済み説明の表示と未保存時の非表示を固定する。
-- AC-005: 保存済み説明が現在のStory・HEAD・検証・レビュー状態と一致しない場合、古い本文は表示せず更新が必要だと明示する。
-- AC-006: 説明スロットは単一行かつ280文字以内の平文だけを許可し、Markdown構造を注入できる入力を保存時に拒否する。
+- AC-005: 保存済み説明が現在のStory・HEAD・検証証拠の詳細・レビュー役割別状態と一致しない場合、古い本文は表示せず更新が必要だと明示する。
+- AC-006: 説明スロットは単一行かつ280文字以内の平文だけを許可し、Markdownのブロック構造・インライン記法・HTMLを注入できる入力を保存時に拒否する。
+- AC-007: 受理済みTaskの `task_id`、`allowed_paths`、`depends_on` をTask派生表示へ正しく投影し、未定義値を表示しない。
 
 ## Tasks
 
@@ -37,3 +38,4 @@ VibePro利用者として、`vibepro report write --kind pr-body` で検証・�
 - [ ] 固定骨格内へ説明スロットを描画する。
 - [ ] 対象テストとVibePro Gateを通す。
 - [ ] 保存説明の鮮度拘束とMarkdown境界を回帰テストで固定する。
+- [ ] 受理済みTaskの派生表示を正しい項目名で固定する。

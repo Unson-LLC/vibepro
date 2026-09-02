@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-narrative-projection",
+  "tasks": [
+    {
+      "task_id": "VP-PR-NARRATIVE-001",
+      "story_id": "story-vibepro-pr-narrative-projection",
+      "title": "保存済み説明をPR本文へ鮮度検証付きで投影する",
+      "allowed_paths": [
+        "src/pr-manager.js",
+        "src/artifact-routing.js",
+        "src/report-fingerprint.js",
+        "src/report-validator.js",
+        "src/report-pr-body-schema.json",
+        "test/report-pipeline.test.js",
+        "test/report-fingerprint.test.js",
+        "test/pr-manager.test.js",
+        "test/pr-artifact-consistency.test.js",
+        "test/artifact-routing.test.js",
+        "docs/management/stories/active/story-vibepro-pr-narrative-projection.md",
+        "docs/architecture/story-vibepro-pr-narrative-projection.md",
+        "docs/features/pr-narrative-projection",
+        "package.json",
+        "package-lock.json"
+      ],
+      "acceptance_criteria": [
+        "保存済み説明が生成PR本文の固定欄へ表示される。",
+        "説明が未保存または現在証拠と不一致なら古い説明を表示しない。",
+        "同一HEADで検証証拠またはレビュー役割の状態が変わった場合も再生成を要求する。",
+        "Markdown構造、インライン記法、HTMLを含む説明を保存時に拒否する。",
+        "受理済みTaskをID・対象ファイル・依存関係付きで表示する。",
+        "生成PR本文を直接読む回帰テストと型検査が成功する。"
+      ],
+      "depends_on": [],
+      "status": "done"
+    }
+  ]
+}

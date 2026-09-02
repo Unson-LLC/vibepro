@@ -1,11 +1,11 @@
-<!-- vibepro-projection story_id=story-vibepro-pr-narrative-projection feature_slug=pr-narrative-projection ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-pr-narrative-projection/spec.json source_sha256=418a2e1266c2e0e384a48970401cb45aeeb6cf704364c7f477dc746f824a4565 renderer=functional_spec_markdown@1 direct_edit=false -->
+<!-- vibepro-projection story_id=story-vibepro-pr-narrative-projection feature_slug=pr-narrative-projection ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-pr-narrative-projection/spec.json source_sha256=b5d1aaa4764616a3227d73b0bec733d42394aa4acec06573b4602af94fe98611 renderer=functional_spec_markdown@1 direct_edit=false -->
 - Canonical ownership: generated
 
 # Functional Spec
 
 - Story: story-vibepro-pr-narrative-projection
 - Status: -
-- Clauses: 5
+- Clauses: 6
 
 ## C-001
 
@@ -22,7 +22,7 @@ PR本文の保存済み判断説明は要約、レビュー焦点、リスク、
 
 ## C-002
 
-説明スロット本文は単一行かつ280文字以内の平文に限定し、Markdown構造を含む入力と呼び出し側が指定した未検証のinputs_digestを採用しない。
+説明スロット本文は単一行かつ280文字以内の平文に限定し、Markdownのブロック構造・インライン記法・HTMLを含む入力と呼び出し側が指定した未検証のinputs_digestを採用しない。
 
 ### Origin refs
 
@@ -32,6 +32,17 @@ PR本文の保存済み判断説明は要約、レビュー焦点、リスク、
 - {"case":"report write ignores a caller-supplied inputs digest and stores the verified fingerprint","file":"test/report-pipeline.test.js"}
 - {"case":"report write rejects prose that can inject markdown structure","file":"test/report-pipeline.test.js"}
 - {"file":"docs/architecture/story-vibepro-pr-narrative-projection.md","section":"表示契約"}
+
+## C-003
+
+受理済みTaskの task_id、allowed_paths、depends_on はTask派生表示のID、対象ファイル、依存関係へ正しく投影し、未定義値を表示しない。
+
+### Origin refs
+
+- {"ac_id":"AC-007","kind":"acceptance_criteria"}
+- {"anchor":"renderTasksMarkdown","file":"src/artifact-routing.js"}
+- {"case":"task JSON remains read authority after Markdown regeneration","file":"test/artifact-routing.test.js"}
+- {"file":"docs/architecture/story-vibepro-pr-narrative-projection.md","section":"判断"}
 
 ## INV-001
 
@@ -46,13 +57,15 @@ pr-body 説明が保存されていないStoryでは、pr prepare は空の説�
 
 ## INV-002
 
-保存済み説明の入力指紋が現在のStory、HEAD、トレーサビリティ、Spec、ドリフト、検証、レビュー状態と一致しない場合、pr prepare は古い説明本文を表示せず再生成が必要だと明示する。
+保存済み説明の入力指紋が現在のStory、HEAD、トレーサビリティ、Spec、ドリフト、検証証拠の詳細、レビュー役割別状態と一致しない場合、pr prepare は古い説明本文を表示せず再生成が必要だと明示する。
 
 ### Origin refs
 
 - {"ac_id":"AC-005","kind":"acceptance_criteria"}
 - {"anchor":"assessNarrativeProjection","file":"src/pr-manager.js"}
 - {"anchor":"buildInputsDigest","file":"src/report-fingerprint.js"}
+- {"case":"pr prepare suppresses narrative when one review role changes inside needs_review","file":"test/report-pipeline.test.js"}
+- {"case":"pr prepare suppresses narrative when verification evidence changes inside the same passing state","file":"test/report-pipeline.test.js"}
 - {"case":"pr prepare suppresses stale narrative and shows an explicit refresh warning","file":"test/report-pipeline.test.js"}
 - {"file":"docs/architecture/story-vibepro-pr-narrative-projection.md","section":"表示契約"}
 
