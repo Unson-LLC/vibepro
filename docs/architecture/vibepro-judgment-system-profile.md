@@ -71,10 +71,14 @@ VibePro は、判断DAGを中核に持つ6つの実証系（Brainbase / VibePro 
 
 ## 既知の不足（Ledger `gaps` の要約）
 
-1. 同梱 `skills/vibepro-workflow/SKILL.md` に判断ループの発火手順がなく、標準手順に従うと P4 以上の証拠が蓄積されない（`VPJ-GAP-001`）。
-2. 削除済み adjudication を現行として記述する Skill / guide / Story が残る（`VPJ-GAP-002`, `VPJ-GAP-007`）。
-3. 事前登録された `expected_outcomes` に対する観測の突合がない（`VPJ-GAP-003`）。
+open:
+
+1. 事前登録された `expected_outcomes` に対する観測の突合がない（`VPJ-GAP-003`）。
+2. 採択 authority が自由文字列で scope 検証がない（`VPJ-GAP-004`）。
+3. 決定・検証レコードは upsert で append-only ではない（`VPJ-GAP-006`）。
 4. `run-lineage.js` は dormant で、判断→実装の execution receipt がない（`VPJ-GAP-008`）。
+
+resolved（2026-09-02）: `VPJ-GAP-001`（PR #514: workflow Skill に判断ループ手順）、`VPJ-GAP-002` / `VPJ-GAP-007`（PR #516: adjudication 文書を historical 化）、`VPJ-GAP-005`（PR #515: 採択 digest 不一致テスト）。
 
 ## 更新規約
 
