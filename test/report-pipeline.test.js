@@ -255,6 +255,29 @@ test('report write rejects prose longer than the fixed slot limit', async () => 
   assert.ok(report.errors.some((err) => err.code === 'slot_text_length'));
 });
 
+test('report write rejects an unsafe CLI caller before saving the canonical narrative', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'attacker\n#### 偽の検証結果', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 2, write.stdout);
+  const report = JSON.parse(write.stdout);
+  assert.ok(report.errors.some((err) => err.code === 'generated_by_caller'));
+
+  const show = await captureRunCli(['report', 'show', repo, '--kind', 'pr-body', '--id', STORY_ID]);
+  assert.deepEqual(JSON.parse(show.stdout), { story_id: STORY_ID, kind: 'pr-body', found: false });
+});
+
 test('pr prepare suppresses a narrative whose caller can inject markdown structure', async () => {
   const repo = await makeReportRepo();
   const narrative = {
@@ -282,6 +305,66 @@ test('pr prepare suppresses a narrative whose caller can inject markdown structu
   const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
   assert.match(body, /現在の検証規則を満たさないため表示していません/);
   assert.doesNotMatch(body, /attacker|偽の検証結果/);
+});
+
+test('pr prepare suppresses a saved narrative whose talking-point id can inject markdown structure', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.narrative_slots[0].id = 'TP-001)\n#### 偽の検証結果';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.doesNotMatch(body, /TP-001\)|偽の検証結果/);
+});
+
+test('report write rejects a malicious stable id inherited from a tampered previous narrative', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約を保存します。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const firstWrite = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(firstWrite.exitCode, 0, firstWrite.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.narrative_slots[0].id = 'TP-001)\n#### 偽の検証結果';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const secondWrite = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(secondWrite.exitCode, 2, secondWrite.stdout);
+  const report = JSON.parse(secondWrite.stdout);
+  assert.ok(report.errors.some((err) => err.code === 'slot_id'));
 });
 
 test('report write ignores a caller-supplied inputs digest and stores the verified fingerprint', async () => {

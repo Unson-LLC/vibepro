@@ -74,7 +74,11 @@ export async function validateReportNarrative(repoRoot, narrative, fingerprint, 
   for (let index = 0; index < narrative.narrative_slots.length; index += 1) {
     const slot = narrative.narrative_slots[index];
     const slotErrors = await validateSlot(repoRoot, slot, index, {
-      driftIds, findingIds, clauseIds, numericalTruth
+      driftIds,
+      findingIds,
+      clauseIds,
+      numericalTruth,
+      allowTemporaryIds: options.allowTemporaryIds === true
     });
     errors.push(...slotErrors);
   }
@@ -103,8 +107,16 @@ async function validateSlot(repoRoot, slot, index, ctx) {
     errors.push({ code: 'slot_shape', message: `${locator} must be an object` });
     return errors;
   }
-  if (!slot.id || typeof slot.id !== 'string') {
-    errors.push({ code: 'slot_id', message: `${locator}.id required` });
+  const slotIdPattern = ctx.allowTemporaryIds
+    ? /^TP-(?:NEW-[1-9][0-9]*|[0-9]{3,})$/
+    : /^TP-[0-9]{3,}$/;
+  if (typeof slot.id !== 'string' || !slotIdPattern.test(slot.id)) {
+    errors.push({
+      code: 'slot_id',
+      message: ctx.allowTemporaryIds
+        ? `${locator}.id must be TP-<3 or more digits> or TP-NEW-<positive integer>`
+        : `${locator}.id must be a canonical TP-<3 or more digits> identifier`
+    });
   }
   if (!SLOT_KINDS.has(slot.slot)) {
     errors.push({
