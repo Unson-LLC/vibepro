@@ -1,4 +1,4 @@
-<!-- vibepro-projection story_id=story-vibepro-pr-narrative-projection feature_slug=pr-narrative-projection ownership=generated profile=feature_packet source=.vibepro/stories/story-vibepro-pr-narrative-projection/tasks/tasks.json source_sha256=0034cdeb9f14133b630081da9f598edfa8fcb4d981af14d0d1521eaf8d220c02 renderer=tasks_markdown@1 direct_edit=false -->
+<!-- vibepro-projection story_id=story-vibepro-pr-narrative-projection feature_slug=pr-narrative-projection ownership=generated profile=feature_packet source=.vibepro/stories/story-vibepro-pr-narrative-projection/tasks/tasks.json source_sha256=d3394b0777ee7a26cd77096fb96a4d34252ddbe2fd40f04a76c44d300dec90b1 renderer=tasks_markdown@1 direct_edit=false -->
 - Canonical ownership: generated
 
 # Tasks
@@ -7,7 +7,7 @@
 
 - story_id: story-vibepro-pr-narrative-projection
 - status: done
-- target_files: docs/architecture/story-vibepro-pr-narrative-projection.md, docs/features/pr-narrative-projection, docs/management/stories/active/story-vibepro-pr-narrative-projection.md, package-lock.json, package.json, src/artifact-routing.js, src/pr-manager.js, src/report-fingerprint.js, src/report-pr-body-schema.json, src/report-validator.js, test/artifact-routing.test.js, test/pr-artifact-consistency.test.js, test/pr-manager.test.js, test/report-fingerprint.test.js, test/report-pipeline.test.js
+- target_files: docs/architecture/story-vibepro-pr-narrative-projection.md, docs/features/pr-narrative-projection, docs/management/stories/active/story-vibepro-pr-narrative-projection.md, package-lock.json, package.json, src/artifact-routing.js, src/cli.js, src/pr-manager.js, src/report-fingerprint.js, src/report-pr-body-schema.json, src/report-validator.js, test/artifact-routing.test.js, test/pr-artifact-consistency.test.js, test/pr-manager.test.js, test/report-fingerprint.test.js, test/report-pipeline.test.js, test/vibepro-cli.test.js
 - dependencies:
 - acceptance_criteria:
   - 保存済み説明が生成PR本文の固定欄へ表示される。

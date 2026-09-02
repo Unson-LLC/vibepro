@@ -70,9 +70,19 @@ export async function validateReportNarrative(repoRoot, narrative, fingerprint, 
   const findingIds = new Set((fingerprint?.findings ?? []).map((entry) => entry.id));
   const clauseIds = new Set((fingerprint?.inferred_spec?.clauses ?? []).map((entry) => entry.id));
   const numericalTruth = fingerprint?.numerical_truth ?? {};
+  const seenSlotIds = new Set();
 
   for (let index = 0; index < narrative.narrative_slots.length; index += 1) {
     const slot = narrative.narrative_slots[index];
+    if (typeof slot?.id === 'string') {
+      if (seenSlotIds.has(slot.id)) {
+        errors.push({
+          code: 'slot_id_duplicate',
+          message: `narrative_slots[${index}] (${slot.id}).id must be unique`
+        });
+      }
+      seenSlotIds.add(slot.id);
+    }
     const slotErrors = await validateSlot(repoRoot, slot, index, {
       driftIds,
       findingIds,
@@ -142,7 +152,17 @@ async function validateSlot(repoRoot, slot, index, ctx) {
   }
 
   const citations = slot.citations ?? {};
-  for (const file of citations.files ?? []) {
+  if (!citations || typeof citations !== 'object' || Array.isArray(citations)) {
+    errors.push({ code: 'citations_shape', message: `${locator}.citations must be an object` });
+    return errors;
+  }
+  const citationFields = ['files', 'finding_ids', 'clause_ids', 'drift_ids'];
+  for (const field of citationFields) {
+    if (citations[field] !== undefined && !Array.isArray(citations[field])) {
+      errors.push({ code: 'citations_shape', message: `${locator}.citations.${field} must be an array` });
+    }
+  }
+  for (const file of Array.isArray(citations.files) ? citations.files : []) {
     const fileResult = await fileExists(repoRoot, file);
     if (!fileResult) {
       errors.push({
@@ -151,7 +171,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       });
     }
   }
-  for (const id of citations.finding_ids ?? []) {
+  for (const id of Array.isArray(citations.finding_ids) ? citations.finding_ids : []) {
     if (!ctx.findingIds.has(id)) {
       errors.push({
         code: 'citation_finding_missing',
@@ -159,7 +179,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       });
     }
   }
-  for (const id of citations.clause_ids ?? []) {
+  for (const id of Array.isArray(citations.clause_ids) ? citations.clause_ids : []) {
     if (!ctx.clauseIds.has(id)) {
       errors.push({
         code: 'citation_clause_missing',
@@ -167,7 +187,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       });
     }
   }
-  for (const id of citations.drift_ids ?? []) {
+  for (const id of Array.isArray(citations.drift_ids) ? citations.drift_ids : []) {
     if (!ctx.driftIds.has(id)) {
       errors.push({
         code: 'citation_drift_missing',
@@ -176,7 +196,10 @@ async function validateSlot(repoRoot, slot, index, ctx) {
     }
   }
 
-  for (const claim of slot.numerical_claims ?? []) {
+  if (slot.numerical_claims !== undefined && !Array.isArray(slot.numerical_claims)) {
+    errors.push({ code: 'numerical_claims_shape', message: `${locator}.numerical_claims must be an array` });
+  }
+  for (const claim of Array.isArray(slot.numerical_claims) ? slot.numerical_claims : []) {
     if (!claim || !NUMERICAL_FIELDS.has(claim.field)) {
       errors.push({
         code: 'numerical_field',

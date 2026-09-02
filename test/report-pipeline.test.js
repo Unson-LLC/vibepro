@@ -201,6 +201,65 @@ test('report write enforces slot count limits (no two summaries)', async () => {
   assert.ok(report.errors.some((err) => err.code === 'slot_max'));
 });
 
+test('report write rejects malformed nested arrays without throwing', async () => {
+  const repo = await makeReportRepo();
+  for (const malformed of [
+    { citations: { files: { bad: true } } },
+    { numerical_claims: { bad: true } }
+  ]) {
+    const narrative = {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      kind: 'pr-body',
+      narrative_slots: [
+        { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。', ...malformed },
+        { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+      ]
+    };
+    const result = await captureRunCli(
+      ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+      { stdin: readableFrom(JSON.stringify(narrative)) }
+    );
+    assert.equal(result.exitCode, 2, result.stdout);
+    const report = JSON.parse(result.stdout);
+    assert.ok(report.errors.some((error) => error.code.endsWith('_shape')));
+  }
+});
+
+test('report write rejects duplicate talking-point ids', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-1', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const result = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(result.exitCode, 2, result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.ok(report.errors.some((error) => error.code === 'slot_id_duplicate'));
+});
+
+test('pr prepare suppresses malformed saved JSON and refreshes the complete body', async () => {
+  const repo = await makeReportRepo();
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  await mkdir(path.dirname(narrativePath), { recursive: true });
+  await writeFile(narrativePath, '{ malformed narrative');
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.match(body, /### Acceptance criteria/);
+  assert.match(body, /### Verification evidence/);
+});
+
 test('report write rejects prose that can inject markdown structure', async () => {
   const repo = await makeReportRepo();
   for (const text of [

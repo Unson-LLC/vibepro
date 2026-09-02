@@ -136,8 +136,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   await mkdir(path.dirname(jsonPath), { recursive: true });
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`, 'utf8');
-  const narrative = await readNarrative(root, storyId, 'pr-body');
-  const narrativeProjection = await assessNarrativeProjection(root, storyId, narrative);
+  let narrativeProjection;
+  try {
+    const narrative = await readNarrative(root, storyId, 'pr-body');
+    narrativeProjection = await assessNarrativeProjection(root, storyId, narrative);
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) throw error;
+    narrativeProjection = { narrative: null, narrativeStatus: 'invalid' };
+  }
   const body = renderPrBody(preparation, narrativeProjection);
   await writeFile(bodyPath, body, 'utf8');
 
