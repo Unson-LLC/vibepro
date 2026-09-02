@@ -543,3 +543,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:513:start -->
 - [PR #513](https://github.com/Unson-LLC/vibepro/pull/513) — [2026-09](/releases/2026-09): docs: 判断DAG実証系としてのVibePro ProfileとProof Ledgerを正本化
 <!-- vibepro-release-index-pr:513:end -->
+
+<!-- vibepro-release-index-pr:515:start -->
+- [PR #515](https://github.com/Unson-LLC/vibepro/pull/515) — [2026-09](/releases/2026-09): test: pin adopted-input digest guard, promote VPJ-DAG-004 to P2
+<!-- vibepro-release-index-pr:515:end -->
