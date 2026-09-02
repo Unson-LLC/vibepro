@@ -2902,3 +2902,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:514:end -->
+
+<!-- vibepro-release-pr:517:start -->
+## [#517](https://github.com/Unson-LLC/vibepro/pull/517) docs: Proof Ledger の解消済み gap を記録（PR #514/#515/#516）
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:31:13Z
+- Commit: `4bc00b4202fdeea716a38c12fced7e9c7cd765c3`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:517:end -->

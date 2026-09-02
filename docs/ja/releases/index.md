@@ -555,3 +555,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:514:start -->
 - [PR #514](https://github.com/Unson-LLC/vibepro/pull/514) — [2026-09](/ja/releases/2026-09): docs(skill): add Development Judgment loop step to vibepro-workflow
 <!-- vibepro-release-index-pr:514:end -->
+
+<!-- vibepro-release-index-pr:517:start -->
+- [PR #517](https://github.com/Unson-LLC/vibepro/pull/517) — [2026-09](/ja/releases/2026-09): docs: Proof Ledger の解消済み gap を記録（PR #514/#515/#516）
+<!-- vibepro-release-index-pr:517:end -->
