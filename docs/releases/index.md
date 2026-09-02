@@ -547,3 +547,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:515:start -->
 - [PR #515](https://github.com/Unson-LLC/vibepro/pull/515) — [2026-09](/releases/2026-09): test: pin adopted-input digest guard, promote VPJ-DAG-004 to P2
 <!-- vibepro-release-index-pr:515:end -->
+
+<!-- vibepro-release-index-pr:516:start -->
+- [PR #516](https://github.com/Unson-LLC/vibepro/pull/516) — [2026-09](/releases/2026-09): docs: mark adjudication design and Stories historical after PR #430
+<!-- vibepro-release-index-pr:516:end -->

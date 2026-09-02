@@ -2860,3 +2860,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:515:end -->
+
+<!-- vibepro-release-pr:516:start -->
+## [#516](https://github.com/Unson-LLC/vibepro/pull/516) docs: mark adjudication design and Stories historical after PR #430
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:25:13Z
+- Commit: `99c255d840c72f92b55261a52b64df87c4fce258`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:516:end -->
