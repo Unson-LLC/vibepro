@@ -2923,3 +2923,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:517:end -->
+
+<!-- vibepro-release-pr:519:start -->
+## [#519](https://github.com/Unson-LLC/vibepro/pull/519) docs(skill): Development Judgment の適用要否基準を定義し、実運用の入口無効化を台帳へ記録
+
+- Author: @sintariran
+- Merged: 2026-09-02T22:29:46Z
+- Commit: `d75ca7cde62892dbc44e1d48254740f0a777f8cf`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:519:end -->

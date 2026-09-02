@@ -559,3 +559,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:517:start -->
 - [PR #517](https://github.com/Unson-LLC/vibepro/pull/517) — [2026-09](/releases/2026-09): docs: Proof Ledger の解消済み gap を記録（PR #514/#515/#516）
 <!-- vibepro-release-index-pr:517:end -->
+
+<!-- vibepro-release-index-pr:519:start -->
+- [PR #519](https://github.com/Unson-LLC/vibepro/pull/519) — [2026-09](/releases/2026-09): docs(skill): Development Judgment の適用要否基準を定義し、実運用の入口無効化を台帳へ記録
+<!-- vibepro-release-index-pr:519:end -->
