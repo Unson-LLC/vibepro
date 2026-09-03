@@ -1692,9 +1692,23 @@
         "category": "bugfix",
         "artifact_profile": "feature_packet",
         "feature_slug": "pr-destination-integrity"
+      },
+      {
+        "story_id": "story-vibepro-release-0-2-0-beta-21",
+        "title": "Issue #518の修正を0.2.0-beta.21として配布する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-09",
+        "started_at": "2026-09-03",
+        "due_at": null,
+        "category": "release",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "release-0-2-0-beta-21"
       }
     ],
-    "current_story_id": "story-vibepro-pr-narrative-projection"
+    "current_story_id": "story-vibepro-release-0-2-0-beta-21"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }
