@@ -581,3 +581,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:523:start -->
 - [PR #523](https://github.com/Unson-LLC/vibepro/pull/523) — [2026-09](/releases/2026-09): Issue #518の修正を0.2.0-beta.21として配布する
 <!-- vibepro-release-index-pr:523:end -->
+
+<!-- vibepro-release-index-pr:524:start -->
+- [PR #524](https://github.com/Unson-LLC/vibepro/pull/524) — [2026-09](/releases/2026-09): feat(brainbase): managed closed-loop integration
+<!-- vibepro-release-index-pr:524:end -->
