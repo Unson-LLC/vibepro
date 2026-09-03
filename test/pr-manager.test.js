@@ -214,7 +214,12 @@ test('pr create accepts only exact GitHub remote URL forms', async () => {
     assert.equal(result.execution.pr_repository, 'example/url-repo');
   }
 
-  const rejected = ['https://evilgithub.com/example/url-repo.git', 'https://evil.com/github.com/example/url-repo.git'];
+  const rejected = [
+    'https://evilgithub.com/example/url-repo.git',
+    'https://evil.com/github.com/example/url-repo.git',
+    'ssh://attacker@github.com/example/url-repo.git',
+    'https://attacker@github.com/example/url-repo.git'
+  ];
   for (const [index, remoteUrl] of rejected.entries()) {
     const storyId = `story-pr-manager-invalid-${index}`;
     const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
@@ -268,6 +273,61 @@ test('pr create revalidates after push and never invokes gh when the remote chan
   assert.match(invoked[0], /^git push /);
 });
 
+test('pr create keeps the explicit repository on the existing PR list and edit fallback', async () => {
+  const storyId = 'story-pr-manager-existing-pr-destination';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/existing-pr-repo');
+  const invoked = [];
+
+  const result = await createPullRequest(root, {
+    storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin',
+    repository: 'example/existing-pr-repo',
+    commandRunner: async (bin, args) => {
+      invoked.push([bin, ...args]);
+      if (bin === 'gh' && args[0] === 'pr' && args[1] === 'create') {
+        throw Object.assign(new Error('a pull request for branch already exists'), {
+          code: 1,
+          stdout: '',
+          stderr: 'a pull request for branch already exists'
+        });
+      }
+      if (bin === 'gh' && args[0] === 'pr' && args[1] === 'list') {
+        return {
+          stdout: JSON.stringify([{
+            number: 518,
+            url: 'https://github.com/example/existing-pr-repo/pull/518',
+            state: 'OPEN',
+            isDraft: false,
+            headRefName: 'feature/ac-coverage',
+            headRefOid: 'abc123',
+            baseRefName: 'main'
+          }]),
+          stderr: ''
+        };
+      }
+      return { stdout: '', stderr: '' };
+    }
+  });
+
+  assert.equal(result.execution.status, 'updated_existing_pr');
+  assert.equal(result.execution.pr_url, 'https://github.com/example/existing-pr-repo/pull/518');
+  const ghCommands = invoked.filter(([bin]) => bin === 'gh').map(([, ...args]) => args);
+  assert.deepEqual(ghCommands.map((args) => args.slice(0, 2)), [
+    ['pr', 'create'],
+    ['pr', 'list'],
+    ['pr', 'edit']
+  ]);
+  for (const args of ghCommands) {
+    const repoIndex = args.indexOf('--repo');
+    assert.notEqual(repoIndex, -1);
+    assert.equal(args[repoIndex + 1], 'example/existing-pr-repo');
+  }
+  const artifact = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-create.json'));
+  assert.equal(artifact.status, 'updated_existing_pr');
+  assert.equal(artifact.pr_repository, 'example/existing-pr-repo');
+});
+
 test('pr create human summary exposes destination and validation evidence', async () => {
   const storyId = 'story-pr-manager-summary-destination';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
@@ -276,6 +336,7 @@ test('pr create human summary exposes destination and validation evidence', asyn
   const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true });
 
   const summary = renderPrCreateSummary(result);
+  assert.match(summary, new RegExp(`HEAD SHA: ${result.execution.head_sha}`));
   assert.match(summary, /push remote: origin/);
   assert.match(summary, /push URL: https:\/\/github\.com\/example\/summary-repo\.git/);
   assert.match(summary, /PR repository: example\/summary-repo/);

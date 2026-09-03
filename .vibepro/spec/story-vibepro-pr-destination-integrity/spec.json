@@ -114,7 +114,7 @@
     {
       "id": "C-001",
       "type": "contract",
-      "statement": "dry-runとpr-create成果物は送信先repository、ref、HEAD SHA、検証結果を保持する",
+      "statement": "dry-run、人間向けsummary、pr-create成果物は送信先repository、ref、HEAD SHA、検証結果を保持する",
       "origin": {
         "story_refs": [
           {

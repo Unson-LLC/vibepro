@@ -1115,6 +1115,12 @@ function repositoryFromRemoteUrl(url) {
       if (!['https:', 'ssh:'].includes(parsed.protocol) || parsed.hostname.toLowerCase() !== 'github.com') {
         throw new Error('unsupported GitHub host or protocol');
       }
+      if (parsed.protocol === 'ssh:' && (parsed.username !== 'git' || parsed.password)) {
+        throw new Error('unsupported GitHub SSH userinfo');
+      }
+      if (parsed.protocol === 'https:' && (parsed.username || parsed.password)) {
+        throw new Error('unsupported GitHub HTTPS userinfo');
+      }
       repositoryPath = parsed.pathname;
     } catch {
       throw new Error(`Unsupported GitHub remote URL: ${url}`);
@@ -1300,6 +1306,7 @@ export function renderPrCreateSummary(result) {
     `- status: ${execution.status}`,
     `- base: ${execution.base}`,
     `- head: ${execution.head}`,
+    `- HEAD SHA: ${execution.head_sha}`,
     `- push remote: ${execution.push_remote}`,
     `- push URL: ${execution.push_url}`,
     `- PR repository: ${execution.pr_repository}`,
