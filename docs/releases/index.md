@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-03 | [`0.2.0-beta.21`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.21) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-02 | [`0.2.0-beta.20`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.20) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-02 | [`0.2.0-beta.19`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.19) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-08-31 | [`0.2.0-beta.18`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.18) | npm `beta` / `latest` | Post-merge continuous release |
@@ -576,3 +577,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:522:start -->
 - [PR #522](https://github.com/Unson-LLC/vibepro/pull/522) — [2026-09](/releases/2026-09): 複数remote環境のPR送信先を明示して誤送信を防ぐ
 <!-- vibepro-release-index-pr:522:end -->
+
+<!-- vibepro-release-index-pr:523:start -->
+- [PR #523](https://github.com/Unson-LLC/vibepro/pull/523) — [2026-09](/releases/2026-09): Issue #518の修正を0.2.0-beta.21として配布する
+<!-- vibepro-release-index-pr:523:end -->
