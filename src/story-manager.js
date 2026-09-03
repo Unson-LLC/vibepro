@@ -26,6 +26,7 @@ import {
   renderDevelopmentJudgmentPlanMarkdown
 } from './judgment-operations.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { ensureBrainbaseStoryBinding } from './brainbase-integration.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -83,6 +84,12 @@ export async function addStory(repoRoot, options = {}) {
   if (stories.some((item) => item.story_id === story.story_id)) {
     throw new Error(`Story already exists: ${story.story_id}`);
   }
+  await ensureBrainbaseStoryBinding(root, {
+    storyId: story.story_id,
+    config,
+    env: options.env,
+    now: options.now
+  });
   config.brainbase = {
     ...(config.brainbase ?? {}),
     stories: [...stories, story]
@@ -106,13 +113,19 @@ export async function listStories(repoRoot, options = {}) {
   };
 }
 
-export async function selectStory(repoRoot, storyId) {
+export async function selectStory(repoRoot, storyId, options = {}) {
   if (!storyId) throw new Error('--id is required');
   const root = path.resolve(repoRoot);
   const config = await readConfig(root);
   const story = getStories(config).find((item) => item.story_id === storyId);
   if (!story) throw new Error(`Story not found: ${storyId}`);
   if (isArchived(story)) throw new Error(`Archived story cannot be selected: ${storyId}`);
+  await ensureBrainbaseStoryBinding(root, {
+    storyId,
+    config,
+    env: options.env,
+    now: options.now
+  });
   config.brainbase = {
     ...(config.brainbase ?? {}),
     current_story_id: storyId
