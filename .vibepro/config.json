@@ -1677,6 +1677,21 @@
         "category": "bugfix",
         "artifact_profile": "feature_packet",
         "feature_slug": "pr-narrative-projection"
+      },
+      {
+        "story_id": "story-vibepro-pr-destination-integrity",
+        "title": "複数remote環境のPR送信先を明示して誤送信を防ぐ",
+        "ssot": "local",
+        "status": "active",
+        "contract_type": "bug_fix",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-09",
+        "started_at": "2026-09-03",
+        "due_at": null,
+        "category": "bugfix",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "pr-destination-integrity"
       }
     ],
     "current_story_id": "story-vibepro-pr-narrative-projection"
