@@ -18,12 +18,12 @@ reason: 複数remoteでoriginを暗黙選択する現状は別repositoryへのpu
 
 ## Acceptance Criteria
 
-- 複数の異なるrepositoryを指すremoteがあり、送信先を一意に決められない場合はpush前に失敗する。
-- `--push-remote` または `--repo` で送信先を明示でき、remote URLとPR repositoryが一致しない場合は失敗する。
-- dry-run JSONは `push_remote`, `push_url`, `pr_repository`, `base_repository`, `base_ref`, `head_ref`, `head_sha` と検証結果を返す。
-- 実行時はpush直前とPR作成直前にremote URLを再取得し、計画時から変化していれば後続の外部変更を止める。
-- 単一remote環境は従来どおり明示optionなしで動作する。
-- `pr-create.json` に最終的なremote、repository、ref、SHA、検証結果を保存する。
+- PDI-AC-001: 複数の異なるrepositoryを指すremoteがあり、送信先を一意に決められない場合はpush前に失敗する。
+- PDI-AC-002: `--push-remote` または `--repo` で送信先を明示でき、remote URLとPR repositoryが一致しない場合は失敗する。
+- PDI-AC-003: dry-run JSONは `push_remote`, `push_url`, `pr_repository`, `base_repository`, `base_ref`, `head_ref`, `head_sha` と検証結果を返す。
+- PDI-AC-004: 実行時はpush直前とPR作成直前にremote URLを再取得し、計画時から変化していれば後続の外部変更を止める。
+- PDI-AC-005: 単一remote環境は従来どおり明示optionなしで動作する。
+- PDI-AC-006: `pr-create.json` に最終的なremote、repository、ref、SHA、検証結果を保存する。
 
 ## Boundary
 

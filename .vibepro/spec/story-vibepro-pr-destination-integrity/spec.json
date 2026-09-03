@@ -1,0 +1,199 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-destination-integrity",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "PR作成時のpush remoteとPR repositoryは同一repositoryでなければならない",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "PDI-AC-002"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "resolvePrDestination"
+          }
+        ],
+        "test_refs": [
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create rejects an explicit push remote and PR repository mismatch"
+        }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-manager.test.js",
+            "must_cover": "does not match PR repository"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T01:26:46.460Z",
+      "last_revised_at": "2026-09-03T03:56:03.446Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "複数repository remoteで送信先を一意に決定できない場合はpush前に失敗する",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "PDI-AC-001"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "PR destination is ambiguous"
+          }
+        ],
+        "test_refs": [
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create fails closed before push when distinct remotes leave the destination ambiguous"
+        }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-manager.test.js",
+            "must_cover": "ambiguous"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T01:26:46.460Z",
+      "last_revised_at": "2026-09-03T03:56:03.446Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "push直前とPR作成直前にremote URLを再検証し変更を検出したら停止する",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "PDI-AC-004"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "revalidatePrDestination"
+          }
+        ],
+        "test_refs": [
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create revalidates a changed remote before the first external mutation"
+        },
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create revalidates after push and never invokes gh when the remote changes"
+        }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-manager.test.js",
+            "must_cover": "revalidates a changed remote"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T01:26:46.460Z",
+      "last_revised_at": "2026-09-03T03:56:03.446Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "dry-runとpr-create成果物は送信先repository、ref、HEAD SHA、検証結果を保持する",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "PDI-AC-003"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "PDI-AC-006"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "push_remote"
+          }
+        ],
+        "test_refs": [
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create dry-run exposes an explicit destination and persists its validation evidence"
+        },
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create human summary exposes destination and validation evidence"
+        }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-manager.test.js",
+            "must_cover": "pr_repository"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T01:26:46.460Z",
+      "last_revised_at": "2026-09-03T03:56:03.446Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "単一remote環境では明示optionなしの既存操作を維持する",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "PDI-AC-005"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "selected ??="
+          }
+        ],
+        "test_refs": [
+        {
+          "file": "test/pr-manager.test.js",
+          "case": "pr create preserves implicit destination selection for a single remote"
+        }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-manager.test.js",
+            "must_cover": "single remote"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T01:26:46.460Z",
+      "last_revised_at": "2026-09-03T03:56:03.446Z"
+    }
+  ],
+  "generated_at": "2026-09-03T01:26:46.458Z",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-09-03T01:26:46.458Z"
+}

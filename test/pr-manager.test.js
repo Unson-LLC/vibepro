@@ -13,6 +13,7 @@ import {
   preparePullRequest,
   projectAgentReviewInstruction,
   renderAgentReviewInstructionLines,
+  renderPrCreateSummary,
   renderPrPrepareSummary
 } from '../src/pr-manager.js';
 import { writeInferredSpec } from '../src/spec-store.js';
@@ -141,19 +142,28 @@ test('pr create revalidates a changed remote before the first external mutation'
   await disableAgentReviews(root);
   await addGitHubRemote(root, 'origin', 'example/original-repo');
 
-  await createPullRequest(root, {
-    storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin',
-    repository: 'example/original-repo', dryRun: true
-  });
-  await git(root, ['remote', 'set-url', 'origin', 'https://github.com/example/changed-repo.git']);
+  const invoked = [];
 
   await assert.rejects(
     createPullRequest(root, {
       storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin',
-      repository: 'example/original-repo'
+      repository: 'example/original-repo',
+      beforeDestinationRevalidation: async (stage) => {
+        if (stage === 'before_push') {
+          await git(root, ['remote', 'set-url', 'origin', 'https://github.com/example/changed-repo.git']);
+        }
+      },
+      commandRunner: async (bin, args) => {
+        invoked.push([bin, ...args].join(' '));
+        return { stdout: '', stderr: '' };
+      }
     }),
-    /does not match PR repository example\/original-repo/
+    /changed before before_push/
   );
+  assert.deepEqual(invoked, []);
+  const artifact = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-create.json'));
+  assert.equal(artifact.destination_validation.at(-1).stage, 'before_push');
+  assert.equal(artifact.destination_validation.at(-1).status, 'failed');
 });
 
 test('pr create preserves implicit destination selection for a single remote', async () => {
@@ -166,6 +176,111 @@ test('pr create preserves implicit destination selection for a single remote', a
   assert.equal(result.execution.push_remote, 'origin');
   assert.equal(result.execution.pr_repository, 'example/single-repo');
   assert.equal(result.execution.base_repository, 'example/single-repo');
+});
+
+test('pr create selects the matching remote from --repo alone', async () => {
+  const storyId = 'story-pr-manager-repository-selection';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/organization-repo');
+  await addGitHubRemote(root, 'upstream', 'example/public-repo');
+  await git(root, ['update-ref', 'refs/remotes/upstream/develop', 'HEAD']);
+
+  const result = await createPullRequest(root, {
+    storyId,
+    baseRef: 'upstream/develop',
+    prBase: 'upstream/develop',
+    repository: 'example/public-repo',
+    dryRun: true
+  });
+
+  assert.equal(result.execution.push_remote, 'upstream');
+  assert.equal(result.execution.pr_repository, 'example/public-repo');
+  assert.equal(result.execution.base_repository, 'example/public-repo');
+});
+
+test('pr create accepts only exact GitHub remote URL forms', async () => {
+  const accepted = [
+    'https://github.com/example/url-repo.git',
+    'ssh://git@github.com/example/url-repo.git',
+    'git@github.com:example/url-repo.git'
+  ];
+  for (const [index, remoteUrl] of accepted.entries()) {
+    const storyId = `story-pr-manager-url-${index}`;
+    const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+    await disableAgentReviews(root);
+    await git(root, ['remote', 'add', 'origin', remoteUrl]);
+    const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true });
+    assert.equal(result.execution.pr_repository, 'example/url-repo');
+  }
+
+  const rejected = ['https://evilgithub.com/example/url-repo.git', 'https://evil.com/github.com/example/url-repo.git'];
+  for (const [index, remoteUrl] of rejected.entries()) {
+    const storyId = `story-pr-manager-invalid-${index}`;
+    const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+    await disableAgentReviews(root);
+    await git(root, ['remote', 'add', 'origin', remoteUrl]);
+    await assert.rejects(
+      createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true }),
+      /Unsupported GitHub remote URL/
+    );
+  }
+});
+
+test('pr create rejects an explicit push remote and PR repository mismatch', async () => {
+  const storyId = 'story-pr-manager-destination-mismatch';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/push-repo');
+  await addGitHubRemote(root, 'upstream', 'example/pr-repo');
+
+  await assert.rejects(
+    createPullRequest(root, {
+      storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin',
+      repository: 'example/pr-repo', dryRun: true
+    }),
+    /does not match PR repository example\/pr-repo/
+  );
+});
+
+test('pr create revalidates after push and never invokes gh when the remote changes', async () => {
+  const storyId = 'story-pr-manager-change-after-push';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/original-repo');
+  const invoked = [];
+
+  await assert.rejects(
+    createPullRequest(root, {
+      storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin',
+      repository: 'example/original-repo',
+      commandRunner: async (bin, args) => {
+        invoked.push([bin, ...args].join(' '));
+        if (bin === 'git' && args[0] === 'push') {
+          await git(root, ['remote', 'set-url', 'origin', 'https://github.com/example/changed-repo.git']);
+        }
+        return { stdout: '', stderr: '' };
+      }
+    }),
+    /changed before before_pr_create/
+  );
+  assert.equal(invoked.length, 1);
+  assert.match(invoked[0], /^git push /);
+});
+
+test('pr create human summary exposes destination and validation evidence', async () => {
+  const storyId = 'story-pr-manager-summary-destination';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/summary-repo');
+  const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true });
+
+  const summary = renderPrCreateSummary(result);
+  assert.match(summary, /push remote: origin/);
+  assert.match(summary, /push URL: https:\/\/github\.com\/example\/summary-repo\.git/);
+  assert.match(summary, /PR repository: example\/summary-repo/);
+  assert.match(summary, /base repository: example\/summary-repo/);
+  assert.match(summary, /destination validation: plan=passed/);
 });
 
 test('task-scoped pr prepare accepts every changed path covered by accepted authority', async () => {

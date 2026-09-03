@@ -972,7 +972,7 @@ export async function createPullRequest(repoRoot, options = {}) {
 
   if (!dryRun) {
     try {
-      await revalidatePrDestination(root, destination, execution, 'before_push');
+      await revalidatePrDestination(root, destination, execution, 'before_push', options);
     } catch (error) {
       execution.status = 'failed';
       execution.error = error.message;
@@ -988,7 +988,7 @@ export async function createPullRequest(repoRoot, options = {}) {
       throw new Error(execution.error);
     }
     try {
-      await revalidatePrDestination(root, destination, execution, 'before_pr_create');
+      await revalidatePrDestination(root, destination, execution, 'before_pr_create', options);
     } catch (error) {
       execution.status = 'failed';
       execution.error = error.message;
@@ -1104,12 +1104,27 @@ async function readGitRemotes(repoRoot) {
 }
 
 function repositoryFromRemoteUrl(url) {
-  const value = String(url ?? '').trim().replace(/\.git$/, '').replace(/\/$/, '');
-  const match = value.match(/(?:github\.com[/:])([^/\s:]+)\/([^/\s]+)$/i);
-  if (!match) {
+  const value = String(url ?? '').trim();
+  let repositoryPath = null;
+  const scpMatch = value.match(/^git@github\.com:(.+)$/i);
+  if (scpMatch) {
+    repositoryPath = scpMatch[1];
+  } else {
+    try {
+      const parsed = new URL(value);
+      if (!['https:', 'ssh:'].includes(parsed.protocol) || parsed.hostname.toLowerCase() !== 'github.com') {
+        throw new Error('unsupported GitHub host or protocol');
+      }
+      repositoryPath = parsed.pathname;
+    } catch {
+      throw new Error(`Unsupported GitHub remote URL: ${url}`);
+    }
+  }
+  const normalized = repositoryPath.replace(/^\/+|\/+$/g, '').replace(/\.git$/i, '');
+  if (!/^[^/\s:]+\/[^/\s:]+$/.test(normalized)) {
     throw new Error(`Unsupported GitHub remote URL: ${url}`);
   }
-  return `${match[1]}/${match[2]}`;
+  return normalized;
 }
 
 function normalizeRepository(repository) {
@@ -1139,7 +1154,8 @@ function destinationValidation(stage, remote, prRepository) {
   };
 }
 
-async function revalidatePrDestination(repoRoot, planned, execution, stage) {
+async function revalidatePrDestination(repoRoot, planned, execution, stage, options = {}) {
+  await options.beforeDestinationRevalidation?.(stage);
   const remotes = await readGitRemotes(repoRoot);
   const current = remotes.find((remote) => remote.name === planned.pushRemote);
   if (!current || current.url !== planned.pushUrl || current.repository !== planned.prRepository) {
@@ -1178,7 +1194,9 @@ async function runCommand(repoRoot, command, options = {}) {
   const [bin, args] = command;
   const startedAt = new Date().toISOString();
   try {
-    const result = await execFileAsync(bin, args, { cwd: repoRoot, encoding: 'utf8', env: options.env });
+    const result = options.commandRunner
+      ? await options.commandRunner(bin, args, { cwd: repoRoot, env: options.env })
+      : await execFileAsync(bin, args, { cwd: repoRoot, encoding: 'utf8', env: options.env });
     return {
       command: formatCommand(command),
       started_at: startedAt,
@@ -1282,6 +1300,11 @@ export function renderPrCreateSummary(result) {
     `- status: ${execution.status}`,
     `- base: ${execution.base}`,
     `- head: ${execution.head}`,
+    `- push remote: ${execution.push_remote}`,
+    `- push URL: ${execution.push_url}`,
+    `- PR repository: ${execution.pr_repository}`,
+    `- base repository: ${execution.base_repository}`,
+    `- destination validation: ${(execution.destination_validation ?? []).map((entry) => `${entry.stage}=${entry.status}`).join(', ') || '-'}`,
     `- pr_url: ${execution.pr_url ?? '-'}`,
     ...(execution.warnings.length > 0 ? ['- warnings:', ...execution.warnings.map((w) => `  - ${w}`)] : []),
     ''
