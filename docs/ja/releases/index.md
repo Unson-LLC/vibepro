@@ -572,3 +572,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:521:start -->
 - [PR #521](https://github.com/Unson-LLC/vibepro/pull/521) — [2026-09](/ja/releases/2026-09): fix: 保存済みPR説明を生成本文へ投影
 <!-- vibepro-release-index-pr:521:end -->
+
+<!-- vibepro-release-index-pr:522:start -->
+- [PR #522](https://github.com/Unson-LLC/vibepro/pull/522) — [2026-09](/ja/releases/2026-09): 複数remote環境のPR送信先を明示して誤送信を防ぐ
+<!-- vibepro-release-index-pr:522:end -->
