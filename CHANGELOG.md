@@ -2965,3 +2965,45 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:520:end -->
+
+<!-- vibepro-release-pr:521:start -->
+## [#521](https://github.com/Unson-LLC/vibepro/pull/521) fix: 保存済みPR説明を生成本文へ投影
+
+- Author: @sintariran
+- Merged: 2026-09-02T23:06:14Z
+- Commit: `73f3a5b7a0423978c562243bde1e586664680490`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:521:end -->
+
+<!-- vibepro-release-pr:522:start -->
+## [#522](https://github.com/Unson-LLC/vibepro/pull/522) 複数remote環境のPR送信先を明示して誤送信を防ぐ
+
+- Author: @sintariran
+- Merged: 2026-09-03T04:42:25Z
+- Commit: `4974cfd954791fb3cb03dba5173d080e2dc31dce`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:522:end -->

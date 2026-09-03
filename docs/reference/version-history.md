@@ -4,12 +4,16 @@ The authoritative source version is `package.json`; an installed binary reports 
 
 | Channel | Expected after this release | Authority |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.19` | Live npm registry dist-tag |
-| npm `beta` | `0.2.0-beta.19` | Live npm registry dist-tag |
-| Repository `main` | `0.2.0-beta.19` release source | Git commit and `package.json` |
+| npm `latest` | `0.2.0-beta.20` | Live npm registry dist-tag |
+| npm `beta` | `0.2.0-beta.20` | Live npm registry dist-tag |
+| Repository `main` | `0.2.0-beta.20` release source | Git commit and `package.json` |
 | Manual build | Source commit in footer/meta | Deployed VitePress artifact |
 
 The table identifies the current release channels. The sections below are an append-only ledger of published versions; detailed PR evidence remains in [Release Notes](/releases/).
+
+## 0.2.0-beta.20
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
 
 ## 0.2.0-beta.19
 

@@ -1,6 +1,6 @@
 {
   "name": "vibepro",
-  "version": "0.2.0-beta.20",
+  "version": "0.2.0-beta.21",
   "description": "Repository-local Story, Spec, verification, review, and PR evidence for AI coding agents",
   "type": "module",
   "license": "Apache-2.0",
@@ -51,6 +51,7 @@
     "test:e2e:ts": "node scripts/run-e2e-ts-specs.mjs",
     "lint:e2e-product-execution": "node scripts/lint-e2e-product-execution.mjs",
     "typecheck": "for f in bin/vibepro.js src/*.js scripts/*.mjs; do node --check \"$f\" || exit 1; done",
+    "build:pack-dry-run": "npm run pack:dry-run",
     "pack:dry-run": "npm pack --dry-run",
     "prepack": "node scripts/runtime-manifest.mjs generate",
     "postpack": "node scripts/runtime-manifest.mjs clean",
