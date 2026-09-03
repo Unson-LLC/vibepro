@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+  "tasks": [
+    {
+      "task_id": "TASK-OUTCOME-CASE-BINDING-V2",
+      "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+      "title": "v2成果ケース契約を検証し、StoryとPR準備へ投影する",
+      "allowed_paths": [
+        ".vibepro/config.json",
+        ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+        ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.json",
+        ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.md",
+        "src/brainbase-integration.js",
+        "src/story-manager.js",
+        "src/pr-manager.js",
+        "test/brainbase-integration.test.js",
+        "test/pr-manager.test.js",
+        "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+        "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.spec.json",
+        "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
+        "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md"
+      ],
+      "acceptance_criteria": [
+        "v1 handoff is unchanged",
+        "v2 outcome case metadata is validated and projected",
+        "technical completion never closes OutcomeCase"
+      ],
+      "status": "in_progress"
+    }
+  ]
+}

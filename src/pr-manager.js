@@ -82,6 +82,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     bugDiagnosis
   });
   const verificationTrustStatus = await evaluateVerificationEvidenceTrust(root, verification, git.head_sha);
+  const outcomeCase = projectOutcomeCaseMetadata(story, verification, verificationTrustStatus);
   const clauseMap = await buildClauseMapForPrepare(root, {
     storyId,
     storySource,
@@ -105,6 +106,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     created_at: new Date().toISOString(),
     runtime_identity: runtimeIdentity,
     story,
+    ...(outcomeCase ? { outcome_case: outcomeCase } : {}),
     task_context: options.taskId || options.groupId ? {
       task_id: options.taskId ?? null,
       group_id: options.groupId ?? null,
@@ -175,9 +177,13 @@ async function readStory(repoRoot, storyId) {
   } catch {
     config = null;
   }
-  const stories = normalizeActiveStories(config?.brainbase?.stories);
+  const rawStories = Array.isArray(config?.brainbase?.stories) ? config.brainbase.stories : [];
+  const stories = normalizeActiveStories(rawStories);
   const found = stories.find((item) => item.story_id === storyId);
-  if (found) return found;
+  if (found) {
+    const rawStory = rawStories.find((item) => item?.story_id === storyId);
+    return rawStory?.outcome_case ? { ...found, outcome_case: rawStory.outcome_case } : found;
+  }
   return {
     story_id: storyId,
     title: storyId,
@@ -275,6 +281,32 @@ function extractComputedVerificationCounts(command) {
     if (Number.isFinite(value)) counts[key] = value;
   }
   return Object.keys(counts).length > 0 ? counts : null;
+}
+
+function projectOutcomeCaseMetadata(story, verification, verificationTrustStatus) {
+  const outcomeCase = story?.outcome_case;
+  if (!outcomeCase || typeof outcomeCase !== 'object' || Array.isArray(outcomeCase)) return null;
+  const evidence = (verification?.commands ?? [])
+    .filter((command) => command?.trust_status === 'trusted')
+    .map((command) => ({
+      kind: command.kind ?? null,
+      command: command.command ?? null,
+      status: command.status ?? null,
+      artifact_check: command.artifact_check?.status ?? null,
+      observation_check: command.observation_check?.status ?? null,
+      evidence_source: command.evidence_source ?? null,
+      executed_at: command.executed_at ?? null
+    }));
+  // A technical acceptance item has no evidence-to-criterion mapping in this
+  // handoff contract. Do not infer full acceptance from a passing command.
+  return {
+    ...outcomeCase,
+    technical_complete: false,
+    technical_completion_status: verificationTrustStatus === 'trusted'
+      ? 'unknown_acceptance_coverage'
+      : 'unknown_untrusted_or_missing_evidence',
+    evidence
+  };
 }
 
 function assertRecordedRuntimeIdentities(verification) {
@@ -679,13 +711,26 @@ function renderPrNarrative(narrative, status = 'missing') {
 }
 
 function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, outcome_case: outcomeCase } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
   lines.push(`Story: \`${story.story_id}\``);
   if (story.ssot) lines.push(`SSOT: ${story.ssot}`);
   lines.push('');
+  if (outcomeCase) {
+    lines.push('### 成果ケース連携');
+    lines.push(`- ケースID: \`${outcomeCase.case_id}\``);
+    lines.push(`- 成果ケース参照: ${outcomeCase.outcome_case_ref}`);
+    lines.push(`- 判断受領参照: ${outcomeCase.judgment_receipt_ref}`);
+    lines.push(`- 判断ダイジェスト: \`${outcomeCase.decision_digest}\``);
+    lines.push(`- 利用者が観測できる成果: ${outcomeCase.user_observable_outcome}`);
+    lines.push(`- 技術完了: ${outcomeCase.technical_complete}`);
+    lines.push(`- 技術完了状態: ${outcomeCase.technical_completion_status}`);
+    lines.push(`- 信頼済み技術証跡: ${outcomeCase.evidence.length}件`);
+    lines.push('- OutcomeCaseの完了・close・外部更新はこのPR準備の対象外');
+    lines.push('');
+  }
   const narrativeSection = renderPrNarrative(narrative, narrativeStatus);
   if (narrativeSection) lines.push(narrativeSection.trimEnd(), '');
   lines.push('### VibePro runtime identity');

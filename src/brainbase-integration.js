@@ -11,7 +11,9 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 const execFileAsync = promisify(execFile);
 
 const CONTEXT_SCHEMA = 'vibepro-brainbase-context.v1';
+const CONTEXT_V2_SCHEMA = 'vibepro-brainbase-context.v2';
 const HANDOFF_SCHEMA = 'brainbase-vibepro-context-handoff.v1';
+const HANDOFF_V2_SCHEMA = 'brainbase-vibepro-context-handoff.v2';
 const MANAGED_HANDOFF_SCHEMA = 'brainbase-vibepro-managed-handoff.v1';
 const EVENT_SCHEMA = 'knowledge_event.v1';
 const EVENT_PAYLOAD_SCHEMA = 'vibepro-development-learning.v1';
@@ -123,6 +125,51 @@ function stringArray(value, name, { allowEmpty = true } = {}) {
   const output = value.map((entry, index) => requiredString(entry, `${name}[${index}]`));
   if (new Set(output).size !== output.length) throw new Error(`${name} must not contain duplicates`);
   return output;
+}
+
+function canonicalExternalReference(value, name) {
+  const normalized = requiredString(value, name);
+  if (!/^[a-z][a-z0-9+.-]*:\/\/[^\s]+$/iu.test(normalized)
+      || /^file:\/\//iu.test(normalized)
+      || /^(?:https?|ssh):\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[/:]|$)/iu.test(normalized)) {
+    throw new Error(`${name} must be a non-local canonical URI`);
+  }
+  return normalized;
+}
+
+function validateOutcomeCase(raw) {
+  const technicalAcceptance = raw.technical_acceptance;
+  if (!Array.isArray(technicalAcceptance) || technicalAcceptance.length === 0) {
+    throw new Error('handoff.technical_acceptance must be a nonempty array');
+  }
+  const acceptanceIds = new Set();
+  const normalizedAcceptance = technicalAcceptance.map((entry, index) => {
+    const acceptance = object(entry, `handoff.technical_acceptance[${index}]`);
+    const id = safeIdentifier(acceptance.id, `handoff.technical_acceptance[${index}].id`);
+    if (acceptanceIds.has(id)) throw new Error('handoff.technical_acceptance must not contain duplicate ids');
+    acceptanceIds.add(id);
+    return {
+      id,
+      criterion: requiredString(acceptance.criterion, `handoff.technical_acceptance[${index}].criterion`)
+    };
+  });
+  const productionProbe = object(raw.production_probe, 'handoff.production_probe');
+  return {
+    case_id: safeIdentifier(raw.case_id, 'handoff.case_id'),
+    outcome_case_ref: canonicalExternalReference(raw.outcome_case_ref, 'handoff.outcome_case_ref'),
+    judgment_receipt_ref: canonicalExternalReference(raw.judgment_receipt_ref, 'handoff.judgment_receipt_ref'),
+    decision_digest: sha256Field(raw.decision_digest, 'handoff.decision_digest'),
+    user_observable_outcome: requiredString(raw.user_observable_outcome, 'handoff.user_observable_outcome'),
+    technical_acceptance: normalizedAcceptance,
+    production_probe: {
+      id: safeIdentifier(productionProbe.id, 'handoff.production_probe.id'),
+      procedure: requiredString(productionProbe.procedure, 'handoff.production_probe.procedure'),
+      terminal_receipt_target: canonicalExternalReference(
+        productionProbe.terminal_receipt_target,
+        'handoff.production_probe.terminal_receipt_target'
+      )
+    }
+  };
 }
 
 function isSensitive(value) {
@@ -367,7 +414,9 @@ function validateKnowledgeEntry(value, expectedInput, name) {
 
 function validateHandoff(raw, storyId) {
   const handoff = object(raw, 'Brainbase handoff');
-  if (handoff.schema_version !== HANDOFF_SCHEMA) throw new Error(`handoff.schema_version must be ${HANDOFF_SCHEMA}`);
+  if (![HANDOFF_SCHEMA, HANDOFF_V2_SCHEMA].includes(handoff.schema_version)) {
+    throw new Error(`handoff.schema_version must be ${HANDOFF_SCHEMA} or ${HANDOFF_V2_SCHEMA}`);
+  }
   if (handoff.story_id !== storyId) throw new Error('handoff.story_id does not match --id');
   const projectCode = safeIdentifier(handoff.project_code, 'handoff.project_code');
   const episode = object(handoff.episode, 'handoff.episode');
@@ -398,7 +447,17 @@ function validateHandoff(raw, storyId) {
   if (providedKnowledge.length !== consumed.size) {
     throw new Error('handoff.knowledge contains entries that were not required by the Brainbase judgment receipt');
   }
-  return { handoff, projectCode, episodeId, receipt, receiptDigest, judgment, knowledge };
+  return {
+    handoff,
+    projectCode,
+    episodeId,
+    receipt,
+    receiptDigest,
+    judgment,
+    knowledge,
+    contextSchema: handoff.schema_version === HANDOFF_V2_SCHEMA ? CONTEXT_V2_SCHEMA : CONTEXT_SCHEMA,
+    outcomeCase: handoff.schema_version === HANDOFF_V2_SCHEMA ? validateOutcomeCase(handoff) : null
+  };
 }
 
 function normalizeRepositoryRef(value, name = 'repository') {
@@ -737,9 +796,31 @@ async function ledgerEntryForStory(root, storyId) {
   return ledger.entries.find((entry) => entry.story_id === storyId) ?? null;
 }
 
+async function projectOutcomeCaseToStoryMetadata(root, storyId, outcomeCase) {
+  if (!outcomeCase) return false;
+  const configPath = path.join(getWorkspaceDir(root), 'config.json');
+  const config = await readJsonIfExists(configPath);
+  const stories = config?.brainbase?.stories;
+  if (!Array.isArray(stories)) return false;
+  const index = stories.findIndex((story) => story?.story_id === storyId);
+  if (index < 0) return false;
+  const current = stories[index];
+  if (canonicalJson(current?.outcome_case ?? null) === canonicalJson(outcomeCase)) return false;
+  const nextStories = [...stories];
+  nextStories[index] = { ...current, outcome_case: outcomeCase };
+  await writeJsonAtomic(configPath, {
+    ...config,
+    brainbase: {
+      ...(config.brainbase ?? {}),
+      stories: nextStories
+    }
+  });
+  return true;
+}
+
 async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
   const stableProjection = {
-    schema_version: CONTEXT_SCHEMA,
+    schema_version: validated.contextSchema ?? CONTEXT_SCHEMA,
     story_id: storyId,
     project_code: validated.projectCode,
     source: {
@@ -764,6 +845,7 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
       active_node_ids: validated.judgment.activeNodes
     },
     knowledge: validated.knowledge,
+    ...(validated.outcomeCase ? { outcome_case: validated.outcomeCase } : {}),
     ...(validated.managed ? {
       repository: validated.managed.repository,
       repository_root: validated.managed.repositoryRoot,
@@ -784,6 +866,7 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
   };
   const outputPath = contextPath(root, storyId);
   await writeJsonAtomic(outputPath, context);
+  const storyMetadataUpdated = await projectOutcomeCaseToStoryMetadata(root, storyId, context.outcome_case ?? null);
   let bindReceiptArtifact = null;
   if (validated.managed) {
     const receipt = {
@@ -818,6 +901,7 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
     context_digest: context.context_digest,
     knowledge_reference_count: context.knowledge.reduce((count, entry) => count + entry.references.length, 0),
     artifact: toWorkspaceRelative(root, outputPath),
+    ...(context.outcome_case ? { outcome_case: context.outcome_case, story_metadata_updated: storyMetadataUpdated } : {}),
     ...(bindReceiptArtifact ? { bind_receipt_artifact: bindReceiptArtifact } : {}),
     ...(consumptionLedgerArtifact ? { consumption_ledger_artifact: consumptionLedgerArtifact } : {})
   };

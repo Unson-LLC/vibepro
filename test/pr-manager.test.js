@@ -89,6 +89,46 @@ async function addGitHubRemote(root, name, repository) {
   await git(root, ['remote', 'add', name, `https://github.com/${repository}.git`]);
 }
 
+test('pr prepareは成果ケースの技術状態と証跡だけを投影し、完了を推測しない', async () => {
+  const storyId = 'story-pr-manager-outcome-case';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  let story = config.brainbase.stories.find((item) => item.story_id === storyId);
+  if (!story) {
+    story = { story_id: storyId, title: 'Outcome case PR metadata' };
+    config.brainbase.stories.push(story);
+  }
+  story.outcome_case = {
+    case_id: 'outcome-case-pr-1',
+    outcome_case_ref: 'brainbase://outcome-cases/outcome-case-pr-1',
+    judgment_receipt_ref: 'brainbase://judgment-receipts/jr-pr-1',
+    decision_digest: 'f'.repeat(64),
+    user_observable_outcome: '利用者が技術証跡を確認できる。',
+    technical_acceptance: [{ id: 'TA-1', criterion: 'PR準備に成果ケースを表示する。' }],
+    production_probe: {
+      id: 'probe-pr-readback',
+      procedure: '本番読戻しを確認する。',
+      terminal_receipt_target: 'brainbase://production-probes/probe-pr-readback/receipt'
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const persisted = await readJson(configPath);
+  assert.equal(persisted.brainbase.stories.find((item) => item.story_id === storyId).outcome_case.case_id, 'outcome-case-pr-1');
+
+  const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  const outcomeCase = result.preparation.outcome_case;
+  assert.equal(outcomeCase.case_id, 'outcome-case-pr-1');
+  assert.equal(outcomeCase.technical_complete, false);
+  assert.equal(outcomeCase.technical_completion_status, 'unknown_untrusted_or_missing_evidence');
+  assert.deepEqual(outcomeCase.evidence, []);
+  assert.equal('outcome_case_status' in outcomeCase, false);
+
+  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(body, /### 成果ケース連携/);
+  assert.match(body, /OutcomeCaseの完了・close・外部更新はこのPR準備の対象外/);
+});
+
 test('pr create fails closed before push when distinct remotes leave the destination ambiguous', async () => {
   const storyId = 'story-pr-manager-ambiguous-remote';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });

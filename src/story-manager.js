@@ -79,17 +79,18 @@ const STORY_JOURNEY_PATTERNS = [
 export async function addStory(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const config = await readConfig(root);
-  const story = buildStory(options);
+  let story = buildStory(options);
   const stories = getStories(config);
   if (stories.some((item) => item.story_id === story.story_id)) {
     throw new Error(`Story already exists: ${story.story_id}`);
   }
-  await ensureBrainbaseStoryBinding(root, {
+  const binding = await ensureBrainbaseStoryBinding(root, {
     storyId: story.story_id,
     config,
     env: options.env,
     now: options.now
   });
+  if (binding?.outcome_case) story = { ...story, outcome_case: binding.outcome_case };
   config.brainbase = {
     ...(config.brainbase ?? {}),
     stories: [...stories, story]
@@ -120,12 +121,15 @@ export async function selectStory(repoRoot, storyId, options = {}) {
   const story = getStories(config).find((item) => item.story_id === storyId);
   if (!story) throw new Error(`Story not found: ${storyId}`);
   if (isArchived(story)) throw new Error(`Archived story cannot be selected: ${storyId}`);
-  await ensureBrainbaseStoryBinding(root, {
+  const binding = await ensureBrainbaseStoryBinding(root, {
     storyId,
     config,
     env: options.env,
     now: options.now
   });
+  if (binding?.outcome_case) {
+    story.outcome_case = binding.outcome_case;
+  }
   config.brainbase = {
     ...(config.brainbase ?? {}),
     current_story_id: storyId

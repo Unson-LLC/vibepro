@@ -176,6 +176,28 @@ function handoff(overrides = {}) {
   };
 }
 
+function v2Handoff(overrides = {}) {
+  return {
+    ...handoff(overrides),
+    schema_version: 'brainbase-vibepro-context-handoff.v2',
+    case_id: 'outcome-case-test-1',
+    outcome_case_ref: 'brainbase://outcome-cases/outcome-case-test-1',
+    judgment_receipt_ref: 'brainbase://judgment-receipts/jr_test',
+    decision_digest: 'f'.repeat(64),
+    user_observable_outcome: '利用者が成果ケースの技術証跡を確認できる。',
+    technical_acceptance: [{
+      id: 'TA-1',
+      criterion: 'v2の成果ケース契約がStoryとPR準備へ保存される。'
+    }],
+    production_probe: {
+      id: 'probe-production-readback',
+      procedure: '本番で保存済みの成果ケース表示を再読込する。',
+      terminal_receipt_target: 'brainbase://production-probes/probe-production-readback/receipt'
+    },
+    ...overrides
+  };
+}
+
 async function writeJson(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
@@ -266,6 +288,63 @@ test('Brainbase judgment・routing receipt・retrieval referencesをlocal contex
   assert.equal(context.knowledge[0].references[0].source_ref, 'github://Unson-LLC/brainbase-unson/docs/guide.md');
   assert.equal('initial_route_receipt' in context.judgment, false);
   assert.equal(context.context_digest.length, 64);
+});
+
+test('v2成果ケース契約をcontextと既存Storyメタデータへ投影する', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'Outcome case binding' });
+  await writeJson(path.join(root, 'handoff-v2.json'), v2Handoff());
+
+  const result = await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: 'handoff-v2.json',
+    now: () => new Date('2026-09-03T00:00:02.000Z'),
+  });
+  assert.equal(result.status, 'bound');
+  assert.equal(result.story_metadata_updated, true);
+  assert.equal(result.outcome_case.case_id, 'outcome-case-test-1');
+
+  const context = JSON.parse(await readFile(path.join(root, result.artifact), 'utf8'));
+  assert.equal(context.schema_version, 'vibepro-brainbase-context.v2');
+  assert.equal(context.outcome_case.production_probe.id, 'probe-production-readback');
+  assert.equal(context.outcome_case.technical_acceptance[0].id, 'TA-1');
+
+  const config = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+  const story = config.brainbase.stories.find((item) => item.story_id === STORY_ID);
+  assert.deepEqual(story.outcome_case, context.outcome_case);
+  assert.equal('outcome_case_status' in context, false);
+});
+
+test('v2成果ケース契約の空値・重複・ローカル参照をfail closedする', async () => {
+  const root = await makeRepo();
+  const cases = [
+    [
+      'missing-case-id',
+      (() => {
+        const value = v2Handoff();
+        delete value.case_id;
+        return value;
+      })(),
+      /handoff\.case_id is required/
+    ],
+    [
+      'duplicate-acceptance-id',
+      v2Handoff({ technical_acceptance: [{ id: 'TA-1', criterion: 'one' }, { id: 'TA-1', criterion: 'two' }] }),
+      /duplicate ids/
+    ],
+    [
+      'local-production-receipt',
+      v2Handoff({ production_probe: { id: 'probe-1', procedure: '確認する。', terminal_receipt_target: 'file:///tmp/receipt.json' } }),
+      /non-local canonical URI/
+    ]
+  ];
+  for (const [name, value, expected] of cases) {
+    await writeJson(path.join(root, `${name}.json`), value);
+    await assert.rejects(
+      bindBrainbaseContext(root, { storyId: STORY_ID, input: `${name}.json` }),
+      expected
+    );
+  }
 });
 
 test('routingだけ・personal knowledge・未要求entryを受け入れない', async () => {

@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+  "story_context": "単一のVibeProリポジトリでBrainbase handoffを検証し、成果ケースをStoryとPR準備メタデータへ後方互換で投影する。",
+  "clauses": [
+    {
+      "id": "AC-1",
+      "type": "contract",
+      "statement": "v1 handoffは従来のcontext v1を生成し、成果ケース項目を要求しない。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function validateHandoff" }],
+        "test_refs": [{ "file": "test/brainbase-integration.test.js", "case": "Brainbase judgment" }]
+      }
+    },
+    {
+      "id": "AC-2",
+      "type": "contract",
+      "statement": "v2 handoffは必須の成果ケース項目を検証し、contextと既存Storyメタデータへ同じ内容を投影する。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function validateOutcomeCase" }],
+        "test_refs": [{ "file": "test/brainbase-integration.test.js", "case": "v2成果ケース契約をcontextと既存Storyメタデータへ投影する" }]
+      }
+    },
+    {
+      "id": "AC-3",
+      "type": "invariant",
+      "statement": "PR準備はOutcomeCaseを完了またはcloseせず、技術状態と信頼済み証跡だけを返し、受入条件の対応が不明なら完了を推測しない。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "function projectOutcomeCaseMetadata" }],
+        "test_refs": [{ "file": "test/pr-manager.test.js", "case": "pr prepareは成果ケースの技術状態と証跡だけを投影し、完了を推測しない" }]
+      }
+    }
+  ]
+}
