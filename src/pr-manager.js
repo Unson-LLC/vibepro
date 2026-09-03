@@ -1162,7 +1162,23 @@ function destinationValidation(stage, remote, prRepository) {
 
 async function revalidatePrDestination(repoRoot, planned, execution, stage, options = {}) {
   await options.beforeDestinationRevalidation?.(stage);
-  const remotes = await readGitRemotes(repoRoot);
+  let remotes;
+  try {
+    remotes = await readGitRemotes(repoRoot);
+  } catch (error) {
+    execution.destination_validation.push({
+      stage,
+      status: 'failed',
+      checked_at: new Date().toISOString(),
+      push_remote: planned.pushRemote,
+      planned_push_url: planned.pushUrl,
+      current_push_url: null,
+      planned_repository: planned.prRepository,
+      current_repository: null,
+      reason: error.message
+    });
+    throw new Error(`PR destination could not be validated before ${stage}: ${error.message}`);
+  }
   const current = remotes.find((remote) => remote.name === planned.pushRemote);
   if (!current || current.url !== planned.pushUrl || current.repository !== planned.prRepository) {
     const validation = {

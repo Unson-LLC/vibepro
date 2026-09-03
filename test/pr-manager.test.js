@@ -166,6 +166,30 @@ test('pr create revalidates a changed remote before the first external mutation'
   assert.equal(artifact.destination_validation.at(-1).status, 'failed');
 });
 
+test('pr create records failed validation when a remote changes to an unsupported URL', async () => {
+  const storyId = 'story-pr-manager-invalid-remote-change';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/original-repo');
+
+  await assert.rejects(
+    createPullRequest(root, {
+      storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin',
+      repository: 'example/original-repo',
+      beforeDestinationRevalidation: async (stage) => {
+        if (stage === 'before_push') {
+          await git(root, ['remote', 'set-url', 'origin', 'https://evil.example/example/changed-repo.git']);
+        }
+      }
+    }),
+    /could not be validated before before_push/
+  );
+  const artifact = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-create.json'));
+  assert.equal(artifact.destination_validation.at(-1).stage, 'before_push');
+  assert.equal(artifact.destination_validation.at(-1).status, 'failed');
+  assert.match(artifact.destination_validation.at(-1).reason, /Unsupported GitHub remote URL/);
+});
+
 test('pr create preserves implicit destination selection for a single remote', async () => {
   const storyId = 'story-pr-manager-single-remote';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
