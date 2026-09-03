@@ -10,7 +10,8 @@
       "origin": {
         "story_refs": [
           {
-            "kind": "acceptance_criteria"
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
           }
         ],
         "architecture_refs": [
@@ -27,7 +28,7 @@
         "test_refs": [
           {
             "file": "test/brainbase-integration.test.js",
-            "case": "Brainbase judgment"
+            "case": "Brainbase judgment・routing receipt・retrieval referencesをlocal contextへ束縛する"
           }
         ]
       },
@@ -41,7 +42,8 @@
       "origin": {
         "story_refs": [
           {
-            "kind": "acceptance_criteria"
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-2"
           }
         ],
         "architecture_refs": [
@@ -56,23 +58,21 @@
           }
         ],
         "test_refs": [
-          {
-            "file": "test/brainbase-integration.test.js",
-            "case": "v2成果ケース契約をcontextと既存Storyメタデータへ投影する"
-          }
+          { "file": "test/brainbase-integration.test.js", "case": "署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する" }
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
       "last_revised_at": "2026-09-03T23:28:44.470Z"
     },
     {
-      "id": "INV-001",
-      "type": "invariant",
-      "statement": "PR準備はOutcomeCaseを完了またはcloseせず、技術状態と信頼済み証跡だけを返し、受入条件の対応が不明なら完了を推測しない。",
+      "id": "C-003",
+      "type": "contract",
+      "statement": "managed v2は既存Storyを事前検査し、Context、Story、PR準備へ同じ7項目を投影する。非managed v2は投影しない。",
       "origin": {
         "story_refs": [
           {
-            "kind": "acceptance_criteria"
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-3"
           }
         ],
         "architecture_refs": [
@@ -81,20 +81,45 @@
           }
         ],
         "code_refs": [
-          {
-            "file": "src/pr-manager.js",
-            "anchor": "function projectOutcomeCaseMetadata"
-          }
+          { "file": "src/brainbase-integration.js", "anchor": "function preflightStoryProjection" },
+          { "file": "src/pr-manager.js", "anchor": "function readTrustedOutcomeCaseProjection" }
         ],
         "test_refs": [
-          {
-            "file": "test/pr-manager.test.js",
-            "case": "pr prepareは成果ケースの技術状態と証跡だけを投影し、完了を推測しない"
-          }
+          { "file": "test/brainbase-integration.test.js", "case": "trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない" }
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-03T23:28:44.470Z"
+      "last_revised_at": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "PR準備は署名済みmanaged v2 Contextとbind receiptで照合できる成果ケースだけを投影し、完了や外部更新を推測しない。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-4" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "function readTrustedOutcomeCaseProjection" }],
+        "test_refs": [{ "file": "test/pr-manager.test.js", "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない" }]
+      },
+      "first_seen_at": "2026-09-04T00:00:00.000Z",
+      "last_revised_at": "2026-09-04T00:00:00.000Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "caseとissuerが一致しないv2参照、既存Storyなしの投影、v2からv1への再bindはfail closedし、古いv2投影を残した成功を返さない。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-5" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function validateOutcomeCase" }],
+        "test_refs": [
+          { "file": "test/brainbase-integration.test.js", "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する" },
+          { "file": "test/brainbase-integration.test.js", "case": "signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない" }
+        ]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/brainbase-integration.test.js", "must_contain": "v2からv1への再bindも拒否する" }] },
+      "first_seen_at": "2026-09-04T00:00:00.000Z",
+      "last_revised_at": "2026-09-04T00:00:00.000Z"
     }
   ],
   "generated_at": "2026-09-03T23:28:44.469Z",

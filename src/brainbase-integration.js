@@ -15,6 +15,7 @@ const CONTEXT_V2_SCHEMA = 'vibepro-brainbase-context.v2';
 const HANDOFF_SCHEMA = 'brainbase-vibepro-context-handoff.v1';
 const HANDOFF_V2_SCHEMA = 'brainbase-vibepro-context-handoff.v2';
 const MANAGED_HANDOFF_SCHEMA = 'brainbase-vibepro-managed-handoff.v1';
+const MANAGED_HANDOFF_V2_SCHEMA = 'brainbase-vibepro-managed-handoff.v2';
 const EVENT_SCHEMA = 'knowledge_event.v1';
 const EVENT_PAYLOAD_SCHEMA = 'vibepro-development-learning.v1';
 const OUTBOX_SCHEMA = 'vibepro-brainbase-outbox.v1';
@@ -35,6 +36,7 @@ const MANAGED_HANDOFF_PAYLOAD_FIELDS = [
   'authorized',
   'graph_promotion_allowed'
 ];
+const MANAGED_HANDOFF_V2_PAYLOAD_FIELDS = [...MANAGED_HANDOFF_PAYLOAD_FIELDS, 'outcome_case'];
 const ALLOWED_KNOWLEDGE_TYPES = new Set(['canonical_fact', 'team_document', 'source_document']);
 const ROUTE_CONTRACTS = new Map([
   ['canonical_fact', { sourceClass: 'graph', retrievalCapability: 'graph.search' }],
@@ -60,10 +62,18 @@ export const BRAINBASE_HANDOFF_HMAC_KEY_ID_ENV = 'BRAINBASE_VIBEPRO_HANDOFF_HMAC
  * included: receipt_digest and signature authenticate this canonical value.
  */
 export function canonicalManagedHandoffPayload(receipt) {
+  const schema = receipt?.schema_version;
+  const fields = schema === MANAGED_HANDOFF_V2_SCHEMA
+    ? MANAGED_HANDOFF_V2_PAYLOAD_FIELDS
+    : MANAGED_HANDOFF_PAYLOAD_FIELDS;
   return canonicalJson([
-    MANAGED_HANDOFF_SCHEMA,
-    Object.fromEntries(MANAGED_HANDOFF_PAYLOAD_FIELDS.map((field) => [field, receipt?.[field]]))
+    schema === MANAGED_HANDOFF_V2_SCHEMA ? MANAGED_HANDOFF_V2_SCHEMA : MANAGED_HANDOFF_SCHEMA,
+    Object.fromEntries(fields.map((field) => [field, receipt?.[field]]))
   ]);
+}
+
+function isManagedHandoffSchema(value) {
+  return value === MANAGED_HANDOFF_SCHEMA || value === MANAGED_HANDOFF_V2_SCHEMA;
 }
 
 function compareCodePoints(left, right) {
@@ -137,36 +147,48 @@ function canonicalExternalReference(value, name) {
   return normalized;
 }
 
-function validateOutcomeCase(raw) {
+function brainbaseReference(value, name, expectedPath) {
+  const normalized = canonicalExternalReference(value, name);
+  const match = normalized.match(/^brainbase:\/\/([^/]+)\/([A-Za-z0-9][A-Za-z0-9._:-]{0,199})(?:\/receipt)?$/u);
+  if (!match) throw new Error(`${name} must be a canonical Brainbase reference`);
+  if (expectedPath && normalized !== expectedPath) throw new Error(`${name} does not identify the signed outcome case`);
+  return normalized;
+}
+
+function validateOutcomeCase(raw, { name = 'handoff', expectedJudgmentReceiptId = null } = {}) {
+  object(raw, name);
   const technicalAcceptance = raw.technical_acceptance;
   if (!Array.isArray(technicalAcceptance) || technicalAcceptance.length === 0) {
-    throw new Error('handoff.technical_acceptance must be a nonempty array');
+    throw new Error(`${name}.technical_acceptance must be a nonempty array`);
   }
   const acceptanceIds = new Set();
   const normalizedAcceptance = technicalAcceptance.map((entry, index) => {
-    const acceptance = object(entry, `handoff.technical_acceptance[${index}]`);
-    const id = safeIdentifier(acceptance.id, `handoff.technical_acceptance[${index}].id`);
-    if (acceptanceIds.has(id)) throw new Error('handoff.technical_acceptance must not contain duplicate ids');
+    const acceptance = object(entry, `${name}.technical_acceptance[${index}]`);
+    const id = safeIdentifier(acceptance.id, `${name}.technical_acceptance[${index}].id`);
+    if (acceptanceIds.has(id)) throw new Error(`${name}.technical_acceptance must not contain duplicate ids`);
     acceptanceIds.add(id);
     return {
       id,
-      criterion: requiredString(acceptance.criterion, `handoff.technical_acceptance[${index}].criterion`)
+      criterion: requiredString(acceptance.criterion, `${name}.technical_acceptance[${index}].criterion`)
     };
   });
-  const productionProbe = object(raw.production_probe, 'handoff.production_probe');
+  const productionProbe = object(raw.production_probe, `${name}.production_probe`);
+  const caseId = safeIdentifier(raw.case_id, `${name}.case_id`);
+  const probeId = safeIdentifier(productionProbe.id, `${name}.production_probe.id`);
   return {
-    case_id: safeIdentifier(raw.case_id, 'handoff.case_id'),
-    outcome_case_ref: canonicalExternalReference(raw.outcome_case_ref, 'handoff.outcome_case_ref'),
-    judgment_receipt_ref: canonicalExternalReference(raw.judgment_receipt_ref, 'handoff.judgment_receipt_ref'),
-    decision_digest: sha256Field(raw.decision_digest, 'handoff.decision_digest'),
-    user_observable_outcome: requiredString(raw.user_observable_outcome, 'handoff.user_observable_outcome'),
+    case_id: caseId,
+    outcome_case_ref: brainbaseReference(raw.outcome_case_ref, `${name}.outcome_case_ref`, `brainbase://outcome-cases/${caseId}`),
+    judgment_receipt_ref: brainbaseReference(raw.judgment_receipt_ref, `${name}.judgment_receipt_ref`, expectedJudgmentReceiptId ? `brainbase://judgment-receipts/${expectedJudgmentReceiptId}` : null),
+    decision_digest: sha256Field(raw.decision_digest, `${name}.decision_digest`),
+    user_observable_outcome: requiredString(raw.user_observable_outcome, `${name}.user_observable_outcome`),
     technical_acceptance: normalizedAcceptance,
     production_probe: {
-      id: safeIdentifier(productionProbe.id, 'handoff.production_probe.id'),
-      procedure: requiredString(productionProbe.procedure, 'handoff.production_probe.procedure'),
-      terminal_receipt_target: canonicalExternalReference(
+      id: probeId,
+      procedure: requiredString(productionProbe.procedure, `${name}.production_probe.procedure`),
+      terminal_receipt_target: brainbaseReference(
         productionProbe.terminal_receipt_target,
-        'handoff.production_probe.terminal_receipt_target'
+        `${name}.production_probe.terminal_receipt_target`,
+        `brainbase://production-probes/${probeId}/receipt`
       )
     }
   };
@@ -414,8 +436,11 @@ function validateKnowledgeEntry(value, expectedInput, name) {
 
 function validateHandoff(raw, storyId) {
   const handoff = object(raw, 'Brainbase handoff');
-  if (![HANDOFF_SCHEMA, HANDOFF_V2_SCHEMA].includes(handoff.schema_version)) {
-    throw new Error(`handoff.schema_version must be ${HANDOFF_SCHEMA} or ${HANDOFF_V2_SCHEMA}`);
+  if (handoff.schema_version === HANDOFF_V2_SCHEMA) {
+    throw new Error(`${HANDOFF_V2_SCHEMA} requires a signed ${MANAGED_HANDOFF_V2_SCHEMA} receipt`);
+  }
+  if (handoff.schema_version !== HANDOFF_SCHEMA) {
+    throw new Error(`handoff.schema_version must be ${HANDOFF_SCHEMA}`);
   }
   if (handoff.story_id !== storyId) throw new Error('handoff.story_id does not match --id');
   const projectCode = safeIdentifier(handoff.project_code, 'handoff.project_code');
@@ -455,8 +480,8 @@ function validateHandoff(raw, storyId) {
     receiptDigest,
     judgment,
     knowledge,
-    contextSchema: handoff.schema_version === HANDOFF_V2_SCHEMA ? CONTEXT_V2_SCHEMA : CONTEXT_SCHEMA,
-    outcomeCase: handoff.schema_version === HANDOFF_V2_SCHEMA ? validateOutcomeCase(handoff) : null
+    contextSchema: CONTEXT_SCHEMA,
+    outcomeCase: null
   };
 }
 
@@ -609,10 +634,11 @@ function dateFromOption(now) {
 
 async function validateManagedHandoff(raw, storyId, repoRoot, config = {}, now = () => new Date(), env = process.env) {
   object(raw, 'managed Brainbase handoff');
-  if (raw.schema_version !== MANAGED_HANDOFF_SCHEMA) {
-    throw new Error(`managed Brainbase handoff must use the canonical ${MANAGED_HANDOFF_SCHEMA} receipt`);
+  if (!isManagedHandoffSchema(raw.schema_version)) {
+    throw new Error(`managed Brainbase handoff must use the canonical ${MANAGED_HANDOFF_SCHEMA} or ${MANAGED_HANDOFF_V2_SCHEMA} receipt`);
   }
-  for (const field of MANAGED_HANDOFF_PAYLOAD_FIELDS) {
+  const v2 = raw.schema_version === MANAGED_HANDOFF_V2_SCHEMA;
+  for (const field of (v2 ? MANAGED_HANDOFF_V2_PAYLOAD_FIELDS : MANAGED_HANDOFF_PAYLOAD_FIELDS)) {
     if (!Object.hasOwn(raw, field)) throw new Error(`managed handoff.${field} is required`);
   }
   // Brainbase emits the managed receipt before VibePro has created a Story,
@@ -662,6 +688,12 @@ async function validateManagedHandoff(raw, storyId, repoRoot, config = {}, now =
   const signature = await validateManagedSignature(raw, canonicalPayload, repoRoot, config, env);
   const resolutionId = managedIdentifier(raw.resolution_id, 'managed handoff.resolution_id');
   const turnId = managedIdentifier(raw.turn_id, 'managed handoff.turn_id');
+  const outcomeCase = v2
+    ? validateOutcomeCase(raw.outcome_case, {
+      name: 'managed handoff.outcome_case',
+      expectedJudgmentReceiptId: resolutionId
+    })
+    : null;
   return {
     handoff: raw,
     projectCode,
@@ -677,7 +709,7 @@ async function validateManagedHandoff(raw, storyId, repoRoot, config = {}, now =
     },
     knowledge: [],
     managed: {
-      schemaVersion: MANAGED_HANDOFF_SCHEMA,
+      schemaVersion: raw.schema_version,
       receiptDigest,
       signature,
       repository,
@@ -687,7 +719,9 @@ async function validateManagedHandoff(raw, storyId, repoRoot, config = {}, now =
       expiresAt,
       resolutionId,
       turnId
-    }
+    },
+    contextSchema: v2 ? CONTEXT_V2_SCHEMA : CONTEXT_SCHEMA,
+    outcomeCase
   };
 }
 
@@ -796,29 +830,63 @@ async function ledgerEntryForStory(root, storyId) {
   return ledger.entries.find((entry) => entry.story_id === storyId) ?? null;
 }
 
-async function projectOutcomeCaseToStoryMetadata(root, storyId, outcomeCase) {
-  if (!outcomeCase) return false;
+async function preflightStoryProjection(root, storyId, validated) {
   const configPath = path.join(getWorkspaceDir(root), 'config.json');
   const config = await readJsonIfExists(configPath);
   const stories = config?.brainbase?.stories;
-  if (!Array.isArray(stories)) return false;
+  const outputPath = contextPath(root, storyId);
+  const priorContext = await readJsonIfExists(outputPath);
+  if (!validated.outcomeCase) {
+    if (priorContext?.schema_version === CONTEXT_V2_SCHEMA || stories?.find((story) => story?.story_id === storyId)?.outcome_case) {
+      const error = new Error('v2 Story outcome-case projection cannot be rebound to v1; create a new Story instead');
+      error.code = 'BRAINBASE_HANDOFF_V2_REBIND_DOWNGRADE';
+      throw error;
+    }
+    return { configPath, config, outputPath, priorContext, nextConfig: config, storyMetadataUpdated: false };
+  }
+  if (!validated.managed || validated.managed.schemaVersion !== MANAGED_HANDOFF_V2_SCHEMA) {
+    throw new Error('outcome-case projection requires a signed managed Brainbase handoff v2');
+  }
+  if (!Array.isArray(stories)) {
+    const error = new Error(`v2 outcome-case binding requires existing Story ${storyId} before any write`);
+    error.code = 'BRAINBASE_OUTCOME_CASE_STORY_MISSING';
+    throw error;
+  }
   const index = stories.findIndex((story) => story?.story_id === storyId);
-  if (index < 0) return false;
+  if (index < 0) {
+    const error = new Error(`v2 outcome-case binding requires existing Story ${storyId} before any write`);
+    error.code = 'BRAINBASE_OUTCOME_CASE_STORY_MISSING';
+    throw error;
+  }
   const current = stories[index];
-  if (canonicalJson(current?.outcome_case ?? null) === canonicalJson(outcomeCase)) return false;
+  if (current?.outcome_case && canonicalJson(current.outcome_case) !== canonicalJson(validated.outcomeCase)) {
+    const error = new Error('existing Story outcome_case does not match the signed managed handoff');
+    error.code = 'BRAINBASE_OUTCOME_CASE_STORY_CONFLICT';
+    throw error;
+  }
   const nextStories = [...stories];
-  nextStories[index] = { ...current, outcome_case: outcomeCase };
-  await writeJsonAtomic(configPath, {
+  nextStories[index] = { ...current, outcome_case: validated.outcomeCase };
+  return {
+    configPath,
+    config,
+    outputPath,
+    priorContext,
+    nextConfig: {
     ...config,
     brainbase: {
       ...(config.brainbase ?? {}),
       stories: nextStories
     }
-  });
-  return true;
+    },
+    storyMetadataUpdated: canonicalJson(current?.outcome_case ?? null) !== canonicalJson(validated.outcomeCase)
+  };
 }
 
 async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
+  // Validate all cross-artifact invariants before creating context, receipts,
+  // or ledger entries. A v2 result is never reported as bound without an
+  // already-existing Story projection derived from the same signed payload.
+  const projection = await preflightStoryProjection(root, storyId, validated);
   const stableProjection = {
     schema_version: validated.contextSchema ?? CONTEXT_SCHEMA,
     story_id: storyId,
@@ -864,9 +932,21 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
     context_digest: sha256(canonicalJson(stableProjection)),
     bound_at: (options.now ?? (() => new Date()))().toISOString()
   };
-  const outputPath = contextPath(root, storyId);
-  await writeJsonAtomic(outputPath, context);
-  const storyMetadataUpdated = await projectOutcomeCaseToStoryMetadata(root, storyId, context.outcome_case ?? null);
+  const outputPath = projection.outputPath;
+  if (validated.outcomeCase) {
+    // Each individual file replacement is atomic. If the second replacement
+    // fails, restore the first so this call cannot return a half-projection.
+    await writeJsonAtomic(projection.configPath, projection.nextConfig);
+    try {
+      await writeJsonAtomic(outputPath, context);
+    } catch (error) {
+      await writeJsonAtomic(projection.configPath, projection.config);
+      throw error;
+    }
+  } else {
+    await writeJsonAtomic(outputPath, context);
+  }
+  const storyMetadataUpdated = projection.storyMetadataUpdated;
   let bindReceiptArtifact = null;
   if (validated.managed) {
     const receipt = {
@@ -912,10 +992,7 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
   const storyId = safeIdentifier(options.storyId, 'story_id');
   const inputPath = path.resolve(root, requiredString(options.input, 'input'));
   const raw = await readJson(inputPath, 'Brainbase handoff');
-  const managed = raw?.schema_version === MANAGED_HANDOFF_SCHEMA
-    || raw?.managed_receipt
-    || raw?.receipt_metadata
-    || options.managed === true;
+  const managed = isManagedHandoffSchema(raw?.schema_version);
   const validated = managed
     ? await validateManagedHandoff(raw, storyId, root, options.config ?? {}, options.now ?? (() => new Date()), options.env ?? process.env)
     : validateHandoff(raw, storyId);
@@ -952,7 +1029,7 @@ export async function ensureBrainbaseStoryBinding(repoRoot, options = {}) {
     for (const candidate of files) {
       try {
         const candidateRaw = await readJson(candidate, 'managed Brainbase handoff');
-        if (candidateRaw?.schema_version === MANAGED_HANDOFF_SCHEMA) {
+        if (isManagedHandoffSchema(candidateRaw?.schema_version)) {
           parsed.push({ path: candidate, raw: candidateRaw });
         }
       } catch (error) {
@@ -1207,7 +1284,7 @@ export async function doctorBrainbaseIntegration(repoRoot, options = {}) {
         for (const filePath of files) {
           try {
             const raw = await readJson(filePath, 'managed Brainbase handoff');
-            if (raw?.schema_version === MANAGED_HANDOFF_SCHEMA && (raw.story_id === storyId || raw.story_id === null)) {
+            if (isManagedHandoffSchema(raw?.schema_version) && (raw.story_id === storyId || raw.story_id === null)) {
               parsed.push({ raw, filePath });
             }
           } catch {

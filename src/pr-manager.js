@@ -18,7 +18,7 @@
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { promisify } from 'node:util';
+import { isDeepStrictEqual, promisify } from 'node:util';
 
 import { getWorkspaceDir, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
@@ -182,7 +182,8 @@ async function readStory(repoRoot, storyId) {
   const found = stories.find((item) => item.story_id === storyId);
   if (found) {
     const rawStory = rawStories.find((item) => item?.story_id === storyId);
-    return rawStory?.outcome_case ? { ...found, outcome_case: rawStory.outcome_case } : found;
+    const outcomeCase = await readTrustedOutcomeCaseProjection(repoRoot, storyId, rawStory?.outcome_case);
+    return outcomeCase ? { ...found, outcome_case: outcomeCase } : found;
   }
   return {
     story_id: storyId,
@@ -195,6 +196,32 @@ async function readStory(repoRoot, storyId) {
     started_at: null,
     due_at: null
   };
+}
+
+// Story config is user-editable. Only project an outcome case to a PR when
+// the same value is present in the v2 context and its managed bind receipt.
+// This is deliberately a local consistency check: VibePro must not invent a
+// network verification call or treat arbitrary config as Brainbase authority.
+async function readTrustedOutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase) {
+  if (!rawOutcomeCase || typeof rawOutcomeCase !== 'object' || Array.isArray(rawOutcomeCase)) return null;
+  const base = path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', storyId);
+  let context;
+  let receipt;
+  try {
+    [context, receipt] = await Promise.all([
+      JSON.parse(await readFile(path.join(base, 'context.json'), 'utf8')),
+      JSON.parse(await readFile(path.join(base, 'bind-receipt.json'), 'utf8'))
+    ]);
+  } catch {
+    return null;
+  }
+  if (context?.schema_version !== 'vibepro-brainbase-context.v2'
+      || context?.source?.managed !== true
+      || context?.bind_receipt?.signature_trusted !== true
+      || receipt?.signature_trusted !== true
+      || context?.bind_receipt?.receipt_digest !== receipt?.receipt_digest
+      || !isDeepStrictEqual(context?.outcome_case, rawOutcomeCase)) return null;
+  return context.outcome_case;
 }
 
 async function readVerificationSummary(repoRoot, storyId) {

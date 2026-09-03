@@ -89,7 +89,7 @@ async function addGitHubRemote(root, name, repository) {
   await git(root, ['remote', 'add', name, `https://github.com/${repository}.git`]);
 }
 
-test('pr prepareは成果ケースの技術状態と証跡だけを投影し、完了を推測しない', async () => {
+test('pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない', async () => {
   const storyId = 'story-pr-manager-outcome-case';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
   const configPath = path.join(root, '.vibepro', 'config.json');
@@ -118,15 +118,10 @@ test('pr prepareは成果ケースの技術状態と証跡だけを投影し、�
 
   const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
   const outcomeCase = result.preparation.outcome_case;
-  assert.equal(outcomeCase.case_id, 'outcome-case-pr-1');
-  assert.equal(outcomeCase.technical_complete, false);
-  assert.equal(outcomeCase.technical_completion_status, 'unknown_untrusted_or_missing_evidence');
-  assert.deepEqual(outcomeCase.evidence, []);
-  assert.equal('outcome_case_status' in outcomeCase, false);
+  assert.equal(outcomeCase, undefined);
 
   const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(body, /### 成果ケース連携/);
-  assert.match(body, /OutcomeCaseの完了・close・外部更新はこのPR準備の対象外/);
+  assert.doesNotMatch(body, /### 成果ケース連携/);
 });
 
 test('pr create fails closed before push when distinct remotes leave the destination ambiguous', async () => {

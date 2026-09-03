@@ -31,7 +31,8 @@
       ],
       "acceptance_criteria": [
         "v1 handoff is unchanged",
-        "v2 outcome case metadata is validated and projected",
+        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story",
+        "unmanaged v2 and cross-case or unknown-issuer references are rejected",
         "technical completion never closes OutcomeCase"
       ],
       "status": "in_progress"

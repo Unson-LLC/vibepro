@@ -23,6 +23,7 @@ import {
 import { collectGitContext } from '../src/git-fingerprint.js';
 import { runCli } from '../src/cli.js';
 import { addStory, selectStory } from '../src/story-manager.js';
+import { preparePullRequest } from '../src/pr-manager.js';
 import { initWorkspace } from '../src/workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -198,6 +199,19 @@ function v2Handoff(overrides = {}) {
   };
 }
 
+function outcomeCase(overrides = {}) {
+  const value = v2Handoff(overrides);
+  return {
+    case_id: value.case_id,
+    outcome_case_ref: value.outcome_case_ref,
+    judgment_receipt_ref: value.judgment_receipt_ref,
+    decision_digest: value.decision_digest,
+    user_observable_outcome: value.user_observable_outcome,
+    technical_acceptance: value.technical_acceptance,
+    production_probe: value.production_probe
+  };
+}
+
 async function writeJson(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
@@ -213,10 +227,12 @@ function managedHandoff({
   issuedAt = '2026-08-29T00:00:00.000Z',
   expiresAt = '2026-09-30T00:00:00.000Z',
   keyId = 'brainbase-vibepro-handoff-hmac-v1',
-  hmacSecret = TEST_HANDOFF_HMAC_SECRET
+  hmacSecret = TEST_HANDOFF_HMAC_SECRET,
+  schemaVersion = 'brainbase-vibepro-managed-handoff.v1',
+  managedOutcomeCase = null
 } = {}) {
   const payload = {
-    schema_version: 'brainbase-vibepro-managed-handoff.v1',
+    schema_version: schemaVersion,
     repository: 'github://Unson-LLC/example',
     repository_root: repositoryRoot,
     project_code: projectCode,
@@ -227,7 +243,8 @@ function managedHandoff({
     resolution_id: 'jr_test',
     story_id: storyId,
     authorized: false,
-    graph_promotion_allowed: false
+    graph_promotion_allowed: false,
+    ...(schemaVersion === 'brainbase-vibepro-managed-handoff.v2' ? { outcome_case: managedOutcomeCase ?? outcomeCase() } : {})
   };
   const canonicalPayload = canonicalManagedHandoffPayload(payload);
   const receiptDigest = sha256(canonicalPayload);
@@ -290,14 +307,17 @@ test('Brainbase judgment・routing receipt・retrieval referencesをlocal contex
   assert.equal(context.context_digest.length, 64);
 });
 
-test('v2成果ケース契約をcontextと既存Storyメタデータへ投影する', async () => {
+test('署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する', async () => {
   const root = await makeRepo();
   await addStory(root, { story_id: STORY_ID, title: 'Outcome case binding' });
-  await writeJson(path.join(root, 'handoff-v2.json'), v2Handoff());
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
 
   const result = await bindBrainbaseContext(root, {
     storyId: STORY_ID,
-    input: 'handoff-v2.json',
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
     now: () => new Date('2026-09-03T00:00:02.000Z'),
   });
   assert.equal(result.status, 'bound');
@@ -309,42 +329,119 @@ test('v2成果ケース契約をcontextと既存Storyメタデータへ投影す
   assert.equal(context.outcome_case.production_probe.id, 'probe-production-readback');
   assert.equal(context.outcome_case.technical_acceptance[0].id, 'TA-1');
 
-  const config = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
-  const story = config.brainbase.stories.find((item) => item.story_id === STORY_ID);
+  const projectedConfig = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+  const story = projectedConfig.brainbase.stories.find((item) => item.story_id === STORY_ID);
   assert.deepEqual(story.outcome_case, context.outcome_case);
   assert.equal('outcome_case_status' in context, false);
 });
 
-test('v2成果ケース契約の空値・重複・ローカル参照をfail closedする', async () => {
+test('非managed v2は成果ケース値の前にfail closedする', async () => {
   const root = await makeRepo();
+  await writeJson(path.join(root, 'untrusted-v2.json'), v2Handoff());
+  await assert.rejects(
+    bindBrainbaseContext(root, { storyId: STORY_ID, input: 'untrusted-v2.json' }),
+    /requires a signed brainbase-vibepro-managed-handoff\.v2/
+  );
+  assert.equal(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8').catch(() => null), null);
+});
+
+test('managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する', async () => {
+  const root = await makeRepo();
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
+  await assert.rejects(
+    bindBrainbaseContext(root, {
+      storyId: STORY_ID,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      now: () => new Date('2026-09-03T00:00:02.000Z')
+    }),
+    /requires existing Story.*before any write/
+  );
+  assert.equal(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8').catch(() => null), null);
+
+  // Simulate the already-declared Story state. Creating it through addStory
+  // would correctly reject this v2 receipt before the Story exists.
+  const existingConfigPath = path.join(root, '.vibepro', 'config.json');
+  const existingConfig = JSON.parse(await readFile(existingConfigPath, 'utf8'));
+  existingConfig.brainbase.stories.push({ story_id: STORY_ID, title: 'Existing Story', status: 'active' });
+  await writeJson(existingConfigPath, existingConfig);
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  });
+  await writeJson(path.join(root, 'v1.json'), handoff());
+  await assert.rejects(
+    bindBrainbaseContext(root, { storyId: STORY_ID, input: 'v1.json' }),
+    /cannot be rebound to v1/
+  );
+  const context = JSON.parse(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8'));
+  assert.equal(context.schema_version, 'vibepro-brainbase-context.v2');
+});
+
+test('signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない', async () => {
   const cases = [
     [
-      'missing-case-id',
-      (() => {
-        const value = v2Handoff();
-        delete value.case_id;
-        return value;
-      })(),
-      /handoff\.case_id is required/
+      'cross-case',
+      outcomeCase({ outcome_case_ref: 'brainbase://outcome-cases/another-case' }),
+      /does not identify the signed outcome case/
     ],
     [
-      'duplicate-acceptance-id',
-      v2Handoff({ technical_acceptance: [{ id: 'TA-1', criterion: 'one' }, { id: 'TA-1', criterion: 'two' }] }),
-      /duplicate ids/
+      'unknown-issuer',
+      outcomeCase({ judgment_receipt_ref: 'https://issuer.example/jr_test' }),
+      /canonical Brainbase reference/
     ],
     [
-      'local-production-receipt',
-      v2Handoff({ production_probe: { id: 'probe-1', procedure: '確認する。', terminal_receipt_target: 'file:///tmp/receipt.json' } }),
-      /non-local canonical URI/
+      'foreign-receipt',
+      outcomeCase({ judgment_receipt_ref: 'brainbase://judgment-receipts/other-resolution' }),
+      /does not identify the signed outcome case/
     ]
   ];
-  for (const [name, value, expected] of cases) {
-    await writeJson(path.join(root, `${name}.json`), value);
+  for (const [name, managedOutcomeCase, expected] of cases) {
+    const root = await makeRepo();
+    await addStory(root, { story_id: STORY_ID, title: 'Outcome validation' });
+    const { config } = await configureManagedBrainbase(root, {
+      receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase }
+    });
     await assert.rejects(
-      bindBrainbaseContext(root, { storyId: STORY_ID, input: `${name}.json` }),
+      bindBrainbaseContext(root, {
+        storyId: STORY_ID,
+        input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+        config,
+        now: () => new Date('2026-09-03T00:00:02.000Z')
+      }),
       expected
     );
   }
+});
+
+test('trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'End-to-end outcome case' });
+  const expectedOutcomeCase = outcomeCase();
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase: expectedOutcomeCase }
+  });
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  });
+  const context = JSON.parse(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8'));
+  const stored = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'))
+    .brainbase.stories.find((story) => story.story_id === STORY_ID);
+  assert.deepEqual(context.outcome_case, expectedOutcomeCase);
+  assert.deepEqual(stored.outcome_case, expectedOutcomeCase);
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+  const projected = prepared.preparation.outcome_case;
+  for (const field of ['case_id', 'outcome_case_ref', 'judgment_receipt_ref', 'decision_digest', 'user_observable_outcome', 'technical_acceptance', 'production_probe']) {
+    assert.deepEqual(projected[field], expectedOutcomeCase[field]);
+  }
+  assert.equal(projected.technical_complete, false);
 });
 
 test('routingだけ・personal knowledge・未要求entryを受け入れない', async () => {
