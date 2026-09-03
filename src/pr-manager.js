@@ -921,11 +921,16 @@ export async function createPullRequest(repoRoot, options = {}) {
   if (!headBranch) {
     throw new Error('Current branch could not be resolved. Specify --head or run on a named branch.');
   }
-  const baseBranch = stripRemote(options.prBase ?? preparation.git.base_ref);
   const title = options.title ?? buildPrTitle(preparation);
   const bodyFile = prepareResult.artifacts.pr_body;
   const dryRun = options.dryRun === true;
   const warnings = [];
+  const destination = await resolvePrDestination(root, {
+    pushRemote: options.pushRemote,
+    repository: options.repository,
+    baseRef: options.prBase ?? preparation.git.base_ref
+  });
+  const baseBranch = destination.baseRef;
   if (headBranch === baseBranch) {
     warnings.push(`head branch equals base branch: ${headBranch}`);
     if (!dryRun) {
@@ -933,10 +938,10 @@ export async function createPullRequest(repoRoot, options = {}) {
     }
   }
 
-  const pushCommand = ['git', ['push', '-u', 'origin', headBranch]];
-  const ghCreateCommand = ['gh', ['pr', 'create', '--base', baseBranch, '--head', headBranch, '--title', title, '--body-file', bodyFile]];
+  const pushCommand = ['git', ['push', '-u', destination.pushRemote, headBranch]];
+  const ghCreateCommand = ['gh', ['pr', 'create', '--repo', destination.prRepository, '--base', baseBranch, '--head', headBranch, '--title', title, '--body-file', bodyFile]];
   const ghExistingPrListCommand = ['gh', [
-    'pr', 'list', '--base', baseBranch, '--head', headBranch, '--state', 'open',
+    'pr', 'list', '--repo', destination.prRepository, '--base', baseBranch, '--head', headBranch, '--state', 'open',
     '--json', 'number,url,state,isDraft,headRefName,headRefOid,baseRefName',
     '--limit', '1'
   ]];
@@ -947,6 +952,14 @@ export async function createPullRequest(repoRoot, options = {}) {
     dry_run: dryRun,
     story: preparation.story,
     runtime_identity: preparation.runtime_identity,
+    push_remote: destination.pushRemote,
+    push_url: destination.pushUrl,
+    pr_repository: destination.prRepository,
+    base_repository: destination.baseRepository,
+    base_ref: baseBranch,
+    head_ref: headBranch,
+    head_sha: preparation.git.head_sha,
+    destination_validation: [destination.validation],
     base: baseBranch,
     head: headBranch,
     title,
@@ -958,6 +971,14 @@ export async function createPullRequest(repoRoot, options = {}) {
   };
 
   if (!dryRun) {
+    try {
+      await revalidatePrDestination(root, destination, execution, 'before_push');
+    } catch (error) {
+      execution.status = 'failed';
+      execution.error = error.message;
+      await writePrCreateArtifacts(root, prepareResult, execution);
+      throw error;
+    }
     const pushResult = await runCommand(root, pushCommand, options);
     execution.results.push(pushResult);
     if (pushResult.exit_code !== 0) {
@@ -965,6 +986,14 @@ export async function createPullRequest(repoRoot, options = {}) {
       execution.error = `Command failed: ${pushResult.command}`;
       await writePrCreateArtifacts(root, prepareResult, execution);
       throw new Error(execution.error);
+    }
+    try {
+      await revalidatePrDestination(root, destination, execution, 'before_pr_create');
+    } catch (error) {
+      execution.status = 'failed';
+      execution.error = error.message;
+      await writePrCreateArtifacts(root, prepareResult, execution);
+      throw error;
     }
     const ghResult = await runCommand(root, ghCreateCommand, options);
     execution.results.push(ghResult);
@@ -986,7 +1015,7 @@ export async function createPullRequest(repoRoot, options = {}) {
         throw new Error(execution.error);
       }
       const editTarget = existingPr.url ?? (existingPr.number ? String(existingPr.number) : null);
-      const ghEditCommand = ['gh', ['pr', 'edit', editTarget, '--title', title, '--body-file', bodyFile]];
+      const ghEditCommand = ['gh', ['pr', 'edit', editTarget, '--repo', destination.prRepository, '--title', title, '--body-file', bodyFile]];
       execution.commands.push(formatCommand(ghEditCommand));
       const editResult = await runCommand(root, ghEditCommand, options);
       execution.results.push(editResult);
@@ -1014,12 +1043,125 @@ export async function createPullRequest(repoRoot, options = {}) {
   };
 }
 
-function buildPrTitle(preparation) {
-  return preparation.story?.title ?? preparation.story?.story_id ?? 'VibePro change';
+async function resolvePrDestination(repoRoot, options = {}) {
+  const remotes = await readGitRemotes(repoRoot);
+  if (remotes.length === 0) {
+    throw new Error('PR destination cannot be resolved because this repository has no Git remote.');
+  }
+
+  const requestedRepository = normalizeRepository(options.repository);
+  let selected = options.pushRemote
+    ? remotes.find((remote) => remote.name === options.pushRemote)
+    : null;
+  if (options.pushRemote && !selected) {
+    throw new Error(`Push remote does not exist: ${options.pushRemote}`);
+  }
+
+  if (!selected && requestedRepository) {
+    const matches = remotes.filter((remote) => remote.repository === requestedRepository);
+    if (matches.length !== 1) {
+      throw new Error(`PR destination is ambiguous: --repo ${requestedRepository} matches ${matches.length} remotes. Specify --push-remote.`);
+    }
+    [selected] = matches;
+  }
+
+  const distinctRepositories = new Set(remotes.map((remote) => remote.repository));
+  if (!selected && distinctRepositories.size > 1) {
+    throw new Error('PR destination is ambiguous: multiple remotes point to different repositories. Specify --push-remote or --repo.');
+  }
+  selected ??= remotes.find((remote) => remote.name === 'origin') ?? remotes[0];
+
+  const prRepository = requestedRepository ?? selected.repository;
+  if (selected.repository !== prRepository) {
+    throw new Error(`Push remote ${selected.name} (${selected.repository}) does not match PR repository ${prRepository}.`);
+  }
+
+  const base = splitRemoteRef(options.baseRef, remotes);
+  const baseRepository = base.remote
+    ? remotes.find((remote) => remote.name === base.remote)?.repository ?? prRepository
+    : prRepository;
+  if (baseRepository !== prRepository) {
+    throw new Error(`Base remote ${base.remote} (${baseRepository}) does not match PR repository ${prRepository}.`);
+  }
+  return {
+    pushRemote: selected.name,
+    pushUrl: selected.url,
+    prRepository,
+    baseRepository,
+    baseRef: base.ref,
+    validation: destinationValidation('plan', selected, prRepository)
+  };
 }
 
-function stripRemote(ref) {
-  return String(ref ?? '').replace(/^origin\//, '');
+async function readGitRemotes(repoRoot) {
+  const { stdout } = await execFileAsync('git', ['remote'], { cwd: repoRoot, encoding: 'utf8' });
+  const names = stdout.split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
+  return Promise.all(names.map(async (name) => {
+    const result = await execFileAsync('git', ['remote', 'get-url', '--push', name], { cwd: repoRoot, encoding: 'utf8' });
+    const url = result.stdout.trim();
+    return { name, url, repository: repositoryFromRemoteUrl(url) };
+  }));
+}
+
+function repositoryFromRemoteUrl(url) {
+  const value = String(url ?? '').trim().replace(/\.git$/, '').replace(/\/$/, '');
+  const match = value.match(/(?:github\.com[/:])([^/\s:]+)\/([^/\s]+)$/i);
+  if (!match) {
+    throw new Error(`Unsupported GitHub remote URL: ${url}`);
+  }
+  return `${match[1]}/${match[2]}`;
+}
+
+function normalizeRepository(repository) {
+  if (repository == null) return null;
+  const value = String(repository).trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/, '').replace(/^\/+|\/+$/g, '');
+  if (!/^[^/\s]+\/[^/\s]+$/.test(value)) {
+    throw new Error(`Invalid GitHub repository: ${repository}. Expected owner/name.`);
+  }
+  return value;
+}
+
+function splitRemoteRef(baseRef, remotes) {
+  const value = String(baseRef ?? '').trim();
+  const remote = remotes.find((candidate) => value.startsWith(`${candidate.name}/`));
+  return remote ? { remote: remote.name, ref: value.slice(remote.name.length + 1) } : { remote: null, ref: value };
+}
+
+function destinationValidation(stage, remote, prRepository) {
+  return {
+    stage,
+    status: 'passed',
+    checked_at: new Date().toISOString(),
+    push_remote: remote.name,
+    push_url: remote.url,
+    push_repository: remote.repository,
+    pr_repository: prRepository
+  };
+}
+
+async function revalidatePrDestination(repoRoot, planned, execution, stage) {
+  const remotes = await readGitRemotes(repoRoot);
+  const current = remotes.find((remote) => remote.name === planned.pushRemote);
+  if (!current || current.url !== planned.pushUrl || current.repository !== planned.prRepository) {
+    const validation = {
+      stage,
+      status: 'failed',
+      checked_at: new Date().toISOString(),
+      push_remote: planned.pushRemote,
+      planned_push_url: planned.pushUrl,
+      current_push_url: current?.url ?? null,
+      planned_repository: planned.prRepository,
+      current_repository: current?.repository ?? null
+    };
+    execution.destination_validation.push(validation);
+    throw new Error(`PR destination changed before ${stage}: remote ${planned.pushRemote} no longer matches ${planned.prRepository}.`);
+  }
+  execution.push_url = current.url;
+  execution.destination_validation.push(destinationValidation(stage, current, planned.prRepository));
+}
+
+function buildPrTitle(preparation) {
+  return preparation.story?.title ?? preparation.story?.story_id ?? 'VibePro change';
 }
 
 function formatCommand(command) {
