@@ -8,7 +8,7 @@
 
 - `test/vibepro-cli.test.js`のrelease metadata testで4つのversion surfaceを固定する。
 - `npm run typecheck`を実行する。
-- `npm pack --dry-run`で公開対象ファイルとpackage metadataを確認する。
+- `npm run build:pack-dry-run`から既存`pack:dry-run`を実行し、公開対象ファイルとpackage metadataを確認する。
 
 ## Production readback
 

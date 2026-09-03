@@ -2,11 +2,11 @@
 
 ## 境界
 
-実装済みのIssue #518修正は変更せず、version metadataとversion契約テストだけを更新する。公開は既存のpost-merge workflowを唯一の経路とする。
+実装済みのIssue #518修正は変更せず、version metadata、version契約テスト、既存`pack:dry-run`をVibeProのbuild証跡として実行するためのaliasだけを更新する。公開は既存のpost-merge workflowを唯一の経路とする。
 
 ## 実行順序
 
-リリースPRのCI成功とマージ後、workflowがnpm publish、Git tag、GitHub prereleaseを収束させる。
+マージ前に`npm run build:pack-dry-run`で既存pack処理を検証する。リリースPRのCI成功とマージ後、workflowがnpm publish、Git tag、GitHub prereleaseを収束させる。
 
 ## 完了判定
 
