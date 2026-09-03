@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
-import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -12,8 +12,27 @@ const execFileAsync = promisify(execFile);
 
 const CONTEXT_SCHEMA = 'vibepro-brainbase-context.v1';
 const HANDOFF_SCHEMA = 'brainbase-vibepro-context-handoff.v1';
+const MANAGED_HANDOFF_SCHEMA = 'brainbase-vibepro-managed-handoff.v1';
 const EVENT_SCHEMA = 'knowledge_event.v1';
 const EVENT_PAYLOAD_SCHEMA = 'vibepro-development-learning.v1';
+const OUTBOX_SCHEMA = 'vibepro-brainbase-outbox.v1';
+const BIND_RECEIPT_SCHEMA = 'vibepro-brainbase-bind-receipt.v1';
+const HANDOFF_LEDGER_SCHEMA = 'vibepro-brainbase-handoff-consumption-ledger.v1';
+const DEFAULT_HANDOFF_HMAC_KEY_ID = 'brainbase-vibepro-handoff-hmac-v1';
+const MANAGED_HANDOFF_PAYLOAD_FIELDS = [
+  'schema_version',
+  'repository',
+  'repository_root',
+  'project_code',
+  'base_sha',
+  'issued_at',
+  'expires_at',
+  'turn_id',
+  'resolution_id',
+  'story_id',
+  'authorized',
+  'graph_promotion_allowed'
+];
 const ALLOWED_KNOWLEDGE_TYPES = new Set(['canonical_fact', 'team_document', 'source_document']);
 const ROUTE_CONTRACTS = new Map([
   ['canonical_fact', { sourceClass: 'graph', retrievalCapability: 'graph.search' }],
@@ -27,6 +46,23 @@ const SENSITIVE_CONTENT = [
   /\bsk-[a-z0-9_-]{8,}\b/iu,
   /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/iu
 ];
+
+export const BRAINBASE_HANDOFF_INBOX_DIR = '.vibepro/integrations/brainbase/inbox';
+export const BRAINBASE_OUTBOX_DIR = '.vibepro/integrations/brainbase/outbox';
+export const BRAINBASE_HANDOFF_LEDGER_FILE = '.vibepro/integrations/brainbase/handoff-consumption-ledger.json';
+export const BRAINBASE_HANDOFF_HMAC_SECRET_ENV = 'BRAINBASE_VIBEPRO_HANDOFF_HMAC_SECRET';
+export const BRAINBASE_HANDOFF_HMAC_KEY_ID_ENV = 'BRAINBASE_VIBEPRO_HANDOFF_HMAC_KEY_ID';
+
+/**
+ * Brainbase signs exactly this payload. Integrity fields are deliberately not
+ * included: receipt_digest and signature authenticate this canonical value.
+ */
+export function canonicalManagedHandoffPayload(receipt) {
+  return canonicalJson([
+    MANAGED_HANDOFF_SCHEMA,
+    Object.fromEntries(MANAGED_HANDOFF_PAYLOAD_FIELDS.map((field) => [field, receipt?.[field]]))
+  ]);
+}
 
 function compareCodePoints(left, right) {
   const a = Array.from(left, (value) => value.codePointAt(0));
@@ -101,6 +137,108 @@ function eventPath(repoRoot, storyId) {
   return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', safeIdentifier(storyId, 'story_id'), 'knowledge-event.json');
 }
 
+function bindReceiptPath(repoRoot, storyId) {
+  return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', safeIdentifier(storyId, 'story_id'), 'bind-receipt.json');
+}
+
+function outboxPath(repoRoot, eventId) {
+  return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', 'outbox', `${safeIdentifier(eventId, 'event_id')}.json`);
+}
+
+function handoffLedgerPath(repoRoot) {
+  return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', 'handoff-consumption-ledger.json');
+}
+
+function defaultInboxCandidates(repoRoot) {
+  const workspace = getWorkspaceDir(repoRoot);
+  return [
+    path.join(workspace, 'integrations', 'brainbase', 'inbox'),
+    path.join(workspace, 'integrations', 'brainbase', 'handoff-inbox'),
+    path.join(workspace, 'brainbase', 'inbox'),
+    path.join(workspace, 'brainbase', 'handoff-inbox'),
+    path.join(workspace, 'integrations', 'brainbase', 'handoff.json'),
+    path.join(workspace, 'brainbase', 'handoff.json')
+  ];
+}
+
+function configuredInboxCandidates(repoRoot, config = {}) {
+  const brainbase = config?.brainbase ?? {};
+  const integration = brainbase.integration ?? {};
+  const values = [
+    brainbase.handoff_inbox,
+    brainbase.managed_handoff_inbox,
+    brainbase.inbox,
+    integration.handoff_inbox,
+    integration.managed_handoff_inbox,
+    integration.inbox
+  ].filter((value) => typeof value === 'string' && value.trim());
+  return values.map((value) => path.isAbsolute(value)
+    ? path.normalize(value)
+    : path.resolve(repoRoot, value));
+}
+
+async function pathExists(filePath) {
+  try {
+    await stat(filePath);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+async function discoverJsonFiles(candidate, depth = 0) {
+  if (!(await pathExists(candidate))) return [];
+  const details = await stat(candidate);
+  if (details.isFile()) return candidate.toLowerCase().endsWith('.json') ? [candidate] : [];
+  if (!details.isDirectory() || depth > 2) return [];
+  const entries = await readdir(candidate, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    const child = path.join(candidate, entry.name);
+    if (entry.isFile() && entry.name.toLowerCase().endsWith('.json')) files.push(child);
+    else if (entry.isDirectory()) files.push(...await discoverJsonFiles(child, depth + 1));
+  }
+  return files;
+}
+
+async function discoverManagedHandoffFiles(repoRoot, config = {}) {
+  const candidates = [...defaultInboxCandidates(repoRoot), ...configuredInboxCandidates(repoRoot, config)];
+  const seen = new Set();
+  const files = [];
+  for (const candidate of candidates) {
+    const normalized = path.normalize(candidate);
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    files.push(...await discoverJsonFiles(normalized));
+  }
+  return [...new Set(files)].sort();
+}
+
+function isManagedBrainbaseConfig(config = {}) {
+  const brainbase = config?.brainbase ?? {};
+  const integration = brainbase.integration ?? {};
+  return brainbase.managed === true
+    || brainbase.managed_integration === true
+    || brainbase.management === 'managed'
+    || brainbase.handoff_mode === 'managed'
+    || brainbase.mode === 'managed'
+    || integration.managed === true
+    || integration.mode === 'managed';
+}
+
+function expectedBrainbaseProjectCode(config = {}) {
+  const brainbase = config?.brainbase ?? {};
+  const integration = brainbase.integration ?? {};
+  return brainbase.project_code ?? brainbase.projectCode ?? integration.project_code ?? integration.projectCode ?? null;
+}
+
+function expectedBrainbaseRepository(config = {}) {
+  const brainbase = config?.brainbase ?? {};
+  const integration = brainbase.integration ?? {};
+  return brainbase.repository ?? brainbase.repository_ref ?? integration.repository ?? integration.repository_ref ?? null;
+}
+
 async function writeJsonAtomic(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   const temporary = path.join(path.dirname(filePath), `.${path.basename(filePath)}.${process.pid}.${randomUUID()}.tmp`);
@@ -137,11 +275,15 @@ function validateJudgmentReceipt(receipt, projectCode) {
   if (unresolved.length > 0) throw new Error('Brainbase judgment has unresolved items');
   const selectedDagIds = stringArray(receipt.selected_dag_ids, 'judgment.selected_dag_ids', { allowEmpty: false });
   const activeNodes = stringArray(receipt.active_nodes, 'judgment.active_nodes', { allowEmpty: false });
+  const autonomyPolicyIds = receipt.autonomy_policy_ids === undefined
+    ? []
+    : stringArray(receipt.autonomy_policy_ids, 'judgment.autonomy_policy_ids');
   const policies = Array.isArray(receipt.applicable_policies) ? receipt.applicable_policies : [];
   const requiredCapabilities = Array.isArray(receipt.required_capabilities) ? receipt.required_capabilities : [];
   return {
     selectedDagIds,
     activeNodes,
+    autonomyPolicyIds,
     policyIds: policies.map((policy, index) => requiredString(object(policy, `judgment.applicable_policies[${index}]`).id, `judgment.applicable_policies[${index}].id`)),
     requiredCapabilities
   };
@@ -259,18 +401,351 @@ function validateHandoff(raw, storyId) {
   return { handoff, projectCode, episodeId, receipt, receiptDigest, judgment, knowledge };
 }
 
-export async function bindBrainbaseContext(repoRoot, options = {}) {
-  const root = path.resolve(repoRoot);
-  const storyId = safeIdentifier(options.storyId, 'story_id');
-  const inputPath = path.resolve(root, requiredString(options.input, 'input'));
-  const raw = await readJson(inputPath, 'Brainbase handoff');
-  const validated = validateHandoff(raw, storyId);
+function normalizeRepositoryRef(value, name = 'repository') {
+  const normalized = requiredString(value, name).replace(/\/+$/u, '').replace(/\.git$/u, '');
+  const ssh = normalized.match(/^git@github\.com:([^/]+\/[^/]+)$/u);
+  const https = normalized.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)$/u);
+  const github = normalized.match(/^github:\/\/([^/]+\/[^/]+)$/u);
+  if (ssh?.[1]) return `github://${ssh[1]}`;
+  if (https?.[1]) return `github://${https[1]}`;
+  if (github?.[1]) return `github://${github[1]}`;
+  if (/^(?:repo|https|brainbase|graph|drive):\/\//u.test(normalized)) return normalized;
+  throw new Error(`${name} must be a canonical repository URI`);
+}
+
+function managedReceiptField(raw, metadata, name, aliases = []) {
+  const keys = [name, ...aliases];
+  for (const key of keys) {
+    if (raw?.[key] !== undefined) return raw[key];
+    if (metadata?.[key] !== undefined) return metadata[key];
+  }
+  return undefined;
+}
+
+const MANAGED_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u;
+const MANAGED_PROJECT_CODE_PATTERN = /^[a-z0-9][a-z0-9._-]{0,99}$/u;
+const MANAGED_SHA_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/u;
+const RFC3339_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u;
+
+function managedIdentifier(value, name) {
+  const normalized = requiredString(value, name);
+  if (!MANAGED_ID_PATTERN.test(normalized)) throw new Error(`${name} has an invalid format`);
+  return normalized;
+}
+
+function managedProjectCode(value, name) {
+  const normalized = requiredString(value, name);
+  if (!MANAGED_PROJECT_CODE_PATTERN.test(normalized)) throw new Error(`${name} has an invalid format`);
+  return normalized;
+}
+
+function normalizeRepositoryRoot(value) {
+  const root = requiredString(value, 'managed handoff.repository_root');
+  const normalized = path.posix.normalize(root.replaceAll('\\', '/'));
+  if (normalized.startsWith('/') || normalized === '..' || normalized.startsWith('../')) {
+    throw new Error('managed handoff.repository_root must be repository-relative');
+  }
+  return normalized || '.';
+}
+
+function handoffHmacKeyId(config = {}, env = process.env) {
+  const brainbase = config?.brainbase ?? {};
+  const integration = brainbase.integration ?? {};
+  const value = brainbase.handoff_hmac_key_id
+    ?? brainbase.hmac_key_id
+    ?? integration.handoff_hmac_key_id
+    ?? integration.hmac_key_id
+    ?? env[BRAINBASE_HANDOFF_HMAC_KEY_ID_ENV]
+    ?? DEFAULT_HANDOFF_HMAC_KEY_ID;
+  return managedIdentifier(value, 'managed handoff signature.key_id');
+}
+
+function configuredHandoffHmacKeyFile(repoRoot, config = {}, env = process.env) {
+  const brainbase = config?.brainbase ?? {};
+  const integration = brainbase.integration ?? {};
+  const configured = brainbase.handoff_hmac_key_file
+    ?? brainbase.hmac_key_file
+    ?? integration.handoff_hmac_key_file
+    ?? integration.hmac_key_file
+    ?? env.BRAINBASE_VIBEPRO_HANDOFF_HMAC_KEY_FILE;
+  if (typeof configured !== 'string' || !configured.trim()) return null;
+  return path.isAbsolute(configured) ? path.normalize(configured) : path.resolve(repoRoot, configured);
+}
+
+function envKeyNames(keyId, env = process.env) {
+  // Keep the trust anchor identical to Brainbase. In particular, do not fall
+  // back to receipt-provided `trusted` or to an unrelated generic secret.
+  const names = [BRAINBASE_HANDOFF_HMAC_SECRET_ENV];
+  return names.filter((name, index) => names.indexOf(name) === index && typeof env[name] === 'string' && env[name].trim());
+}
+
+async function resolveManagedHandoffHmacSecret(repoRoot, config = {}, keyId, env = process.env) {
+  const keyFile = configuredHandoffHmacKeyFile(repoRoot, config, env);
+  if (keyFile) {
+    let contents;
+    try {
+      contents = await readFile(keyFile, 'utf8');
+    } catch (error) {
+      if (error?.code === 'ENOENT') throw new Error(`managed Brainbase handoff HMAC trust key file not found: ${keyFile}`);
+      throw error;
+    }
+    const secret = contents.trim();
+    if (!secret) throw new Error(`managed Brainbase handoff HMAC trust key file is empty: ${keyFile}`);
+    if (secret.length < 32) throw new Error('managed Brainbase handoff HMAC trust key must contain at least 32 characters');
+    return { secret, source: 'key_file', key_id: keyId };
+  }
+  const envName = envKeyNames(keyId, env)[0];
+  if (!envName) {
+    throw new Error(
+      `managed Brainbase handoff HMAC trust key is unavailable for key_id ${keyId}; `
+      + `set ${envKeyNames(keyId).at(0) ?? 'BRAINBASE_HANDOFF_HMAC_SECRET'} or configure handoff_hmac_key_file`
+    );
+  }
+  const secret = env[envName].trim();
+  if (secret.length < 32) throw new Error('managed Brainbase handoff HMAC trust key must contain at least 32 characters');
+  return { secret, source: 'environment', key_id: keyId, env_name: envName };
+}
+
+function hmacSha256(secret, value) {
+  return createHmac('sha256', secret).update(value).digest('hex');
+}
+
+function constantTimeHexEqual(left, right) {
+  const normalizedLeft = String(left ?? '').toLowerCase().replace(/^v1=/u, '');
+  const normalizedRight = String(right ?? '').toLowerCase().replace(/^v1=/u, '');
+  if (!/^[a-f0-9]{64}$/u.test(normalizedLeft) || !/^[a-f0-9]{64}$/u.test(normalizedRight)) return false;
+  return timingSafeEqual(Buffer.from(normalizedLeft, 'hex'), Buffer.from(normalizedRight, 'hex'));
+}
+
+async function validateManagedSignature(receipt, payload, repoRoot, config = {}, env = process.env) {
+  const signature = receipt?.signature;
+  if (!signature || typeof signature !== 'object' || Array.isArray(signature)) {
+    throw new Error('managed Brainbase handoff requires an HMAC signature; self-reported trusted is not accepted');
+  }
+  if (signature.algorithm !== 'hmac-sha256') {
+    throw new Error('managed Brainbase handoff signature algorithm must be hmac-sha256');
+  }
+  const signatureValue = requiredString(signature.value, 'managed handoff.signature.value');
+  if (!/^[a-f0-9]{64}$/u.test(signatureValue)) throw new Error('managed handoff.signature.value must be a lowercase HMAC-SHA-256 digest');
+  const keyId = handoffHmacKeyId(config, env);
+  if (signature.key_id !== keyId) throw new Error('managed Brainbase handoff signature key_id is not trusted');
+  const trustKey = await resolveManagedHandoffHmacSecret(repoRoot, config, keyId, env);
+  if (!constantTimeHexEqual(signatureValue, hmacSha256(trustKey.secret, payload))) {
+    throw new Error('managed Brainbase handoff HMAC signature does not match the trusted receipt content');
+  }
+  return {
+    trusted: true,
+    algorithm: 'hmac-sha256',
+    key_id: keyId,
+    value: signatureValue.toLowerCase().replace(/^v1=/u, '')
+  };
+}
+
+function dateFromOption(now) {
+  const value = typeof now === 'function' ? now() : now;
+  const date = value instanceof Date ? value : new Date(value ?? Date.now());
+  if (!Number.isFinite(date.valueOf())) throw new Error('managed Brainbase handoff validation time is invalid');
+  return date;
+}
+
+async function validateManagedHandoff(raw, storyId, repoRoot, config = {}, now = () => new Date(), env = process.env) {
+  object(raw, 'managed Brainbase handoff');
+  if (raw.schema_version !== MANAGED_HANDOFF_SCHEMA) {
+    throw new Error(`managed Brainbase handoff must use the canonical ${MANAGED_HANDOFF_SCHEMA} receipt`);
+  }
+  for (const field of MANAGED_HANDOFF_PAYLOAD_FIELDS) {
+    if (!Object.hasOwn(raw, field)) throw new Error(`managed handoff.${field} is required`);
+  }
+  // Brainbase emits the managed receipt before VibePro has created a Story,
+  // so story_id:null is an intentional unbound value. A non-null value is
+  // already bound and must match the Story being started.
+  if (raw.story_id !== null && raw.story_id !== storyId) {
+    throw new Error('managed Brainbase handoff story_id does not match --id');
+  }
+  if (raw.authorized !== false) throw new Error('managed Brainbase handoff authorized must be false');
+  if (raw.graph_promotion_allowed !== false) throw new Error('managed Brainbase handoff graph_promotion_allowed must be false');
+  const projectCode = managedProjectCode(raw.project_code, 'managed handoff.project_code');
+  const expectedProject = expectedBrainbaseProjectCode(config);
+  if (expectedProject !== null && managedProjectCode(expectedProject, 'config.brainbase.project_code') !== projectCode) {
+    throw new Error('managed Brainbase handoff project_code mismatch with the configured project');
+  }
+
+  const repositoryValue = requiredString(raw.repository, 'managed handoff.repository');
+  if (repositoryValue.includes('@') && /:\/\//u.test(repositoryValue)) {
+    throw new Error('managed handoff.repository must not contain credentials');
+  }
+  const repository = normalizeRepositoryRef(repositoryValue, 'managed handoff.repository');
+  const actualRepository = normalizeRepositoryRef(await repositoryIdentity(repoRoot), 'repository');
+  if (repository !== actualRepository) throw new Error('managed Brainbase handoff repository does not match the current repository');
+  const expectedRepository = expectedBrainbaseRepository(config);
+  if (expectedRepository !== null && normalizeRepositoryRef(expectedRepository, 'config.brainbase.repository') !== repository) {
+    throw new Error('managed Brainbase handoff repository does not match the configured repository');
+  }
+
+  const baseSha = requiredString(raw.base_sha, 'managed handoff.base_sha');
+  if (!MANAGED_SHA_PATTERN.test(baseSha)) throw new Error('managed handoff.base_sha must be a lowercase 40 or 64 character Git SHA digest');
+  const gitContext = await collectGitContext(repoRoot);
+  if (gitContext.head_sha !== baseSha) throw new Error(`managed Brainbase handoff base_sha does not match current HEAD (${gitContext.head_sha ?? 'unknown'})`);
+
+  const issuedAt = requiredString(raw.issued_at, 'managed handoff.issued_at');
+  const issuedDate = new Date(issuedAt);
+  if (!RFC3339_PATTERN.test(issuedAt) || !Number.isFinite(issuedDate.valueOf())) throw new Error('managed handoff.issued_at must be RFC 3339');
+  const expiresAt = requiredString(raw.expires_at, 'managed handoff.expires_at');
+  const expiresDate = new Date(expiresAt);
+  if (!RFC3339_PATTERN.test(expiresAt) || !Number.isFinite(expiresDate.valueOf())) throw new Error('managed handoff.expires_at must be RFC 3339');
+  if (expiresDate.valueOf() <= issuedDate.valueOf()) throw new Error('managed handoff.expires_at must be after issued_at');
+  if (expiresDate.valueOf() <= dateFromOption(now).valueOf()) throw new Error('managed Brainbase handoff receipt is expired');
+
+  const receiptDigest = requiredString(raw.receipt_digest, 'managed handoff.receipt_digest');
+  if (!/^[a-f0-9]{64}$/u.test(receiptDigest)) throw new Error('managed handoff.receipt_digest must be a lowercase SHA-256 digest');
+  const canonicalPayload = canonicalManagedHandoffPayload(raw);
+  if (sha256(canonicalPayload) !== receiptDigest) throw new Error('managed Brainbase handoff receipt digest does not match the canonical payload');
+  const signature = await validateManagedSignature(raw, canonicalPayload, repoRoot, config, env);
+  const resolutionId = managedIdentifier(raw.resolution_id, 'managed handoff.resolution_id');
+  const turnId = managedIdentifier(raw.turn_id, 'managed handoff.turn_id');
+  return {
+    handoff: raw,
+    projectCode,
+    episodeId: resolutionId,
+    receipt: raw,
+    receiptDigest,
+    judgment: {
+      selectedDagIds: [],
+      autonomyPolicyIds: [],
+      policyIds: [],
+      activeNodes: [],
+      requiredCapabilities: []
+    },
+    knowledge: [],
+    managed: {
+      schemaVersion: MANAGED_HANDOFF_SCHEMA,
+      receiptDigest,
+      signature,
+      repository,
+      repositoryRoot: normalizeRepositoryRoot(raw.repository_root),
+      baseSha,
+      issuedAt,
+      expiresAt,
+      resolutionId,
+      turnId
+    }
+  };
+}
+
+function ledgerSourcePath(root, sourceArtifact) {
+  const relative = requiredString(sourceArtifact, 'handoff ledger.source_artifact').replaceAll('\\', '/');
+  if (path.posix.isAbsolute(relative) || relative === '..' || relative.startsWith('../')) {
+    throw new Error('handoff ledger.source_artifact must be repository-relative');
+  }
+  return path.resolve(root, relative);
+}
+
+function validateHandoffLedgerEntry(value, index) {
+  const entry = object(value, `handoff ledger.entries[${index}]`);
+  const receiptDigest = sha256Field(entry.receipt_digest, `handoff ledger.entries[${index}].receipt_digest`);
+  const storyId = safeIdentifier(entry.story_id, `handoff ledger.entries[${index}].story_id`);
+  const resolutionId = managedIdentifier(entry.resolution_id, `handoff ledger.entries[${index}].resolution_id`);
+  const turnId = managedIdentifier(entry.turn_id, `handoff ledger.entries[${index}].turn_id`);
+  const projectCode = managedProjectCode(entry.project_code, `handoff ledger.entries[${index}].project_code`);
+  const repository = normalizeRepositoryRef(entry.repository, `handoff ledger.entries[${index}].repository`);
+  const baseSha = requiredString(entry.base_sha, `handoff ledger.entries[${index}].base_sha`);
+  if (!MANAGED_SHA_PATTERN.test(baseSha)) {
+    throw new Error(`handoff ledger.entries[${index}].base_sha must be a lowercase 40 or 64 character Git SHA digest`);
+  }
+  const sourceArtifact = requiredString(entry.source_artifact, `handoff ledger.entries[${index}].source_artifact`).replaceAll('\\', '/');
+  ledgerSourcePath(process.cwd(), sourceArtifact);
+  const consumedAt = requiredString(entry.consumed_at, `handoff ledger.entries[${index}].consumed_at`);
+  if (!RFC3339_PATTERN.test(consumedAt) || !Number.isFinite(new Date(consumedAt).valueOf())) {
+    throw new Error(`handoff ledger.entries[${index}].consumed_at must be RFC 3339`);
+  }
+  return {
+    receipt_digest: receiptDigest,
+    story_id: storyId,
+    resolution_id: resolutionId,
+    turn_id: turnId,
+    project_code: projectCode,
+    repository,
+    base_sha: baseSha,
+    source_artifact: sourceArtifact,
+    consumed_at: consumedAt
+  };
+}
+
+async function readHandoffConsumptionLedger(root) {
+  const filePath = handoffLedgerPath(root);
+  const raw = await readJsonIfExists(filePath);
+  if (raw === null) return { schema_version: HANDOFF_LEDGER_SCHEMA, entries: [] };
+  object(raw, 'handoff consumption ledger');
+  if (raw.schema_version !== HANDOFF_LEDGER_SCHEMA) {
+    throw new Error(`handoff consumption ledger must use ${HANDOFF_LEDGER_SCHEMA}`);
+  }
+  if (!Array.isArray(raw.entries)) throw new Error('handoff consumption ledger.entries must be an array');
+  const entries = raw.entries.map((entry, index) => validateHandoffLedgerEntry(entry, index));
+  const seenDigests = new Set();
+  const seenStories = new Set();
+  for (const entry of entries) {
+    if (seenDigests.has(entry.receipt_digest)) throw new Error('handoff consumption ledger contains a duplicate receipt_digest');
+    if (seenStories.has(entry.story_id)) throw new Error('handoff consumption ledger contains multiple receipts for one Story');
+    seenDigests.add(entry.receipt_digest);
+    seenStories.add(entry.story_id);
+  }
+  return { schema_version: HANDOFF_LEDGER_SCHEMA, entries };
+}
+
+async function recordHandoffConsumption(root, storyId, validated, sourceArtifact, now) {
+  if (!validated.managed) return null;
+  const relativeSource = requiredString(sourceArtifact, 'handoff source_artifact').replaceAll('\\', '/');
+  const sourcePath = ledgerSourcePath(root, relativeSource);
+  const rootPrefix = `${root.replaceAll(path.sep, '/')}/`;
+  if (!sourcePath.toString().replaceAll(path.sep, '/').startsWith(rootPrefix)) {
+    throw new Error('handoff source_artifact must remain within the repository');
+  }
+  const ledger = await readHandoffConsumptionLedger(root);
+  const digestMatch = ledger.entries.find((entry) => entry.receipt_digest === validated.managed.receiptDigest);
+  if (digestMatch && digestMatch.story_id !== storyId) {
+    const error = new Error(`managed Brainbase handoff receipt is already consumed by Story ${digestMatch.story_id}`);
+    error.code = 'BRAINBASE_HANDOFF_ALREADY_CONSUMED';
+    throw error;
+  }
+  const storyMatch = ledger.entries.find((entry) => entry.story_id === storyId);
+  if (storyMatch && storyMatch.receipt_digest !== validated.managed.receiptDigest) {
+    const error = new Error(`Story ${storyId} is already bound to another managed Brainbase handoff receipt`);
+    error.code = 'BRAINBASE_HANDOFF_ALREADY_BOUND';
+    throw error;
+  }
+  if (digestMatch || storyMatch) return digestMatch ?? storyMatch;
+  const entry = {
+    receipt_digest: validated.managed.receiptDigest,
+    story_id: storyId,
+    resolution_id: validated.managed.resolutionId,
+    turn_id: validated.managed.turnId,
+    project_code: validated.projectCode,
+    repository: validated.managed.repository,
+    base_sha: validated.managed.baseSha,
+    source_artifact: relativeSource,
+    consumed_at: dateFromOption(now ?? (() => new Date())).toISOString()
+  };
+  await writeJsonAtomic(handoffLedgerPath(root), {
+    schema_version: HANDOFF_LEDGER_SCHEMA,
+    entries: [...ledger.entries, entry]
+  });
+  return entry;
+}
+
+async function ledgerEntryForStory(root, storyId) {
+  const ledger = await readHandoffConsumptionLedger(root);
+  return ledger.entries.find((entry) => entry.story_id === storyId) ?? null;
+}
+
+async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
   const stableProjection = {
     schema_version: CONTEXT_SCHEMA,
     story_id: storyId,
     project_code: validated.projectCode,
     source: {
-      handoff_digest: sha256(canonicalJson(validated.handoff))
+      handoff_digest: sha256(canonicalJson(validated.handoff)),
+      ...(validated.managed ? { managed: true } : {}),
+      ...(validated.managed ? { managed_receipt_digest: validated.managed.receiptDigest } : {})
     },
     judgment: {
       authority: 'brainbase',
@@ -279,15 +754,28 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
       resolution_id: validated.receipt.resolution_id,
       turn_id: validated.receipt.turn_id,
       receipt_digest: validated.receiptDigest,
-      plan_digest: validated.receipt.plan_digest,
-      runtime_version: validated.receipt.runtime_version,
-      manifest_digest: validated.receipt.manifest_digest,
-      autonomy_decision: validated.receipt.autonomy_decision,
+      ...(validated.receipt.plan_digest ? { plan_digest: validated.receipt.plan_digest } : {}),
+      ...(validated.receipt.runtime_version ? { runtime_version: validated.receipt.runtime_version } : {}),
+      ...(validated.receipt.manifest_digest ? { manifest_digest: validated.receipt.manifest_digest } : {}),
+      ...(validated.receipt.autonomy_decision ? { autonomy_decision: validated.receipt.autonomy_decision } : {}),
+      autonomy_policy_ids: validated.judgment.autonomyPolicyIds,
       selected_dag_ids: validated.judgment.selectedDagIds,
       applicable_policy_ids: validated.judgment.policyIds,
       active_node_ids: validated.judgment.activeNodes
     },
-    knowledge: validated.knowledge
+    knowledge: validated.knowledge,
+    ...(validated.managed ? {
+      repository: validated.managed.repository,
+      repository_root: validated.managed.repositoryRoot,
+      base_sha: validated.managed.baseSha,
+      issued_at: validated.managed.issuedAt,
+      expires_at: validated.managed.expiresAt,
+      bind_receipt: {
+        schema_version: BIND_RECEIPT_SCHEMA,
+        receipt_digest: validated.managed.receiptDigest,
+        signature_trusted: validated.managed.signature.trusted
+      }
+    } : {})
   };
   const context = {
     ...stableProjection,
@@ -296,14 +784,135 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
   };
   const outputPath = contextPath(root, storyId);
   await writeJsonAtomic(outputPath, context);
+  let bindReceiptArtifact = null;
+  if (validated.managed) {
+    const receipt = {
+      schema_version: BIND_RECEIPT_SCHEMA,
+      story_id: storyId,
+      project_code: context.project_code,
+      repository: validated.managed.repository,
+      repository_root: validated.managed.repositoryRoot,
+      base_sha: validated.managed.baseSha,
+      issued_at: validated.managed.issuedAt,
+      expires_at: validated.managed.expiresAt,
+      resolution_id: validated.managed.resolutionId,
+      turn_id: validated.managed.turnId,
+      receipt_digest: validated.managed.receiptDigest,
+      signature_trusted: validated.managed.signature.trusted,
+      context_digest: context.context_digest,
+      bound_at: context.bound_at
+    };
+    const receiptPath = bindReceiptPath(root, storyId);
+    await writeJsonAtomic(receiptPath, receipt);
+    bindReceiptArtifact = toWorkspaceRelative(root, receiptPath);
+  }
+  let consumptionLedgerArtifact = null;
+  if (validated.managed && options.handoffSource) {
+    await recordHandoffConsumption(root, storyId, validated, options.handoffSource, options.now);
+    consumptionLedgerArtifact = toWorkspaceRelative(root, handoffLedgerPath(root));
+  }
   return {
     status: 'bound',
     story_id: storyId,
     project_code: context.project_code,
     context_digest: context.context_digest,
     knowledge_reference_count: context.knowledge.reduce((count, entry) => count + entry.references.length, 0),
-    artifact: toWorkspaceRelative(root, outputPath)
+    artifact: toWorkspaceRelative(root, outputPath),
+    ...(bindReceiptArtifact ? { bind_receipt_artifact: bindReceiptArtifact } : {}),
+    ...(consumptionLedgerArtifact ? { consumption_ledger_artifact: consumptionLedgerArtifact } : {})
   };
+}
+
+export async function bindBrainbaseContext(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = safeIdentifier(options.storyId, 'story_id');
+  const inputPath = path.resolve(root, requiredString(options.input, 'input'));
+  const raw = await readJson(inputPath, 'Brainbase handoff');
+  const managed = raw?.schema_version === MANAGED_HANDOFF_SCHEMA
+    || raw?.managed_receipt
+    || raw?.receipt_metadata
+    || options.managed === true;
+  const validated = managed
+    ? await validateManagedHandoff(raw, storyId, root, options.config ?? {}, options.now ?? (() => new Date()), options.env ?? process.env)
+    : validateHandoff(raw, storyId);
+  return writeBrainbaseBinding(root, storyId, validated, {
+    ...options,
+    handoffSource: toWorkspaceRelative(root, inputPath)
+  });
+}
+
+export async function ensureBrainbaseStoryBinding(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = safeIdentifier(options.storyId, 'story_id');
+  const config = options.config ?? {};
+  const files = await discoverManagedHandoffFiles(root, config);
+  const managed = isManagedBrainbaseConfig(config) || files.length > 0;
+  if (!managed) return { status: 'unmanaged', managed: false, story_id: storyId };
+  const consumed = await ledgerEntryForStory(root, storyId);
+  let inputPath;
+  if (consumed) {
+    inputPath = ledgerSourcePath(root, consumed.source_artifact);
+    if (!(await pathExists(inputPath))) {
+      const error = new Error(`consumed managed Brainbase handoff receipt source is missing: ${consumed.source_artifact}`);
+      error.code = 'BRAINBASE_HANDOFF_CONSUMED_SOURCE_MISSING';
+      throw error;
+    }
+  } else {
+    if (files.length === 0) {
+      const error = new Error(`managed Brainbase handoff receipt is missing for Story ${storyId}`);
+      error.code = 'BRAINBASE_HANDOFF_MISSING';
+      throw error;
+    }
+    const parsed = [];
+    const parseErrors = [];
+    for (const candidate of files) {
+      try {
+        const candidateRaw = await readJson(candidate, 'managed Brainbase handoff');
+        if (candidateRaw?.schema_version === MANAGED_HANDOFF_SCHEMA) {
+          parsed.push({ path: candidate, raw: candidateRaw });
+        }
+      } catch (error) {
+        parseErrors.push({ path: candidate, error });
+      }
+    }
+    const matching = parsed.filter(({ raw }) => raw.story_id === storyId);
+    const unbound = parsed.filter(({ raw }) => raw.story_id === null);
+    const eligible = [...matching, ...unbound];
+    if (eligible.length > 1) {
+      const error = new Error(`managed Brainbase handoff receipt is ambiguous for Story ${storyId}; exactly one matching or unbound receipt is required`);
+      error.code = 'BRAINBASE_HANDOFF_AMBIGUOUS';
+      throw error;
+    }
+    if (eligible.length === 1) {
+      inputPath = eligible[0].path;
+    } else if (matching.length === 0 && unbound.length === 0) {
+      const mismatched = parsed.find(({ raw }) => raw.story_id !== null && raw.story_id !== storyId);
+      if (mismatched) {
+        const error = new Error(`managed Brainbase handoff story_id does not match --id ${storyId}`);
+        error.code = 'BRAINBASE_HANDOFF_STORY_MISMATCH';
+        throw error;
+      }
+      inputPath = parseErrors[0]?.path ?? files[0];
+    }
+  }
+  const raw = await readJson(inputPath, 'managed Brainbase handoff');
+  const validated = await validateManagedHandoff(raw, storyId, root, config, options.now ?? (() => new Date()), options.env ?? process.env);
+  if (consumed && validated.managed.receiptDigest !== consumed.receipt_digest) {
+    const error = new Error('managed Brainbase handoff receipt does not match the consumed binding ledger');
+    error.code = 'BRAINBASE_HANDOFF_LEDGER_MISMATCH';
+    throw error;
+  }
+  const ledger = await readHandoffConsumptionLedger(root);
+  const receiptConsumedBy = ledger.entries.find((entry) => entry.receipt_digest === validated.managed.receiptDigest);
+  if (receiptConsumedBy && receiptConsumedBy.story_id !== storyId) {
+    const error = new Error(`managed Brainbase handoff receipt is already consumed by Story ${receiptConsumedBy.story_id}`);
+    error.code = 'BRAINBASE_HANDOFF_ALREADY_CONSUMED';
+    throw error;
+  }
+  return writeBrainbaseBinding(root, storyId, validated, {
+    ...options,
+    handoffSource: toWorkspaceRelative(root, inputPath)
+  });
 }
 
 function passingVerificationCommands(evidence, context, gitContext) {
@@ -318,6 +927,409 @@ function passingVerificationCommands(evidence, context, gitContext) {
     if (!command.git_context || command.git_context.head_sha !== gitContext.head_sha) return false;
     return compareFingerprintContexts(command.git_context, gitContext).matches;
   });
+}
+
+async function readJsonIfExists(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function listOutboxFiles(repoRoot) {
+  const directory = path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', 'outbox');
+  try {
+    const entries = await readdir(directory, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+      .map((entry) => path.join(directory, entry.name))
+      .sort();
+  } catch (error) {
+    if (error?.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
+async function readBrainbaseConfig(repoRoot) {
+  return await readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'config.json')) ?? {};
+}
+
+function summarizeManagedReceipt(root, filePath, receipt, parseError = null) {
+  const summary = {
+    artifact: toWorkspaceRelative(root, filePath),
+    status: parseError ? 'invalid' : 'discovered'
+  };
+  if (parseError) {
+    summary.error = safeDeliveryError(parseError);
+    return summary;
+  }
+  if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) {
+    summary.status = 'invalid';
+    summary.error = 'receipt must be an object';
+    return summary;
+  }
+  // A status/doctor surface may expose routing metadata, but never integrity
+  // secrets or signature values.
+  for (const field of [
+    'schema_version',
+    'story_id',
+    'project_code',
+    'repository',
+    'repository_root',
+    'base_sha',
+    'issued_at',
+    'expires_at',
+    'turn_id',
+    'resolution_id',
+    'receipt_digest'
+  ]) {
+    if (receipt[field] !== undefined) summary[field] = receipt[field];
+  }
+  if (receipt.signature && typeof receipt.signature === 'object') {
+    summary.signature = {
+      algorithm: receipt.signature.algorithm,
+      key_id: receipt.signature.key_id
+    };
+  }
+  return summary;
+}
+
+/**
+ * Read-only integration inventory for operators. This command deliberately
+ * does not bind, repair, send, or rewrite any artifact.
+ */
+export async function getBrainbaseIntegrationStatus(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const config = options.config ?? await readBrainbaseConfig(root);
+  const storyId = options.storyId ?? config?.brainbase?.current_story_id ?? null;
+  const files = await discoverManagedHandoffFiles(root, config);
+  const managed = isManagedBrainbaseConfig(config) || files.length > 0;
+  const receipts = [];
+  for (const filePath of files) {
+    try {
+      receipts.push(summarizeManagedReceipt(root, filePath, await readJson(filePath, 'managed Brainbase handoff')));
+    } catch (error) {
+      receipts.push(summarizeManagedReceipt(root, filePath, null, error));
+    }
+  }
+  let gitContext = null;
+  try {
+    gitContext = await collectGitContext(root);
+  } catch (error) {
+    gitContext = { head_sha: null, error: safeDeliveryError(error) };
+  }
+  const binding = storyId
+    ? {
+        story_id: storyId,
+        context: await readJsonIfExists(contextPath(root, storyId)),
+        bind_receipt: await readJsonIfExists(bindReceiptPath(root, storyId))
+      }
+    : { story_id: null, context: null, bind_receipt: null };
+  const outboxFiles = await listOutboxFiles(root);
+  const outbox = { total: outboxFiles.length, pending: 0, sent: 0, invalid: 0, entries: [] };
+  for (const filePath of outboxFiles) {
+    try {
+      const item = await readJson(filePath, 'Brainbase outbox');
+      const deliveryStatus = item?.delivery_status ?? item?.status;
+      if (deliveryStatus === 'sent') outbox.sent += 1;
+      else if (deliveryStatus === 'pending') outbox.pending += 1;
+      else outbox.invalid += 1;
+      outbox.entries.push({
+        event_id: item?.event_id ?? null,
+        status: deliveryStatus ?? 'invalid',
+        attempts: Number(item?.attempts ?? item?.retry_count ?? 0),
+        next_retry_at: item?.next_retry_at ?? null,
+        artifact: toWorkspaceRelative(root, filePath)
+      });
+    } catch (error) {
+      outbox.invalid += 1;
+      outbox.entries.push({
+        event_id: null,
+        status: 'invalid',
+        error: safeDeliveryError(error),
+        artifact: toWorkspaceRelative(root, filePath)
+      });
+    }
+  }
+  return {
+    schema_version: 'vibepro-brainbase-integration-status.v1',
+    status: managed ? 'managed' : 'unmanaged',
+    overall_status: managed
+      ? (receipts.length > 0 || !isManagedBrainbaseConfig(config) ? 'attention' : 'missing_handoff')
+      : 'unmanaged',
+    managed,
+    project_code: expectedBrainbaseProjectCode(config),
+    repository: expectedBrainbaseRepository(config),
+    current_head_sha: gitContext?.head_sha ?? null,
+    handoff: {
+      inbox_dir: BRAINBASE_HANDOFF_INBOX_DIR,
+      count: receipts.length,
+      receipts
+    },
+    binding,
+    outbox
+  };
+}
+
+/**
+ * Validate the managed integration without mutating the repository. Doctor
+ * reports a warning for pending delivery because verification remains valid;
+ * malformed or missing trust/bind artifacts remain failures.
+ */
+export async function doctorBrainbaseIntegration(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const config = options.config ?? await readBrainbaseConfig(root);
+  const storyId = options.storyId ?? config?.brainbase?.current_story_id ?? null;
+  const status = await getBrainbaseIntegrationStatus(root, { ...options, config, storyId });
+  const checks = [];
+  const managed = status.managed;
+  checks.push({
+    id: 'management_mode',
+    status: managed ? 'pass' : 'skip',
+    detail: managed ? 'Brainbase managed integration is active' : 'repository is unmanaged'
+  });
+  if (!managed) {
+    return {
+      schema_version: 'vibepro-brainbase-doctor.v1',
+      status: 'unmanaged',
+      overall_status: 'unmanaged',
+      story_id: storyId,
+      checks,
+      integration: status
+    };
+  }
+
+  const files = await discoverManagedHandoffFiles(root, config);
+  if (files.length === 0) {
+    checks.push({ id: 'managed_handoff', status: 'fail', code: 'BRAINBASE_HANDOFF_MISSING', detail: 'managed handoff receipt is missing' });
+  } else if (!storyId) {
+    checks.push({ id: 'managed_handoff', status: 'unknown', detail: 'story_id is required to validate a receipt binding' });
+  } else {
+    let candidate = null;
+    let candidatePath = null;
+    let selectionError = null;
+    try {
+      const consumed = await ledgerEntryForStory(root, storyId);
+      if (consumed) {
+        candidatePath = ledgerSourcePath(root, consumed.source_artifact);
+        candidate = await readJson(candidatePath, 'managed Brainbase handoff');
+        if (candidate?.receipt_digest !== consumed.receipt_digest) {
+          selectionError = Object.assign(new Error('managed Brainbase handoff receipt does not match the consumed binding ledger'), { code: 'BRAINBASE_HANDOFF_LEDGER_MISMATCH' });
+        }
+      } else {
+        const parsed = [];
+        for (const filePath of files) {
+          try {
+            const raw = await readJson(filePath, 'managed Brainbase handoff');
+            if (raw?.schema_version === MANAGED_HANDOFF_SCHEMA && (raw.story_id === storyId || raw.story_id === null)) {
+              parsed.push({ raw, filePath });
+            }
+          } catch {
+            // Validation below reports the resulting missing/invalid state.
+          }
+        }
+        if (parsed.length > 1) {
+          selectionError = Object.assign(new Error(`managed Brainbase handoff receipt is ambiguous for Story ${storyId}`), { code: 'BRAINBASE_HANDOFF_AMBIGUOUS' });
+        } else if (parsed.length === 1) {
+          candidate = parsed[0].raw;
+          candidatePath = parsed[0].filePath;
+        }
+      }
+    } catch (error) {
+      selectionError = error;
+    }
+    if (selectionError) {
+      checks.push({ id: 'managed_handoff', status: 'fail', code: selectionError.code ?? 'BRAINBASE_HANDOFF_INVALID', detail: safeDeliveryError(selectionError), ...(candidatePath ? { artifact: toWorkspaceRelative(root, candidatePath) } : {}) });
+    } else if (!candidate) {
+      checks.push({ id: 'managed_handoff', status: 'fail', code: 'BRAINBASE_HANDOFF_STORY_MISMATCH', detail: `no handoff receipt matches Story ${storyId}` });
+    } else {
+      try {
+        await validateManagedHandoff(candidate, storyId, root, config, options.now ?? (() => new Date()), options.env ?? process.env);
+        checks.push({ id: 'managed_handoff', status: 'pass', artifact: toWorkspaceRelative(root, candidatePath) });
+      } catch (error) {
+        checks.push({ id: 'managed_handoff', status: 'fail', code: error.code ?? 'BRAINBASE_HANDOFF_INVALID', detail: safeDeliveryError(error), artifact: toWorkspaceRelative(root, candidatePath) });
+      }
+    }
+  }
+
+  if (storyId) {
+    if (!status.binding.context) checks.push({ id: 'context', status: 'fail', detail: `Brainbase context is missing for Story ${storyId}` });
+    else checks.push({ id: 'context', status: 'pass', artifact: toWorkspaceRelative(root, contextPath(root, storyId)) });
+    if (!status.binding.bind_receipt) checks.push({ id: 'bind_receipt', status: 'fail', detail: `bind receipt is missing for Story ${storyId}` });
+    else checks.push({ id: 'bind_receipt', status: 'pass', artifact: toWorkspaceRelative(root, bindReceiptPath(root, storyId)) });
+  } else {
+    checks.push({ id: 'context', status: 'unknown', detail: 'story_id is required to inspect a binding' });
+  }
+  if (status.outbox.invalid > 0) checks.push({ id: 'outbox', status: 'fail', detail: `${status.outbox.invalid} invalid outbox entries` });
+  else if (status.outbox.pending > 0) checks.push({ id: 'outbox', status: 'warn', detail: `${status.outbox.pending} learning candidate(s) pending delivery` });
+  else checks.push({ id: 'outbox', status: 'pass', detail: 'outbox has no pending or invalid entries' });
+  const hasFailure = checks.some((check) => check.status === 'fail');
+  const hasWarning = checks.some((check) => check.status === 'warn' || check.status === 'unknown');
+  return {
+    schema_version: 'vibepro-brainbase-doctor.v1',
+    status: hasFailure ? 'fail' : hasWarning ? 'warn' : 'pass',
+    overall_status: hasFailure ? 'failed' : hasWarning ? 'attention' : 'healthy',
+    story_id: storyId,
+    checks,
+    integration: status
+  };
+}
+
+function outboxNow(now) {
+  return dateFromOption(now).toISOString();
+}
+
+async function enqueueBrainbaseOutbox(repoRoot, event, options = {}) {
+  const root = path.resolve(repoRoot);
+  const outputPath = outboxPath(root, event.event_id);
+  const existing = await readJsonIfExists(outputPath);
+  if (existing) {
+    if (existing.schema_version !== OUTBOX_SCHEMA || existing.event_id !== event.event_id) {
+      throw new Error(`Brainbase outbox entry is invalid or collides with event ${event.event_id}`);
+    }
+    if (existing.candidate?.body_hash !== event.body_hash) {
+      throw new Error(`Brainbase outbox event ${event.event_id} does not match the generated candidate`);
+    }
+    return {
+      status: 'already_enqueued',
+      event_id: event.event_id,
+      delivery_status: existing.delivery_status ?? existing.status ?? 'pending',
+      attempts: existing.attempts ?? existing.retry_count ?? 0,
+      artifact: toWorkspaceRelative(root, outputPath)
+    };
+  }
+  const createdAt = outboxNow(options.now ?? (() => new Date()));
+  const outbox = {
+    schema_version: OUTBOX_SCHEMA,
+    outbox_id: `outbox_${event.event_id}`,
+    event_id: event.event_id,
+    kind: 'learning_candidate',
+    status: 'pending',
+    delivery_status: 'pending',
+    attempts: 0,
+    retry_count: 0,
+    next_retry_at: null,
+    last_error: null,
+    created_at: createdAt,
+    updated_at: createdAt,
+    candidate: event
+  };
+  await writeJsonAtomic(outputPath, outbox);
+  return {
+    status: 'enqueued',
+    event_id: event.event_id,
+    delivery_status: outbox.delivery_status,
+    attempts: outbox.attempts,
+    artifact: toWorkspaceRelative(root, outputPath)
+  };
+}
+
+function retryAt(now, attempts, delayMs) {
+  const delay = Math.max(1, Number(delayMs) || 1000) * (2 ** Math.max(0, Math.min(attempts - 1, 8)));
+  return new Date(dateFromOption(now).valueOf() + delay).toISOString();
+}
+
+function safeDeliveryError(error) {
+  const message = String(error?.message ?? error ?? 'unknown delivery failure')
+    .replace(/[\u0000-\u001f\u007f]/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (!message) return 'unknown delivery failure';
+  if (isSensitive(message)) return 'delivery failed with a sensitive error that was redacted';
+  return message.slice(0, 500);
+}
+
+function dueForRetry(item, now) {
+  if (item.delivery_status === 'sent' || item.status === 'sent') return false;
+  if (!item.next_retry_at) return true;
+  const retryAtValue = Date.parse(item.next_retry_at);
+  return Number.isFinite(retryAtValue) && retryAtValue <= dateFromOption(now).valueOf();
+}
+
+/**
+ * Deliver durable Brainbase learning candidates. The transport is deliberately
+ * injected by the host/CLI boundary; VibePro never treats a failed send as a
+ * failed verification and leaves the candidate pending for a later retry.
+ */
+export async function reconcileBrainbaseOutbox(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const now = options.now ?? (() => new Date());
+  const sender = options.send ?? options.sendCandidate ?? options.sender ?? null;
+  const files = await listOutboxFiles(root);
+  const result = {
+    status: 'ok',
+    attempted: 0,
+    sent: 0,
+    pending: 0,
+    skipped: 0,
+    failed: 0,
+    entries: []
+  };
+  for (const filePath of files) {
+    let item;
+    try {
+      item = JSON.parse(await readFile(filePath, 'utf8'));
+    } catch (error) {
+      result.failed += 1;
+      result.entries.push({ artifact: toWorkspaceRelative(root, filePath), status: 'invalid', error: safeDeliveryError(error) });
+      continue;
+    }
+    if (!item || item.schema_version !== OUTBOX_SCHEMA || !item.event_id || !item.candidate) {
+      result.failed += 1;
+      result.entries.push({ artifact: toWorkspaceRelative(root, filePath), status: 'invalid', error: 'outbox entry is invalid' });
+      continue;
+    }
+    if (!dueForRetry(item, now)) {
+      result.skipped += 1;
+      result.entries.push({ event_id: item.event_id, status: item.delivery_status ?? item.status ?? 'pending' });
+      continue;
+    }
+    if (typeof sender !== 'function') {
+      result.pending += 1;
+      result.entries.push({ event_id: item.event_id, status: 'pending', reason: 'sender_not_configured' });
+      continue;
+    }
+    result.attempted += 1;
+    const attempts = Number(item.attempts ?? item.retry_count ?? 0) + 1;
+    try {
+      await sender(item.candidate, item);
+      const sentAt = outboxNow(now);
+      const next = {
+        ...item,
+        status: 'sent',
+        delivery_status: 'sent',
+        attempts,
+        retry_count: attempts,
+        next_retry_at: null,
+        last_error: null,
+        sent_at: sentAt,
+        updated_at: sentAt
+      };
+      await writeJsonAtomic(filePath, next);
+      result.sent += 1;
+      result.entries.push({ event_id: item.event_id, status: 'sent', attempts });
+    } catch (error) {
+      const failedAt = outboxNow(now);
+      const next = {
+        ...item,
+        status: 'pending',
+        delivery_status: 'pending',
+        attempts,
+        retry_count: attempts,
+        next_retry_at: retryAt(now, attempts, options.retryDelayMs),
+        last_error: safeDeliveryError(error),
+        updated_at: failedAt
+      };
+      await writeJsonAtomic(filePath, next);
+      result.pending += 1;
+      result.failed += 1;
+      result.entries.push({ event_id: item.event_id, status: 'pending', attempts, next_retry_at: next.next_retry_at, error: next.last_error });
+    }
+  }
+  if (result.failed > 0) result.status = 'partial';
+  return result;
 }
 
 async function repositoryIdentity(repoRoot) {
@@ -403,10 +1415,22 @@ export async function createBrainbaseKnowledgeEvent(repoRoot, options = {}) {
     .map((command) => command.executed_at)
     .sort()
     .at(-1);
-  const requestedCapturedAt = (options.now ?? (() => new Date()))();
+  const requestedCapturedAt = dateFromOption(options.now ?? (() => new Date()));
   const capturedAt = requestedCapturedAt.valueOf() < Date.parse(occurredAt)
     ? occurredAt
     : requestedCapturedAt.toISOString();
+  const trace = {
+    turn_id: requiredString(context.judgment?.turn_id, 'context.judgment.turn_id'),
+    resolution_id: requiredString(context.judgment?.resolution_id, 'context.judgment.resolution_id'),
+    story_id: storyId,
+    verified_head_sha: gitContext.head_sha,
+    knowledge_event_id: eventId,
+    reuse_receipt: {
+      status: 'unknown',
+      implementation: 'unimplemented',
+      reason: 'reuse receipt contract is not implemented by VibePro'
+    }
+  };
   const event = {
     schema_version: EVENT_SCHEMA,
     event_id: eventId,
@@ -433,19 +1457,106 @@ export async function createBrainbaseKnowledgeEvent(repoRoot, options = {}) {
     source_pointer: {
       uri: `vibepro://${repositoryRef.replace(/^[a-z]+:\/\//u, '')}/${encodeURIComponent(storyId)}?sha=${gitContext.head_sha}`
     },
+    trace,
     body_hash: bodyHash,
     parent_episode_id: parentEpisodeId,
     payload
   };
   const outputPath = eventPath(root, storyId);
-  await writeJsonAtomic(outputPath, event);
+  const existingEvent = await readJsonIfExists(outputPath);
+  const alreadyGenerated = existingEvent?.event_id === event.event_id
+    && existingEvent?.body_hash === event.body_hash;
+  if (!alreadyGenerated) await writeJsonAtomic(outputPath, event);
+  const outbox = options.enqueue === false
+    ? null
+    : await enqueueBrainbaseOutbox(root, alreadyGenerated ? existingEvent : event, { now: options.now });
   return {
-    status: 'generated',
+    status: alreadyGenerated ? 'already_generated' : 'generated',
     story_id: storyId,
     project_code: context.project_code,
     event_id: event.event_id,
     body_hash: event.body_hash,
-    artifact: toWorkspaceRelative(root, outputPath)
+    artifact: toWorkspaceRelative(root, outputPath),
+    ...(outbox ? {
+      outbox_status: outbox.status,
+      delivery_status: outbox.delivery_status,
+      outbox_artifact: outbox.artifact,
+      outbox_attempts: outbox.attempts
+    } : {})
+  };
+}
+
+function computedPass(command) {
+  return PASS_STATUSES.has(String(command?.status ?? '').toLowerCase())
+    && COMPUTED_EVIDENCE_SOURCES.has(command?.evidence_source);
+}
+
+function isMeaningfulVerificationTransition(previousCommand, command, gitContext) {
+  if (!computedPass(command)) return false;
+  if (!previousCommand) return true;
+  if (!COMPUTED_EVIDENCE_SOURCES.has(previousCommand.evidence_source)) return true;
+  if (!PASS_STATUSES.has(String(previousCommand.status ?? '').toLowerCase())) return true;
+  if (previousCommand.git_context?.head_sha !== gitContext.head_sha) return true;
+  return !compareFingerprintContexts(previousCommand.git_context, gitContext).matches;
+}
+
+/**
+ * Create exactly one learning candidate for a computed pass transition. A
+ * self-reported pass, a repeated pass at the same verified HEAD, and a
+ * non-passing command are intentionally no-ops.
+ */
+export async function enqueueBrainbaseLearningCandidate(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = safeIdentifier(options.storyId, 'story_id');
+  const context = await readJsonIfExists(contextPath(root, storyId));
+  if (!context) return { status: 'unmanaged', story_id: storyId };
+  if (context.source?.managed_receipt_digest === undefined) {
+    return { status: 'unmanaged', story_id: storyId };
+  }
+  const command = options.command ?? options.evidence?.commands?.[0];
+  const gitContext = options.gitContext ?? await collectGitContext(root);
+  if (!isMeaningfulVerificationTransition(options.previousCommand ?? null, command, gitContext)) {
+    return {
+      status: 'not_applicable',
+      story_id: storyId,
+      reason: computedPass(command) ? 'repeated_or_unchanged_verified_pass' : 'verification_is_not_a_computed_pass'
+    };
+  }
+  const kind = requiredString(command.kind, 'verification.kind');
+  const summary = requiredString(
+    options.summary
+      ?? command.summary
+      ?? `Computed ${kind} verification passed at ${gitContext.head_sha}`,
+    'summary'
+  );
+  let generated;
+  try {
+    generated = await createBrainbaseKnowledgeEvent(root, {
+      storyId,
+      summary,
+      now: options.now,
+      repositoryRef: options.repositoryRef
+    });
+  } catch (error) {
+    return {
+      status: 'pending',
+      story_id: storyId,
+      reason: 'candidate_generation_failed',
+      error: safeDeliveryError(error)
+    };
+  }
+  let delivery = null;
+  if (typeof options.send === 'function' || typeof options.sendCandidate === 'function' || typeof options.sender === 'function') {
+    delivery = await reconcileBrainbaseOutbox(root, {
+      now: options.now,
+      retryDelayMs: options.retryDelayMs,
+      send: options.send ?? options.sendCandidate ?? options.sender
+    });
+  }
+  return {
+    ...generated,
+    transition: 'computed_pass',
+    ...(delivery ? { delivery } : {})
   };
 }
 
@@ -454,5 +1565,17 @@ export function renderBrainbaseContextBinding(result) {
 }
 
 export function renderBrainbaseKnowledgeEvent(result) {
-  return `Brainbase Knowledge Event generated: ${result.event_id} -> ${result.artifact}\n`;
+  const delivery = result.delivery_status ? ` (delivery: ${result.delivery_status})` : '';
+  return `Brainbase Knowledge Event ${result.status ?? 'generated'}: ${result.event_id}${delivery} -> ${result.artifact}\n`;
+}
+
+export function renderBrainbaseIntegrationStatus(result) {
+  const handoff = result.handoff?.count ?? 0;
+  const pending = result.outbox?.pending ?? 0;
+  return `Brainbase integration ${result.status}: ${handoff} handoff receipt(s), ${pending} pending candidate(s)\n`;
+}
+
+export function renderBrainbaseDoctor(result) {
+  const checks = (result.checks ?? []).map((check) => `${check.status}: ${check.id}`).join(', ');
+  return `Brainbase doctor ${result.status}: ${checks}\n`;
 }

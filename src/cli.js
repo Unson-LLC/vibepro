@@ -27,7 +27,12 @@ import { createBrainbaseImport } from './brainbase-importer.js';
 import {
   bindBrainbaseContext,
   createBrainbaseKnowledgeEvent,
+  doctorBrainbaseIntegration,
+  getBrainbaseIntegrationStatus,
+  reconcileBrainbaseOutbox,
   renderBrainbaseContextBinding,
+  renderBrainbaseDoctor,
+  renderBrainbaseIntegrationStatus,
   renderBrainbaseKnowledgeEvent
 } from './brainbase-integration.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
@@ -256,6 +261,9 @@ Usage:
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
+  vibepro integration brainbase status [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase reconcile [repo] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -364,6 +372,9 @@ Usage:
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
+  vibepro integration brainbase status [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase reconcile [repo] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -502,8 +513,8 @@ async function dispatchCli(argv, io = {}) {
           ...parseStoryOptions(rest),
           story_id: storyId
         };
-        const story = await addStory(repoRoot, storyOptions);
-        await selectStory(repoRoot, story.story_id);
+        const story = await addStory(repoRoot, { ...storyOptions, env: io.env });
+        await selectStory(repoRoot, story.story_id, { env: io.env });
         write(stdout, localizedText(outputLanguage, {
           ja: `Storyを追加しました: ${story.story_id}\nStoryを選択しました: ${story.story_id}\n`,
           en: `Story added: ${story.story_id}\nStory selected: ${story.story_id}\n`
@@ -1268,12 +1279,12 @@ ${renderHelp()}`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'add') {
-        const story = await addStory(repoRoot, parseStoryOptions(rest));
+        const story = await addStory(repoRoot, { ...parseStoryOptions(rest), env: io.env });
         write(stdout, `Story added: ${story.story_id}\n`);
         return { exitCode: 0, command, subcommand, story };
       }
       if (subcommand === 'select') {
-        const story = await selectStory(repoRoot, getOption(rest, '--id'));
+        const story = await selectStory(repoRoot, getOption(rest, '--id'), { env: io.env });
         write(stdout, `Story selected: ${story.story_id}\n`);
         return { exitCode: 0, command, subcommand, story };
       }
@@ -1495,7 +1506,8 @@ if (command === 'integration') {
   if (action === 'bind') {
     const result = await bindBrainbaseContext(repoRoot, {
       storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-      input: getOption(rest, '--input')
+      input: getOption(rest, '--input'),
+      env: io.env
     });
     write(stdout, hasFlag(rest, '--json')
       ? `${JSON.stringify(result, null, 2)}\n`
@@ -1505,11 +1517,43 @@ if (command === 'integration') {
   if (action === 'event') {
     const result = await createBrainbaseKnowledgeEvent(repoRoot, {
       storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-      summary: getOption(rest, '--summary')
+      summary: getOption(rest, '--summary'),
+      env: io.env,
+      send: io.brainbaseSend ?? io.sendCandidate ?? io.send
     });
     write(stdout, hasFlag(rest, '--json')
       ? `${JSON.stringify(result, null, 2)}\n`
       : renderBrainbaseKnowledgeEvent(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'status') {
+    const result = await getBrainbaseIntegrationStatus(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      env: io.env
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseIntegrationStatus(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'doctor') {
+    const result = await doctorBrainbaseIntegration(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      env: io.env
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseDoctor(result));
+    return { exitCode: result.status === 'fail' ? 1 : 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'reconcile') {
+    const result = await reconcileBrainbaseOutbox(repoRoot, {
+      env: io.env,
+      send: io.brainbaseSend ?? io.sendCandidate ?? io.send
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : `Brainbase outbox reconcile: ${result.status}; sent=${result.sent}, pending=${result.pending}\n`);
     return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
   }
   write(stderr, `Unknown Brainbase integration action: ${action ?? ''}\n\n${renderHelp()}`);
@@ -2156,7 +2200,7 @@ async function detectBaseBranch(repoRoot) {
 }
 
 async function executeStoryDiagnosis(repoRoot, args, io, stdout, options = {}) {
-  const story = await selectStory(repoRoot, getOption(args, '--id'));
+  const story = await selectStory(repoRoot, getOption(args, '--id'), { env: io.env });
   if (options.requireBugStory && !isBugStory(story)) {
     throw new Error('`vibepro verify-first` requires a Story registered with contract_type=bug_fix; use `vibepro story diagnose` for other Stories');
   }
