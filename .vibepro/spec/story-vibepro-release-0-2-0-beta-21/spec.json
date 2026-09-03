@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-0-2-0-beta-21",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "package.json, package-lock.json, and CLI version declare 0.2.0-beta.21.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL21-AC-001"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-release-0-2-0-beta-21.md",
+            "section": "境界"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "package.json",
+            "anchor": "0.2.0-beta.21"
+          },
+          {
+            "file": "package-lock.json",
+            "anchor": "0.2.0-beta.21"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "beta.21 release metadata and CLI report the exact candidate version"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "package*.json",
+            "must_contain": "0.2.0-beta.21"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T04:48:32.558Z",
+      "last_revised_at": "2026-09-03T04:48:32.558Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Candidate tests, typecheck, and npm pack dry-run pass before merge.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL21-AC-002"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-release-0-2-0-beta-21.md",
+            "section": "実行順序"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "package.json",
+            "anchor": "prepack"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "beta.21 release metadata and CLI report the exact candidate version"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "beta.21 release metadata"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T04:48:32.558Z",
+      "last_revised_at": "2026-09-03T04:48:32.558Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "After merge, npm, GitHub release and fresh install converge on one source SHA.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL21-AC-003"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-release-0-2-0-beta-21.md",
+            "section": "完了判定"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "gitHead"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/github-release-convergence.test.js",
+            "case": "GRC-S-2/GRC-S-3/GRC-S-6 create and edit converge prerelease and stable metadata"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/github-release-convergence.test.js",
+            "must_contain": "converge"
+          }
+        ]
+      },
+      "first_seen_at": "2026-09-03T04:48:32.558Z",
+      "last_revised_at": "2026-09-03T04:48:32.558Z"
+    }
+  ],
+  "diagrams": [],
+  "generated_at": "2026-09-03T04:48:32.557Z",
+  "previous_spec_id": null
+}
