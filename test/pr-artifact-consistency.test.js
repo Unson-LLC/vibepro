@@ -232,23 +232,8 @@ test('pr prepare --task accepts only explicitly bound authority without changing
   assert.equal(selected.result.preparation.task_authorities.generated.present, false);
   assert.equal(selected.result.preparation.gate_status, baseline.result.preparation.gate_status);
   assert.equal(selected.result.preparation.review.status, baseline.result.preparation.review.status);
-  assert.deepEqual(selected.result.preparation.review.summary, baseline.result.preparation.review.summary);
-  assert.deepEqual(
-    selected.result.preparation.review.stages.map(({ stage, status }) => ({ stage, status })),
-    baseline.result.preparation.review.stages.map(({ stage, status }) => ({ stage, status }))
-  );
-  assert.deepEqual(
-    {
-      status: selected.result.preparation.agent_review_instruction?.status,
-      current_stage: selected.result.preparation.agent_review_instruction?.current_stage,
-      roles: selected.result.preparation.agent_review_instruction?.roles
-    },
-    {
-      status: baseline.result.preparation.agent_review_instruction?.status,
-      current_stage: baseline.result.preparation.agent_review_instruction?.current_stage,
-      roles: baseline.result.preparation.agent_review_instruction?.roles
-    }
-  );
+  assert.deepEqual(selected.result.preparation.review, baseline.result.preparation.review);
+  assert.equal('agent_review_instruction' in selected.result.preparation, false);
 
   const unknown = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--task', 'TASK-999', '--base', 'main', '--json']);
   assert.equal(unknown.exitCode, 1);

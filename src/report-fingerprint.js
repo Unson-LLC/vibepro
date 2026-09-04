@@ -143,28 +143,12 @@ function summarizeVerification(verification) {
 }
 
 function summarizeReview(review) {
-  if (!review) return { configured: false, recorded: false, complete: false, status: null };
   return {
-    configured: review.configured ?? false,
-    recorded: review.recorded ?? false,
-    complete: review.complete ?? false,
-    status: review.status ?? null,
-    summary: review.summary ?? null,
-    convergence_state: review.convergence?.snapshot ? {
-      exact_signature: review.convergence.snapshot.exact_signature ?? null,
-      semantic_signature: review.convergence.snapshot.semantic_signature ?? null,
-      component_hashes: review.convergence.snapshot.component_hashes ?? null
-    } : null,
-    stages: (review.stages ?? []).map((stage) => ({
-      stage: stage.stage ?? null,
-      status: stage.status ?? null,
-      role_details: (stage.role_details ?? []).map((role) => ({
-        role: role.role ?? null,
-        effective_status: role.effective_status ?? null,
-        binding_status: role.binding_status ?? null,
-        stale_reason: role.stale_reason ?? null
-      }))
-    }))
+    recorded: review?.recorded ?? false,
+    complete: review?.complete ?? false,
+    status: review?.status ?? null,
+    records: JSON.parse(JSON.stringify(review?.records ?? [])),
+    blocking_findings: JSON.parse(JSON.stringify(review?.blocking_findings ?? []))
   };
 }
 
