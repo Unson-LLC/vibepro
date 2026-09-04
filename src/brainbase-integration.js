@@ -1525,6 +1525,9 @@ function outcomeCaseProjectionNotEvaluated(repoRoot, storyId) {
 
 function classifyOutcomeCaseVerificationError(error, storyId) {
   const message = String(error?.message ?? '');
+  if (error?.code === 'ENOENT' || /consumed managed Brainbase handoff receipt not found/i.test(message)) {
+    return outcomeCaseProjectionStatus('untrusted', 'consumption_source_missing', storyId);
+  }
   if (/expired/i.test(message)) return outcomeCaseProjectionStatus('untrusted', 'managed_handoff_expired', storyId);
   if (/HMAC|signature|trusted receipt content|key_id/i.test(message)) {
     return outcomeCaseProjectionStatus('untrusted', 'managed_handoff_signature_invalid', storyId);

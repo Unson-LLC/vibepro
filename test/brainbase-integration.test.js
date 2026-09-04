@@ -305,6 +305,22 @@ async function managedBindingMutationSnapshot(root, storyId) {
   ])));
 }
 
+async function managedTrustSourceMutationSnapshot(root, storyId) {
+  const relativePaths = [
+    '.vibepro/config.json',
+    '.vibepro/integrations/brainbase/inbox/handoff.json',
+    `.vibepro/integrations/brainbase/${storyId}/context.json`,
+    `.vibepro/integrations/brainbase/${storyId}/bind-receipt.json`,
+    `.vibepro/integrations/brainbase/${storyId}/bind-commit.json`,
+    '.vibepro/integrations/brainbase/handoff-consumption-ledger.json',
+    `.vibepro/integrations/brainbase/publications/${storyId}.json`
+  ];
+  return Object.fromEntries(await Promise.all(relativePaths.map(async (relativePath) => [
+    relativePath,
+    await readFile(path.join(root, relativePath), 'utf8').catch(() => null)
+  ])));
+}
+
 function refreshContextDigest(context) {
   const stable = { ...context };
   delete stable.context_digest;
@@ -999,6 +1015,55 @@ test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格
     assert.notEqual(inspection.status, 'trusted');
     assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
   }
+});
+
+test('PR準備はcanonical source receipt欠損をuntrustedとして投影せずtrust sourceを変更しない', async () => {
+  const root = await makeRepo();
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
+  await addStory(root, { story_id: STORY_ID, title: 'Missing canonical source receipt' });
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  });
+  await unlink(path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json'));
+  const before = await managedTrustSourceMutationSnapshot(root, STORY_ID);
+
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+
+  assert.equal(prepared.preparation.outcome_case, undefined);
+  assert.equal(prepared.preparation.outcome_case_status, 'untrusted');
+  assert.equal(prepared.preparation.outcome_case_reason_code, 'consumption_source_missing');
+  assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), before);
+});
+
+test('PR準備はcanonical source receipt改ざんをuntrustedとして投影せずtrust sourceを変更しない', async () => {
+  const root = await makeRepo();
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
+  await addStory(root, { story_id: STORY_ID, title: 'Tampered canonical source receipt' });
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  });
+  const sourcePath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json');
+  const sourceReceipt = JSON.parse(await readFile(sourcePath, 'utf8'));
+  sourceReceipt.project_code = 'tampered-project';
+  await writeJson(sourcePath, sourceReceipt);
+  const before = await managedTrustSourceMutationSnapshot(root, STORY_ID);
+
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+
+  assert.equal(prepared.preparation.outcome_case, undefined);
+  assert.equal(prepared.preparation.outcome_case_status, 'untrusted');
+  assert.equal(prepared.preparation.outcome_case_reason_code, 'consumption_ledger_mismatch');
+  assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), before);
 });
 
 test('tampered recovery journal ledger is rejected before replay mutates any publication document', async () => {

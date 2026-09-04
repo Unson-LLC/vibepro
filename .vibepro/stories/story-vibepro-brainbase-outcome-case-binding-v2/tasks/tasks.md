@@ -3,7 +3,7 @@
 - Story ID: story-vibepro-brainbase-outcome-case-binding-v2
 - Authority: accepted
 - Input: docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json
-- SHA-256: aa5656320ad78691801b364b0942f3deb8ee36eacffc34fb4e70fa115acd7332
+- SHA-256: 5604c8e0f2f241d2aec16063757568e615a1b3a43669791a29f9ccb5f7e3583b
 
 | Task ID | Allowed paths | Status |
 |---|---|---|
