@@ -275,6 +275,35 @@ async function writeJson(filePath, value) {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+async function runCliCaptured(args, io = {}) {
+  let stdout = '';
+  let stderr = '';
+  const result = await runCli(args, {
+    ...io,
+    stdout: { write: (chunk) => { stdout += chunk; } },
+    stderr: { write: (chunk) => { stderr += chunk; } }
+  });
+  return { ...result, stdout, stderr };
+}
+
+async function managedBindingMutationSnapshot(root, storyId) {
+  const relativePaths = [
+    '.vibepro/config.json',
+    `.vibepro/integrations/brainbase/${storyId}/context.json`,
+    `.vibepro/integrations/brainbase/${storyId}/bind-receipt.json`,
+    `.vibepro/integrations/brainbase/${storyId}/bind-commit.json`,
+    '.vibepro/integrations/brainbase/handoff-consumption-ledger.json',
+    `.vibepro/integrations/brainbase/publications/${storyId}.json`,
+    `.vibepro/pr/${storyId}/traceability.json`,
+    `.vibepro/pr/${storyId}/pr-prepare.json`,
+    `.vibepro/pr/${storyId}/pr-body.md`
+  ];
+  return Object.fromEntries(await Promise.all(relativePaths.map(async (relativePath) => [
+    relativePath,
+    await readFile(path.join(root, relativePath), 'utf8').catch(() => null)
+  ])));
+}
+
 function refreshContextDigest(context) {
   const stable = { ...context };
   delete stable.context_digest;
@@ -520,6 +549,83 @@ test('managed v2 Story addも不完全OutcomeCaseを原子的に拒否し、Stor
         `${invalidCase.name}: ${artifact} must not be written`
       );
     }
+  }
+});
+
+test('CLI integration bindは不正なmanaged v2を理由付きで拒否し、公開状態を原子的に維持する', async () => {
+  const cases = [
+    {
+      name: 'missing production_probe',
+      stderr: /managed handoff\.outcome_case\.production_probe (?:is required|must be an object)/
+    },
+    {
+      name: 'blank user_observable_outcome',
+      stderr: /managed handoff\.outcome_case\.user_observable_outcome is required/
+    },
+    {
+      name: 'duplicate technical_acceptance ids',
+      stderr: /managed handoff\.outcome_case\.technical_acceptance must not contain duplicate ids/
+    }
+  ];
+
+  for (const invalidCase of cases) {
+    const root = await makeRepo();
+    await addStory(root, { story_id: STORY_ID, title: `CLI bind reject ${invalidCase.name}` });
+    const managedOutcomeCase = invalidManagedV2OutcomeCases().find(({ name }) => name === invalidCase.name).value;
+    await configureManagedBrainbase(root, {
+      receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase }
+    });
+    const before = await managedBindingMutationSnapshot(root, STORY_ID);
+
+    const result = await runCliCaptured([
+      'integration', 'brainbase', 'bind', root,
+      '--id', STORY_ID,
+      '--input', '.vibepro/integrations/brainbase/inbox/handoff.json'
+    ], { env: { ...process.env, BRAINBASE_VIBEPRO_HANDOFF_HMAC_SECRET: TEST_HANDOFF_HMAC_SECRET } });
+
+    assert.equal(result.exitCode, 1, invalidCase.name);
+    assert.equal(result.stdout, '', invalidCase.name);
+    assert.match(result.stderr, invalidCase.stderr, invalidCase.name);
+    assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before, invalidCase.name);
+  }
+});
+
+test('CLI Story addは不正なmanaged v2を理由付きで拒否し、Story・公開状態・PR投影を残さない', async () => {
+  const cases = [
+    {
+      name: 'missing production_probe',
+      stderr: /managed handoff\.outcome_case\.production_probe (?:is required|must be an object)/
+    },
+    {
+      name: 'blank user_observable_outcome',
+      stderr: /managed handoff\.outcome_case\.user_observable_outcome is required/
+    },
+    {
+      name: 'duplicate technical_acceptance ids',
+      stderr: /managed handoff\.outcome_case\.technical_acceptance must not contain duplicate ids/
+    }
+  ];
+
+  for (const invalidCase of cases) {
+    const root = await makeRepo();
+    const managedOutcomeCase = invalidManagedV2OutcomeCases().find(({ name }) => name === invalidCase.name).value;
+    await configureManagedBrainbase(root, {
+      receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase }
+    });
+    const before = await managedBindingMutationSnapshot(root, STORY_ID);
+
+    const result = await runCliCaptured([
+      'story', 'add', root,
+      '--id', STORY_ID,
+      '--title', `CLI Story add reject ${invalidCase.name}`
+    ], { env: { ...process.env, BRAINBASE_VIBEPRO_HANDOFF_HMAC_SECRET: TEST_HANDOFF_HMAC_SECRET } });
+
+    assert.equal(result.exitCode, 1, invalidCase.name);
+    assert.equal(result.stdout, '', invalidCase.name);
+    assert.match(result.stderr, invalidCase.stderr, invalidCase.name);
+    assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before, invalidCase.name);
+    const config = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+    assert.equal(config.brainbase.stories.some((story) => story.story_id === STORY_ID), false, invalidCase.name);
   }
 });
 
