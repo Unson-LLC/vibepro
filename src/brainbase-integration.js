@@ -6,7 +6,8 @@ import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { collectGitContext, compareFingerprintContexts } from './git-fingerprint.js';
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { bindStoryTraceability } from './traceability.js';
+import { getWorkspaceDir, initWorkspace, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -1167,21 +1168,77 @@ export async function ensureBrainbaseStoryBinding(repoRoot, options = {}) {
   return ensureBrainbaseStoryBindingInternal(repoRoot, options);
 }
 
-// The formal Story CLI is intentionally routed through this narrow entrypoint
-// so an absent Story and its managed v2 projection are one journaled publish.
-// The capability remains module-private and cannot be supplied through either
-// of the general-purpose binding APIs above.
-export async function ensureBrainbaseStoryAddBinding(repoRoot, options = {}) {
-  const declaration = options.storyDeclaration;
-  if (!declaration || typeof declaration !== 'object' || Array.isArray(declaration)) {
-    const error = new Error('formal Story add requires a Story declaration');
-    error.code = 'BRAINBASE_STORY_DECLARATION_REQUIRED';
-    throw error;
-  }
+// This is deliberately not exported. The symbol must never cross this module
+// boundary: an exported wrapper would let any importer obtain the authority to
+// create an otherwise absent Story while binding a managed v2 handoff.
+async function bindFormalStoryAddDeclaration(repoRoot, options = {}) {
   return ensureBrainbaseStoryBindingInternal(repoRoot, {
     ...options,
     storyAddDeclarationCapability: STORY_ADD_DECLARATION_CAPABILITY
   });
+}
+
+function buildFormalStoryDeclaration(options = {}) {
+  if (Object.hasOwn(options, 'storyDeclaration') || Object.hasOwn(options, 'storyAddDeclarationCapability')) {
+    const error = new Error('formal Story add accepts normalized CLI fields, not a Story declaration');
+    error.code = 'BRAINBASE_STORY_DECLARATION_FORBIDDEN';
+    throw error;
+  }
+  if (!options.story_id) throw new Error('--id is required');
+  if (!options.title) throw new Error('--title is required');
+  return {
+    story_id: options.story_id,
+    title: options.title,
+    ssot: 'local',
+    status: 'active',
+    horizon: options.horizon ?? null,
+    view: options.view ?? null,
+    period: options.period ?? null,
+    started_at: options.started_at ?? null,
+    due_at: options.due_at ?? null,
+    contract_type: options.contract_type ?? null
+  };
+}
+
+// The only public declaration operation is a complete Story-add transaction.
+// It accepts raw CLI fields, performs required normalization and traceability,
+// and keeps the internal declaration capability inside this module.
+export async function addBrainbaseBoundStory(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  await initWorkspace(root);
+  const configPath = path.join(getWorkspaceDir(root), 'config.json');
+  const config = await readJson(configPath, 'VibePro config');
+  let story = buildFormalStoryDeclaration(options);
+  const stories = Array.isArray(config.brainbase?.stories) ? config.brainbase.stories : [];
+  if (stories.some((item) => item.story_id === story.story_id)) {
+    throw new Error(`Story already exists: ${story.story_id}`);
+  }
+  const binding = await bindFormalStoryAddDeclaration(root, {
+    storyId: story.story_id,
+    config,
+    // A signed managed v2 handoff can arrive before a Story exists. This
+    // private declaration is journaled with Context, receipt, ledger, and the
+    // commit marker; callers can never pass an arbitrary declaration here.
+    storyDeclaration: story,
+    env: options.env,
+    now: options.now
+  });
+  if (binding?.story_declared) {
+    story = binding.story_declared;
+  } else {
+    if (binding?.outcome_case) story = { ...story, outcome_case: binding.outcome_case };
+    config.brainbase = {
+      ...(config.brainbase ?? {}),
+      stories: [...stories, story]
+    };
+    await writeJsonAtomic(configPath, config);
+  }
+  await bindStoryTraceability(root, {
+    storyId: story.story_id,
+    source: 'story_add',
+    lifecycle: 'declared_not_started'
+  });
+  return story;
 }
 
 function passingVerificationCommands(evidence, context, gitContext) {

@@ -29,7 +29,7 @@ v2は `brainbase-vibepro-managed-handoff.v2` の署名済み `outcome_case` と�
 
 ## 投影と完了境界
 
-成果ケース契約はv2 contextの `outcome_case`、Storyの `outcome_case`、PR準備の `outcome_case` に投影する。既存Storyがない一般bindは書込み前に失敗し、任意の `storyDeclaration` も拒否する。標準 `vibepro story add` だけがモジュール内部の限定capabilityで署名済みhandoffを先に検証し、そのStory宣言を同じ取引に含められる。managed bindはconfig、Context、bind receipt、消費ledgerを1つの耐久ジャーナルへ記録し、全ファイルの置換後にcommit markerを書き込む。中断時はmarkerのない部分投影をPR準備が信頼せず、次のbindが同じジャーナルを前進回復するため、`bound` を返さない。
+成果ケース契約はv2 contextの `outcome_case`、Storyの `outcome_case`、PR準備の `outcome_case` に投影する。既存Storyがない一般bindは書込み前に失敗し、任意の `storyDeclaration` も拒否する。公開されたStory追加契約は正規化済みCLI項目だけを受け、Story重複検査とtraceability作成を含む完全な `story add` 処理を行う。その同じモジュール内でだけ非exportの宣言capabilityを使い、署名済みhandoffを検証してStory宣言を取引に含める。したがって一般bind APIも公開importも任意または不完全なStory宣言を渡せない。managed bindはconfig、Context、bind receipt、消費ledgerを1つの耐久ジャーナルへ記録し、全ファイルの置換後にcommit markerを書き込む。中断時はmarkerのない部分投影をPR準備が信頼せず、次のbindが同じジャーナルを前進回復するため、`bound` を返さない。
 
 PR準備は、Context・Story・receipt・markerの局所一致だけを信頼しない。receiptに保持した署名済みmanaged handoff v2を設定済み信頼鍵で再検証し、canonical `outcome_case`、receipt/context digest、Story ID、project、repository、repository root、base SHA、resolution/turn、ledgerを照合できた場合だけStory値を投影する。ローカルの `signature_trusted` のような自己申告フラグは権威にしない。v1 ContextだけのStoryは成果ケース未連携であり、`outcome_case_status: none` / `not_linked` と表示して復旧判断を付けない。v2を示す投影を信頼できない場合は、改ざん・期限切れを `untrusted`、marker欠落や不足値を `partial`、読出し不能を `unknown` と安全なreason code・再bind/復旧判断をPR準備JSONとPR本文へ表示する。PR準備の `technical_completion` は信頼済み検証証跡の有無を明示するが、受入条件と証跡の対応が不明な場合は `technical_complete: false` と `status: unknown` を返す。
 

@@ -18,7 +18,7 @@ Brainbaseから引き継がれた開発担当者として、成果ケースに�
 
 - AC-1: `brainbase-vibepro-context-handoff.v1` の入力と出力契約は従来どおり受理される。v1 Contextだけを持つStoryのPR準備は成果ケース未連携の `none` / `not_linked` として表示し、v2の再bind/復旧を案内しない。
 - AC-2: `brainbase-vibepro-context-handoff.v2` 相当の成果ケースは、署名済み `brainbase-vibepro-managed-handoff.v2` でのみ受理する。署名対象の `outcome_case` は `case_id`、成果ケース参照、判断受領参照、判断ダイジェスト、利用者が観測できる成果、技術受入条件、運用確認を必須として検証する。
-- AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の内部限定先行宣言を同一ジャーナル取引へ含める。一般のbind APIは任意のStory宣言を受け取れず、未作成Storyへの投影をfail closedする。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。
+- AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。一般のbind APIと任意の事前作成Story宣言はfail closedする。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。
 - AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、技術完了の判定と検証証跡だけを返す。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。
 - AC-5: 不足、空値、重複ID、caseと一致しない参照、未知issuer、未信頼の検証証跡は技術完了として扱わない。v2からv1への再bindは既存v2投影を残したまま成功してはならず、markerのない部分投影は権威メタデータとして利用しない。
 

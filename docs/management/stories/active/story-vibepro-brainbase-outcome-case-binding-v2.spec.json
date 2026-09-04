@@ -28,14 +28,14 @@
     {
       "id": "AC-3",
       "type": "contract",
-      "statement": "managed v2は既存Storyを事前検査するか、標準Story addだけの内部限定先行宣言をconfig、Context、bind receipt、ledger、commit markerと同一の回復可能な一取引として公開してから、StoryとPR準備へ同じ7項目を投影する。一般bind APIは任意の先行宣言を拒否し、非managed v2とmarkerのない部分取引は投影しない。",
+      "statement": "managed v2は既存Storyを事前検査するか、正規化済みCLI項目とtraceabilityを必須にする完全な標準Story add契約だけが、同一モジュール内の非export宣言capabilityで先行宣言を同一ジャーナル取引へ含める。一般bind APIと公開importは任意または不完全な先行宣言を拒否し、非managed v2とmarkerのない部分取引は投影しない。config、Context、bind receipt、ledger、commit markerを回復可能に公開してからStoryとPR準備へ同じ7項目を投影する。",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-3" }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
-        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function preflightStoryProjection" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function preflightStoryProjection" }, { "file": "src/brainbase-integration.js", "anchor": "function addBrainbaseBoundStory" }],
         "test_refs": [
           { "file": "test/brainbase-integration.test.js", "case": "trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない" },
-          { "file": "test/brainbase-integration.test.js", "case": "標準CLI Story addは署名済みmanaged v2 receiptを原子的に宣言・検証・投影する" },
+          { "file": "test/brainbase-integration.test.js", "case": "公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する" },
           { "file": "test/brainbase-integration.test.js", "case": "managed v2 publish is journal-recoverable and never projects a partial transaction as trusted" },
           { "file": "test/brainbase-integration.test.js", "case": "managed v2 process recovery can fail closed and resume idempotently" },
           { "file": "test/brainbase-integration.test.js", "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する" }

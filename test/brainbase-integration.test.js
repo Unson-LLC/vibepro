@@ -816,12 +816,29 @@ test('managed inboxを自動検出し、Story add前にreceipt bindを完了す�
   assert.equal(inboxReceipt.story_id, null);
 });
 
-test('標準CLI Story addは署名済みmanaged v2 receiptを原子的に宣言・検証・投影する', async () => {
+test('公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する', async () => {
   const root = await makeRepo();
   const expectedOutcomeCase = outcomeCase();
   await configureManagedBrainbase(root, {
     receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase: expectedOutcomeCase }
   });
+
+  // The declaration capability is not an exported binding API. The one public
+  // add operation accepts normalized CLI fields only, so an importer cannot
+  // smuggle an incomplete prebuilt Story into the v2 publication transaction.
+  const integration = await import('../src/brainbase-integration.js');
+  assert.equal(Object.hasOwn(integration, 'ensureBrainbaseStoryAddBinding'), false);
+  await assert.rejects(
+    integration.addBrainbaseBoundStory(root, {
+      story_id: STORY_ID,
+      title: 'Attempted direct declaration',
+      storyDeclaration: { story_id: STORY_ID }
+    }),
+    (error) => error?.code === 'BRAINBASE_STORY_DECLARATION_FORBIDDEN'
+  );
+  const beforeCli = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+  assert.equal(beforeCli.brainbase.stories.some((story) => story.story_id === STORY_ID), false);
+
   const result = await runCli(['story', 'add', root, '--id', STORY_ID, '--title', 'Managed v2 CLI declaration']);
   assert.equal(result.exitCode, 0);
   assert.deepEqual(result.story.outcome_case, expectedOutcomeCase);
@@ -833,6 +850,9 @@ test('標準CLI Story addは署名済みmanaged v2 receiptを原子的に宣言�
   assert.deepEqual(stored.outcome_case, expectedOutcomeCase);
   assert.deepEqual(context.outcome_case, expectedOutcomeCase);
   assert.equal(marker.context_digest, context.context_digest);
+  const traceability = JSON.parse(await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'traceability.json'), 'utf8'));
+  assert.equal(traceability.source, 'story_add');
+  assert.equal(traceability.lifecycle, 'declared_not_started');
   const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
   assert.equal(prepared.preparation.outcome_case_status, 'trusted');
   assert.equal(prepared.preparation.outcome_case.case_id, expectedOutcomeCase.case_id);
