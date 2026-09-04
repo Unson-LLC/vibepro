@@ -1487,12 +1487,13 @@ if (command === 'integration') {
   if (action === 'reconcile') {
     const result = await reconcileBrainbaseOutbox(repoRoot, {
       env: io.env,
-      send: io.brainbaseSend ?? io.sendCandidate ?? io.send
+      send: io.brainbaseSend ?? io.sendCandidate ?? io.send,
+      readback: io.brainbaseReadback
     });
     write(stdout, hasFlag(rest, '--json')
       ? `${JSON.stringify(result, null, 2)}\n`
-      : `Brainbase outbox reconcile: ${result.status}; sent=${result.sent}, pending=${result.pending}\n`);
-    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+      : `Brainbase 連携: ${result.status}; 送信=${result.sent}, 受信確認=${result.confirmed}, 受信未確認=${result.unconfirmed}, 送信待ち=${result.pending}\n`);
+    return { exitCode: result.status === 'ok' ? 0 : result.status === 'pending' ? 2 : 1, command, subcommand: `${provider}-${action}`, result };
   }
   write(stderr, `Unknown Brainbase integration action: ${action ?? ''}\n\n${renderHelp()}`);
   return { exitCode: 1, command, subcommand: `${provider}-${action ?? ''}` };
