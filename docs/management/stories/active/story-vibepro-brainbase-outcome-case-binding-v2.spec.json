@@ -61,6 +61,9 @@
           { "file": "test/brainbase-integration.test.js", "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない" },
           { "file": "test/brainbase-integration.test.js", "case": "署名済みmanaged v1の完全publishを通したStoryのPR準備は未連携として扱い、v2復旧を案内しない" },
           { "file": "test/brainbase-integration.test.js", "case": "tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備はcanonical source receipt欠損をuntrustedとして投影せずtrust sourceを変更しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備はcanonical source receipt改ざんをuntrustedとして投影せずtrust sourceを変更しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備はcanonical source receipt署名改ざんをuntrustedとして投影せずtrust sourceを変更しない" },
           { "file": "test/brainbase-integration.test.js", "case": "status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する" }
         ]
       }
