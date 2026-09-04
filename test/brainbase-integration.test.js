@@ -987,7 +987,9 @@ test('managed handoff sourceは外部・traversal・encoded・symlinkを一切�
 
 test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない', async () => {
   const variants = [
+    (root) => path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json'),
     (root, outsidePath) => `safe/../../${path.basename(outsidePath)}`,
+    (root, outsidePath) => `safe\\..\\..\\${path.basename(outsidePath)}`,
     (_root, outsidePath) => outsidePath,
     () => 'safe/%252e%252e/%252e%252e/outside.json',
     () => 'safe/%25252e%25252e/%25252e%25252e/outside.json',
@@ -1741,43 +1743,50 @@ test('status/doctor/reconcile CLIはmanaged inboxと旧bind/event入口を互換
 });
 
 test('status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する', async () => {
-  const root = await makeRepo();
-  await addStory(root, { story_id: STORY_ID, title: 'Outcome projection disclosure' });
-  const { config } = await configureManagedBrainbase(root);
-  await bindBrainbaseContext(root, {
-    storyId: STORY_ID,
-    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
-    config,
-    now: () => new Date('2026-08-30T00:00:02.000Z')
-  });
+  for (const schemaVersion of [
+    'brainbase-vibepro-managed-handoff.v1',
+    'brainbase-vibepro-managed-handoff.v2'
+  ]) {
+    const root = await makeRepo();
+    await addStory(root, { story_id: STORY_ID, title: 'Outcome projection disclosure' });
+    const { config } = await configureManagedBrainbase(root, {
+      receipt: { schemaVersion }
+    });
+    await bindBrainbaseContext(root, {
+      storyId: STORY_ID,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      now: () => new Date('2026-08-30T00:00:02.000Z')
+    });
 
-  const status = await getBrainbaseIntegrationStatus(root, { storyId: STORY_ID });
-  assert.deepEqual(status.binding.outcome_case_projection, {
-    status: 'not_evaluated',
-    reason_code: 'pr_prepare_required',
-    reference: `vibepro pr prepare ${root} --story-id ${STORY_ID}`
-  });
-  assert.match(renderBrainbaseIntegrationStatus(status), /Outcome case projection: not_evaluated/);
-  assert.match(renderBrainbaseIntegrationStatus(status), /vibepro pr prepare/);
-  const doctor = await doctorBrainbaseIntegration(root, { storyId: STORY_ID });
-  assert.equal(doctor.status, 'warn');
-  assert.deepEqual(doctor.checks.find((check) => check.id === 'outcome_case_projection'), {
-    id: 'outcome_case_projection',
-    status: 'unknown',
-    code: 'OUTCOME_CASE_PROJECTION_NOT_EVALUATED',
-    detail: 'outcome-case trust and commit marker are evaluated only by pr prepare',
-    reference: `vibepro pr prepare ${root} --story-id ${STORY_ID}`
-  });
-  assert.match(renderBrainbaseDoctor(doctor), /unknown: outcome_case_projection/);
-  assert.match(renderBrainbaseDoctor(doctor), /vibepro pr prepare/);
+    const status = await getBrainbaseIntegrationStatus(root, { storyId: STORY_ID });
+    assert.deepEqual(status.binding.outcome_case_projection, {
+      status: 'not_evaluated',
+      reason_code: 'pr_prepare_required',
+      reference: `vibepro pr prepare ${root} --story-id ${STORY_ID}`
+    }, schemaVersion);
+    assert.match(renderBrainbaseIntegrationStatus(status), /Outcome case projection: not_evaluated/);
+    assert.match(renderBrainbaseIntegrationStatus(status), /vibepro pr prepare/);
+    const doctor = await doctorBrainbaseIntegration(root, { storyId: STORY_ID });
+    assert.equal(doctor.status, 'warn', schemaVersion);
+    assert.deepEqual(doctor.checks.find((check) => check.id === 'outcome_case_projection'), {
+      id: 'outcome_case_projection',
+      status: 'unknown',
+      code: 'OUTCOME_CASE_PROJECTION_NOT_EVALUATED',
+      detail: 'outcome-case trust and commit marker are evaluated only by pr prepare',
+      reference: `vibepro pr prepare ${root} --story-id ${STORY_ID}`
+    }, schemaVersion);
+    assert.match(renderBrainbaseDoctor(doctor), /unknown: outcome_case_projection/);
+    assert.match(renderBrainbaseDoctor(doctor), /vibepro pr prepare/);
 
-  const report = renderStoryReport({
-    story: { story_id: STORY_ID, title: 'Outcome projection disclosure', status: 'active' },
-    latestRun: { run_id: 'run-test', artifacts: {} },
-    runs: [],
-    evidence: {}
-  });
-  assert.match(report, /## Outcome Case Projection/);
-  assert.match(report, /Status \| not_evaluated/);
-  assert.match(report, /vibepro pr prepare/);
+    const report = renderStoryReport({
+      story: { story_id: STORY_ID, title: 'Outcome projection disclosure', status: 'active' },
+      latestRun: { run_id: 'run-test', artifacts: {} },
+      runs: [],
+      evidence: {}
+    });
+    assert.match(report, /## Outcome Case Projection/);
+    assert.match(report, /Status \| not_evaluated/);
+    assert.match(report, /vibepro pr prepare/);
+  }
 });
