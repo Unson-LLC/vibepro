@@ -2091,7 +2091,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
   const base = baseBranch ?? '<base-branch>';
   const storyDiagnoseCommand = `vibepro story diagnose ${shellPath(repoRoot)} --id <story-id> --run-graphify`;
   const verifyRecordCommand = `vibepro verify record ${shellPath(repoRoot)} --id <story-id> --kind unit --status pass --command "npm test"`;
-  const reviewPrepareCommand = `vibepro review prepare ${shellPath(repoRoot)} --id <story-id> --stage gate`;
+  const reviewPrepareCommand = `vibepro review prepare ${shellPath(repoRoot)} --id <story-id> --role reviewer`;
   const prPrepareCommand = `vibepro pr prepare ${shellPath(repoRoot)} --base ${base}`;
   return localizedText(language, {
     ja: [
