@@ -33,7 +33,7 @@
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-03T23:28:44.470Z"
+      "last_revised_at": "2026-09-04T02:02:28.000Z"
     },
     {
       "id": "C-002",
@@ -92,7 +92,7 @@
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-04T00:00:00.000Z"
+      "last_revised_at": "2026-09-04T02:02:28.000Z"
     },
     {
       "id": "C-004",
@@ -105,7 +105,7 @@
         "test_refs": [{ "file": "test/pr-manager.test.js", "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない" }, { "file": "test/brainbase-integration.test.js", "case": "PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する" }, { "file": "test/brainbase-integration.test.js", "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない" }]
       },
       "first_seen_at": "2026-09-04T00:00:00.000Z",
-      "last_revised_at": "2026-09-04T00:00:00.000Z"
+      "last_revised_at": "2026-09-04T02:02:28.000Z"
     },
     {
       "id": "INV-001",
@@ -125,7 +125,7 @@
       "last_revised_at": "2026-09-04T00:00:00.000Z"
     }
   ],
-  "generated_at": "2026-09-03T23:28:44.469Z",
+  "generated_at": "2026-09-04T02:02:28.000Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"
