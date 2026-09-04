@@ -2,7 +2,7 @@ import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHmac } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, symlink, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -19,6 +19,7 @@ import {
   enqueueBrainbaseLearningCandidate,
   ensureBrainbaseStoryBinding,
   getBrainbaseIntegrationStatus,
+  inspectManagedV2OutcomeCaseProjection,
   reconcileBrainbaseOutbox,
   renderBrainbaseDoctor,
   renderBrainbaseIntegrationStatus,
@@ -920,6 +921,115 @@ test('managed v2 process recovery can fail closed and resume idempotently', asyn
   assert.equal(prepared.preparation.outcome_case.case_id, expectedOutcomeCase.case_id);
   assert.equal(prepared.preparation.outcome_case.user_observable_outcome, expectedOutcomeCase.user_observable_outcome);
   assert.equal(prepared.preparation.outcome_case.technical_complete, false);
+});
+
+test('managed handoff sourceは外部・traversal・encoded・symlinkを一切のbinding write前に拒否する', async () => {
+  const root = await makeRepo();
+  const { config, receipt } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
+  await addStory(root, { story_id: STORY_ID, title: 'Confined handoff source' });
+  const outsidePath = path.join(path.dirname(root), `${path.basename(root)}-outside-handoff.json`);
+  await writeJson(outsidePath, receipt);
+  const traversal = `safe/../../${path.basename(outsidePath)}`;
+  const backslashTraversal = `safe\\..\\..\\${path.basename(outsidePath)}`;
+  await writeJson(path.resolve(root, backslashTraversal), receipt);
+  const encodedTraversal = 'safe/%2e%2e/%2e%2e/handoff.json';
+  await writeJson(path.resolve(root, encodedTraversal), receipt);
+  const symlinkPath = path.join(root, 'symlink-handoff.json');
+  await symlink(outsidePath, symlinkPath);
+  const before = await managedBindingMutationSnapshot(root, STORY_ID);
+
+  for (const input of [outsidePath, traversal, backslashTraversal, encodedTraversal, 'symlink-handoff.json']) {
+    await assert.rejects(
+      bindBrainbaseContext(root, {
+        storyId: STORY_ID,
+        input,
+        config,
+        now: () => new Date('2026-09-03T00:00:02.000Z')
+      }),
+      /repository-relative|canonical repository-relative|remain within the repository|symbolic links/i,
+      input
+    );
+    assert.deepEqual(
+      await managedBindingMutationSnapshot(root, STORY_ID),
+      before,
+      `${input} must not mutate the ledger or any binding/PR projection`
+    );
+  }
+});
+
+test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない', async () => {
+  const variants = [
+    (root, outsidePath) => `safe/../../${path.basename(outsidePath)}`,
+    (_root, outsidePath) => outsidePath,
+    () => 'safe/%252e%252e/%252e%252e/outside.json',
+    () => 'symlink-handoff.json'
+  ];
+  for (const sourceArtifact of variants) {
+    const root = await makeRepo();
+    const { config, receipt } = await configureManagedBrainbase(root, {
+      receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+    });
+    await addStory(root, { story_id: STORY_ID, title: 'Ledger source confinement' });
+    await bindBrainbaseContext(root, {
+      storyId: STORY_ID,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      now: () => new Date('2026-09-03T00:00:02.000Z')
+    });
+    const outsidePath = path.join(path.dirname(root), `${path.basename(root)}-consumed.json`);
+    await writeJson(outsidePath, receipt);
+    await symlink(outsidePath, path.join(root, 'symlink-handoff.json'));
+    const ledgerPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'handoff-consumption-ledger.json');
+    const ledger = JSON.parse(await readFile(ledgerPath, 'utf8'));
+    ledger.entries[0].source_artifact = sourceArtifact(root, outsidePath);
+    await writeJson(ledgerPath, ledger);
+    const configPath = path.join(root, '.vibepro', 'config.json');
+    const stored = JSON.parse(await readFile(configPath, 'utf8'))
+      .brainbase.stories.find((story) => story.story_id === STORY_ID);
+    const before = await managedBindingMutationSnapshot(root, STORY_ID);
+
+    const inspection = await inspectManagedV2OutcomeCaseProjection(
+      root,
+      STORY_ID,
+      stored.outcome_case,
+      { now: () => new Date('2026-09-03T00:00:03.000Z') }
+    );
+    assert.notEqual(inspection.status, 'trusted');
+    assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
+  }
+});
+
+test('tampered recovery journal ledger is rejected before replay mutates any publication document', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'Recovery source confinement' });
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
+  const bindOptions = {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  };
+  await assert.rejects(bindBrainbaseContext(root, { ...bindOptions, publishFailureAt: 'receipt' }));
+  const journalPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'publications', `${STORY_ID}.json`);
+  const journal = JSON.parse(await readFile(journalPath, 'utf8'));
+  journal.documents.ledger.entries[0].source_artifact = 'safe/../../outside.json';
+  journal.publication_digest = sha256(canonicalJson({
+    schema_version: journal.schema_version,
+    transaction_id: journal.transaction_id,
+    story_id: journal.story_id,
+    documents: journal.documents
+  }));
+  journal.commit_marker.publication_digest = journal.publication_digest;
+  await writeJson(journalPath, journal);
+  const before = await managedBindingMutationSnapshot(root, STORY_ID);
+
+  await assert.rejects(bindBrainbaseContext(root, bindOptions), /remain within the repository/i);
+  assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
+  assert.equal(await readFile(journalPath, 'utf8'), `${JSON.stringify(journal, null, 2)}\n`);
 });
 
 test('routingだけ・personal knowledge・未要求entryを受け入れない', async () => {

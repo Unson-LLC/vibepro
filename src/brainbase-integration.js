@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
-import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, realpath, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -294,7 +294,9 @@ async function discoverManagedHandoffFiles(repoRoot, config = {}) {
     const normalized = path.normalize(candidate);
     if (seen.has(normalized)) continue;
     seen.add(normalized);
-    files.push(...await discoverJsonFiles(normalized));
+    if (!(await pathExists(normalized))) continue;
+    const confined = await confinedRepositoryPath(repoRoot, normalized, 'managed Brainbase handoff inbox');
+    files.push(...await discoverJsonFiles(confined));
   }
   return [...new Set(files)].sort();
 }
@@ -740,15 +742,89 @@ async function validateManagedHandoff(raw, storyId, repoRoot, config = {}, now =
   };
 }
 
-function ledgerSourcePath(root, sourceArtifact) {
-  const relative = requiredString(sourceArtifact, 'handoff ledger.source_artifact').replaceAll('\\', '/');
-  if (path.posix.isAbsolute(relative) || relative === '..' || relative.startsWith('../')) {
-    throw new Error('handoff ledger.source_artifact must be repository-relative');
-  }
-  return path.resolve(root, relative);
+function pathRemainsWithin(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
 }
 
-function validateHandoffLedgerEntry(value, index) {
+function decodedPathVariants(value, name) {
+  const variants = [value];
+  let current = value;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let decoded;
+    try {
+      decoded = decodeURIComponent(current);
+    } catch {
+      throw new Error(`${name} contains invalid percent encoding`);
+    }
+    if (decoded === current) break;
+    variants.push(decoded.replaceAll('\\', '/'));
+    current = decoded;
+  }
+  return variants;
+}
+
+function normalizeLedgerSourceArtifact(sourceArtifact, name = 'handoff ledger.source_artifact') {
+  const relative = requiredString(sourceArtifact, name).replaceAll('\\', '/');
+  for (const variant of decodedPathVariants(relative, name)) {
+    const normalized = path.posix.normalize(variant);
+    if (path.posix.isAbsolute(variant)
+        || /^[a-z]:\//iu.test(variant)
+        || normalized === '..'
+        || normalized.startsWith('../')) {
+      throw new Error(`${name} must be repository-relative and remain within the repository`);
+    }
+  }
+  const normalized = path.posix.normalize(relative);
+  if (normalized !== relative || normalized === '.' || relative.includes('//')) {
+    throw new Error(`${name} must use a canonical repository-relative path`);
+  }
+  return normalized;
+}
+
+async function confinedRepositoryPath(root, candidate, name, { mustExist = true } = {}) {
+  const resolvedRoot = path.resolve(root);
+  const resolvedCandidate = path.resolve(candidate);
+  if (!pathRemainsWithin(resolvedRoot, resolvedCandidate)) {
+    throw new Error(`${name} must remain within the repository`);
+  }
+  let canonicalCandidate;
+  try {
+    const [canonicalRoot, existingCandidate] = await Promise.all([
+      realpath(resolvedRoot),
+      realpath(resolvedCandidate)
+    ]);
+    canonicalCandidate = existingCandidate;
+    if (!pathRemainsWithin(canonicalRoot, canonicalCandidate)) {
+      throw new Error(`${name} must remain within the repository after resolving symbolic links`);
+    }
+  } catch (error) {
+    if (!mustExist && error?.code === 'ENOENT') return resolvedCandidate;
+    throw error;
+  }
+  return canonicalCandidate;
+}
+
+async function ledgerSourcePath(root, sourceArtifact, { mustExist = true } = {}) {
+  const relative = normalizeLedgerSourceArtifact(sourceArtifact);
+  return confinedRepositoryPath(root, path.resolve(root, relative), 'handoff ledger.source_artifact', { mustExist });
+}
+
+async function canonicalRepositoryRelative(root, candidate, name) {
+  const [canonicalRoot, canonicalCandidate] = await Promise.all([
+    realpath(path.resolve(root)),
+    realpath(candidate)
+  ]);
+  if (!pathRemainsWithin(canonicalRoot, canonicalCandidate)) {
+    throw new Error(`${name} must remain within the repository after resolving symbolic links`);
+  }
+  return normalizeLedgerSourceArtifact(
+    path.relative(canonicalRoot, canonicalCandidate).split(path.sep).join('/'),
+    name
+  );
+}
+
+async function validateHandoffLedgerEntry(root, value, index, { verifySource = false } = {}) {
   const entry = object(value, `handoff ledger.entries[${index}]`);
   const receiptDigest = sha256Field(entry.receipt_digest, `handoff ledger.entries[${index}].receipt_digest`);
   const storyId = safeIdentifier(entry.story_id, `handoff ledger.entries[${index}].story_id`);
@@ -760,8 +836,11 @@ function validateHandoffLedgerEntry(value, index) {
   if (!MANAGED_SHA_PATTERN.test(baseSha)) {
     throw new Error(`handoff ledger.entries[${index}].base_sha must be a lowercase 40 or 64 character Git SHA digest`);
   }
-  const sourceArtifact = requiredString(entry.source_artifact, `handoff ledger.entries[${index}].source_artifact`).replaceAll('\\', '/');
-  ledgerSourcePath(process.cwd(), sourceArtifact);
+  const sourceArtifact = normalizeLedgerSourceArtifact(
+    entry.source_artifact,
+    `handoff ledger.entries[${index}].source_artifact`
+  );
+  if (verifySource) await ledgerSourcePath(root, sourceArtifact);
   const consumedAt = requiredString(entry.consumed_at, `handoff ledger.entries[${index}].consumed_at`);
   if (!RFC3339_PATTERN.test(consumedAt) || !Number.isFinite(new Date(consumedAt).valueOf())) {
     throw new Error(`handoff ledger.entries[${index}].consumed_at must be RFC 3339`);
@@ -779,16 +858,15 @@ function validateHandoffLedgerEntry(value, index) {
   };
 }
 
-async function readHandoffConsumptionLedger(root) {
-  const filePath = handoffLedgerPath(root);
-  const raw = await readJsonIfExists(filePath);
-  if (raw === null) return { schema_version: HANDOFF_LEDGER_SCHEMA, entries: [] };
+async function validateHandoffConsumptionLedger(root, raw, { verifySources = false } = {}) {
   object(raw, 'handoff consumption ledger');
   if (raw.schema_version !== HANDOFF_LEDGER_SCHEMA) {
     throw new Error(`handoff consumption ledger must use ${HANDOFF_LEDGER_SCHEMA}`);
   }
   if (!Array.isArray(raw.entries)) throw new Error('handoff consumption ledger.entries must be an array');
-  const entries = raw.entries.map((entry, index) => validateHandoffLedgerEntry(entry, index));
+  const entries = await Promise.all(raw.entries.map((entry, index) => (
+    validateHandoffLedgerEntry(root, entry, index, { verifySource: verifySources })
+  )));
   const seenDigests = new Set();
   const seenStories = new Set();
   for (const entry of entries) {
@@ -800,15 +878,18 @@ async function readHandoffConsumptionLedger(root) {
   return { schema_version: HANDOFF_LEDGER_SCHEMA, entries };
 }
 
+async function readHandoffConsumptionLedger(root, options = {}) {
+  const filePath = handoffLedgerPath(root);
+  const raw = await readJsonIfExists(filePath);
+  if (raw === null) return { schema_version: HANDOFF_LEDGER_SCHEMA, entries: [] };
+  return validateHandoffConsumptionLedger(root, raw, options);
+}
+
 async function nextHandoffConsumption(root, storyId, validated, sourceArtifact, now) {
   if (!validated.managed) return null;
-  const relativeSource = requiredString(sourceArtifact, 'handoff source_artifact').replaceAll('\\', '/');
-  const sourcePath = ledgerSourcePath(root, relativeSource);
-  const rootPrefix = `${root.replaceAll(path.sep, '/')}/`;
-  if (!sourcePath.toString().replaceAll(path.sep, '/').startsWith(rootPrefix)) {
-    throw new Error('handoff source_artifact must remain within the repository');
-  }
-  const ledger = await readHandoffConsumptionLedger(root);
+  const relativeSource = normalizeLedgerSourceArtifact(sourceArtifact, 'handoff source_artifact');
+  await ledgerSourcePath(root, relativeSource);
+  const ledger = await readHandoffConsumptionLedger(root, { verifySources: true });
   const digestMatch = ledger.entries.find((entry) => entry.receipt_digest === validated.managed.receiptDigest);
   if (digestMatch && digestMatch.story_id !== storyId) {
     const error = new Error(`managed Brainbase handoff receipt is already consumed by Story ${digestMatch.story_id}`);
@@ -1071,7 +1152,10 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
   }
   const root = path.resolve(repoRoot);
   const storyId = safeIdentifier(options.storyId, 'story_id');
-  const inputPath = path.resolve(root, requiredString(options.input, 'input'));
+  const requestedInputPath = path.resolve(root, requiredString(options.input, 'input'));
+  const inputPath = await confinedRepositoryPath(root, requestedInputPath, 'managed Brainbase handoff source');
+  const handoffSource = await canonicalRepositoryRelative(root, inputPath, 'handoff source_artifact');
+  await ledgerSourcePath(root, handoffSource);
   const raw = await readJson(inputPath, 'Brainbase handoff');
   const managed = isManagedHandoffSchema(raw?.schema_version);
   const validated = managed
@@ -1079,7 +1163,7 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
     : validateHandoff(raw, storyId);
   return writeBrainbaseBinding(root, storyId, validated, {
     ...options,
-    handoffSource: toWorkspaceRelative(root, inputPath)
+    handoffSource
   });
 }
 
@@ -1093,11 +1177,13 @@ async function ensureBrainbaseStoryBindingInternal(repoRoot, options = {}) {
   const consumed = await ledgerEntryForStory(root, storyId);
   let inputPath;
   if (consumed) {
-    inputPath = ledgerSourcePath(root, consumed.source_artifact);
-    if (!(await pathExists(inputPath))) {
-      const error = new Error(`consumed managed Brainbase handoff receipt source is missing: ${consumed.source_artifact}`);
-      error.code = 'BRAINBASE_HANDOFF_CONSUMED_SOURCE_MISSING';
-      throw error;
+    try {
+      inputPath = await ledgerSourcePath(root, consumed.source_artifact);
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+      const missingError = new Error(`consumed managed Brainbase handoff receipt source is missing: ${consumed.source_artifact}`);
+      missingError.code = 'BRAINBASE_HANDOFF_CONSUMED_SOURCE_MISSING';
+      throw missingError;
     }
   } else {
     if (files.length === 0) {
@@ -1137,6 +1223,8 @@ async function ensureBrainbaseStoryBindingInternal(repoRoot, options = {}) {
       inputPath = parseErrors[0]?.path ?? files[0];
     }
   }
+  const handoffSource = await canonicalRepositoryRelative(root, inputPath, 'handoff source_artifact');
+  await ledgerSourcePath(root, handoffSource);
   const raw = await readJson(inputPath, 'managed Brainbase handoff');
   const validated = await validateManagedHandoff(raw, storyId, root, config, options.now ?? (() => new Date()), options.env ?? process.env);
   if (consumed && validated.managed.receiptDigest !== consumed.receipt_digest) {
@@ -1153,7 +1241,7 @@ async function ensureBrainbaseStoryBindingInternal(repoRoot, options = {}) {
   }
   return writeBrainbaseBinding(root, storyId, validated, {
     ...options,
-    handoffSource: toWorkspaceRelative(root, inputPath)
+    handoffSource
   });
 }
 
@@ -1327,7 +1415,7 @@ function publicationDigest(journal) {
   }));
 }
 
-function validatePublicationJournal(root, storyId, journal) {
+async function validatePublicationJournal(root, storyId, journal) {
   object(journal, 'Brainbase bind publication journal');
   if (journal.schema_version !== BIND_PUBLICATION_SCHEMA) throw new Error('Brainbase bind publication journal has an unsupported schema');
   if (safeIdentifier(journal.story_id, 'Brainbase bind publication journal.story_id') !== storyId) {
@@ -1345,10 +1433,12 @@ function validatePublicationJournal(root, storyId, journal) {
       || journal.commit_marker.schema_version !== BIND_PUBLICATION_SCHEMA) {
     throw new Error('Brainbase bind publication commit marker does not match the journal');
   }
+  await validateHandoffConsumptionLedger(root, journal.documents.ledger, { verifySources: true });
   return journal;
 }
 
 async function completeManagedPublication(root, storyId, journal, options = {}, { recovering = false } = {}) {
+  await validatePublicationJournal(root, storyId, journal);
   const documents = publicationDocuments(root, storyId);
   try {
     for (const name of ['config', 'context', 'receipt', 'ledger']) {
@@ -1375,7 +1465,7 @@ async function recoverManagedPublication(root, storyId, options = {}) {
   const journalPath = bindPublicationJournalPath(root, storyId);
   const journal = await readJsonIfExists(journalPath);
   if (journal === null) return false;
-  validatePublicationJournal(root, storyId, journal);
+  await validatePublicationJournal(root, storyId, journal);
   const marker = await readJsonIfExists(bindCommitMarkerPath(root, storyId));
   if (marker?.publication_digest === journal.publication_digest
       && marker?.transaction_id === journal.transaction_id
@@ -1551,12 +1641,18 @@ export async function inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, r
       return outcomeCaseProjectionStatus('untrusted', 'projection_identity_mismatch', storyId);
     }
 
-    const ledger = await readHandoffConsumptionLedger(root);
+    const ledger = await readHandoffConsumptionLedger(root, { verifySources: true });
     const entry = ledger.entries.find((candidate) => candidate.story_id === storyId);
     if (!entry || entry.receipt_digest !== validated.managed.receiptDigest
         || entry.project_code !== validated.projectCode
         || entry.repository !== validated.managed.repository
         || entry.base_sha !== validated.managed.baseSha) {
+      return outcomeCaseProjectionStatus('untrusted', 'consumption_ledger_mismatch', storyId);
+    }
+    const sourcePath = await ledgerSourcePath(root, entry.source_artifact);
+    const sourceReceipt = await readJson(sourcePath, 'consumed managed Brainbase handoff receipt');
+    if (sourceReceipt?.receipt_digest !== entry.receipt_digest
+        || sha256(canonicalManagedHandoffPayload(sourceReceipt)) !== entry.receipt_digest) {
       return outcomeCaseProjectionStatus('untrusted', 'consumption_ledger_mismatch', storyId);
     }
     return outcomeCaseProjectionStatus('trusted', 'verified_signed_managed_v2', storyId, validated.outcomeCase);
@@ -1738,7 +1834,7 @@ export async function doctorBrainbaseIntegration(repoRoot, options = {}) {
     try {
       const consumed = await ledgerEntryForStory(root, storyId);
       if (consumed) {
-        candidatePath = ledgerSourcePath(root, consumed.source_artifact);
+        candidatePath = await ledgerSourcePath(root, consumed.source_artifact);
         candidate = await readJson(candidatePath, 'managed Brainbase handoff');
         if (candidate?.receipt_digest !== consumed.receipt_digest) {
           selectionError = Object.assign(new Error('managed Brainbase handoff receipt does not match the consumed binding ledger'), { code: 'BRAINBASE_HANDOFF_LEDGER_MISMATCH' });
