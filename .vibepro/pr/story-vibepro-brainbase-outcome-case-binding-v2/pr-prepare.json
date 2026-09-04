@@ -1,0 +1,2905 @@
+{
+  "schema_version": "0.2.0",
+  "created_at": "2026-09-04T01:56:00.357Z",
+  "runtime_identity": {
+    "schema_version": "0.2.0",
+    "collected_at": "2026-09-04T01:55:56.281Z",
+    "mode": "normal",
+    "source_kind": "npm_package",
+    "test_context": null,
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.21",
+      "exact_version": "0.2.0-beta.21",
+      "root": "/private/tmp/vibepro-pr-prepare.3ldnl7/package"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-pr-prepare.3ldnl7/package/bin/vibepro.js",
+      "invoked_as": "/tmp/vibepro-pr-prepare.3ldnl7/package/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-pr-prepare.3ldnl7/package/src/runtime-info.js"
+    },
+    "release_manifest": {
+      "status": "valid",
+      "manifest": {
+        "schema_version": "0.1.0",
+        "package": {
+          "name": "vibepro",
+          "version": "0.2.0-beta.21",
+          "package_json_sha256": "50fb468a0b8e1c1be86ed9c2612228c778f9966932061dedb8d979cef9a8bd77",
+          "entrypoint": "bin/vibepro.js"
+        },
+        "source_git": {
+          "commit": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+          "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+          "origin_main_commit": "55c0e9bf36b1bf50f0dc4e4f355fc9cf260f76f2",
+          "origin_main_relation": "ahead",
+          "dirty": false
+        }
+      },
+      "errors": []
+    },
+    "source_git": {
+      "is_git_repo": false,
+      "commit": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+      "branch": null,
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "55c0e9bf36b1bf50f0dc4e4f355fc9cf260f76f2",
+      "origin_main_relation": "published",
+      "dirty": false,
+      "dirty_summary": []
+    },
+    "identity_digest": "baf3659b1c5ecb48bf0aa5be45d6eb8e190ea2dc2f66483f17af2e577a06eb3e",
+    "integrity": {
+      "status": "trusted",
+      "code": null,
+      "purpose": "pr_judgment",
+      "reasons": [
+        "manifested immutable npm runtime"
+      ]
+    }
+  },
+  "story": {
+    "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+    "title": "Brainbase成果ケースへのv2紐付けを後方互換で保持する",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "started_at": null,
+    "due_at": null,
+    "category": null,
+    "contract_type": null
+  },
+  "outcome_case_status": "none",
+  "outcome_case_reason_code": "not_linked",
+  "task_context": null,
+  "task_authorities": {
+    "human": {
+      "authority": "human_authored",
+      "path": null,
+      "present": false,
+      "task_count": 0,
+      "status_counts": {},
+      "tasks": []
+    },
+    "accepted": {
+      "authority": "accepted",
+      "path": ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.json",
+      "present": true,
+      "task_count": 1,
+      "status_counts": {
+        "in_progress": 1
+      },
+      "provenance": {
+        "input_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
+        "input_sha256": "6860550567702e1b289a68b9bf2a70dbaeb674552f133f485d8446089973ff2f"
+      },
+      "tasks": [
+        {
+          "id": "TASK-OUTCOME-CASE-BINDING-V2",
+          "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+          "status": "in_progress",
+          "allowed_paths": [
+            ".vibepro/config.json",
+            ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+            ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.json",
+            ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.md",
+            "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+            "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+            "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.spec.json",
+            "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
+            "src/brainbase-integration.js",
+            "src/pr-manager.js",
+            "src/story-manager.js",
+            "test/brainbase-integration.test.js",
+            "test/pr-manager.test.js"
+          ],
+          "acceptance_criteria": [
+            "v1 handoff is unchanged and a v1 context-only Story is none/not_linked without v2 recovery guidance",
+            "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or a complete normalized Story add contract with private declaration capability and traceability; general bind APIs and public imports reject arbitrary declarations",
+            "journal, commit marker, saved HMAC revalidation, and markerless non-projection are enforced",
+            "unmanaged v2 and cross-case or unknown-issuer references are rejected",
+            "PR preparation distinguishes none from unknown, untrusted, and partial with a safe recovery decision",
+            "technical completion never closes OutcomeCase"
+          ]
+        }
+      ]
+    },
+    "generated": {
+      "authority": "generated_proposal",
+      "path": null,
+      "present": false,
+      "task_count": 0,
+      "status_counts": {},
+      "execution_policies": [],
+      "mutates_repository": [],
+      "tasks": []
+    }
+  },
+  "output": {
+    "language": "ja"
+  },
+  "git": {
+    "current_branch": "codex/outcome-case-binding-v2",
+    "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+    "base_ref": "origin/main",
+    "head_ref": "HEAD",
+    "changed_files": [
+      {
+        "status": "M",
+        "path": ".vibepro/config.json"
+      },
+      {
+        "status": "A",
+        "path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json"
+      },
+      {
+        "status": "A",
+        "path": ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.json"
+      },
+      {
+        "status": "A",
+        "path": ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.spec.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json"
+      },
+      {
+        "status": "M",
+        "path": "src/brainbase-integration.js"
+      },
+      {
+        "status": "M",
+        "path": "src/pr-manager.js"
+      },
+      {
+        "status": "M",
+        "path": "src/story-manager.js"
+      },
+      {
+        "status": "M",
+        "path": "test/brainbase-integration.test.js"
+      },
+      {
+        "status": "M",
+        "path": "test/pr-manager.test.js"
+      }
+    ],
+    "dirty_files": [],
+    "commit_count": 6
+  },
+  "spec": {
+    "present": true,
+    "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+    "clause_count": 5
+  },
+  "spec_drift": null,
+  "verification": {
+    "recorded": true,
+    "updated_at": "2026-09-04T01:55:36.467Z",
+    "artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-evidence.json",
+    "commands": [
+      {
+        "kind": "integration",
+        "status": "pass",
+        "command": "node --test --test-name-pattern=公開import test/brainbase-integration.test.js",
+        "summary": "vibepro verify run executed the integration command: exit_code=0, tests=1 pass=1 fail=0, duration_ms=4785, status=pass computed from the exit code | agent summary: Story add declaration capability is private; public imports reject incomplete declarations while CLI normalizes and traces managed v2 binding.",
+        "summary_authority": "agent_provided_non_authoritative",
+        "evidence_source": "runner_direct",
+        "observation": {
+          "targets": [
+            "src/brainbase-integration.js",
+            "src/story-manager.js",
+            "test/brainbase-integration.test.js"
+          ],
+          "scenarios": [
+            "public import rejects arbitrary Story declaration; CLI story add atomically binds managed v2 and creates traceability"
+          ],
+          "values": {
+            "status": "pass",
+            "exit_code": "0",
+            "evidence_source": "runner_direct",
+            "run_artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.json",
+            "run_log": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.log",
+            "tests": "1",
+            "pass": "1",
+            "fail": "0",
+            "skipped": "0",
+            "todo": "0",
+            "duration_ms": "4785",
+            "started_at": "2026-09-04T01:55:30.097Z",
+            "finished_at": "2026-09-04T01:55:34.882Z",
+            "head_sha_before": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "head_sha_after": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "worktree_sampled": "true",
+            "worktree_sampling_complete": "true",
+            "worktree_sha256_before": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "worktree_sha256_after": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "stdout_sha256": "77bf03460df06c708db18a31f3588fa350301b94d37ff4258b1a8e078688c124",
+            "output_sha256": "77bf03460df06c708db18a31f3588fa350301b94d37ff4258b1a8e078688c124",
+            "output_bytes": "282",
+            "log_truncated": "false",
+            "output_metrics": "node_spec",
+            "timed_out": "false",
+            "output_limit_exceeded": "false",
+            "external_kill_signal": "none",
+            "timeout_ms": "7200000",
+            "max_output_bytes": "67108864",
+            "harness_env_removed": "none",
+            "runner_node_version": "v26.3.1",
+            "tree_mutated_during_run": "false",
+            "head_moved_during_run": "false",
+            "worktree_changed_during_run": "false",
+            "worktree_status_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_status_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "computed_observation": {
+          "producer": "vibepro verify run",
+          "computed_keys": [
+            "status",
+            "evidence_source",
+            "run_artifact",
+            "run_log",
+            "exit_code",
+            "tests",
+            "pass",
+            "fail",
+            "skipped",
+            "todo",
+            "duration_ms",
+            "started_at",
+            "finished_at",
+            "head_sha_before",
+            "head_sha_after",
+            "head_sha",
+            "worktree_sampled",
+            "worktree_sampling_complete",
+            "worktree_sha256_before",
+            "worktree_sha256_after",
+            "stdout_sha256",
+            "output_sha256",
+            "output_bytes",
+            "log_truncated",
+            "output_metrics",
+            "timed_out",
+            "output_limit_exceeded",
+            "external_kill_signal",
+            "timeout_ms",
+            "max_output_bytes",
+            "harness_env_removed",
+            "runner_node_version",
+            "tree_mutated_during_run",
+            "head_moved_during_run",
+            "worktree_changed_during_run",
+            "worktree_status_sha256_before",
+            "worktree_status_sha256_after",
+            "worktree_diff_sha256_before",
+            "worktree_diff_sha256_after"
+          ],
+          "values": {
+            "status": "pass",
+            "evidence_source": "runner_direct",
+            "run_artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.json",
+            "run_log": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.log",
+            "exit_code": "0",
+            "tests": "1",
+            "pass": "1",
+            "fail": "0",
+            "skipped": "0",
+            "todo": "0",
+            "duration_ms": "4785",
+            "started_at": "2026-09-04T01:55:30.097Z",
+            "finished_at": "2026-09-04T01:55:34.882Z",
+            "head_sha_before": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "head_sha_after": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "worktree_sampled": "true",
+            "worktree_sampling_complete": "true",
+            "worktree_sha256_before": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "worktree_sha256_after": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "stdout_sha256": "77bf03460df06c708db18a31f3588fa350301b94d37ff4258b1a8e078688c124",
+            "output_sha256": "77bf03460df06c708db18a31f3588fa350301b94d37ff4258b1a8e078688c124",
+            "output_bytes": "282",
+            "log_truncated": "false",
+            "output_metrics": "node_spec",
+            "timed_out": "false",
+            "output_limit_exceeded": "false",
+            "external_kill_signal": "none",
+            "timeout_ms": "7200000",
+            "max_output_bytes": "67108864",
+            "harness_env_removed": "none",
+            "runner_node_version": "v26.3.1",
+            "tree_mutated_during_run": "false",
+            "head_moved_during_run": "false",
+            "worktree_changed_during_run": "false",
+            "worktree_status_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_status_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "artifact_derived_keys": [
+            "status",
+            "exit_code",
+            "evidence_source",
+            "run_artifact",
+            "run_log",
+            "tests",
+            "pass",
+            "fail",
+            "skipped",
+            "todo",
+            "duration_ms",
+            "started_at",
+            "finished_at",
+            "head_sha_before",
+            "head_sha_after",
+            "head_sha",
+            "worktree_sampled",
+            "worktree_sampling_complete",
+            "worktree_sha256_before",
+            "worktree_sha256_after",
+            "stdout_sha256",
+            "output_sha256",
+            "output_bytes",
+            "log_truncated",
+            "output_metrics",
+            "timed_out",
+            "output_limit_exceeded",
+            "external_kill_signal",
+            "timeout_ms",
+            "max_output_bytes",
+            "harness_env_removed",
+            "runner_node_version",
+            "tree_mutated_during_run",
+            "head_moved_during_run",
+            "worktree_changed_during_run",
+            "worktree_status_sha256_before",
+            "worktree_status_sha256_after",
+            "worktree_diff_sha256_before",
+            "worktree_diff_sha256_after"
+          ],
+          "run_artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.json",
+          "run_log": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.log",
+          "tree_mutated_during_run": false,
+          "head_moved_during_run": false,
+          "worktree_changed_during_run": false,
+          "worktree_sampled": true,
+          "worktree_sampling_complete": true,
+          "output_metrics": "node_spec"
+        },
+        "computed_counts": {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0
+        },
+        "artifact_check": {
+          "status": "verified",
+          "format": "generic_status",
+          "artifact_outcome": "pass",
+          "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+        },
+        "observation_check": {
+          "status": "recorded",
+          "reason": "observation states the inspected targets and what was observed"
+        },
+        "git_context": {
+          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+          "current_branch": "codex/outcome-case-binding-v2",
+          "dirty": false,
+          "raw_dirty": false,
+          "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          },
+          "recorded_at": "2026-09-04T01:55:36.432Z"
+        },
+        "content_binding": {
+          "schema_version": "0.1.0",
+          "model": "vibepro-content-scoped-evidence-freshness-v1",
+          "mode": "strict_head",
+          "status": "strict_head",
+          "reason": "strict HEAD binding was requested for this evidence",
+          "recorded_head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+          "surface_files": [
+            {
+              "path": "src/brainbase-integration.js",
+              "sha256": "5b0ea910b5e24006aac28c1275a423e09fc39218724dad19f2392fc879384263",
+              "size": 97694
+            },
+            {
+              "path": "src/story-manager.js",
+              "sha256": "13dafb249d7ad9d470633f90a7fd423360e0f02ac125f0bd3a962916d3678dc5",
+              "size": 101321
+            },
+            {
+              "path": "test/brainbase-integration.test.js",
+              "sha256": "bcebd246abad3335685d386c73380ff1e1150eedb07d978a1f3f0fee7d1b8385",
+              "size": 49424
+            }
+          ],
+          "missing_files": [],
+          "surface_hash": "46c194014d8a85424a40050cb22613d8213757f2eb4928c6cf8818a22c0bbda6"
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "verify run",
+            "reason": "no managed worktree execution state is recorded for this checkout; no current VibePro command creates one, so set execution.managed_worktree to \"disabled\" in .vibepro/config.json unless this checkout was set up as a managed worktree by other tooling",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/.worktrees/vibepro/vibepro-outcome-case-binding-v2",
+            "actual_root": "/Users/ksato/workspace/repos/.worktrees/vibepro/vibepro-outcome-case-binding-v2",
+            "expected_root": null,
+            "expected_head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "current_head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "managed_worktree": null
+          },
+          {
+            "id": "verification_run_counts_trivial",
+            "command_name": "verify run",
+            "reason": "the command exited 0 reporting only 1 test(s); node --test reports tests 1 / pass 1 for a file that defines no tests, so this count does not distinguish a real check from an empty one"
+          }
+        ],
+        "runtime_identity": {
+          "schema_version": "0.2.0",
+          "collected_at": "2026-09-04T01:55:35.463Z",
+          "mode": "normal",
+          "source_kind": "npm_package",
+          "test_context": null,
+          "package": {
+            "name": "vibepro",
+            "version": "0.2.0-beta.21",
+            "exact_version": "0.2.0-beta.21",
+            "root": "/private/tmp/vibepro-evidence.V7l1s9/package"
+          },
+          "cli": {
+            "entrypoint": "/private/tmp/vibepro-evidence.V7l1s9/package/bin/vibepro.js",
+            "invoked_as": "/tmp/vibepro-evidence.V7l1s9/package/bin/vibepro.js",
+            "runtime_module": "/private/tmp/vibepro-evidence.V7l1s9/package/src/runtime-info.js"
+          },
+          "release_manifest": {
+            "status": "valid",
+            "manifest": {
+              "schema_version": "0.1.0",
+              "package": {
+                "name": "vibepro",
+                "version": "0.2.0-beta.21",
+                "package_json_sha256": "50fb468a0b8e1c1be86ed9c2612228c778f9966932061dedb8d979cef9a8bd77",
+                "entrypoint": "bin/vibepro.js"
+              },
+              "source_git": {
+                "commit": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+                "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+                "origin_main_commit": "55c0e9bf36b1bf50f0dc4e4f355fc9cf260f76f2",
+                "origin_main_relation": "ahead",
+                "dirty": false
+              }
+            },
+            "errors": []
+          },
+          "source_git": {
+            "is_git_repo": false,
+            "commit": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "branch": null,
+            "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+            "origin_main_commit": "55c0e9bf36b1bf50f0dc4e4f355fc9cf260f76f2",
+            "origin_main_relation": "published",
+            "dirty": false,
+            "dirty_summary": []
+          },
+          "identity_digest": "6d28e993f41eabf4882734c473d5887ec9cfd81c4b3679752ecc6a9adcbb5a40",
+          "integrity": {
+            "status": "trusted",
+            "code": null,
+            "purpose": "evidence_generation",
+            "reasons": [
+              "manifested immutable npm runtime"
+            ]
+          }
+        },
+        "executed_at": "2026-09-04T01:55:34.882Z",
+        "trust_status": "trusted"
+      },
+      {
+        "kind": "unit",
+        "status": "pass",
+        "command": "npm test -- test/brainbase-integration.test.js test/pr-manager.test.js",
+        "summary": "vibepro verify run executed the unit command: exit_code=0, tests=51 pass=51 fail=0, duration_ms=67015, status=pass computed from the exit code | agent summary: 再検証済みmanaged v2投影と回復可能な公開を検証",
+        "summary_authority": "agent_provided_non_authoritative",
+        "evidence_source": "runner_direct",
+        "observation": {
+          "targets": [
+            "src/brainbase-integration.js",
+            "src/pr-manager.js",
+            "test/brainbase-integration.test.js",
+            "test/pr-manager.test.js"
+          ],
+          "scenarios": [],
+          "values": {
+            "status": "pass",
+            "exit_code": "0",
+            "evidence_source": "runner_direct",
+            "run_artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.json",
+            "run_log": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.log",
+            "tests": "51",
+            "pass": "51",
+            "fail": "0",
+            "skipped": "0",
+            "todo": "0",
+            "duration_ms": "67015",
+            "started_at": "2026-09-04T00:25:55.897Z",
+            "finished_at": "2026-09-04T00:27:02.912Z",
+            "head_sha_before": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "head_sha_after": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "head_sha": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "worktree_sampled": "true",
+            "worktree_sampling_complete": "true",
+            "worktree_sha256_before": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "worktree_sha256_after": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "stdout_sha256": "d1e71a92b82cbe2e568f0e37d825d25cf91803c6065e195fbc1f680e19f06f96",
+            "output_sha256": "d1e71a92b82cbe2e568f0e37d825d25cf91803c6065e195fbc1f680e19f06f96",
+            "output_bytes": "5597",
+            "log_truncated": "false",
+            "output_metrics": "node_spec",
+            "timed_out": "false",
+            "output_limit_exceeded": "false",
+            "external_kill_signal": "none",
+            "timeout_ms": "7200000",
+            "max_output_bytes": "67108864",
+            "harness_env_removed": "none",
+            "runner_node_version": "v26.3.1",
+            "tree_mutated_during_run": "false",
+            "head_moved_during_run": "false",
+            "worktree_changed_during_run": "false",
+            "worktree_status_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_status_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "computed_observation": {
+          "producer": "vibepro verify run",
+          "computed_keys": [
+            "status",
+            "evidence_source",
+            "run_artifact",
+            "run_log",
+            "exit_code",
+            "tests",
+            "pass",
+            "fail",
+            "skipped",
+            "todo",
+            "duration_ms",
+            "started_at",
+            "finished_at",
+            "head_sha_before",
+            "head_sha_after",
+            "head_sha",
+            "worktree_sampled",
+            "worktree_sampling_complete",
+            "worktree_sha256_before",
+            "worktree_sha256_after",
+            "stdout_sha256",
+            "output_sha256",
+            "output_bytes",
+            "log_truncated",
+            "output_metrics",
+            "timed_out",
+            "output_limit_exceeded",
+            "external_kill_signal",
+            "timeout_ms",
+            "max_output_bytes",
+            "harness_env_removed",
+            "runner_node_version",
+            "tree_mutated_during_run",
+            "head_moved_during_run",
+            "worktree_changed_during_run",
+            "worktree_status_sha256_before",
+            "worktree_status_sha256_after",
+            "worktree_diff_sha256_before",
+            "worktree_diff_sha256_after"
+          ],
+          "values": {
+            "status": "pass",
+            "evidence_source": "runner_direct",
+            "run_artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.json",
+            "run_log": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.log",
+            "exit_code": "0",
+            "tests": "51",
+            "pass": "51",
+            "fail": "0",
+            "skipped": "0",
+            "todo": "0",
+            "duration_ms": "67015",
+            "started_at": "2026-09-04T00:25:55.897Z",
+            "finished_at": "2026-09-04T00:27:02.912Z",
+            "head_sha_before": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "head_sha_after": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "head_sha": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "worktree_sampled": "true",
+            "worktree_sampling_complete": "true",
+            "worktree_sha256_before": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "worktree_sha256_after": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
+            "stdout_sha256": "d1e71a92b82cbe2e568f0e37d825d25cf91803c6065e195fbc1f680e19f06f96",
+            "output_sha256": "d1e71a92b82cbe2e568f0e37d825d25cf91803c6065e195fbc1f680e19f06f96",
+            "output_bytes": "5597",
+            "log_truncated": "false",
+            "output_metrics": "node_spec",
+            "timed_out": "false",
+            "output_limit_exceeded": "false",
+            "external_kill_signal": "none",
+            "timeout_ms": "7200000",
+            "max_output_bytes": "67108864",
+            "harness_env_removed": "none",
+            "runner_node_version": "v26.3.1",
+            "tree_mutated_during_run": "false",
+            "head_moved_during_run": "false",
+            "worktree_changed_during_run": "false",
+            "worktree_status_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_status_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "worktree_diff_sha256_after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "artifact_derived_keys": [
+            "status",
+            "exit_code",
+            "evidence_source",
+            "run_artifact",
+            "run_log",
+            "tests",
+            "pass",
+            "fail",
+            "skipped",
+            "todo",
+            "duration_ms",
+            "started_at",
+            "finished_at",
+            "head_sha_before",
+            "head_sha_after",
+            "head_sha",
+            "worktree_sampled",
+            "worktree_sampling_complete",
+            "worktree_sha256_before",
+            "worktree_sha256_after",
+            "stdout_sha256",
+            "output_sha256",
+            "output_bytes",
+            "log_truncated",
+            "output_metrics",
+            "timed_out",
+            "output_limit_exceeded",
+            "external_kill_signal",
+            "timeout_ms",
+            "max_output_bytes",
+            "harness_env_removed",
+            "runner_node_version",
+            "tree_mutated_during_run",
+            "head_moved_during_run",
+            "worktree_changed_during_run",
+            "worktree_status_sha256_before",
+            "worktree_status_sha256_after",
+            "worktree_diff_sha256_before",
+            "worktree_diff_sha256_after"
+          ],
+          "run_artifact": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.json",
+          "run_log": ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.log",
+          "tree_mutated_during_run": false,
+          "head_moved_during_run": false,
+          "worktree_changed_during_run": false,
+          "worktree_sampled": true,
+          "worktree_sampling_complete": true,
+          "output_metrics": "node_spec"
+        },
+        "computed_counts": {
+          "tests": 51,
+          "pass": 51,
+          "fail": 0
+        },
+        "artifact_check": {
+          "status": "verified",
+          "format": "generic_status",
+          "artifact_outcome": "pass",
+          "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+        },
+        "observation_check": {
+          "status": "recorded",
+          "reason": "observation states the inspected targets and what was observed"
+        },
+        "git_context": {
+          "head_sha": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+          "current_branch": "codex/outcome-case-binding-v2",
+          "dirty": false,
+          "raw_dirty": false,
+          "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          },
+          "recorded_at": "2026-09-04T00:27:03.819Z"
+        },
+        "content_binding": {
+          "schema_version": "0.1.0",
+          "model": "vibepro-content-scoped-evidence-freshness-v1",
+          "mode": "strict_head",
+          "status": "strict_head",
+          "reason": "strict HEAD binding was requested for this evidence",
+          "recorded_head_sha": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+          "surface_files": [
+            {
+              "path": "src/brainbase-integration.js",
+              "sha256": "2f3ea129c52fa0acc158d2889b6792630ff74009b9bbb7a2cdd4cdd219219b88",
+              "size": 88687
+            },
+            {
+              "path": "src/pr-manager.js",
+              "sha256": "3aabea1942b8842513ed5683325e0a4f4f4c7aab876847d9938b920788aac094",
+              "size": 62068
+            },
+            {
+              "path": "test/brainbase-integration.test.js",
+              "sha256": "fd8305e21e51528e79116f8e6e672c11bad6eba4dea18c4eb2c957287ba7d25e",
+              "size": 41929
+            },
+            {
+              "path": "test/pr-manager.test.js",
+              "sha256": "397b88c89f53de93adedda5fb1e9b5500b6eea56e9239e1b695c3311b1be2daa",
+              "size": 52482
+            }
+          ],
+          "missing_files": [],
+          "surface_hash": "531921cac0ed399570664e049029df66a1b8d4e09372aaa0951b0a68eae926e0"
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "verify run",
+            "reason": "no managed worktree execution state is recorded for this checkout; no current VibePro command creates one, so set execution.managed_worktree to \"disabled\" in .vibepro/config.json unless this checkout was set up as a managed worktree by other tooling",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/.worktrees/vibepro/vibepro-outcome-case-binding-v2",
+            "actual_root": "/Users/ksato/workspace/repos/.worktrees/vibepro/vibepro-outcome-case-binding-v2",
+            "expected_root": null,
+            "expected_head_sha": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "current_head_sha": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "managed_worktree": null
+          }
+        ],
+        "runtime_identity": {
+          "schema_version": "0.2.0",
+          "collected_at": "2026-09-04T00:27:03.220Z",
+          "mode": "normal",
+          "source_kind": "npm_package",
+          "test_context": null,
+          "package": {
+            "name": "vibepro",
+            "version": "0.2.0-beta.21",
+            "exact_version": "0.2.0-beta.21",
+            "root": "/private/tmp/vibepro-outcome-case-runtime.UuCI3v/node_modules/vibepro"
+          },
+          "cli": {
+            "entrypoint": "/private/tmp/vibepro-outcome-case-runtime.UuCI3v/node_modules/vibepro/bin/vibepro.js",
+            "invoked_as": "/tmp/vibepro-outcome-case-runtime.UuCI3v/node_modules/vibepro/bin/vibepro.js",
+            "runtime_module": "/private/tmp/vibepro-outcome-case-runtime.UuCI3v/node_modules/vibepro/src/runtime-info.js"
+          },
+          "release_manifest": {
+            "status": "valid",
+            "manifest": {
+              "schema_version": "0.1.0",
+              "package": {
+                "name": "vibepro",
+                "version": "0.2.0-beta.21",
+                "package_json_sha256": "50fb468a0b8e1c1be86ed9c2612228c778f9966932061dedb8d979cef9a8bd77",
+                "entrypoint": "bin/vibepro.js"
+              },
+              "source_git": {
+                "commit": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+                "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+                "origin_main_commit": "55c0e9bf36b1bf50f0dc4e4f355fc9cf260f76f2",
+                "origin_main_relation": "ahead",
+                "dirty": false
+              }
+            },
+            "errors": []
+          },
+          "source_git": {
+            "is_git_repo": false,
+            "commit": "de8d9d361b4e4ee3904a38873cf63c9383f18bd2",
+            "branch": null,
+            "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+            "origin_main_commit": "55c0e9bf36b1bf50f0dc4e4f355fc9cf260f76f2",
+            "origin_main_relation": "published",
+            "dirty": false,
+            "dirty_summary": []
+          },
+          "identity_digest": "32d53d49697bb247fb2d93f14f32c39d9b017b68eb881b049623ceaf091d16f8",
+          "integrity": {
+            "status": "trusted",
+            "code": null,
+            "purpose": "evidence_generation",
+            "reasons": [
+              "manifested immutable npm runtime"
+            ]
+          }
+        },
+        "executed_at": "2026-09-04T00:27:02.912Z",
+        "trust_status": "untrusted"
+      }
+    ]
+  },
+  "review": {
+    "configured": true,
+    "recorded": true,
+    "complete": false,
+    "status": "needs_review",
+    "error": null,
+    "summary": {
+      "stage_count": 7,
+      "pass": 0,
+      "needs_review": 7,
+      "block": 0,
+      "stale": 1
+    },
+    "convergence": {
+      "schema_version": "0.2.0",
+      "model": "vibepro-review-convergence-v2",
+      "status": "converged",
+      "wave_count": 1,
+      "no_progress_count": 0,
+      "repeat_count": 0,
+      "head_churn_count": 8,
+      "threshold": 3,
+      "event_advanced": false,
+      "progress_detected": false,
+      "progress_reasons": [
+        "head_only_observation"
+      ],
+      "snapshot": {
+        "model": "vibepro-review-convergence-v2",
+        "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+        "event_cursor": "51779b436373f9c496886de1986a55dd0866a1fdb17a2f93a57df99146f55bdc",
+        "event_count": 3,
+        "exact_signature": "4522b05374c24d731d68443e6297e1b0f7a663093fa9bc7ad8bd2a3e7f7a2fc3",
+        "semantic_signature": "48cfd8abd5701d03000a27b00f001cd7f7b69cbc56a9491c3832f5fb1687ca45",
+        "progress_signature": "aa5f3f05db5100e510bacdd43fa6af43f7793590f5c53fcd769ed97d134e2ab0",
+        "component_hashes": {
+          "unresolved_roles": "0c75fa60e330d3b99ce663de35d62174e09f9424dc263733a43ab21c0b241cb7",
+          "findings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "runtime_failures": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "evidence": "cdf677d83653d89f7d9adb99582823b6628d7bbb5bcf8b898c5a610f24dfbf5d",
+          "dependencies": "1ba973f791c3430c903e666eaa95397d4872309b5cd5773ebe2b79c78d0d5032",
+          "repairs": "b4749a6baeeffd230dab1bcd30c6148fee4cd8611709e7dce2a824b90a41394a"
+        },
+        "unresolved_role_count": 21,
+        "unresolved_roles": [
+          {
+            "stage": "architecture_spec",
+            "role": "architecture_boundary",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "policy",
+              "public_contract"
+            ]
+          },
+          {
+            "stage": "architecture_spec",
+            "role": "regression_risk",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "architecture",
+              "implementation",
+              "test",
+              "config"
+            ]
+          },
+          {
+            "stage": "architecture_spec",
+            "role": "spec_consistency",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "policy"
+            ]
+          },
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "spec",
+              "architecture",
+              "implementation",
+              "test",
+              "release",
+              "config",
+              "docs"
+            ]
+          },
+          {
+            "stage": "gate",
+            "role": "pr_split_scope",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "implementation",
+              "test",
+              "release",
+              "config",
+              "docs",
+              "policy"
+            ]
+          },
+          {
+            "stage": "gate",
+            "role": "release_risk",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "architecture",
+              "implementation",
+              "test",
+              "release",
+              "config",
+              "docs",
+              "policy"
+            ]
+          },
+          {
+            "stage": "implementation",
+            "role": "code_spec_alignment",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "spec",
+              "architecture",
+              "implementation",
+              "config"
+            ]
+          },
+          {
+            "stage": "implementation",
+            "role": "runtime_contract",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "architecture",
+              "implementation",
+              "test",
+              "release",
+              "config"
+            ]
+          },
+          {
+            "stage": "implementation",
+            "role": "ux_completion",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "implementation",
+              "test",
+              "docs"
+            ]
+          },
+          {
+            "stage": "planning_spec",
+            "role": "architecture_boundary",
+            "status": "stale",
+            "binding_status": "stale",
+            "stale_reason": "content-bound evidence surface changed: src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js",
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "policy",
+              "public_contract"
+            ]
+          },
+          {
+            "stage": "planning_spec",
+            "role": "product_requirement",
+            "status": "stale",
+            "binding_status": "stale",
+            "stale_reason": "content-bound evidence surface changed: docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md, docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md, src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js, test/pr-manager.test.js",
+            "dependency_domains": [
+              "story",
+              "spec",
+              "policy",
+              "public_contract"
+            ]
+          },
+          {
+            "stage": "planning_spec",
+            "role": "spec_consistency",
+            "status": "stale",
+            "binding_status": "stale",
+            "stale_reason": "content-bound evidence surface changed: docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md, docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md, src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js, test/pr-manager.test.js",
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "policy"
+            ]
+          },
+          {
+            "stage": "preview",
+            "role": "human_usability",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "implementation",
+              "test",
+              "docs"
+            ]
+          },
+          {
+            "stage": "preview",
+            "role": "network_runtime",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "architecture",
+              "implementation",
+              "test",
+              "release",
+              "config"
+            ]
+          },
+          {
+            "stage": "preview",
+            "role": "preview_smoke",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "implementation",
+              "test",
+              "release",
+              "docs",
+              "config"
+            ]
+          },
+          {
+            "stage": "requirement",
+            "role": "acceptance_e2e",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "implementation",
+              "test"
+            ]
+          },
+          {
+            "stage": "requirement",
+            "role": "product_requirement",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "policy",
+              "public_contract"
+            ]
+          },
+          {
+            "stage": "requirement",
+            "role": "scope_risk",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "implementation",
+              "config"
+            ]
+          },
+          {
+            "stage": "test_plan",
+            "role": "e2e_ux",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "story",
+              "spec",
+              "implementation",
+              "test",
+              "docs"
+            ]
+          },
+          {
+            "stage": "test_plan",
+            "role": "gate_coverage",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "spec",
+              "implementation",
+              "test",
+              "release",
+              "config"
+            ]
+          },
+          {
+            "stage": "test_plan",
+            "role": "unit_integration",
+            "status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "dependency_domains": [
+              "spec",
+              "implementation",
+              "test",
+              "config"
+            ]
+          }
+        ],
+        "findings": [],
+        "finding_ids": [],
+        "runtime_failures": [],
+        "completed_review_events": [
+          {
+            "stage": "planning_spec",
+            "role": "architecture_boundary",
+            "recorded_at": "2026-09-04T00:33:03.363Z",
+            "recorded_status": "pass",
+            "runtime_failure_kind": null,
+            "fix_head_sha": null,
+            "artifact": ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/review-result-architecture_boundary.json"
+          },
+          {
+            "stage": "planning_spec",
+            "role": "product_requirement",
+            "recorded_at": "2026-09-04T00:32:51.077Z",
+            "recorded_status": "pass",
+            "runtime_failure_kind": null,
+            "fix_head_sha": null,
+            "artifact": ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/review-result-product_requirement.json"
+          },
+          {
+            "stage": "planning_spec",
+            "role": "spec_consistency",
+            "recorded_at": "2026-09-04T00:33:02.624Z",
+            "recorded_status": "pass",
+            "runtime_failure_kind": null,
+            "fix_head_sha": null,
+            "artifact": ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/review-result-spec_consistency.json"
+          }
+        ]
+      },
+      "next_action": null,
+      "updated_at": "2026-09-04T01:55:58.373Z"
+    },
+    "blocking_summary": {
+      "status": "blocked",
+      "blocking_count": 21,
+      "items": [
+        {
+          "kind": "role",
+          "stage": "planning_spec",
+          "role": "product_requirement",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "pass",
+          "effective_status": "stale",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": "content-bound evidence surface changed: docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md, docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md, src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js, test/pr-manager.test.js",
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": true,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage planning_spec --role product_requirement",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage planning_spec --role product_requirement --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/review-result-product_requirement.json",
+          "history_artifacts": [
+            ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/history/review-result-product_requirement-2026-09-03T23-44-51.247Z.json",
+            ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/history/review-result-product_requirement-2026-09-04T00-32-51.077Z.json"
+          ],
+          "binding_status": "stale",
+          "causal_invalidation": {
+            "model": "vibepro-review-causal-dag-v1",
+            "reusable": false,
+            "invalidated": true,
+            "fail_closed": true,
+            "reason": "causal reuse fails closed because changed or recorded surfaces are not fully classified: recorded inspection surface",
+            "classification_status": "inconclusive_fail_closed",
+            "dependency_domains": [
+              "story",
+              "spec",
+              "policy",
+              "public_contract"
+            ],
+            "changed_files": [
+              {
+                "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "architecture",
+                "classified": true
+              },
+              {
+                "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "story",
+                "classified": true
+              },
+              {
+                "path": "src/brainbase-integration.js",
+                "domain": "implementation",
+                "classified": true
+              },
+              {
+                "path": "src/pr-manager.js",
+                "domain": "implementation",
+                "classified": true
+              },
+              {
+                "path": "test/brainbase-integration.test.js",
+                "domain": "test",
+                "classified": true
+              },
+              {
+                "path": "test/pr-manager.test.js",
+                "domain": "test",
+                "classified": true
+              }
+            ],
+            "relevant_changed_files": [],
+            "invalidation_surface_used": true,
+            "recorded_invalidation_surface": [
+              {
+                "path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+                "domain": "spec",
+                "classified": true
+              },
+              {
+                "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "story",
+                "classified": true
+              }
+            ]
+          },
+          "delta_closure": {
+            "mode": "full_review",
+            "source_recorded_at": "2026-09-03T23:44:51.247Z",
+            "source_status": "needs_changes",
+            "resolved_findings": [],
+            "unresolved_finding_ids": [
+              "v2-bind-missing-story-partial-success"
+            ],
+            "closure_inputs": []
+          },
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "planning_spec",
+          "role": "architecture_boundary",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "pass",
+          "effective_status": "stale",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": "content-bound evidence surface changed: src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js",
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": true,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage planning_spec --role architecture_boundary",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage planning_spec --role architecture_boundary --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/review-result-architecture_boundary.json",
+          "history_artifacts": [
+            ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/history/review-result-architecture_boundary-2026-09-03T23-44-51.558Z.json",
+            ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/history/review-result-architecture_boundary-2026-09-04T00-33-03.363Z.json"
+          ],
+          "binding_status": "stale",
+          "causal_invalidation": {
+            "model": "vibepro-review-causal-dag-v1",
+            "reusable": false,
+            "invalidated": true,
+            "fail_closed": true,
+            "reason": "causal reuse fails closed because changed or recorded surfaces are not fully classified: recorded inspection surface",
+            "classification_status": "inconclusive_fail_closed",
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "policy",
+              "public_contract"
+            ],
+            "changed_files": [
+              {
+                "path": "src/brainbase-integration.js",
+                "domain": "implementation",
+                "classified": true
+              },
+              {
+                "path": "src/pr-manager.js",
+                "domain": "implementation",
+                "classified": true
+              },
+              {
+                "path": "test/brainbase-integration.test.js",
+                "domain": "test",
+                "classified": true
+              }
+            ],
+            "relevant_changed_files": [],
+            "invalidation_surface_used": false,
+            "recorded_invalidation_surface": []
+          },
+          "delta_closure": {
+            "mode": "full_review",
+            "source_recorded_at": "2026-09-03T23:44:51.558Z",
+            "source_status": "needs_changes",
+            "resolved_findings": [],
+            "unresolved_finding_ids": [
+              "managed-v2-trust-boundary-bypass"
+            ],
+            "closure_inputs": []
+          },
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "planning_spec",
+          "role": "spec_consistency",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "pass",
+          "effective_status": "stale",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": "content-bound evidence surface changed: docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md, docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md, src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js, test/pr-manager.test.js",
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": true,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage planning_spec --role spec_consistency",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage planning_spec --role spec_consistency --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/review-result-spec_consistency.json",
+          "history_artifacts": [
+            ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/history/review-result-spec_consistency-2026-09-03T23-44-51.277Z.json",
+            ".vibepro/reviews/story-vibepro-brainbase-outcome-case-binding-v2/planning_spec/history/review-result-spec_consistency-2026-09-04T00-33-02.624Z.json"
+          ],
+          "binding_status": "stale",
+          "causal_invalidation": {
+            "model": "vibepro-review-causal-dag-v1",
+            "reusable": false,
+            "invalidated": true,
+            "fail_closed": true,
+            "reason": "causal reuse fails closed because changed or recorded surfaces are not fully classified: recorded inspection surface",
+            "classification_status": "inconclusive_fail_closed",
+            "dependency_domains": [
+              "story",
+              "spec",
+              "architecture",
+              "policy"
+            ],
+            "changed_files": [
+              {
+                "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "architecture",
+                "classified": true
+              },
+              {
+                "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "story",
+                "classified": true
+              },
+              {
+                "path": "src/brainbase-integration.js",
+                "domain": "implementation",
+                "classified": true
+              },
+              {
+                "path": "src/pr-manager.js",
+                "domain": "implementation",
+                "classified": true
+              },
+              {
+                "path": "test/brainbase-integration.test.js",
+                "domain": "test",
+                "classified": true
+              },
+              {
+                "path": "test/pr-manager.test.js",
+                "domain": "test",
+                "classified": true
+              }
+            ],
+            "relevant_changed_files": [],
+            "invalidation_surface_used": true,
+            "recorded_invalidation_surface": [
+              {
+                "path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+                "domain": "spec",
+                "classified": true
+              },
+              {
+                "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "architecture",
+                "classified": true
+              },
+              {
+                "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                "domain": "story",
+                "classified": true
+              }
+            ]
+          },
+          "delta_closure": {
+            "mode": "full_review",
+            "source_recorded_at": "2026-09-03T23:44:51.277Z",
+            "source_status": "needs_changes",
+            "resolved_findings": [],
+            "unresolved_finding_ids": [
+              "spec-traceability-all-acceptance-criteria-unmapped"
+            ],
+            "closure_inputs": []
+          },
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "requirement",
+          "role": "product_requirement",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": true,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage requirement --role product_requirement",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage requirement --role product_requirement --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "requirement",
+          "role": "scope_risk",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": true,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage requirement --role scope_risk",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage requirement --role scope_risk --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "requirement",
+          "role": "acceptance_e2e",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": true,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage requirement --role acceptance_e2e",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage requirement --role acceptance_e2e --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "architecture_spec",
+          "role": "architecture_boundary",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role architecture_boundary",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role architecture_boundary --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<design-story-spec-path>\" --inspection-input \"<runtime-source-path>\" --inspection-input \"<test-path>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "architecture_spec",
+          "role": "spec_consistency",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role spec_consistency",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role spec_consistency --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "architecture_spec",
+          "role": "regression_risk",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role regression_risk",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role regression_risk --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "test_plan",
+          "role": "unit_integration",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage test_plan --role unit_integration",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage test_plan --role unit_integration --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "test_plan",
+          "role": "e2e_ux",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage test_plan --role e2e_ux",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage test_plan --role e2e_ux --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "test_plan",
+          "role": "gate_coverage",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage test_plan --role gate_coverage",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage test_plan --role gate_coverage --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "implementation",
+          "role": "code_spec_alignment",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage implementation --role code_spec_alignment",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage implementation --role code_spec_alignment --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "implementation",
+          "role": "runtime_contract",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage implementation --role runtime_contract",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage implementation --role runtime_contract --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "implementation",
+          "role": "ux_completion",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage implementation --role ux_completion",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage implementation --role ux_completion --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "gate",
+          "role": "gate_evidence",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage gate --role gate_evidence",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage gate --role gate_evidence --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "gate",
+          "role": "pr_split_scope",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage gate --role pr_split_scope",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage gate --role pr_split_scope --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "gate",
+          "role": "release_risk",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage gate --role release_risk",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage gate --role release_risk --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "preview",
+          "role": "preview_smoke",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage preview --role preview_smoke",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage preview --role preview_smoke --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "preview",
+          "role": "network_runtime",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage preview --role network_runtime",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage preview --role network_runtime --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        },
+        {
+          "kind": "role",
+          "stage": "preview",
+          "role": "human_usability",
+          "required": true,
+          "policy": "review_status_fallback",
+          "status": "missing",
+          "effective_status": "missing",
+          "blocking": true,
+          "blocking_reason": null,
+          "audit_reason": null,
+          "reason": "No latest pr prepare required-review summary was found; falling back to configured required review roles.",
+          "prepared": false,
+          "prepare_command": "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage preview --role human_usability",
+          "record_command": "vibepro review record . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage preview --role human_usability --status \"<pass|needs_changes|block>\" --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence \"<inspection-evidence>\" --inspection-input \"<ref>\" --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system \"<codex|claude_code>\" --execution-mode parallel_subagent --agent-id \"<replacement-agent-id>\" --agent-thread-id \"<replacement-agent-thread-id>\" --agent-session-id \"<replacement-agent-session-id>\" --implementation-session-id \"<implementation-session-id>\" --reviewer-identity separate_session --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript \"<replacement-agent-transcript>\" --agent-closed --agent-close-evidence \"<replacement-agent-close-evidence>\"",
+          "artifact": null,
+          "history_artifacts": [],
+          "binding_status": null,
+          "causal_invalidation": null,
+          "delta_closure": null,
+          "runtime_failure": null
+        }
+      ],
+      "pr_prepare_freshness": {
+        "status": "stale",
+        "current": false,
+        "artifact_head_sha": "cf924a7cb45d4e2d2b5a2fc5d1cb145c6d56a851",
+        "current_head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+        "base_ref": "origin/main",
+        "artifact": ".vibepro/pr/<story-id>/pr-prepare.json",
+        "artifact_created_at": "2026-09-04T01:30:19.695Z",
+        "newest_review_artifact": null,
+        "reason": "Latest pr prepare artifact was created for a different git HEAD; current required reviews fall back to configured required review roles until pr prepare is rerun."
+      },
+      "next_commands": [
+        "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role architecture_boundary",
+        "vibepro review prepare . --id story-vibepro-brainbase-outcome-case-binding-v2 --stage architecture_spec --role spec_consistency",
+        "vibepro pr prepare . --story-id story-vibepro-brainbase-outcome-case-binding-v2 --base origin/main"
+      ]
+    },
+    "stages": [
+      {
+        "stage": "planning_spec",
+        "status": "needs_review",
+        "roles": [
+          "product_requirement",
+          "architecture_boundary",
+          "spec_consistency"
+        ],
+        "role_details": [
+          {
+            "role": "product_requirement",
+            "effective_status": "stale",
+            "binding_status": "stale",
+            "stale_reason": "content-bound evidence surface changed: docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md, docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md, src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js, test/pr-manager.test.js",
+            "causal_invalidation": {
+              "model": "vibepro-review-causal-dag-v1",
+              "reusable": false,
+              "invalidated": true,
+              "fail_closed": true,
+              "reason": "causal reuse fails closed because changed or recorded surfaces are not fully classified: recorded inspection surface",
+              "classification_status": "inconclusive_fail_closed",
+              "dependency_domains": [
+                "story",
+                "spec",
+                "policy",
+                "public_contract"
+              ],
+              "changed_files": [
+                {
+                  "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "architecture",
+                  "classified": true
+                },
+                {
+                  "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "story",
+                  "classified": true
+                },
+                {
+                  "path": "src/brainbase-integration.js",
+                  "domain": "implementation",
+                  "classified": true
+                },
+                {
+                  "path": "src/pr-manager.js",
+                  "domain": "implementation",
+                  "classified": true
+                },
+                {
+                  "path": "test/brainbase-integration.test.js",
+                  "domain": "test",
+                  "classified": true
+                },
+                {
+                  "path": "test/pr-manager.test.js",
+                  "domain": "test",
+                  "classified": true
+                }
+              ],
+              "relevant_changed_files": [],
+              "invalidation_surface_used": true,
+              "recorded_invalidation_surface": [
+                {
+                  "path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+                  "domain": "spec",
+                  "classified": true
+                },
+                {
+                  "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "story",
+                  "classified": true
+                }
+              ]
+            },
+            "delta_closure": {
+              "mode": "full_review",
+              "source_recorded_at": "2026-09-03T23:44:51.247Z",
+              "source_status": "needs_changes",
+              "resolved_findings": [],
+              "unresolved_finding_ids": [
+                "v2-bind-missing-story-partial-success"
+              ],
+              "closure_inputs": []
+            },
+            "runtime_failure": null
+          },
+          {
+            "role": "architecture_boundary",
+            "effective_status": "stale",
+            "binding_status": "stale",
+            "stale_reason": "content-bound evidence surface changed: src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js",
+            "causal_invalidation": {
+              "model": "vibepro-review-causal-dag-v1",
+              "reusable": false,
+              "invalidated": true,
+              "fail_closed": true,
+              "reason": "causal reuse fails closed because changed or recorded surfaces are not fully classified: recorded inspection surface",
+              "classification_status": "inconclusive_fail_closed",
+              "dependency_domains": [
+                "story",
+                "spec",
+                "architecture",
+                "policy",
+                "public_contract"
+              ],
+              "changed_files": [
+                {
+                  "path": "src/brainbase-integration.js",
+                  "domain": "implementation",
+                  "classified": true
+                },
+                {
+                  "path": "src/pr-manager.js",
+                  "domain": "implementation",
+                  "classified": true
+                },
+                {
+                  "path": "test/brainbase-integration.test.js",
+                  "domain": "test",
+                  "classified": true
+                }
+              ],
+              "relevant_changed_files": [],
+              "invalidation_surface_used": false,
+              "recorded_invalidation_surface": []
+            },
+            "delta_closure": {
+              "mode": "full_review",
+              "source_recorded_at": "2026-09-03T23:44:51.558Z",
+              "source_status": "needs_changes",
+              "resolved_findings": [],
+              "unresolved_finding_ids": [
+                "managed-v2-trust-boundary-bypass"
+              ],
+              "closure_inputs": []
+            },
+            "runtime_failure": null
+          },
+          {
+            "role": "spec_consistency",
+            "effective_status": "stale",
+            "binding_status": "stale",
+            "stale_reason": "content-bound evidence surface changed: docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md, docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md, src/brainbase-integration.js, src/pr-manager.js, test/brainbase-integration.test.js, test/pr-manager.test.js",
+            "causal_invalidation": {
+              "model": "vibepro-review-causal-dag-v1",
+              "reusable": false,
+              "invalidated": true,
+              "fail_closed": true,
+              "reason": "causal reuse fails closed because changed or recorded surfaces are not fully classified: recorded inspection surface",
+              "classification_status": "inconclusive_fail_closed",
+              "dependency_domains": [
+                "story",
+                "spec",
+                "architecture",
+                "policy"
+              ],
+              "changed_files": [
+                {
+                  "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "architecture",
+                  "classified": true
+                },
+                {
+                  "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "story",
+                  "classified": true
+                },
+                {
+                  "path": "src/brainbase-integration.js",
+                  "domain": "implementation",
+                  "classified": true
+                },
+                {
+                  "path": "src/pr-manager.js",
+                  "domain": "implementation",
+                  "classified": true
+                },
+                {
+                  "path": "test/brainbase-integration.test.js",
+                  "domain": "test",
+                  "classified": true
+                },
+                {
+                  "path": "test/pr-manager.test.js",
+                  "domain": "test",
+                  "classified": true
+                }
+              ],
+              "relevant_changed_files": [],
+              "invalidation_surface_used": true,
+              "recorded_invalidation_surface": [
+                {
+                  "path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+                  "domain": "spec",
+                  "classified": true
+                },
+                {
+                  "path": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "architecture",
+                  "classified": true
+                },
+                {
+                  "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+                  "domain": "story",
+                  "classified": true
+                }
+              ]
+            },
+            "delta_closure": {
+              "mode": "full_review",
+              "source_recorded_at": "2026-09-03T23:44:51.277Z",
+              "source_status": "needs_changes",
+              "resolved_findings": [],
+              "unresolved_finding_ids": [
+                "spec-traceability-all-acceptance-criteria-unmapped"
+              ],
+              "closure_inputs": []
+            },
+            "runtime_failure": null
+          }
+        ]
+      },
+      {
+        "stage": "requirement",
+        "status": "needs_review",
+        "roles": [
+          "product_requirement",
+          "scope_risk",
+          "acceptance_e2e"
+        ],
+        "role_details": [
+          {
+            "role": "product_requirement",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "scope_risk",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "acceptance_e2e",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          }
+        ]
+      },
+      {
+        "stage": "architecture_spec",
+        "status": "needs_review",
+        "roles": [
+          "architecture_boundary",
+          "spec_consistency",
+          "regression_risk"
+        ],
+        "role_details": [
+          {
+            "role": "architecture_boundary",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "spec_consistency",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "regression_risk",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          }
+        ]
+      },
+      {
+        "stage": "test_plan",
+        "status": "needs_review",
+        "roles": [
+          "unit_integration",
+          "e2e_ux",
+          "gate_coverage"
+        ],
+        "role_details": [
+          {
+            "role": "unit_integration",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "e2e_ux",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "gate_coverage",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          }
+        ]
+      },
+      {
+        "stage": "implementation",
+        "status": "needs_review",
+        "roles": [
+          "code_spec_alignment",
+          "runtime_contract",
+          "ux_completion"
+        ],
+        "role_details": [
+          {
+            "role": "code_spec_alignment",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "runtime_contract",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "ux_completion",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          }
+        ]
+      },
+      {
+        "stage": "gate",
+        "status": "needs_review",
+        "roles": [
+          "gate_evidence",
+          "pr_split_scope",
+          "release_risk"
+        ],
+        "role_details": [
+          {
+            "role": "gate_evidence",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "pr_split_scope",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "release_risk",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          }
+        ]
+      },
+      {
+        "stage": "preview",
+        "status": "needs_review",
+        "roles": [
+          "preview_smoke",
+          "network_runtime",
+          "human_usability"
+        ],
+        "role_details": [
+          {
+            "role": "preview_smoke",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "network_runtime",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          },
+          {
+            "role": "human_usability",
+            "effective_status": "missing",
+            "binding_status": null,
+            "stale_reason": null,
+            "causal_invalidation": null,
+            "delta_closure": null,
+            "runtime_failure": null
+          }
+        ]
+      }
+    ]
+  },
+  "development_judgment": {
+    "available": false,
+    "status": "not_recorded",
+    "story_id": null,
+    "run_id": null,
+    "development_mode": null,
+    "recommendation": null,
+    "unknown_count": 0,
+    "outcome_count": 0,
+    "latest_outcome_status": null,
+    "artifact": null,
+    "advisory": true,
+    "blocking": false,
+    "error": null,
+    "lifecycle": "not_started",
+    "applicable": null,
+    "input_adopted": false,
+    "actionable": false,
+    "plan_binding": null,
+    "disposition": null,
+    "pending_disposition": false,
+    "pending_outcome": false,
+    "outcome": null,
+    "next_actions": [
+      "vibepro judgment applicability record . --id story-vibepro-brainbase-outcome-case-binding-v2 --applicable yes|no --reason <text>"
+    ],
+    "operational_status": {
+      "schema_version": "0.1.0",
+      "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+      "lifecycle": "not_started",
+      "applicable": null,
+      "applicability": null,
+      "run_id": null,
+      "draft": null,
+      "adoption": null,
+      "evaluation": null,
+      "actionable": false,
+      "plan_binding": null,
+      "disposition": null,
+      "outcome": null,
+      "pending_disposition": false,
+      "pending_outcome": false,
+      "next_actions": [
+        "vibepro judgment applicability record . --id story-vibepro-brainbase-outcome-case-binding-v2 --applicable yes|no --reason <text>"
+      ],
+      "advisory": true,
+      "blocking": false
+    }
+  },
+  "multi_tenant_architecture": {
+    "applicable": true,
+    "activation_reasons": [
+      "boundary_without_tenant_actor"
+    ],
+    "mode": "final",
+    "status": "needs_review",
+    "findings": [
+      {
+        "severity": "review",
+        "code": "applicability_ambiguous",
+        "path": "story_context",
+        "message": "マルチテナント適用要否を確定できる境界シグナルが不足しています"
+      }
+    ],
+    "coverage": {
+      "status": "inconclusive",
+      "scanners": {}
+    },
+    "views": {},
+    "implementation_readiness": {
+      "status": "needs_review",
+      "evidence_status": "inconclusive",
+      "required_surfaces": [
+        "story",
+        "spec",
+        "implementation"
+      ],
+      "reasons": [
+        "explicit_non_applicability_required"
+      ]
+    },
+    "review_lenses": [
+      {
+        "id": "tenant_architecture",
+        "question": "tenant identityは入口から全実行面と資源境界まで一意に伝播するか",
+        "status": "needs_review",
+        "findings": [],
+        "unconfirmed": [
+          {
+            "code": "applicability_ambiguous",
+            "path": "story_context"
+          }
+        ]
+      },
+      {
+        "id": "security_boundary",
+        "question": "credential、secret、dataにcross-tenant fallbackまたは混線経路がないか",
+        "status": "needs_review",
+        "findings": [],
+        "unconfirmed": [
+          {
+            "code": "applicability_ambiguous",
+            "path": "story_context"
+          }
+        ]
+      },
+      {
+        "id": "operations_and_migration",
+        "question": "各配備形態で移行・rollback・削除・接続不能の意味が維持されるか",
+        "status": "needs_review",
+        "findings": [],
+        "unconfirmed": [
+          {
+            "code": "applicability_ambiguous",
+            "path": "story_context"
+          }
+        ]
+      }
+    ]
+  },
+  "bug_diagnosis": null,
+  "execution_dag": {
+    "schema_version": "0.1.0",
+    "nodes": [
+      {
+        "id": "story_selected",
+        "status": "passed",
+        "required": true,
+        "reason": "Story id is bound to this execution state"
+      },
+      {
+        "id": "worktree_created",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "managed worktree mode is disabled",
+        "evidence": null
+      },
+      {
+        "id": "branch_bound",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "no managed branch recorded",
+        "evidence": null
+      },
+      {
+        "id": "head_bound",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "managed worktree HEAD binding is not recorded",
+        "evidence": null
+      },
+      {
+        "id": "implementation_started",
+        "status": "passed",
+        "required": false,
+        "reason": "implementation starts in the current checkout because managed worktree mode is disabled"
+      },
+      {
+        "id": "implementation_complete",
+        "status": "passed",
+        "required": false,
+        "reason": "implementation has produced PR preparation or verification evidence"
+      },
+      {
+        "id": "verification_recorded",
+        "status": "passed",
+        "required": false,
+        "reason": "verification evidence exists"
+      },
+      {
+        "id": "agent_review_recorded",
+        "status": "pending",
+        "required": false,
+        "reason": "agent review is not complete yet"
+      },
+      {
+        "id": "pr_prepare_ready",
+        "status": "pending",
+        "required": true,
+        "reason": "PR prepare is not ready yet"
+      },
+      {
+        "id": "pr_created",
+        "status": "pending",
+        "required": true,
+        "reason": "PR has not been created yet"
+      },
+      {
+        "id": "merge_ready",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "PR has not been created yet"
+      },
+      {
+        "id": "merged_or_closed",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "PR has not been created yet"
+      },
+      {
+        "id": "delivery_reconciliation",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "delivery has not been observed"
+      },
+      {
+        "id": "worktree_cleaned",
+        "status": "not_applicable",
+        "required": false,
+        "reason": "managed worktree cleanup is outside this MVP implementation scope"
+      }
+    ],
+    "edges": [
+      {
+        "from": "story_selected",
+        "to": "worktree_created"
+      },
+      {
+        "from": "worktree_created",
+        "to": "branch_bound"
+      },
+      {
+        "from": "branch_bound",
+        "to": "head_bound"
+      },
+      {
+        "from": "head_bound",
+        "to": "implementation_started"
+      },
+      {
+        "from": "implementation_started",
+        "to": "implementation_complete"
+      },
+      {
+        "from": "implementation_complete",
+        "to": "verification_recorded"
+      },
+      {
+        "from": "verification_recorded",
+        "to": "agent_review_recorded"
+      },
+      {
+        "from": "agent_review_recorded",
+        "to": "pr_prepare_ready"
+      },
+      {
+        "from": "pr_prepare_ready",
+        "to": "pr_created"
+      },
+      {
+        "from": "pr_created",
+        "to": "merge_ready"
+      },
+      {
+        "from": "merge_ready",
+        "to": "merged_or_closed"
+      },
+      {
+        "from": "merged_or_closed",
+        "to": "delivery_reconciliation"
+      },
+      {
+        "from": "delivery_reconciliation",
+        "to": "worktree_cleaned"
+      }
+    ]
+  },
+  "gate_status": "needs_review",
+  "agent_review_instruction": {
+    "status": "unavailable",
+    "reason": "unsafe_or_incomplete_review_status",
+    "current_stage": null,
+    "roles": [],
+    "next_commands": []
+  },
+  "blocking_reasons": [
+    "agent_review:needs_review"
+  ],
+  "story_source": {
+    "path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+    "title": "Brainbase成果ケースへのv2紐付けを後方互換で保持する",
+    "found": true,
+    "acceptance_criteria_count": 5
+  },
+  "traceability": {
+    "acceptance_criteria": [
+      {
+        "id": "AC-1",
+        "type": "acceptance_criterion",
+        "source_text": "AC-1: `brainbase-vibepro-context-handoff.v1` の入力と出力契約は従来どおり受理される。v1 Contextだけを持つStoryのPR準備は成果ケース未連携の `none` / `not_linked` として表示し、v2の再bind/復旧を案内しない。",
+        "text": "AC-1: `brainbase-vibepro-context-handoff.v1` の入力と出力契約は従来どおり受理される。v1 Contextだけを持つStoryのPR準備は成果ケース未連携の `none` / `not_linked` として表示し、v2の再bind/復旧を案内しない。",
+        "source_line": 19,
+        "status": "mapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_tests": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "C-001"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "resolved",
+        "verification_status": "unverified",
+        "reason_codes": [],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-2",
+        "type": "acceptance_criterion",
+        "source_text": "AC-2: `brainbase-vibepro-context-handoff.v2` 相当の成果ケースは、署名済み `brainbase-vibepro-managed-handoff.v2` でのみ受理する。署名対象の `outcome_case` は `case_id`、成果ケース参照、判断受領参照、判断ダイジェスト、利用者が観測できる成果、技術受入条件、運用確認を必須として検証する。",
+        "text": "AC-2: `brainbase-vibepro-context-handoff.v2` 相当の成果ケースは、署名済み `brainbase-vibepro-managed-handoff.v2` でのみ受理する。署名対象の `outcome_case` は `case_id`、成果ケース参照、判断受領参照、判断ダイジェスト、利用者が観測できる成果、技術受入条件、運用確認を必須として検証する。",
+        "source_line": 20,
+        "status": "mapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_tests": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "C-002"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "resolved",
+        "verification_status": "unverified",
+        "reason_codes": [],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-3",
+        "type": "acceptance_criterion",
+        "source_text": "AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。一般のbind APIと任意の事前作成Story宣言はfail closedする。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。",
+        "text": "AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。一般のbind APIと任意の事前作成Story宣言はfail closedする。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。",
+        "source_line": 21,
+        "status": "mapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_tests": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          },
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "managed v2 publish is journal-recoverable and never projects a partial transaction as trusted",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          },
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "C-003"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "resolved",
+        "verification_status": "unverified",
+        "reason_codes": [],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-4",
+        "type": "acceptance_criterion",
+        "source_text": "AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、技術完了の判定と検証証跡だけを返す。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。",
+        "text": "AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、技術完了の判定と検証証跡だけを返す。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。",
+        "source_line": 22,
+        "status": "mapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/pr-manager.test.js",
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_tests": [
+          "test/pr-manager.test.js",
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/pr-manager.test.js",
+            "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "d16113be3c3e6fec767da38a3cf0da0b659d353e"
+          },
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          },
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "C-004"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "resolved",
+        "verification_status": "unverified",
+        "reason_codes": [],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-5",
+        "type": "acceptance_criterion",
+        "source_text": "AC-5: 不足、空値、重複ID、caseと一致しない参照、未知issuer、未信頼の検証証跡は技術完了として扱わない。v2からv1への再bindは既存v2投影を残したまま成功してはならず、markerのない部分投影は権威メタデータとして利用しない。",
+        "text": "AC-5: 不足、空値、重複ID、caseと一致しない参照、未知issuer、未信頼の検証証跡は技術完了として扱わない。v2からv1への再bindは既存v2投影を残したまま成功してはならず、markerのない部分投影は権威メタデータとして利用しない。",
+        "source_line": 23,
+        "status": "mapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_tests": [
+          "test/brainbase-integration.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          },
+          {
+            "file": "test/brainbase-integration.test.js",
+            "case": "signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない",
+            "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+            "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "INV-001"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "resolved",
+        "verification_status": "unverified",
+        "reason_codes": [],
+        "weak_mapping_reason": null
+      }
+    ],
+    "scenario_clauses": [],
+    "scenario_lineage": null,
+    "accepted_spec_lineage": {
+      "status": "resolved",
+      "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+      "spec_path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+      "spec_blob_oid": "77b1b00a466e8b1e2b418ef9f52f58ac7734c23a",
+      "story_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+      "story_blob_oid": "e182ffac0b292070e5e120b464d3bbf8d71310f4",
+      "mapping_source": "accepted_spec",
+      "clause_count": 5,
+      "resolved_clause_count": 5,
+      "reason_codes": [],
+      "failures": []
+    },
+    "summary": {
+      "clause_count": 5,
+      "acceptance_criteria_count": 5,
+      "scenario_clause_count": 0,
+      "mapped_count": 5,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "scenario_lineage": null,
+      "examples": []
+    }
+  }
+}
