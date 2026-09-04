@@ -1,9 +1,45 @@
-✔ 公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する (2179.603667ms)
-ℹ tests 1
+✔ Brainbase judgment・routing receipt・retrieval referencesをlocal contextへ束縛する (365.720208ms)
+✔ v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない (1211.254ms)
+✔ 署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する (495.006584ms)
+✔ 非managed v2は成果ケース値の前にfail closedする (304.418416ms)
+✔ managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する (684.034458ms)
+✔ signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない (1487.13075ms)
+✔ trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない (1371.034708ms)
+✔ PR準備は共謀して書換えたContext・receipt・Story・commit markerを署名なしでは投影しない (1322.991458ms)
+✔ PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する (3613.080542ms)
+✔ managed v2 publish is journal-recoverable and never projects a partial transaction as trusted (7958.489417ms)
+✔ managed v2 process recovery can fail closed and resume idempotently (2556.080583ms)
+✔ routingだけ・personal knowledge・未要求entryを受け入れない (286.1735ms)
+✔ current git stateに一致するcomputed passing evidenceから非昇格Knowledge Eventを生成する (558.747792ms)
+✔ self-reported・stale・context以前のpassing evidenceからeventを作らない (710.953458ms)
+✔ managed inboxを自動検出し、Story add前にreceipt bindを完了する (463.38425ms)
+✔ 公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する (1315.189125ms)
+✔ managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する (682.026833ms)
+✔ Story add traceability再開は宣言不一致・未信頼v2・v1を拒否する (1973.544ms)
+✔ 対象Storyのcanonical Specはmanaged v2 traceability再開契約と改訂メタデータを直接保持する (3.987125ms)
+✔ 未結合receiptの複数候補と消費済みreceiptの別Story再利用をfail closedする (1282.743291ms)
+✔ managed設定でhandoff inboxがない場合はStory addをfail closedする (491.498625ms)
+✔ managed handoffのproject_code不一致はStory select前にfail closedする (689.746417ms)
+✔ managed handoffのbase_shaがcurrent HEADと一致しない場合はStory addをfail closedする (1136.4275ms)
+✔ managed handoffの期限切れ・不正HMAC・自己申告trustedはStory addをfail closedする (4722.175916ms)
+ℹ managed receipt validation rejects expiry, forged HMAC, and self-reported trust
+✔ computed passing verificationはcurrent HEADでLearning Candidateを一度だけoutboxへ積む (4557.895417ms)
+✔ Learning Candidate送信失敗はverify成功を止めずpending+retryにし、reconcileで送信する (4616.487292ms)
+✔ status/doctor/reconcile CLIはmanaged inboxと旧bind/event入口を互換表示する (4882.168917ms)
+✔ bind creates deterministic accepted authority with tracked provenance (431.777167ms)
+✔ bind rejects untracked, wrong-story, duplicate, path escape, and diagnostic proposal inputs (940.381459ms)
+✔ diagnosis routes to proposal output and cannot overwrite accepted authority (400.125958ms)
+✔ selected task validation fails closed outside accepted authority (442.929625ms)
+✔ selected task validation rejects stale or tampered accepted authority (592.337833ms)
+✔ task scope globstar accepts zero or nested directory segments (1552.527334ms)
+✔ task scope globstar still rejects wrong extensions and outside prefixes (1595.011834ms)
+✔ task bind CLI writes JSON result (687.498792ms)
+✔ bind preflights routed projections before writing accepted authority (349.473334ms)
+ℹ tests 36
 ℹ suites 0
-ℹ pass 1
+ℹ pass 36
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3784.648125
+ℹ duration_ms 50673.766375

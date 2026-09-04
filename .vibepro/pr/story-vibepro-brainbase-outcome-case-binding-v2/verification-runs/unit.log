@@ -1,0 +1,43 @@
+✔ Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts (1967.661583ms)
+✔ Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate (3446.553208ms)
+✔ Issue #462 resolves test.each and it.each cases without weakening exact case matching (964.482084ms)
+✔ Issue #454 resolves routing from target HEAD and trusts only exact computed evidence (1030.847625ms)
+✔ Issue #454 keeps legacy heuristic behavior when accepted-spec is absent (573.286417ms)
+✔ pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない (1801.557583ms)
+✔ pr create fails closed before push when distinct remotes leave the destination ambiguous (1775.152542ms)
+✔ pr create dry-run exposes an explicit destination and persists its validation evidence (1887.327667ms)
+✔ pr create revalidates a changed remote before the first external mutation (1990.312791ms)
+✔ pr create records failed validation when a remote changes to an unsupported URL (1898.560958ms)
+✔ pr create preserves implicit destination selection for a single remote (1697.371208ms)
+✔ pr create selects the matching remote from --repo alone (1717.475833ms)
+✔ pr create accepts only exact GitHub remote URL forms (11729.815792ms)
+✔ pr create rejects an explicit push remote and PR repository mismatch (1754.881625ms)
+✔ pr create revalidates after push and never invokes gh when the remote changes (1876.212917ms)
+✔ pr create keeps the explicit repository on the existing PR list and edit fallback (1863.907833ms)
+✔ pr create human summary exposes destination and validation evidence (1654.574667ms)
+✔ task-scoped pr prepare accepts every changed path covered by accepted authority (2334.533209ms)
+✔ task-scoped pr prepare rejects out-of-scope changes and stale refs (5151.95ms)
+✔ pr prepare embeds story_source and traceability, with unmapped clauses shown as unaddressed (non-blocking) (1850.526459ms)
+✔ pr prepare summarizes multi-tenant contract, six views, findings, and review lenses (1676.245667ms)
+✔ pr prepare projects non-applicability readiness from caller evidence bound to current HEAD (2800.144958ms)
+✔ pr prepare rejects legacy verification evidence without runtime identity before writing judgment (1377.348ms)
+✔ pr prepare does not block when no story document exists (1481.037625ms)
+✔ pr readiness reports configured but incomplete reviews and blocks PR creation until complete (2713.847084ms)
+✔ pr readiness marks the execution DAG ready after every configured review passes (7214.182375ms)
+✔ pr readiness fails closed when the configured review status cannot be read (2799.995875ms)
+✔ pr readiness stays ready when every review stage is explicitly disabled (2304.172708ms)
+✔ agent review instruction projects only the first incomplete stage from review status (1.58975ms)
+✔ agent review instruction fails closed for unsafe or incomplete status commands (5.433334ms)
+✔ agent review instruction does not reuse stale status and reprojects needs_changes current work (0.997417ms)
+✔ unavailable instruction has the same reason in JSON and both human summary projections (1.206041ms)
+✔ pr prepare command alone cannot satisfy a current-stage review dispatch instruction (0.268958ms)
+✔ agent review instruction accepts only canonical current-stage review commands (0.374708ms)
+✔ agent review instruction fails closed when canonical and invalid review commands are mixed (0.766125ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64236.673834

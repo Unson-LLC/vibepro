@@ -1200,6 +1200,38 @@ function buildFormalStoryDeclaration(options = {}) {
   };
 }
 
+function traceabilityFailure(options = {}) {
+  if (options.traceabilityFailureAt === 'traceability') {
+    const error = new Error('injected Brainbase Story traceability failure');
+    error.code = 'BRAINBASE_STORY_TRACEABILITY_INJECTED_FAILURE';
+    throw error;
+  }
+}
+
+async function resumeManagedV2StoryAddTraceability(root, story, storedStory, options = {}) {
+  // Publication has already committed, so a retry must not invoke bind again.
+  // It may only finish the final local traceability projection when the exact
+  // normalized declaration is still backed by a trusted managed-v2 receipt.
+  const projection = await inspectManagedV2OutcomeCaseProjection(root, story.story_id, storedStory?.outcome_case, options);
+  const expectedStory = { ...story, outcome_case: projection.outcome_case };
+  const traceabilityPath = await resolvePrArtifactFile(root, story.story_id, 'traceability.json');
+  const existingTraceability = await readJsonIfExists(traceabilityPath);
+  if (projection.status !== 'trusted'
+      || canonicalJson(storedStory) !== canonicalJson(expectedStory)
+      || existingTraceability !== null) {
+    const error = new Error(`Story already exists: ${story.story_id}`);
+    error.code = 'BRAINBASE_STORY_ADD_RESUME_NOT_ELIGIBLE';
+    throw error;
+  }
+  traceabilityFailure(options);
+  await bindStoryTraceability(root, {
+    storyId: story.story_id,
+    source: 'story_add',
+    lifecycle: 'declared_not_started'
+  });
+  return storedStory;
+}
+
 // The only public declaration operation is a complete Story-add transaction.
 // It accepts raw CLI fields, performs required normalization and traceability,
 // and keeps the internal declaration capability inside this module.
@@ -1210,8 +1242,9 @@ export async function addBrainbaseBoundStory(repoRoot, options = {}) {
   const config = await readJson(configPath, 'VibePro config');
   let story = buildFormalStoryDeclaration(options);
   const stories = Array.isArray(config.brainbase?.stories) ? config.brainbase.stories : [];
-  if (stories.some((item) => item.story_id === story.story_id)) {
-    throw new Error(`Story already exists: ${story.story_id}`);
+  const storedStory = stories.find((item) => item?.story_id === story.story_id);
+  if (storedStory) {
+    return resumeManagedV2StoryAddTraceability(root, story, storedStory, options);
   }
   const binding = await bindFormalStoryAddDeclaration(root, {
     storyId: story.story_id,
@@ -1233,6 +1266,7 @@ export async function addBrainbaseBoundStory(repoRoot, options = {}) {
     };
     await writeJsonAtomic(configPath, config);
   }
+  traceabilityFailure(options);
   await bindStoryTraceability(root, {
     storyId: story.story_id,
     source: 'story_add',

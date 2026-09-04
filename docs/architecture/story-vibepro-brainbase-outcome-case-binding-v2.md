@@ -33,6 +33,8 @@ v2は `brainbase-vibepro-managed-handoff.v2` の署名済み `outcome_case` と�
 
 PR準備は、Context・Story・receipt・markerの局所一致だけを信頼しない。receiptに保持した署名済みmanaged handoff v2を設定済み信頼鍵で再検証し、canonical `outcome_case`、receipt/context digest、Story ID、project、repository、repository root、base SHA、resolution/turn、ledgerを照合できた場合だけStory値を投影する。ローカルの `signature_trusted` のような自己申告フラグは権威にしない。v1 ContextだけのStoryは成果ケース未連携であり、`outcome_case_status: none` / `not_linked` と表示して復旧判断を付けない。v2を示す投影を信頼できない場合は、改ざん・期限切れを `untrusted`、marker欠落や不足値を `partial`、読出し不能を `unknown` と安全なreason code・再bind/復旧判断をPR準備JSONとPR本文へ表示する。PR準備の `technical_completion` は信頼済み検証証跡の有無を明示するが、受入条件と証跡の対応が不明な場合は `technical_complete: false` と `status: unknown` を返す。
 
+公開済みmanaged v2取引の後にtraceability書込みだけが失敗しても、次の同一 `vibepro story add` はbindをもう一度実行しない。commit marker、保存済み署名の再検証、Storyの正規化済み宣言と成果ケースの完全一致、traceability欠落を確認できる場合だけ、traceabilityを冪等に再開する。不一致、未信頼v2、v1、既存traceabilityは通常の重複Storyとして拒否するため、receipt消費、ledger、Context、Story投影は増えない。
+
 OutcomeCaseの状態値、close要求、外部書込み経路は追加しない。production probeは実行せず、宣言された終端証跡の参照先だけを保持する。
 
 ## 後方互換と失敗時

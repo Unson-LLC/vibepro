@@ -67,7 +67,7 @@
     {
       "id": "C-003",
       "type": "contract",
-      "statement": "managed v2は既存Storyを事前検査するか、正規化済みCLI項目とtraceabilityを必須にする完全な標準Story add契約だけが、同一モジュール内の非export宣言capabilityで先行宣言を同一ジャーナル取引へ含める。一般bind APIと公開importは任意または不完全な先行宣言を拒否し、非managed v2とmarkerのない部分取引は投影しない。config、Context、bind receipt、ledger、commit markerを回復可能に公開してからStoryとPR準備へ同じ7項目を投影する。",
+      "statement": "managed v2は既存Storyを事前検査するか、正規化済みCLI項目とtraceabilityを必須にする完全な標準Story add契約だけが、同一モジュール内の非export宣言capabilityで先行宣言を同一ジャーナル取引へ含める。一般bind APIと公開importは任意または不完全な先行宣言を拒否し、非managed v2とmarkerのない部分取引は投影しない。config、Context、bind receipt、ledger、commit markerを回復可能に公開してからStoryとPR準備へ同じ7項目を投影する。公開済みのmanaged v2取引後にtraceabilityだけが失敗した場合は、commit済みStory、信頼済み投影、完全一致する正規化済み宣言、traceability欠落を全て確認できる同一の標準Story addだけが、公開を再実行せずtraceabilityを冪等に再開する。",
       "origin": {
         "story_refs": [
           {
@@ -87,12 +87,14 @@
         ],
         "test_refs": [
           { "file": "test/brainbase-integration.test.js", "case": "公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する" },
+          { "file": "test/brainbase-integration.test.js", "case": "Story add traceability再開は宣言不一致・未信頼v2・v1を拒否する" },
           { "file": "test/brainbase-integration.test.js", "case": "managed v2 publish is journal-recoverable and never projects a partial transaction as trusted" },
           { "file": "test/brainbase-integration.test.js", "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する" }
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-04T02:02:28.000Z"
+      "last_revised_at": "2026-09-04T02:21:22.000Z"
     },
     {
       "id": "C-004",
@@ -125,7 +127,7 @@
       "last_revised_at": "2026-09-04T00:00:00.000Z"
     }
   ],
-  "generated_at": "2026-09-04T02:02:28.000Z",
+  "generated_at": "2026-09-04T02:21:22.000Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"

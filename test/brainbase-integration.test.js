@@ -2,11 +2,12 @@ import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHmac } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 
 import { resolvePrArtifactFile } from '../src/artifact-routing.js';
 import {
@@ -30,6 +31,7 @@ import { initWorkspace } from '../src/workspace.js';
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-brainbase-runtime-context-handoff';
 const TEST_HANDOFF_HMAC_SECRET = 'vibepro-test-handoff-hmac-secret';
+const OUTCOME_CASE_BINDING_STORY_ID = 'story-vibepro-brainbase-outcome-case-binding-v2';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -857,6 +859,103 @@ test('公開importは不完全Story宣言を渡せず、標準CLI Story addだ�
   assert.equal(prepared.preparation.outcome_case_status, 'trusted');
   assert.equal(prepared.preparation.outcome_case.case_id, expectedOutcomeCase.case_id);
   assert.equal(prepared.preparation.outcome_case.technical_complete, false);
+});
+
+test('managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する', async () => {
+  const root = await makeRepo();
+  const expectedOutcomeCase = outcomeCase();
+  await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase: expectedOutcomeCase }
+  });
+  const storyOptions = {
+    story_id: STORY_ID,
+    title: 'Resume managed v2 traceability'
+  };
+
+  await assert.rejects(
+    addStory(root, { ...storyOptions, traceabilityFailureAt: 'traceability' }),
+    (error) => error?.code === 'BRAINBASE_STORY_TRACEABILITY_INJECTED_FAILURE'
+  );
+
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const contextPath = path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json');
+  const markerPath = path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'bind-commit.json');
+  const ledgerPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'handoff-consumption-ledger.json');
+  const traceabilityPath = path.join(root, '.vibepro', 'pr', STORY_ID, 'traceability.json');
+  const persisted = JSON.parse(await readFile(configPath, 'utf8'));
+  const stored = persisted.brainbase.stories.find((story) => story.story_id === STORY_ID);
+  assert.deepEqual(stored.outcome_case, expectedOutcomeCase);
+  assert.equal(JSON.parse(await readFile(contextPath, 'utf8')).outcome_case.case_id, expectedOutcomeCase.case_id);
+  assert.notEqual(await readFile(markerPath, 'utf8').catch(() => null), null);
+  assert.equal(await readFile(traceabilityPath, 'utf8').catch(() => null), null);
+  const beforeResume = await Promise.all([readFile(configPath, 'utf8'), readFile(contextPath, 'utf8'), readFile(markerPath, 'utf8'), readFile(ledgerPath, 'utf8')]);
+
+  const resumed = await addStory(root, storyOptions);
+  assert.deepEqual(resumed, stored);
+  const traceability = JSON.parse(await readFile(traceabilityPath, 'utf8'));
+  assert.equal(traceability.source, 'story_add');
+  assert.equal(traceability.lifecycle, 'declared_not_started');
+  const afterResume = await Promise.all([readFile(configPath, 'utf8'), readFile(contextPath, 'utf8'), readFile(markerPath, 'utf8'), readFile(ledgerPath, 'utf8')]);
+  assert.deepEqual(afterResume, beforeResume, 'resume must not repeat managed publication side effects');
+  assert.equal(JSON.parse(afterResume[3]).entries.length, 1);
+});
+
+test('Story add traceability再開は宣言不一致・未信頼v2・v1を拒否する', async () => {
+  const mismatchedRoot = await makeRepo();
+  await configureManagedBrainbase(mismatchedRoot, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase: outcomeCase() }
+  });
+  await assert.rejects(
+    addStory(mismatchedRoot, { story_id: STORY_ID, title: 'Exact declaration', traceabilityFailureAt: 'traceability' }),
+    (error) => error?.code === 'BRAINBASE_STORY_TRACEABILITY_INJECTED_FAILURE'
+  );
+  await assert.rejects(
+    addStory(mismatchedRoot, { story_id: STORY_ID, title: 'Different declaration' }),
+    (error) => error?.code === 'BRAINBASE_STORY_ADD_RESUME_NOT_ELIGIBLE'
+  );
+
+  const untrustedRoot = await makeRepo();
+  await configureManagedBrainbase(untrustedRoot, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase: outcomeCase() }
+  });
+  await assert.rejects(
+    addStory(untrustedRoot, { story_id: STORY_ID, title: 'Untrusted resume', traceabilityFailureAt: 'traceability' }),
+    (error) => error?.code === 'BRAINBASE_STORY_TRACEABILITY_INJECTED_FAILURE'
+  );
+  const untrustedConfigPath = path.join(untrustedRoot, '.vibepro', 'config.json');
+  const untrustedConfig = JSON.parse(await readFile(untrustedConfigPath, 'utf8'));
+  untrustedConfig.brainbase.stories.find((story) => story.story_id === STORY_ID).outcome_case.user_observable_outcome = 'tampered but structurally valid';
+  await writeJson(untrustedConfigPath, untrustedConfig);
+  await assert.rejects(
+    addStory(untrustedRoot, { story_id: STORY_ID, title: 'Untrusted resume' }),
+    (error) => error?.code === 'BRAINBASE_STORY_ADD_RESUME_NOT_ELIGIBLE'
+  );
+
+  const v1Root = await makeRepo();
+  await writeJson(path.join(v1Root, 'handoff.json'), handoff());
+  await addStory(v1Root, { story_id: STORY_ID, title: 'v1 resume' });
+  await bindBrainbaseContext(v1Root, { storyId: STORY_ID, input: 'handoff.json' });
+  await unlink(path.join(v1Root, '.vibepro', 'pr', STORY_ID, 'traceability.json'));
+  await assert.rejects(
+    addStory(v1Root, { story_id: STORY_ID, title: 'v1 resume' }),
+    (error) => error?.code === 'BRAINBASE_STORY_ADD_RESUME_NOT_ELIGIBLE'
+  );
+});
+
+test('対象Storyのcanonical Specはmanaged v2 traceability再開契約と改訂メタデータを直接保持する', async () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const specPath = path.join(repoRoot, '.vibepro', 'spec', OUTCOME_CASE_BINDING_STORY_ID, 'spec.json');
+  const spec = JSON.parse(await readFile(specPath, 'utf8'));
+  const clause = spec.clauses.find((item) => item.id === 'C-003');
+  assert.equal(spec.story_id, OUTCOME_CASE_BINDING_STORY_ID);
+  assert.match(clause.statement, /traceability.*再開/);
+  assert.ok(clause.origin.test_refs.some((reference) => (
+    reference.file === 'test/brainbase-integration.test.js'
+    && reference.case === 'managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する'
+  )));
+  assert.ok(Number.isFinite(Date.parse(clause.last_revised_at)));
+  assert.ok(Number.isFinite(Date.parse(spec.generated_at)));
+  assert.equal(clause.last_revised_at, spec.generated_at);
 });
 
 test('未結合receiptの複数候補と消費済みreceiptの別Story再利用をfail closedする', async () => {
