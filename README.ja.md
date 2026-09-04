@@ -119,5 +119,5 @@ vibepro integration brainbase event . --id <story-id> --summary "<検証済み�
 
 `bind`はBrainbase Hostが確定したmanaged Judgment receipt、対応する`knowledge.resolve` routing receipt、実取得したcanonical参照を検証します。`.vibepro/integrations/`へ保存するのはpointerとcontent digestだけで、本文やPersonal Knowledgeは複製しません。
 
-`event`はcontext束縛後に実行され、current git fingerprintと一致するcomputed passing verificationがなければ失敗します。生成するのはGraph昇格とexternal actionを禁止したlocal `knowledge_event.v1`候補です。Brainbaseへの記録は`brainbase_knowledge_event_record` MCP toolへ委譲し、global Hostの監査を通します。
+`event`はcontext束縛後に実行され、current git fingerprintと一致するcomputed passing verificationがなければ失敗します。生成するのはGraph昇格とexternal actionを禁止したlocal `knowledge_event.v1`候補です。承認済みの送信先と認証情報を設定すると、明示的な `integration brainbase reconcile` で既存のKnowledge Event APIへ送信し、受信記録を読み戻せます。送信成功と受信確認を別に保存し、未確認が残る場合は終了コード2を返します。[設定と受信確認の手順](docs/guide/brainbase-receiver.md)を参照してください。
 <!-- BRAINBASE_RUNTIME_HANDOFF_END -->
