@@ -589,3 +589,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:525:start -->
 - [PR #525](https://github.com/Unson-LLC/vibepro/pull/525) — [2026-09](/releases/2026-09): fix: 旧レビューGate処理を削除して軽量レビューに統一
 <!-- vibepro-release-index-pr:525:end -->
+
+<!-- vibepro-release-index-pr:526:start -->
+- [PR #526](https://github.com/Unson-LLC/vibepro/pull/526) — [2026-09](/releases/2026-09): fix: Brainbaseへの送信と受信確認を分離する
+<!-- vibepro-release-index-pr:526:end -->

@@ -3070,3 +3070,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:525:end -->
+
+<!-- vibepro-release-pr:526:start -->
+## [#526](https://github.com/Unson-LLC/vibepro/pull/526) fix: Brainbaseへの送信と受信確認を分離する
+
+- Author: @sintariran
+- Merged: 2026-09-04T13:53:25Z
+- Commit: `a3060059dfedbe0e5d11bc543babc74670e41437`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:526:end -->
