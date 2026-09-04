@@ -86,12 +86,11 @@ test('report fingerprint --kind pr-body computes fields from the persisted minim
   assert.equal(fingerprint.verification.commands[0].kind, 'unit');
   assert.equal(fingerprint.verification.commands[0].status, 'pass');
 
-  // The review pipeline reports the configured default stage set, but no
-  // review is recorded until at least one role artifact actually exists.
-  assert.equal(fingerprint.review.configured, true);
+  // A review is recorded only when a lightweight verdict exists.
+  assert.deepEqual(fingerprint.review.records, []);
   assert.equal(fingerprint.review.recorded, false);
   assert.equal(fingerprint.review.complete, false);
-  assert.equal(fingerprint.review.status, 'needs_review');
+  assert.equal(fingerprint.review.status, 'not_recorded');
 
   // Deterministic, schema-derived numerical truth — no gate_dag / requirement
   // consistency fields (removed with the minimal-core rebuild).
@@ -121,4 +120,18 @@ test('report fingerprint is deterministic for the same persisted pr-prepare.json
   const second = await buildReportFingerprint(root, { kind: 'pr-body', storyId: 'story-fingerprint-demo' });
   assert.deepEqual(second.git, first.git, 'fingerprint reads the persisted artifact, not live git state');
   assert.equal(second.inputs_digest.git_sha, first.inputs_digest.git_sha);
+});
+
+test('report fingerprint changes when a lightweight review summary changes with the same verdict', async () => {
+  const root = await setupPreparedRepo();
+  const record = async summary => {
+    const result = await runCli(['review', 'record', root, '--id', 'story-fingerprint-demo', '--status', 'needs_changes', '--summary', summary]);
+    assert.equal(result.exitCode, 0);
+    await runCli(['pr', 'prepare', root, '--story-id', 'story-fingerprint-demo', '--base', 'main', '--json']);
+    return buildReportFingerprint(root, { kind: 'pr-body', storyId: 'story-fingerprint-demo' });
+  };
+  const first = await record('入力検証が必要');
+  const second = await record('権限検証が必要');
+  assert.equal(second.review.records[0].summary, '権限検証が必要');
+  assert.notDeepEqual(first.inputs_digest, second.inputs_digest);
 });

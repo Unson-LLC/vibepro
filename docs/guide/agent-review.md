@@ -1,35 +1,35 @@
 # Agent Review
 
-Required Agent Review is an independent, parallel-subagent inspection of the current diff and evidence. A human note or an untracked second opinion does not substitute for required parallel-subagent provenance.
+VibePro stores a lightweight review result for a Story. Roles are optional and can be supplied when preparing the review. `prepare` describes the review request; `record` stores the verdict and concrete evidence.
 
 ```bash
-vibepro review prepare . --id <story-id> --stage gate --role <role>
+vibepro review prepare . --id <story-id> --role reviewer
 ```
 
-Give the reviewer the prepared request, current diff, relevant Story/Architecture/Spec, verification artifacts, and exact inspection inputs. The reviewer must be separate from the implementation identity and return concrete findings.
-
-After receiving the result, close/shut down that subagent thread or session, then record it:
+Prepare several roles with `--roles reviewer,security` or by repeating `--role`. Record a result with:
 
 ```bash
 vibepro review record . \
-  --id <story-id> --stage gate --role <role> \
-  --status pass --summary "<summary>" \
-  --agent-system codex --execution-mode parallel_subagent \
-  --agent-id <agent-id> --agent-closed \
-  --reviewer-identity separate_session \
-  --implementation-session-id <implementation-session> \
-  --inspection-summary "<what was inspected>" \
-  --inspection-input <source-test-story-spec-contract-or-config> \
-  --inspection-evidence <transcript-or-result> \
-  --judgment-delta "<initial judgment -> final judgment because evidence>"
-
-vibepro review status . --id <story-id> --stage gate
+  --id <story-id> --role reviewer \
+  --status pass --summary "Reviewed the Story, Spec, and changed surface" \
+  --inspection-input src/example.js \
+  --artifact .vibepro/verification/unit.json
 ```
 
-Valid review statuses are `pass`, `needs_changes`, and `block`. A passing review must name an existing non-`.vibepro` source, test, Story, Spec, contract, or config as an inspection input; generated `.vibepro` artifacts alone do not define an inspection surface.
+Use `--from-stdin` when the review result comes from standard input. Valid statuses are `pass`, `needs_changes`, `block`, and `runtime_failed`. Supply `agent-system` and `agent-id` when the result came from a separate review runner.
 
-Reviews, including `gate_evidence` and `release_risk`, are content-surface-bound by default: later commits preserve the review while its inspected surface is unchanged, and changes to that surface make it stale. A role-specific `strict_head` policy with a reason remains HEAD-bound and becomes stale after any commit.
+```bash
+vibepro review record . --id <story-id> --role reviewer \
+  --status needs_changes --summary "Input validation has a concrete gap" \
+  --inspection-input src/example.js --agent-system codex --agent-id reviewer-1
+```
 
-`--strict-head-binding --strict-head-reason <reason>` is **not** an unconditional CLI override. It is only authorized for two origins: a role whose policy already declares `freshness_mode: strict_head` with a `freshness_reason` (the flag is then redundant but harmless), or the `implementation:runtime_contract` `final_review` of an active, frozen validation sequence (TOCTOU protection for the release candidate). Any other role/stage rejects the flag with an explicit error naming the role's configured freshness mode; do not attempt to strict-ify an ordinary content-surface review from the CLI. `vibepro pr prepare` reports each strict binding's origin (`role_policy`, `validation_sequence`, or a legacy `cli_override`) and surfaces a migration warning for any pre-existing `cli_override` artifact instead of rewriting it automatically.
+```bash
+vibepro review status . --id <story-id>
+```
 
-Fix accepted findings, re-verify, and repeat only the reviews invalidated by the final tree.
+A passing record requires an existing inspection input outside `.vibepro`. Reviews become stale when inspected content changes. Missing or stale review records alone do not block PR preparation. Concrete unresolved findings recorded as `needs_changes` or `block` remain blocking until resolved.
+
+Older stage, lifecycle, cost, and strict-head settings are ignored by the lightweight review. PR preparation presents the Story, Spec, verification, and review records as evidence for human review.
+
+After fixing a finding, inspect the final changed surface and record the review again.

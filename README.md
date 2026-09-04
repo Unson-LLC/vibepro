@@ -52,9 +52,10 @@ vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 
 # 4. Prepare and record review evidence
-vibepro review prepare /path/to/repo --id story-example --stage gate
-vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "Reviewed against the Story and Spec"
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro review record /path/to/repo --id story-example --role reviewer \
+  --status pass --summary "Reviewed against the Story and Spec" \
+  --inspection-input src/example.js
 
 # 5. Summarize the intent-to-implementation evidence for a PR
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
