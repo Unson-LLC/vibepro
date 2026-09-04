@@ -39,15 +39,13 @@ import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-syn
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
 import { collectWorkspaceStatus, renderWorkspaceStatus } from './workspace-status.js';
 import {
-  getAgentReviewStatus,
-  prepareAgentReview,
-  recordAgentReview,
-  renderAgentReviewPrepareSummary,
-  renderAgentReviewRecordSummary,
-  renderAgentReviewStatusSummary,
-  renderReviewSurfaceViolationSummary,
-  readReviewSurfaceViolationSummary
-} from './agent-review.js';
+  getReviewStatus,
+  prepareReview,
+  recordReview,
+  renderReviewPrepareSummary,
+  renderReviewRecordSummary,
+  renderReviewStatusSummary
+} from './lightweight-review.js';
 import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
@@ -90,7 +88,6 @@ import {
 } from './judgment-workflow.js';
 import {
   getDecisionStatus,
-  readDecisionRecordsIfExists,
   recordDecision,
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
@@ -179,8 +176,8 @@ Typical flow:
   vibepro story diagnose <repo> --id <id> --run-graphify
   vibepro spec write <repo> --id <id> --draft
   vibepro verify record <repo> --id <id> --kind unit --status pass --command "npm test"
-  vibepro review prepare <repo> --id <id> --stage gate
-  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text>
+  vibepro review prepare <repo> --id <id> --role reviewer
+  vibepro review record <repo> --id <id> --role reviewer --status pass --summary <text> --inspection-input <file>
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
 
@@ -234,10 +231,9 @@ Usage:
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
-  vibepro review violations [repo] --id <story-id> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block|runtime_failed> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--runtime-failure-kind <empty_result|wrong_request|timeout|execution_error>] [--runtime-failure-detail <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
-  vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
+  vibepro review prepare [repo] --id <story-id> [--role <role>] [--roles <csv>] [--json]
+  vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
+  vibepro review status [repo] --id <story-id> [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--contract-type <bug_fix|regression_fix>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -292,9 +288,9 @@ PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を�
       code_refs/test_refsのトレーサビリティを持つSpecを書きます。
   vibepro verify record <repo> --id <id> --kind unit --status pass --command "npm test"
       現在のgit状態で実行した検証証跡を記録します。
-  vibepro review prepare <repo> --id <id> --stage gate
-      役割別レビュー依頼を作ります（lifecycle会計・予算・authorize儀式は無し）。
-  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text>
+  vibepro review prepare <repo> --id <id> --role reviewer
+      確認する役割と依頼内容を記録します。
+  vibepro review record <repo> --id <id> --role reviewer --status pass --summary <text> --inspection-input <file>
       レビュー結果を記録します。
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
       Story + Spec有無 + 記録済み検証 + 記録済みレビューを要約し、
@@ -354,10 +350,9 @@ Usage:
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
-  vibepro review violations [repo] --id <story-id> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block|runtime_failed> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--runtime-failure-kind <empty_result|wrong_request|timeout|execution_error>] [--runtime-failure-detail <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
-  vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
+  vibepro review prepare [repo] --id <story-id> [--role <role>] [--roles <csv>] [--json]
+  vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
+  vibepro review status [repo] --id <story-id> [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable> [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
@@ -869,108 +864,51 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'review prepare'
         });
-        const result = await prepareAgentReview(repoRoot, {
+        const requestedRoles = [
+          ...getOptions(rest, '--role'),
+          ...parseCsvOption(rest, '--roles')
+        ];
+        const result = await prepareReview(repoRoot, {
           storyId,
-          stage: getOption(rest, '--stage'),
-          roles: [
-            ...getOptions(rest, '--role'),
-            ...parseCsvOption(rest, '--roles')
-          ],
-          language: getOption(rest, '--language')
+          roles: requestedRoles.length > 0 ? requestedRoles : ['reviewer']
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderAgentReviewPrepareSummary(result));
+          : renderReviewPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'record') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
           commandName: 'review record'
         });
-        const inputPath = getOption(rest, '--input');
         const stdinText = hasFlag(rest, '--from-stdin')
-          ? inputPath
-            ? await readFile(path.resolve(inputPath), 'utf8')
-            : await readStdin(io.stdin ?? process.stdin)
+          ? await readStdin(io.stdin ?? process.stdin)
           : '';
-        const result = await recordAgentReview(repoRoot, {
+        const result = await recordReview(repoRoot, {
           storyId,
-          stage: getOption(rest, '--stage'),
-          role: getOption(rest, '--role'),
+          role: getOption(rest, '--role') ?? 'reviewer',
           status: getOption(rest, '--status'),
           summary: getOption(rest, '--summary'),
-          findings: getOptions(rest, '--finding'),
-          findingDispositions: getOptions(rest, '--finding-disposition'),
-          resolvedFindings: getOptions(rest, '--resolved-finding'),
-          artifacts: getOptions(rest, '--artifact'),
-          agentSystem: getOption(rest, '--agent-system') ?? getOption(rest, '--reviewer-system'),
-          executionMode: getOption(rest, '--execution-mode'),
-          agentId: getOption(rest, '--agent-id'),
-          agentRole: getOption(rest, '--agent-role'),
-          agentThreadId: getOption(rest, '--agent-thread-id'),
-          agentSessionId: getOption(rest, '--agent-session-id'),
-          agentCallId: getOption(rest, '--agent-call-id') ?? getOption(rest, '--agent-tool-call-id'),
-          agentModel: getOption(rest, '--agent-model'),
-          agentReasoningEffort: getOption(rest, '--agent-reasoning-effort'),
-          agentCostTier: getOption(rest, '--agent-cost-tier'),
-          agentInputTokens: getOption(rest, '--agent-input-tokens'),
-          agentOutputTokens: getOption(rest, '--agent-output-tokens'),
-          agentTotalTokens: getOption(rest, '--agent-total-tokens'),
-          agentCostUsd: getOption(rest, '--agent-cost-usd'),
-          agentTranscript: getOption(rest, '--agent-transcript'),
-          agentRequest: getOption(rest, '--agent-request'),
-          agentClosed: hasFlag(rest, '--agent-closed') || hasFlag(rest, '--subagent-closed'),
-          agentCloseEvidence: getOption(rest, '--agent-close-evidence') ?? getOption(rest, '--subagent-close-evidence'),
-          agentCloseNote: getOption(rest, '--agent-close-note') ?? getOption(rest, '--subagent-close-note'),
-          reviewerIdentity: getOption(rest, '--reviewer-identity'),
-          implementationSessionId: getOption(rest, '--implementation-session-id'),
-          inspectionSummary: getOption(rest, '--inspection-summary'),
-          inspectionEvidence: getOption(rest, '--inspection-evidence'),
           inspectionInputs: getOptions(rest, '--inspection-input'),
-          judgmentDeltas: getOptions(rest, '--judgment-delta'),
-          runtimeFailureKind: getOption(rest, '--runtime-failure-kind'),
-          runtimeFailureDetail: getOption(rest, '--runtime-failure-detail'),
-          strictHeadBinding: hasFlag(rest, '--strict-head-binding'),
-          strictHeadReason: getOption(rest, '--strict-head-reason'),
-          recordedBy: getOption(rest, '--recorded-by'),
+          artifacts: getOptions(rest, '--artifact'),
           stdinText,
-          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
-          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+          agentSystem: getOption(rest, '--agent-system'),
+          agentId: getOption(rest, '--agent-id'),
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderAgentReviewRecordSummary(result));
+          : renderReviewRecordSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'status') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
-          storyId,
-          commandName: 'review status'
-        });
-        const result = await getAgentReviewStatus(repoRoot, {
-          storyId,
-          stage: getOption(rest, '--stage'),
-          all: hasFlag(rest, '--all'),
-          history: hasFlag(rest, '--history')
-        });
-        void managedWorktreeContext;
+        const result = await getReviewStatus(repoRoot, { storyId });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderAgentReviewStatusSummary(result));
+          : renderReviewStatusSummary(result));
         return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'violations') {
-        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const result = await readReviewSurfaceViolationSummary(repoRoot, storyId, {
-          decisionRecords: await readDecisionRecordsIfExists(repoRoot, storyId)
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderReviewSurfaceViolationSummary(result));
-        return { exitCode: result.unacknowledged_count > 0 ? 2 : 0, command, subcommand, result };
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };

@@ -30,13 +30,15 @@ vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 ## 4. レビューと判断
 
 ```bash
-vibepro review prepare /path/to/repo --id story-example --stage gate
-vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "確認済み"
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro review record /path/to/repo --id story-example --role reviewer \
+  --status pass --summary "StoryとSpec、変更対象を確認済み" \
+  --inspection-input src/example.js
+vibepro review status /path/to/repo --id story-example
 vibepro decision status /path/to/repo --id story-example
 ```
 
-これらのcommandはレビューと判断の記録を残します。merge権限を与えるものではありません。
+これらのcommandは、content surfaceに紐づく軽量レビューと判断記録を保存します。inspection inputがないだけでレビューを停止せず、具体的な問題を `needs_changes` または `block` として記録します。
 
 ## 5. PRへの引き渡し
 

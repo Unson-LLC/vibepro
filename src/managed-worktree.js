@@ -430,7 +430,7 @@ export function buildManagedWorktreeCommandBinding(context) {
   };
 }
 
-export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null, bugDiagnosis = null, agentReviewApplicable = true }) {
+export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null, bugDiagnosis = null }) {
   const hasWorktree = Boolean(managedWorktree?.path && managedWorktree.mode !== 'disabled');
   const worktreeAvailable = ['created', 'reused', 'available'].includes(managedWorktree?.status);
   const branchBound = worktreeAvailable && managedWorktree.branch && managedWorktree.branch_match !== false;
@@ -563,25 +563,13 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       reason: completedPhases.includes('verify') ? 'verification evidence exists' : 'verification evidence has not been recorded yet'
     },
     {
-      id: 'agent_review_recorded',
-      status: !agentReviewApplicable
-        ? 'not_applicable'
-        : completedPhases.includes('agent_review') ? 'passed' : 'pending',
-      required: false,
-      reason: !agentReviewApplicable
-        ? 'agent review is explicitly disabled'
-        : completedPhases.includes('agent_review')
-        ? 'required agent review evidence is complete'
-        : 'agent review is not complete yet'
-    },
-    {
       id: 'pr_prepare_ready',
       status: completedPhases.includes('ready_for_pr_create')
         ? 'passed'
         : deliveryObserved ? 'not_applicable' : 'pending',
       required: !deliveryObserved,
       reason: completedPhases.includes('ready_for_pr_create')
-        ? 'Gate DAG is ready for PR creation'
+        ? 'PR summary has no unresolved blockers'
         : deliveryObserved
           ? 'delivery was observed externally; historical PR readiness is not inferred from delivery'
           : 'PR prepare is not ready yet'
@@ -687,8 +675,7 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       ['head_bound', 'implementation_started'],
       ...implementationEdges,
       ['implementation_complete', 'verification_recorded'],
-      ['verification_recorded', 'agent_review_recorded'],
-      ['agent_review_recorded', 'pr_prepare_ready'],
+      ['verification_recorded', 'pr_prepare_ready'],
       ['pr_prepare_ready', 'pr_created'],
       ['pr_created', 'merge_ready'],
       ['merge_ready', 'merged_or_closed'],

@@ -52,9 +52,10 @@ vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 
 # 4. レビュー証跡を準備・記録
-vibepro review prepare /path/to/repo --id story-example --stage gate
-vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "StoryとSpecに照らして確認済み"
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro review record /path/to/repo --id story-example --role reviewer \
+  --status pass --summary "StoryとSpecに照らして確認済み" \
+  --inspection-input src/example.js
 
 # 5. 意図から実装までの証跡をPR向けに要約
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main

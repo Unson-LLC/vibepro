@@ -11,8 +11,6 @@ import { runCli } from '../src/cli.js';
 import {
   createPullRequest,
   preparePullRequest,
-  projectAgentReviewInstruction,
-  renderAgentReviewInstructionLines,
   renderPrCreateSummary,
   renderPrPrepareSummary
 } from '../src/pr-manager.js';
@@ -548,564 +546,62 @@ test('pr prepare does not block when no story document exists', async () => {
   assert.match(body, /no acceptance criteria found/);
 });
 
-test('pr readiness reports configured but incomplete reviews and blocks PR creation until complete', async () => {
-  const storyId = 'story-pr-manager-review-readiness';
-  const root = await setupRepo({
-    storyId,
-    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
-  });
 
-  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
-  assert.equal(prepared.exitCode, 0);
-
-  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
-  assert.equal(preparation.review.configured, true);
-  assert.equal(preparation.review.recorded, false);
-  assert.equal(preparation.review.complete, false);
-  assert.equal(preparation.review.status, 'needs_review');
-  assert.equal(preparation.gate_status, 'needs_review');
-  assert.deepEqual(preparation.blocking_reasons, ['agent_review:needs_review']);
-  assert.equal(preparation.agent_review_instruction.status, 'dispatch_required');
-  assert.equal(preparation.agent_review_instruction.current_stage, 'planning_spec');
-  assert.ok(preparation.agent_review_instruction.roles.length > 0);
-  assert.ok(preparation.agent_review_instruction.next_commands.length > 0);
-  assert.ok(preparation.agent_review_instruction.next_commands.every((command) => (
-    command.includes('--stage planning_spec') || command.includes('vibepro pr prepare')
-  )), 'only the current review stage and the follow-up pr prepare command may be projected');
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
-    'pending'
-  );
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
-    'pending'
-  );
-
-  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(body, /### Review\n- configured: true\n- recorded: false\n- complete: false\n- status: needs_review/);
-  assert.match(body, /- blocking reasons: agent_review:needs_review/);
-  assert.match(body, /- error: none/);
-  assert.match(body, /- agent review instruction: dispatch_required/);
-  assert.match(body, /- current review stage: planning_spec/);
-  for (const command of preparation.agent_review_instruction.next_commands) {
-    assert.match(body, new RegExp(`    ${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
-  }
-  const humanSummary = renderPrPrepareSummary({
-    preparation,
-    artifacts: {
-      json: path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'),
-      pr_body: path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md')
-    }
-  });
-  assert.match(humanSummary, /- agent review instruction: dispatch_required/);
-  assert.match(humanSummary, /- current review stage: planning_spec/);
-
-  let createError = '';
-  const created = await runCli(
-    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
-    { stderr: { write: (chunk) => { createError += chunk; } } }
-  );
-  assert.equal(created.exitCode, 1);
-  assert.match(createError, /PR creation blocked: agent_review:needs_review/);
-});
-
-test('pr readiness marks the execution DAG ready after every configured review passes', async () => {
-  const storyId = 'story-pr-manager-review-complete';
-  const root = await setupRepo({
-    storyId,
-    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
-  });
-  const configPath = path.join(root, '.vibepro', 'config.json');
+test('configured legacy stages do not block PR creation or schedule reviews', async () => {
+  const root = await setupRepo();
+  await addGitHubRemote(root, 'origin', 'example/project');
+  const configPath = path.join(root, '.vibepro/config.json');
   const config = await readJson(configPath);
   config.agent_reviews = {
-    stages: {
-      planning_spec: ['product_requirement'],
-      requirement: [],
-      architecture_spec: [],
-      test_plan: [],
-      implementation: [],
-      gate: [],
-      preview: []
-    }
+    defaults: { freshness_mode: 'strict_head', validation_sequence_owns_checkpoints: true },
+    stages: { planning_spec: ['architect'], implementation: ['reviewer'], preview: ['e2e_ux'] }
   };
-  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
-  await git(root, ['add', configPath]);
-  await git(root, ['commit', '-m', 'test: configure one lightweight review']);
+  config.budgets = { delivery_efficiency: { max_subagent_count: 0 } };
+  await writeFile(configPath, JSON.stringify(config));
+  const { preparation, execution } = await createPullRequest(root, {
+    storyId: 'story-pr-manager-ac', baseRef: 'main', dryRun: true
+  });
+  assert.equal(preparation.gate_status, 'ready');
+  assert.equal(preparation.review.recorded, false);
+  assert.equal(preparation.review.complete, false);
+  assert.deepEqual(preparation.blocking_reasons, []);
+  assert.equal('agent_review_instruction' in preparation, false);
+  assert.ok(execution.commands.some((command) => command.startsWith('gh pr create')));
+  assert.doesNotMatch(JSON.stringify(preparation), /agent_review:needs_review|dispatch_required|replacement_review|validation_sequence|delivery_efficiency/);
+});
 
-  const preparedReview = await runCli([
-    'review', 'prepare', root,
-    '--id', storyId,
-    '--stage', 'planning_spec',
-    '--roles', 'product_requirement',
-    '--json'
-  ]);
-  assert.equal(preparedReview.exitCode, 0);
-
-  const recordedReview = await runCli([
-    'review', 'record', root,
-    '--id', storyId,
-    '--stage', 'planning_spec',
-    '--role', 'product_requirement',
-    '--status', 'pass',
-    '--summary', 'the configured lightweight review passed',
-    '--inspection-summary', 'inspected the story and implementation diff',
-    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
-    '--inspection-input', 'widget.js',
-    '--judgment-delta', 'review missing -> passed after inspecting the current content surface',
-    '--agent-system', 'codex',
-    '--execution-mode', 'parallel_subagent',
-    '--agent-id', 'reviewer-ready-1',
-    '--reviewer-identity', 'separate_session',
-    '--implementation-session-id', 'implementation-session-1',
-    '--agent-session-id', 'review-session-1',
-    '--agent-closed',
-    '--json'
-  ]);
-  assert.equal(recordedReview.exitCode, 0);
-
-  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
-  assert.equal(prepared.exitCode, 0);
-  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
-  assert.equal(preparation.review.configured, true);
-  assert.equal(preparation.review.recorded, true);
+test('documentation-only commit retains inspected code review and never requests E2E or all stages', async () => {
+  const { recordReview } = await import('../src/lightweight-review.js');
+  const root = await setupRepo();
+  const storyId = 'story-pr-manager-ac';
+  await recordReview(root, { storyId, role: 'reviewer', status: 'pass', summary: '変更箇所を確認しました', inspectionInputs: ['widget.js'] });
+  await writeFile(path.join(root, 'README.md'), '# 説明のみの変更\n');
+  await git(root, ['add', 'README.md']);
+  await git(root, ['commit', '-m', 'docs: update readme']);
+  const { preparation, artifacts } = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  assert.equal(preparation.gate_status, 'ready');
   assert.equal(preparation.review.complete, true);
   assert.equal(preparation.review.status, 'pass');
-  assert.equal(preparation.gate_status, 'ready');
-  assert.equal(preparation.agent_review_instruction, null);
-  assert.deepEqual(preparation.blocking_reasons, []);
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
-    'passed'
-  );
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
-    'passed'
-  );
-
-  const changedReview = await runCli([
-    'review', 'record', root,
-    '--id', storyId,
-    '--stage', 'planning_spec',
-    '--role', 'product_requirement',
-    '--status', 'needs_changes',
-    '--summary', 'the configured review found a required change',
-    '--inspection-summary', 'reinspected the story and implementation diff',
-    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
-    '--inspection-input', 'widget.js',
-    '--judgment-delta', 'pass -> needs changes after finding a contract mismatch',
-    '--agent-system', 'codex',
-    '--execution-mode', 'parallel_subagent',
-    '--agent-id', 'reviewer-ready-2',
-    '--reviewer-identity', 'separate_session',
-    '--implementation-session-id', 'implementation-session-1',
-    '--agent-session-id', 'review-session-2',
-    '--agent-closed',
-    '--json'
-  ]);
-  assert.equal(changedReview.exitCode, 0);
-
-  const preparedAfterChange = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
-  assert.equal(preparedAfterChange.exitCode, 0);
-  const changedPreparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
-  assert.equal(changedPreparation.review.recorded, true);
-  assert.equal(changedPreparation.review.complete, false);
-  assert.equal(changedPreparation.review.status, 'needs_review');
-  assert.equal(changedPreparation.gate_status, 'needs_review');
-  assert.deepEqual(changedPreparation.blocking_reasons, ['agent_review:needs_review']);
-  assert.equal(
-    changedPreparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
-    'pending'
-  );
-  assert.equal(
-    changedPreparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
-    'pending'
-  );
-
-  const blockedReview = await runCli([
-    'review', 'record', root,
-    '--id', storyId,
-    '--stage', 'planning_spec',
-    '--role', 'product_requirement',
-    '--status', 'block',
-    '--summary', 'the configured review found a release blocker',
-    '--inspection-summary', 'reinspected the story and implementation diff',
-    '--inspection-input', `docs/management/stories/active/${storyId}.md`,
-    '--inspection-input', 'widget.js',
-    '--judgment-delta', 'needs changes -> blocked after confirming a release blocker',
-    '--agent-system', 'codex',
-    '--execution-mode', 'parallel_subagent',
-    '--agent-id', 'reviewer-ready-3',
-    '--reviewer-identity', 'separate_session',
-    '--implementation-session-id', 'implementation-session-1',
-    '--agent-session-id', 'review-session-3',
-    '--agent-closed',
-    '--json'
-  ]);
-  assert.equal(blockedReview.exitCode, 0);
-
-  const preparedAfterBlock = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
-  assert.equal(preparedAfterBlock.exitCode, 0);
-  const blockedPreparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
-  assert.equal(blockedPreparation.review.recorded, true);
-  assert.equal(blockedPreparation.review.complete, false);
-  assert.equal(blockedPreparation.review.status, 'block');
-  assert.equal(blockedPreparation.gate_status, 'blocked');
-  assert.equal(blockedPreparation.agent_review_instruction, null);
-  assert.deepEqual(blockedPreparation.blocking_reasons, ['agent_review:block']);
-  assert.equal(
-    blockedPreparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
-    'pending'
-  );
-  assert.equal(
-    blockedPreparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
-    'pending'
-  );
-
-  const blockedBody = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(blockedBody, /### Review\n- configured: true\n- recorded: true\n- complete: false\n- status: block/);
-  assert.match(blockedBody, /- blocking reasons: agent_review:block/);
-
-  let blockCreateError = '';
-  const blockedCreate = await runCli(
-    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
-    { stderr: { write: (chunk) => { blockCreateError += chunk; } } }
-  );
-  assert.equal(blockedCreate.exitCode, 1);
-  assert.match(blockCreateError, /PR creation blocked: agent_review:block/);
+  assert.deepEqual(preparation.verification.commands, []);
+  assert.doesNotMatch(await readFile(artifacts.pr_body, 'utf8'), /dispatch_required|replacement.review|validation.sequence|convergence|--stage/);
+  // Changed inspected content is informational, never a new stage dispatch.
+  await writeFile(path.join(root, 'widget.js'), 'export function renderWidget() { return false; }\n');
+  const changed = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  assert.equal(changed.preparation.review.complete, false);
+  assert.equal(changed.preparation.gate_status, 'ready');
 });
 
-test('pr readiness fails closed when the configured review status cannot be read', async () => {
-  const storyId = 'story-pr-manager-review-status-error';
-  const root = await setupRepo({
-    storyId,
-    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
-  });
-  const configPath = path.join(root, '.vibepro', 'config.json');
-  const config = await readJson(configPath);
-  config.agent_reviews = {
-    defaults: {
-      freshness_mode: 'strict_head'
-    }
-  };
-  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
-  await git(root, ['add', configPath]);
-  await git(root, ['commit', '-m', 'test: configure an invalid review policy']);
-
-  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
-  assert.equal(prepared.exitCode, 0, 'pr prepare must persist the blocked review status for inspection');
-  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
-  assert.equal(preparation.review.configured, true);
-  assert.equal(preparation.review.recorded, false);
-  assert.equal(preparation.review.complete, false);
-  assert.equal(preparation.review.status, 'error');
-  assert.match(preparation.review.error.message, /freshness_mode cannot be strict_head/);
-  assert.equal(preparation.gate_status, 'blocked');
-  assert.equal(preparation.agent_review_instruction, null);
-  assert.deepEqual(preparation.blocking_reasons, ['agent_review:status_unavailable']);
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
-    'pending'
-  );
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
-    'pending'
-  );
-
-  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(body, /### Review\n- configured: true\n- recorded: false\n- complete: false\n- status: error/);
-  assert.match(body, /- blocking reasons: agent_review:status_unavailable/);
-  assert.match(body, /- error: .*freshness_mode cannot be strict_head/);
-
-  let createError = '';
-  const created = await runCli(
-    ['pr', 'create', root, '--story-id', storyId, '--base', 'main', '--dry-run', '--json'],
-    { stderr: { write: (chunk) => { createError += chunk; } } }
-  );
-  assert.equal(created.exitCode, 1);
-  assert.match(createError, /PR creation blocked: agent_review:status_unavailable/);
-});
-
-test('pr readiness stays ready when every review stage is explicitly disabled', async () => {
-  const storyId = 'story-pr-manager-review-disabled';
-  const root = await setupRepo({
-    storyId,
-    storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId)
-  });
-  const configPath = path.join(root, '.vibepro', 'config.json');
-  const config = await readJson(configPath);
-  config.agent_reviews = {
-    stages: {
-      planning_spec: [],
-      requirement: [],
-      architecture_spec: [],
-      test_plan: [],
-      implementation: [],
-      gate: [],
-      preview: []
-    }
-  };
-  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
-  await git(root, ['add', configPath]);
-  await git(root, ['commit', '-m', 'test: explicitly disable review stages']);
-
-  const prepared = await runCli(['pr', 'prepare', root, '--story-id', storyId, '--base', 'main', '--json']);
-  assert.equal(prepared.exitCode, 0);
-  const preparation = await readJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'));
-  assert.equal(preparation.review.configured, false);
-  assert.equal(preparation.review.recorded, false);
-  assert.equal(preparation.review.complete, false);
-  assert.equal(preparation.review.status, 'needs_review');
-  assert.equal(preparation.review.error, null);
-  assert.equal(preparation.gate_status, 'ready');
-  assert.equal(preparation.agent_review_instruction, null);
-  assert.deepEqual(preparation.blocking_reasons, []);
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded').status,
-    'not_applicable'
-  );
-  assert.equal(
-    preparation.execution_dag.nodes.find((node) => node.id === 'pr_prepare_ready').status,
-    'passed'
-  );
-
-  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(body, /### Review\n- configured: false\n- recorded: false\n- complete: false\n- status: needs_review/);
-  assert.match(body, /- blocking reasons: none/);
-  assert.match(body, /- error: none/);
-});
-
-test('agent review instruction projects only the first incomplete stage from review status', () => {
-  const planningPrepare = 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement';
-  const planningRecord = 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement';
-  const futurePrepare = 'vibepro review prepare . --id story-safe --stage implementation --role code_quality';
-  const instruction = projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null,
-    blocking_summary: {
-      items: [
-        { stage: 'planning_spec', role: 'product_requirement', prepare_command: planningPrepare, record_command: planningRecord },
-        { stage: 'implementation', role: 'code_quality', prepare_command: futurePrepare, record_command: 'future record' }
-      ],
-      next_commands: [planningPrepare, planningRecord, futurePrepare, 'vibepro pr prepare . --story-id story-safe --base main']
-    }
-  });
-
-  assert.deepEqual(instruction.roles, ['product_requirement']);
-  assert.deepEqual(instruction.next_commands, [
-    planningPrepare,
-    planningRecord,
-    'vibepro pr prepare . --story-id story-safe --base main'
-  ]);
-  assert.ok(instruction.next_commands.every((command) => !command.includes('--stage implementation')));
-});
-
-test('agent review instruction fails closed for unsafe or incomplete status commands', () => {
-  const baseReview = {
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null
-  };
-  const unsafe = projectAgentReviewInstruction({
-    ...baseReview,
-    blocking_summary: {
-      items: [{
-        stage: 'planning_spec',
-        role: 'product_requirement',
-        prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec; touch injected',
-        record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement'
-      }],
-      next_commands: ['vibepro review prepare . --id story-safe --stage planning_spec; touch injected']
-    }
-  });
-  const incomplete = projectAgentReviewInstruction({ ...baseReview, blocking_summary: { items: [], next_commands: [] } });
-
-  for (const instruction of [unsafe, incomplete]) {
-    assert.deepEqual(instruction, {
-      status: 'unavailable',
-      reason: 'unsafe_or_incomplete_review_status',
-      current_stage: null,
-      roles: [],
-      next_commands: []
-    });
-  }
-});
-
-test('agent review instruction does not reuse stale status and reprojects needs_changes current work', () => {
-  assert.equal(projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'stale',
-    error: null,
-    blocking_summary: { items: [], next_commands: [] }
-  }), null);
-
-  const recordCommand = 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement';
-  const instruction = projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null,
-    blocking_summary: {
-      items: [{
-        stage: 'planning_spec',
-        role: 'product_requirement',
-        effective_status: 'needs_changes',
-        prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement',
-        record_command: recordCommand
-      }],
-      next_commands: [recordCommand, 'vibepro pr prepare . --story-id story-safe --base main']
-    }
-  });
-  assert.equal(instruction.status, 'dispatch_required');
-  assert.equal(instruction.current_stage, 'planning_spec');
-  assert.deepEqual(instruction.roles, ['product_requirement']);
-});
-
-test('unavailable instruction has the same reason in JSON and both human summary projections', () => {
-  const instruction = projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null,
-    blocking_summary: { items: [], next_commands: [] }
-  });
-  const preparation = {
-    agent_review_instruction: instruction,
-    output: { language: 'en' },
-    story: { story_id: 'story-safe' },
-    git: { base_ref: 'main', head_ref: 'HEAD', head_sha: 'a'.repeat(40), changed_files: [] },
-    spec: { present: false },
-    verification: { recorded: false },
-    review: { recorded: false },
-    gate_status: 'needs_review',
-    bug_diagnosis: null
-  };
-  const json = JSON.stringify({ agent_review_instruction: instruction });
-  const prBodyLines = renderAgentReviewInstructionLines(instruction).join('\n');
-  const cliSummary = renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } });
-
-  assert.match(json, /unsafe_or_incomplete_review_status/);
-  assert.match(prBodyLines, /agent review instruction reason: unsafe_or_incomplete_review_status/);
-  assert.match(cliSummary, /agent review instruction reason: unsafe_or_incomplete_review_status/);
-});
-
-test('pr prepare command alone cannot satisfy a current-stage review dispatch instruction', () => {
-  const instruction = projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null,
-    blocking_summary: {
-      items: [{
-        stage: 'planning_spec',
-        role: 'product_requirement',
-        prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement',
-        record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement'
-      }],
-      next_commands: ['vibepro pr prepare . --story-id story-safe --base main']
-    }
-  });
-  const preparation = {
-    agent_review_instruction: instruction,
-    output: { language: 'en' },
-    story: { story_id: 'story-safe' },
-    git: { base_ref: 'main', head_ref: 'HEAD', head_sha: 'a'.repeat(40), changed_files: [] },
-    spec: { present: false },
-    verification: { recorded: false },
-    review: { recorded: false },
-    gate_status: 'needs_review',
-    bug_diagnosis: null
-  };
-  const json = JSON.stringify({ agent_review_instruction: instruction });
-  const prBodyLines = renderAgentReviewInstructionLines(instruction).join('\n');
-  const cliSummary = renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } });
-
-  assert.equal(instruction.status, 'unavailable');
-  assert.match(json, /unsafe_or_incomplete_review_status/);
-  assert.match(prBodyLines, /agent review instruction reason: unsafe_or_incomplete_review_status/);
-  assert.match(cliSummary, /agent review instruction reason: unsafe_or_incomplete_review_status/);
-});
-
-test('agent review instruction accepts only canonical current-stage review commands', () => {
-  const baseItem = {
-    stage: 'planning_spec',
-    role: 'product_requirement',
-    prepare_command: 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement',
-    record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement --status "<pass|needs_changes|block>" --summary "<summary>"'
-  };
-  const project = (command, item = baseItem) => projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null,
-    blocking_summary: { items: [item], next_commands: [command] }
-  });
-
-  for (const command of [baseItem.prepare_command, baseItem.record_command]) {
-    assert.equal(project(command).status, 'dispatch_required');
-  }
-
-  const rejectedCommands = [
-    'vibepro review prepare . --id story-safe --stage planning_spec | touch injected',
-    'touch injected',
-    'vibepro review prepare . --id story-safe --stage planning_spec > injected',
-    'vibepro review prepare . --id story-safe --stage planning_spec & touch injected'
-  ];
-  for (const command of rejectedCommands) {
-    const instruction = project(command, { ...baseItem, prepare_command: command });
-    const preparation = {
-      agent_review_instruction: instruction,
-      output: { language: 'en' },
-      story: { story_id: 'story-safe' },
-      git: { base_ref: 'main', head_ref: 'HEAD', head_sha: 'a'.repeat(40), changed_files: [] },
-      spec: { present: false },
-      verification: { recorded: false },
-      review: { recorded: false },
-      gate_status: 'needs_review',
-      bug_diagnosis: null
-    };
-
-    assert.equal(instruction.status, 'unavailable');
-    assert.match(JSON.stringify(instruction), /unsafe_or_incomplete_review_status/);
-    assert.match(renderAgentReviewInstructionLines(instruction).join('\n'), /agent review instruction reason: unsafe_or_incomplete_review_status/);
-    assert.match(renderPrPrepareSummary({ preparation, artifacts: { json: 'pr-prepare.json', pr_body: 'pr-body.md' } }), /agent review instruction reason: unsafe_or_incomplete_review_status/);
-  }
-});
-
-test('agent review instruction fails closed when canonical and invalid review commands are mixed', () => {
-  const canonical = 'vibepro review prepare . --id story-safe --stage planning_spec --role product_requirement';
-  const project = (extraItem, extraCommand) => projectAgentReviewInstruction({
-    configured: true,
-    complete: false,
-    status: 'needs_review',
-    error: null,
-    blocking_summary: {
-      items: [{
-        stage: 'planning_spec',
-        role: 'product_requirement',
-        prepare_command: canonical,
-        record_command: 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement'
-      }, extraItem],
-      next_commands: [canonical, extraCommand]
-    }
-  });
-
-  const arbitrary = 'touch injected';
-  const wrongRole = 'vibepro review prepare . --id story-safe --stage planning_spec --role code_quality';
-  const futureStage = 'vibepro review prepare . --id story-safe --stage implementation --role product_requirement';
-  for (const instruction of [
-    project({ stage: 'planning_spec', role: 'product_requirement', prepare_command: arbitrary }, arbitrary),
-    project({ stage: 'planning_spec', role: 'product_requirement', prepare_command: wrongRole }, wrongRole),
-    project({ stage: 'planning_spec', role: 'product_requirement', prepare_command: futureStage }, futureStage)
-  ]) {
-    assert.equal(instruction.status, 'unavailable');
-    assert.equal(instruction.reason, 'unsafe_or_incomplete_review_status');
-    assert.deepEqual(instruction.next_commands, []);
-  }
-
-  const validRecord = 'vibepro review record . --id story-safe --stage planning_spec --role product_requirement';
-  assert.equal(project({ stage: 'planning_spec', role: 'product_requirement', record_command: validRecord }, validRecord).status, 'dispatch_required');
+test('concrete unresolved review findings block PR creation until the same review is corrected', async () => {
+  const { recordReview } = await import('../src/lightweight-review.js');
+  const root = await setupRepo();
+  const storyId = 'story-pr-manager-ac';
+  await addGitHubRemote(root, 'origin', 'example/project');
+  await recordReview(root, { storyId, role: 'reviewer', status: 'needs_changes', summary: '空入力で例外になる', inspectionInputs: ['widget.js'] });
+  await assert.rejects(createPullRequest(root, { storyId, baseRef: 'main', dryRun: true }), /空入力で例外になる/);
+  // A content change must not erase an unresolved finding.
+  await writeFile(path.join(root, 'widget.js'), 'export function renderWidget() { return false; }\n');
+  await assert.rejects(createPullRequest(root, { storyId, baseRef: 'main', dryRun: true }), /空入力で例外になる/);
+  await recordReview(root, { storyId, role: 'reviewer', status: 'pass', summary: '空入力の修正を確認しました', inspectionInputs: ['widget.js'] });
+  const result = await createPullRequest(root, { storyId, baseRef: 'main', dryRun: true });
+  assert.equal(result.preparation.gate_status, 'ready');
 });

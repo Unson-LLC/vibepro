@@ -4,9 +4,9 @@
 
 The running binary is authoritative. Check its package version with `vibepro version`; when reading the manual from `main`, use [Release and Audit](/guide/release-and-audit) to distinguish unreleased behavior from the published package.
 
-Run `story diagnose --phase design-input --run-graphify` before finalizing Architecture/Spec. Before implementation or PR readiness, run `story diagnose --phase pre-implementation --run-graphify`. The normal shipping path is `story diagnose` → Architecture / Spec → implementation → `verify record` → `review prepare/start/close/record` → `guard check` → `pr prepare` → `pr create` → `verify import-ci`. A `review record --status pass` now requires `--inspection-summary`, an existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`. Legacy assertion-only pass records intentionally fail closed, so existing automation must migrate. Use the generated Usage below for the complete argument contract.
+Check the Story, Spec, and verification results. Use `review prepare` → `review record` → `review status` to record a review when needed. `pr prepare` summarizes changes and evidence; legacy review stage configuration creates no additional shipping requirements.
 
-`review record --strict-head-binding --strict-head-reason <text>` is not an unconditional CLI override: it is authorized only for a role whose policy already declares `freshness_mode: strict_head` with a `freshness_reason`, or for the `implementation:runtime_contract` `final_review` of an active, frozen validation sequence. Any other stage/role rejects it with an explicit error; see [Agent Review](/guide/agent-review) for the full authorization model and the `pr prepare` migration warning for legacy unauthorized bindings.
+A passing record requires an existing `--inspection-input` outside `.vibepro`. Changes to inspected content make it stale. Missing or stale records alone do not block PR preparation. Concrete unresolved findings (`needs_changes` / `block`) remain visible and block preparation until resolved.
 
 ## Current Usage
 
@@ -53,10 +53,9 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
-  vibepro review violations [repo] --id <story-id> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block|runtime_failed> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--runtime-failure-kind <empty_result|wrong_request|timeout|execution_error>] [--runtime-failure-detail <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
-  vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
+  vibepro review prepare [repo] --id <story-id> [--role <role>] [--roles <csv>] [--json]
+  vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
+  vibepro review status [repo] --id <story-id> [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--contract-type <bug_fix|regression_fix>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
