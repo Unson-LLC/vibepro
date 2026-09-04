@@ -119,9 +119,13 @@ test('pr prepareは未検証のStory成果ケースを権威あるメタデー�
   const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
   const outcomeCase = result.preparation.outcome_case;
   assert.equal(outcomeCase, undefined);
+  assert.equal(result.preparation.outcome_case_status, 'partial');
+  assert.equal(result.preparation.outcome_case_reason_code, 'commit_marker_missing');
 
   const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.doesNotMatch(body, /### 成果ケース連携/);
+  assert.match(body, /### 成果ケース連携/);
+  assert.match(body, /状態: `partial`/);
+  assert.match(body, /再bind\/復旧判断/);
 });
 
 test('pr create fails closed before push when distinct remotes leave the destination ambiguous', async () => {

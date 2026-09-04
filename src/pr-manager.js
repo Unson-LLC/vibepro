@@ -37,7 +37,7 @@ import { readOperationalJudgmentProjection } from './judgment-operations.js';
 import { readNarrative } from './report-store.js';
 import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
-import { verifyTrustedManagedV2OutcomeCase } from './brainbase-integration.js';
+import { inspectManagedV2OutcomeCaseProjection } from './brainbase-integration.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -52,8 +52,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
-  const [story, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
-    readStory(root, storyId),
+  const [storyRecord, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
+    readStory(root, storyId, options),
     collectGitState(root, options),
     readInferredSpec(root, storyId).catch(() => null),
     readDrift(root, storyId).catch(() => null),
@@ -61,6 +61,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     readReviewSummary(root, storyId),
     readOperationalJudgmentProjection(root, storyId)
   ]);
+  const { story, outcomeCaseProjection } = storyRecord;
   assertRecordedRuntimeIdentities(verification);
 
   const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
@@ -108,6 +109,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
     runtime_identity: runtimeIdentity,
     story,
     ...(outcomeCase ? { outcome_case: outcomeCase } : {}),
+    outcome_case_status: outcomeCaseProjection.status,
+    outcome_case_reason_code: outcomeCaseProjection.reason_code,
+    ...(outcomeCaseProjection.recovery ? { outcome_case_recovery: outcomeCaseProjection.recovery } : {}),
     task_context: options.taskId || options.groupId ? {
       task_id: options.taskId ?? null,
       group_id: options.groupId ?? null,
@@ -171,7 +175,7 @@ function requireStoryId(storyId, commandName) {
   return storyId;
 }
 
-async function readStory(repoRoot, storyId) {
+async function readStory(repoRoot, storyId, options = {}) {
   let config = null;
   try {
     config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
@@ -183,19 +187,27 @@ async function readStory(repoRoot, storyId) {
   const found = stories.find((item) => item.story_id === storyId);
   if (found) {
     const rawStory = rawStories.find((item) => item?.story_id === storyId);
-    const outcomeCase = await readTrustedOutcomeCaseProjection(repoRoot, storyId, rawStory?.outcome_case);
-    return outcomeCase ? { ...found, outcome_case: outcomeCase } : found;
+    const outcomeCaseProjection = await readTrustedOutcomeCaseProjection(repoRoot, storyId, rawStory?.outcome_case, options);
+    return {
+      story: outcomeCaseProjection.status === 'trusted'
+        ? { ...found, outcome_case: outcomeCaseProjection.outcome_case }
+        : found,
+      outcomeCaseProjection
+    };
   }
   return {
-    story_id: storyId,
-    title: storyId,
-    ssot: null,
-    status: 'unknown',
-    horizon: null,
-    view: null,
-    period: null,
-    started_at: null,
-    due_at: null
+    story: {
+      story_id: storyId,
+      title: storyId,
+      ssot: null,
+      status: 'unknown',
+      horizon: null,
+      view: null,
+      period: null,
+      started_at: null,
+      due_at: null
+    },
+    outcomeCaseProjection: await readTrustedOutcomeCaseProjection(repoRoot, storyId, null, options)
   };
 }
 
@@ -204,8 +216,8 @@ async function readStory(repoRoot, storyId) {
 // the configured local trust key before any Story metadata is projected. This
 // deliberately stays local; VibePro does not invent a network verification
 // call or treat arbitrary config as Brainbase authority.
-async function readTrustedOutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase) {
-  return verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOutcomeCase);
+async function readTrustedOutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase, options = {}) {
+  return inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase, options);
 }
 
 async function readVerificationSummary(repoRoot, storyId) {
@@ -722,15 +734,20 @@ function renderPrNarrative(narrative, status = 'missing') {
 }
 
 function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, outcome_case: outcomeCase } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
   lines.push(`Story: \`${story.story_id}\``);
   if (story.ssot) lines.push(`SSOT: ${story.ssot}`);
   lines.push('');
+  lines.push('### 成果ケース連携');
+  lines.push(`- 状態: \`${outcomeCaseStatus}\``);
+  lines.push(`- 理由コード: \`${outcomeCaseReasonCode}\``);
+  if (outcomeCaseRecovery) {
+    lines.push(`- 再bind/復旧判断: \`${outcomeCaseRecovery.decision}\` — \`${outcomeCaseRecovery.reference}\``);
+  }
   if (outcomeCase) {
-    lines.push('### 成果ケース連携');
     lines.push(`- ケースID: \`${outcomeCase.case_id}\``);
     lines.push(`- 成果ケース参照: ${outcomeCase.outcome_case_ref}`);
     lines.push(`- 判断受領参照: ${outcomeCase.judgment_receipt_ref}`);
@@ -740,8 +757,8 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
     lines.push(`- 技術完了状態: ${outcomeCase.technical_completion_status}`);
     lines.push(`- 信頼済み技術証跡: ${outcomeCase.evidence.length}件`);
     lines.push('- OutcomeCaseの完了・close・外部更新はこのPR準備の対象外');
-    lines.push('');
   }
+  lines.push('');
   const narrativeSection = renderPrNarrative(narrative, narrativeStatus);
   if (narrativeSection) lines.push(narrativeSection.trimEnd(), '');
   lines.push('### VibePro runtime identity');
@@ -1358,6 +1375,7 @@ export function renderPrPrepareSummary(result) {
     `- head: ${preparation.git.head_ref} (${preparation.git.head_sha ?? '-'})`,
     `- changed files: ${preparation.git.changed_files.length}`,
     `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
+    `- outcome case: ${preparation.outcome_case_status ?? 'unknown'} (${preparation.outcome_case_reason_code ?? 'projection_status_missing'})`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,

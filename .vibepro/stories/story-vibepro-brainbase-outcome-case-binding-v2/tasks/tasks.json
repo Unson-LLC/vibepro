@@ -7,13 +7,13 @@
   },
   "provenance": {
     "input_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
-    "input_sha256": "08c329934b333de5d09e853834120eb553ba43e5844ab4dac7feb1111cc1f061"
+    "input_sha256": "717c749cfe26e8488e5d7113ae26738ae8e42e8a5a4ddbe6c4ed26bbc821c3b9"
   },
   "tasks": [
     {
       "task_id": "TASK-OUTCOME-CASE-BINDING-V2",
       "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
-      "title": "v2成果ケース契約を検証し、StoryとPR準備へ投影する",
+      "title": "署名済みv2成果ケースを原子的にStoryへ宣言し、PR準備へ安全に投影する",
       "allowed_paths": [
         ".vibepro/config.json",
         ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
@@ -31,8 +31,10 @@
       ],
       "acceptance_criteria": [
         "v1 handoff is unchanged",
-        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story",
+        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or formal story add declaration",
+        "journal, commit marker, saved HMAC revalidation, and markerless non-projection are enforced",
         "unmanaged v2 and cross-case or unknown-issuer references are rejected",
+        "PR preparation distinguishes none from unknown, untrusted, and partial with a safe recovery decision",
         "technical completion never closes OutcomeCase"
       ],
       "status": "in_progress"

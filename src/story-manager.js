@@ -87,15 +87,23 @@ export async function addStory(repoRoot, options = {}) {
   const binding = await ensureBrainbaseStoryBinding(root, {
     storyId: story.story_id,
     config,
+    // A signed managed v2 handoff can arrive before a Story exists. This is
+    // the formal CLI declaration: binding publishes this Story together with
+    // Context, receipt, ledger, and commit marker in one recoverable journal.
+    storyDeclaration: story,
     env: options.env,
     now: options.now
   });
-  if (binding?.outcome_case) story = { ...story, outcome_case: binding.outcome_case };
-  config.brainbase = {
-    ...(config.brainbase ?? {}),
-    stories: [...stories, story]
-  };
-  await writeConfig(root, config);
+  if (binding?.story_declared) {
+    story = binding.story_declared;
+  } else {
+    if (binding?.outcome_case) story = { ...story, outcome_case: binding.outcome_case };
+    config.brainbase = {
+      ...(config.brainbase ?? {}),
+      stories: [...stories, story]
+    };
+    await writeConfig(root, config);
+  }
   await bindStoryTraceability(root, {
     storyId: story.story_id,
     source: 'story_add',

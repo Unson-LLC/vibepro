@@ -844,7 +844,7 @@ async function ledgerEntryForStory(root, storyId) {
   return ledger.entries.find((entry) => entry.story_id === storyId) ?? null;
 }
 
-async function preflightStoryProjection(root, storyId, validated) {
+async function preflightStoryProjection(root, storyId, validated, options = {}) {
   const configPath = path.join(getWorkspaceDir(root), 'config.json');
   const config = await readJsonIfExists(configPath);
   const stories = config?.brainbase?.stories;
@@ -861,24 +861,45 @@ async function preflightStoryProjection(root, storyId, validated) {
   if (!validated.managed || validated.managed.schemaVersion !== MANAGED_HANDOFF_V2_SCHEMA) {
     throw new Error('outcome-case projection requires a signed managed Brainbase handoff v2');
   }
-  if (!Array.isArray(stories)) {
-    const error = new Error(`v2 outcome-case binding requires existing Story ${storyId} before any write`);
-    error.code = 'BRAINBASE_OUTCOME_CASE_STORY_MISSING';
-    throw error;
+  const declaredStory = options.storyDeclaration;
+  if (declaredStory && declaredStory?.story_id !== storyId) {
+    throw new Error('managed v2 Story declaration does not match the binding Story');
   }
-  const index = stories.findIndex((story) => story?.story_id === storyId);
+  const currentStories = Array.isArray(stories) ? stories : [];
+  const index = currentStories.findIndex((story) => story?.story_id === storyId);
   if (index < 0) {
-    const error = new Error(`v2 outcome-case binding requires existing Story ${storyId} before any write`);
-    error.code = 'BRAINBASE_OUTCOME_CASE_STORY_MISSING';
-    throw error;
+    // `story add` is the only caller allowed to supply this declaration. It
+    // is committed in the same journal as Context, receipt, ledger, and the
+    // marker, so a v2 handoff cannot create an orphaned Story or projection.
+    if (!declaredStory || typeof declaredStory !== 'object' || Array.isArray(declaredStory)) {
+      const error = new Error(`v2 outcome-case binding requires existing Story ${storyId} before any write`);
+      error.code = 'BRAINBASE_OUTCOME_CASE_STORY_MISSING';
+      throw error;
+    }
+    const declared = { ...declaredStory, outcome_case: validated.outcomeCase };
+    return {
+      configPath,
+      config,
+      outputPath,
+      priorContext,
+      nextConfig: {
+        ...config,
+        brainbase: {
+          ...(config?.brainbase ?? {}),
+          stories: [...currentStories, declared]
+        }
+      },
+      storyMetadataUpdated: true,
+      storyDeclared: declared
+    };
   }
-  const current = stories[index];
+  const current = currentStories[index];
   if (current?.outcome_case && canonicalJson(current.outcome_case) !== canonicalJson(validated.outcomeCase)) {
     const error = new Error('existing Story outcome_case does not match the signed managed handoff');
     error.code = 'BRAINBASE_OUTCOME_CASE_STORY_CONFLICT';
     throw error;
   }
-  const nextStories = [...stories];
+  const nextStories = [...currentStories];
   nextStories[index] = { ...current, outcome_case: validated.outcomeCase };
   return {
     configPath,
@@ -904,7 +925,7 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
   // Validate all cross-artifact invariants before creating context, receipts,
   // or ledger entries. A v2 result is never reported as bound without an
   // already-existing Story projection derived from the same signed payload.
-  const projection = await preflightStoryProjection(root, storyId, validated);
+  const projection = await preflightStoryProjection(root, storyId, validated, options);
   const transactionId = validated.managed ? randomUUID() : null;
   const stableProjection = {
     schema_version: validated.contextSchema ?? CONTEXT_SCHEMA,
@@ -1019,7 +1040,11 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
     context_digest: context.context_digest,
     knowledge_reference_count: context.knowledge.reduce((count, entry) => count + entry.references.length, 0),
     artifact: toWorkspaceRelative(root, outputPath),
-    ...(context.outcome_case ? { outcome_case: context.outcome_case, story_metadata_updated: storyMetadataUpdated } : {}),
+    ...(context.outcome_case ? {
+      outcome_case: context.outcome_case,
+      story_metadata_updated: storyMetadataUpdated,
+      ...(projection.storyDeclared ? { story_declared: projection.storyDeclared } : {})
+    } : {}),
     ...(bindReceiptArtifact ? { bind_receipt_artifact: bindReceiptArtifact } : {}),
     ...(consumptionLedgerArtifact ? { consumption_ledger_artifact: consumptionLedgerArtifact } : {})
   };
@@ -1249,12 +1274,42 @@ async function readBrainbaseConfig(repoRoot) {
   return await readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'config.json')) ?? {};
 }
 
+function outcomeCaseProjectionStatus(status, reasonCode, storyId, outcomeCase = null) {
+  const recovery = status === 'trusted' || status === 'none'
+    ? null
+    : {
+      decision: status === 'partial' ? 'recover_or_rebind' : 'obtain_fresh_managed_handoff_and_rebind',
+      reference: `vibepro integration brainbase bind . --id ${storyId} --input <managed-handoff.json>`
+    };
+  return {
+    status,
+    reason_code: reasonCode,
+    ...(outcomeCase ? { outcome_case: outcomeCase } : {}),
+    ...(recovery ? { recovery } : {})
+  };
+}
+
+function classifyOutcomeCaseVerificationError(error, storyId) {
+  const message = String(error?.message ?? '');
+  if (/expired/i.test(message)) return outcomeCaseProjectionStatus('untrusted', 'managed_handoff_expired', storyId);
+  if (/HMAC|signature|trusted receipt content|key_id/i.test(message)) {
+    return outcomeCaseProjectionStatus('untrusted', 'managed_handoff_signature_invalid', storyId);
+  }
+  if (/outcome_case|technical_acceptance|production_probe|outcome case/i.test(message)) {
+    return outcomeCaseProjectionStatus('partial', 'outcome_case_partial', storyId);
+  }
+  if (/repository|project_code|base_sha|HEAD|story_id|receipt digest/i.test(message)) {
+    return outcomeCaseProjectionStatus('untrusted', 'managed_handoff_identity_mismatch', storyId);
+  }
+  return outcomeCaseProjectionStatus('unknown', 'projection_verification_unavailable', storyId);
+}
+
 // PR preparation is a second trust boundary. Local context and receipt files
 // are mutable workspace artifacts, so never use their `signature_trusted`
 // claims. The signed managed envelope is retained in the receipt and verified
-// again with the configured local trust key.
-export async function verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOutcomeCase, options = {}) {
-  if (!rawOutcomeCase || typeof rawOutcomeCase !== 'object' || Array.isArray(rawOutcomeCase)) return null;
+// again with the configured local trust key. Failures deliberately retain a
+// safe status/reason for the PR rather than silently looking "unlinked".
+export async function inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase, options = {}) {
   const root = path.resolve(repoRoot);
   try {
     const [config, context, receipt, marker] = await Promise.all([
@@ -1263,6 +1318,19 @@ export async function verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOu
       readJsonIfExists(bindReceiptPath(root, storyId)),
       readJsonIfExists(bindCommitMarkerPath(root, storyId))
     ]);
+    const hasRawOutcomeCase = Boolean(rawOutcomeCase && typeof rawOutcomeCase === 'object' && !Array.isArray(rawOutcomeCase));
+    const hasManagedArtifact = Boolean(context || receipt || marker);
+    if (!hasRawOutcomeCase && !hasManagedArtifact) {
+      return outcomeCaseProjectionStatus('none', 'not_linked', storyId);
+    }
+    if (!hasRawOutcomeCase) return outcomeCaseProjectionStatus('partial', 'outcome_case_missing', storyId);
+    try {
+      validateOutcomeCase(rawOutcomeCase, { name: 'Story outcome_case' });
+    } catch {
+      return outcomeCaseProjectionStatus('partial', 'outcome_case_partial', storyId);
+    }
+    if (!marker) return outcomeCaseProjectionStatus('partial', 'commit_marker_missing', storyId);
+    if (!context || !receipt) return outcomeCaseProjectionStatus('partial', 'binding_artifact_missing', storyId);
     if (context?.schema_version !== CONTEXT_V2_SCHEMA
         || receipt?.schema_version !== BIND_RECEIPT_SCHEMA
         || marker?.schema_version !== BIND_PUBLICATION_SCHEMA
@@ -1278,11 +1346,15 @@ export async function verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOu
         || context?.bind_receipt?.receipt_digest !== receipt.receipt_digest
         || receipt.context_digest !== context.context_digest
         || receipt.bound_at !== context.bound_at
-        || marker.committed_at !== context.bound_at) return null;
+        || marker.committed_at !== context.bound_at) {
+      return outcomeCaseProjectionStatus('untrusted', 'projection_integrity_mismatch', storyId);
+    }
     const stableContext = { ...context };
     delete stableContext.context_digest;
     delete stableContext.bound_at;
-    if (sha256(canonicalJson(stableContext)) !== context.context_digest) return null;
+    if (sha256(canonicalJson(stableContext)) !== context.context_digest) {
+      return outcomeCaseProjectionStatus('untrusted', 'context_digest_mismatch', storyId);
+    }
 
     const validated = await validateManagedHandoff(
       receipt.managed_handoff,
@@ -1310,18 +1382,29 @@ export async function verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOu
         || context.judgment?.turn_id !== validated.managed.turnId
         || receipt.turn_id !== validated.managed.turnId
         || canonicalJson(context.outcome_case) !== canonicalJson(validated.outcomeCase)
-        || canonicalJson(rawOutcomeCase) !== canonicalJson(validated.outcomeCase)) return null;
+        || canonicalJson(rawOutcomeCase) !== canonicalJson(validated.outcomeCase)) {
+      return outcomeCaseProjectionStatus('untrusted', 'projection_identity_mismatch', storyId);
+    }
 
     const ledger = await readHandoffConsumptionLedger(root);
     const entry = ledger.entries.find((candidate) => candidate.story_id === storyId);
     if (!entry || entry.receipt_digest !== validated.managed.receiptDigest
         || entry.project_code !== validated.projectCode
         || entry.repository !== validated.managed.repository
-        || entry.base_sha !== validated.managed.baseSha) return null;
-    return validated.outcomeCase;
-  } catch {
-    return null;
+        || entry.base_sha !== validated.managed.baseSha) {
+      return outcomeCaseProjectionStatus('untrusted', 'consumption_ledger_mismatch', storyId);
+    }
+    return outcomeCaseProjectionStatus('trusted', 'verified_signed_managed_v2', storyId, validated.outcomeCase);
+  } catch (error) {
+    return classifyOutcomeCaseVerificationError(error, storyId);
   }
+}
+
+// Compatibility helper for callers that only need the safe projection. New
+// PR surfaces must use the inspection result to disclose the suppression.
+export async function verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOutcomeCase, options = {}) {
+  const inspection = await inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase, options);
+  return inspection.status === 'trusted' ? inspection.outcome_case : null;
 }
 
 function summarizeManagedReceipt(root, filePath, receipt, parseError = null) {

@@ -500,6 +500,52 @@ test('PR準備は共謀して書換えたContext・receipt・Story・commit mark
 
   const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
   assert.equal(prepared.preparation.outcome_case, undefined);
+  assert.equal(prepared.preparation.outcome_case_status, 'untrusted');
+  assert.match(prepared.preparation.outcome_case_reason_code, /digest_mismatch|signature_invalid|identity_mismatch/);
+});
+
+test('PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する', async () => {
+  const noneRoot = await makeRepo();
+  await addStory(noneRoot, { story_id: STORY_ID, title: 'No outcome case link' });
+  const none = await preparePullRequest(noneRoot, { storyId: STORY_ID, baseRef: 'HEAD' });
+  assert.equal(none.preparation.outcome_case_status, 'none');
+  assert.equal(none.preparation.outcome_case_reason_code, 'not_linked');
+
+  const partialRoot = await makeRepo();
+  await addStory(partialRoot, { story_id: STORY_ID, title: 'Partial outcome case' });
+  const partialConfigPath = path.join(partialRoot, '.vibepro', 'config.json');
+  const partialConfig = JSON.parse(await readFile(partialConfigPath, 'utf8'));
+  partialConfig.brainbase.stories.find((story) => story.story_id === STORY_ID).outcome_case = { case_id: 'partial-only' };
+  await writeJson(partialConfigPath, partialConfig);
+  const partial = await preparePullRequest(partialRoot, { storyId: STORY_ID, baseRef: 'HEAD' });
+  assert.equal(partial.preparation.outcome_case, undefined);
+  assert.equal(partial.preparation.outcome_case_status, 'partial');
+  assert.equal(partial.preparation.outcome_case_reason_code, 'outcome_case_partial');
+  assert.equal(partial.preparation.outcome_case_recovery.decision, 'recover_or_rebind');
+
+  const expiredRoot = await makeRepo();
+  await addStory(expiredRoot, { story_id: STORY_ID, title: 'Expired outcome case' });
+  const { config } = await configureManagedBrainbase(expiredRoot, {
+    receipt: {
+      schemaVersion: 'brainbase-vibepro-managed-handoff.v2',
+      expiresAt: '2026-09-03T00:00:00.000Z'
+    }
+  });
+  await bindBrainbaseContext(expiredRoot, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-02T00:00:00.000Z')
+  });
+  const expired = await preparePullRequest(expiredRoot, {
+    storyId: STORY_ID,
+    baseRef: 'HEAD',
+    now: () => new Date('2026-09-04T00:00:00.000Z')
+  });
+  assert.equal(expired.preparation.outcome_case, undefined);
+  assert.equal(expired.preparation.outcome_case_status, 'untrusted');
+  assert.equal(expired.preparation.outcome_case_reason_code, 'managed_handoff_expired');
+  assert.match(await readFile(path.join(expiredRoot, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8'), /再bind\/復旧判断/);
 });
 
 test('managed v2 publish is journal-recoverable and never projects a partial transaction as trusted', async () => {
@@ -522,6 +568,8 @@ test('managed v2 publish is journal-recoverable and never projects a partial tra
     );
     const partial = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
     assert.equal(partial.preparation.outcome_case, undefined, `${failurePoint} must not be trusted before recovery`);
+    assert.equal(partial.preparation.outcome_case_status, 'partial');
+    assert.equal(partial.preparation.outcome_case_reason_code, 'commit_marker_missing');
     const journalPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'publications', `${STORY_ID}.json`);
     assert.notEqual(await readFile(journalPath, 'utf8').catch(() => null), null);
 
@@ -724,6 +772,29 @@ test('managed inboxを自動検出し、Story add前にreceipt bindを完了す�
   assert.equal(bindReceipt.base_sha, head);
   const inboxReceipt = JSON.parse(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json'), 'utf8'));
   assert.equal(inboxReceipt.story_id, null);
+});
+
+test('標準CLI Story addは署名済みmanaged v2 receiptを原子的に宣言・検証・投影する', async () => {
+  const root = await makeRepo();
+  const expectedOutcomeCase = outcomeCase();
+  await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2', managedOutcomeCase: expectedOutcomeCase }
+  });
+  const result = await runCli(['story', 'add', root, '--id', STORY_ID, '--title', 'Managed v2 CLI declaration']);
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.story.outcome_case, expectedOutcomeCase);
+
+  const config = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+  const stored = config.brainbase.stories.find((story) => story.story_id === STORY_ID);
+  const context = JSON.parse(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8'));
+  const marker = JSON.parse(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'bind-commit.json'), 'utf8'));
+  assert.deepEqual(stored.outcome_case, expectedOutcomeCase);
+  assert.deepEqual(context.outcome_case, expectedOutcomeCase);
+  assert.equal(marker.context_digest, context.context_digest);
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+  assert.equal(prepared.preparation.outcome_case_status, 'trusted');
+  assert.equal(prepared.preparation.outcome_case.case_id, expectedOutcomeCase.case_id);
+  assert.equal(prepared.preparation.outcome_case.technical_complete, false);
 });
 
 test('未結合receiptの複数候補と消費済みreceiptの別Story再利用をfail closedする', async () => {
