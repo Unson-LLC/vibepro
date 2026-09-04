@@ -639,6 +639,14 @@ export function renderStoryReport({ story, latestRun, runs, evidence, taskState 
 
 ${renderStoryJourneyContext(journeyContext)}
 
+## Outcome Case Projection
+
+| 項目 | 内容 |
+|------|------|
+| Status | not_evaluated |
+| Reason | このStory診断レポートは成果ケースの署名、commit marker、ledgerを検証しない。 |
+| Verify | \`vibepro pr prepare <repo> --story-id ${story.story_id}\` |
+
 ## graphify集計
 
 | 項目 | 内容 |

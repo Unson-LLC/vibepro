@@ -1425,6 +1425,14 @@ function outcomeCaseProjectionStatus(status, reasonCode, storyId, outcomeCase = 
   };
 }
 
+function outcomeCaseProjectionNotEvaluated(repoRoot, storyId) {
+  return {
+    status: 'not_evaluated',
+    reason_code: 'pr_prepare_required',
+    reference: storyId ? `vibepro pr prepare ${repoRoot} --story-id ${storyId}` : null
+  };
+}
+
 function classifyOutcomeCaseVerificationError(error, storyId) {
   const message = String(error?.message ?? '');
   if (/expired/i.test(message)) return outcomeCaseProjectionStatus('untrusted', 'managed_handoff_expired', storyId);
@@ -1455,14 +1463,30 @@ export async function inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, r
       readJsonIfExists(bindCommitMarkerPath(root, storyId))
     ]);
     const hasRawOutcomeCase = Boolean(rawOutcomeCase && typeof rawOutcomeCase === 'object' && !Array.isArray(rawOutcomeCase));
-    // A v1 context is a valid judgment/knowledge binding, but it has no v2
-    // outcome-case publication contract.  Do not mislabel it as an incomplete
-    // v2 transaction or suggest recovery/rebind work that does not exist.
-    const hasV2ManagedArtifact = Boolean(
-      context?.schema_version === CONTEXT_V2_SCHEMA || receipt || marker
-    );
-    if (!hasRawOutcomeCase && !hasV2ManagedArtifact) {
-      return outcomeCaseProjectionStatus('none', 'not_linked', storyId);
+    // Bind receipts and commit markers are shared by managed v1 and v2. Only
+    // a verified managed handoff v1 may suppress the v2 outcome-case recovery
+    // path; malformed or incomplete artifacts remain fail-closed below.
+    const declaresV2Projection = context?.schema_version === CONTEXT_V2_SCHEMA
+      || receipt?.managed_handoff?.schema_version === MANAGED_HANDOFF_V2_SCHEMA;
+    if (!hasRawOutcomeCase && !declaresV2Projection) {
+      if ((!context && !receipt && !marker)
+          || (context?.schema_version === CONTEXT_SCHEMA && !receipt && !marker)) {
+        return outcomeCaseProjectionStatus('none', 'not_linked', storyId);
+      }
+      if (context?.schema_version === CONTEXT_SCHEMA
+          && receipt?.managed_handoff?.schema_version === MANAGED_HANDOFF_SCHEMA) {
+        const validated = await validateManagedHandoff(
+          receipt.managed_handoff,
+          storyId,
+          root,
+          config,
+          options.now ?? (() => new Date()),
+          options.env ?? process.env
+        );
+        if (validated.managed?.schemaVersion === MANAGED_HANDOFF_SCHEMA) {
+          return outcomeCaseProjectionStatus('none', 'not_linked', storyId);
+        }
+      }
     }
     if (!hasRawOutcomeCase) return outcomeCaseProjectionStatus('partial', 'outcome_case_missing', storyId);
     try {
@@ -1616,9 +1640,18 @@ export async function getBrainbaseIntegrationStatus(repoRoot, options = {}) {
     ? {
         story_id: storyId,
         context: await readJsonIfExists(contextPath(root, storyId)),
-        bind_receipt: await readJsonIfExists(bindReceiptPath(root, storyId))
+        bind_receipt: await readJsonIfExists(bindReceiptPath(root, storyId)),
+        // This inventory never revalidates the outcome-case transaction.
+        // `pr prepare` is the sole surface that checks its signature, marker,
+        // and ledger before projecting any outcome-case metadata.
+        outcome_case_projection: outcomeCaseProjectionNotEvaluated(root, storyId)
       }
-    : { story_id: null, context: null, bind_receipt: null };
+    : {
+        story_id: null,
+        context: null,
+        bind_receipt: null,
+        outcome_case_projection: outcomeCaseProjectionNotEvaluated(root, null)
+      };
   const outboxFiles = await listOutboxFiles(root);
   const outbox = { total: outboxFiles.length, pending: 0, sent: 0, invalid: 0, entries: [] };
   for (const filePath of outboxFiles) {
@@ -1751,8 +1784,22 @@ export async function doctorBrainbaseIntegration(repoRoot, options = {}) {
     else checks.push({ id: 'context', status: 'pass', artifact: toWorkspaceRelative(root, contextPath(root, storyId)) });
     if (!status.binding.bind_receipt) checks.push({ id: 'bind_receipt', status: 'fail', detail: `bind receipt is missing for Story ${storyId}` });
     else checks.push({ id: 'bind_receipt', status: 'pass', artifact: toWorkspaceRelative(root, bindReceiptPath(root, storyId)) });
+    checks.push({
+      id: 'outcome_case_projection',
+      status: 'unknown',
+      code: 'OUTCOME_CASE_PROJECTION_NOT_EVALUATED',
+      detail: 'outcome-case trust and commit marker are evaluated only by pr prepare',
+      reference: status.binding.outcome_case_projection.reference
+    });
   } else {
     checks.push({ id: 'context', status: 'unknown', detail: 'story_id is required to inspect a binding' });
+    checks.push({
+      id: 'outcome_case_projection',
+      status: 'unknown',
+      code: 'OUTCOME_CASE_PROJECTION_NOT_EVALUATED',
+      detail: 'story_id is required before pr prepare can evaluate outcome-case trust and commit marker',
+      reference: null
+    });
   }
   if (status.outbox.invalid > 0) checks.push({ id: 'outbox', status: 'fail', detail: `${status.outbox.invalid} invalid outbox entries` });
   else if (status.outbox.pending > 0) checks.push({ id: 'outbox', status: 'warn', detail: `${status.outbox.pending} learning candidate(s) pending delivery` });
@@ -2164,10 +2211,14 @@ export function renderBrainbaseKnowledgeEvent(result) {
 export function renderBrainbaseIntegrationStatus(result) {
   const handoff = result.handoff?.count ?? 0;
   const pending = result.outbox?.pending ?? 0;
-  return `Brainbase integration ${result.status}: ${handoff} handoff receipt(s), ${pending} pending candidate(s)\n`;
+  const outcomeProjection = result.binding?.outcome_case_projection;
+  const outcomeCaseStatus = outcomeProjection
+    ? `\nOutcome case projection: ${outcomeProjection.status}${outcomeProjection.reference ? ` (run ${outcomeProjection.reference})` : ''}`
+    : '';
+  return `Brainbase integration ${result.status}: ${handoff} handoff receipt(s), ${pending} pending candidate(s)${outcomeCaseStatus}\n`;
 }
 
 export function renderBrainbaseDoctor(result) {
-  const checks = (result.checks ?? []).map((check) => `${check.status}: ${check.id}`).join(', ');
+  const checks = (result.checks ?? []).map((check) => `${check.status}: ${check.id}${check.reference ? ` (run ${check.reference})` : ''}`).join(', ');
   return `Brainbase doctor ${result.status}: ${checks}\n`;
 }

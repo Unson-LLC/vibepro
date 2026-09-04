@@ -20,11 +20,13 @@ import {
   ensureBrainbaseStoryBinding,
   getBrainbaseIntegrationStatus,
   reconcileBrainbaseOutbox,
+  renderBrainbaseDoctor,
+  renderBrainbaseIntegrationStatus,
   sha256,
 } from '../src/brainbase-integration.js';
 import { collectGitContext } from '../src/git-fingerprint.js';
 import { runCli } from '../src/cli.js';
-import { addStory, selectStory } from '../src/story-manager.js';
+import { addStory, renderStoryReport, selectStory } from '../src/story-manager.js';
 import { preparePullRequest } from '../src/pr-manager.js';
 import { initWorkspace } from '../src/workspace.js';
 
@@ -327,6 +329,29 @@ test('v1 context-only StoryのPR準備は未連携として扱い、v2復旧を�
     input: 'handoff.json',
     now: () => new Date('2026-08-30T00:00:02.000Z')
   });
+
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+  assert.equal(prepared.preparation.outcome_case, undefined);
+  assert.equal(prepared.preparation.outcome_case_status, 'none');
+  assert.equal(prepared.preparation.outcome_case_reason_code, 'not_linked');
+  assert.equal(prepared.preparation.outcome_case_recovery, undefined);
+  const body = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.doesNotMatch(body, /再bind\/復旧判断/);
+});
+
+test('署名済みmanaged v1の完全publishを通したStoryのPR準備は未連携として扱い、v2復旧を案内しない', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'managed v1 full publish Story' });
+  const { config } = await configureManagedBrainbase(root);
+  const result = await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-08-30T00:00:02.000Z')
+  });
+  assert.equal(result.status, 'bound');
+  await assert.doesNotReject(readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'bind-receipt.json'), 'utf8'));
+  await assert.doesNotReject(readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'bind-commit.json'), 'utf8'));
 
   const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
   assert.equal(prepared.preparation.outcome_case, undefined);
@@ -1215,7 +1240,7 @@ test('status/doctor/reconcile CLIはmanaged inboxと旧bind/event入口を互換
     env: {}
   });
   assert.equal(doctorAfterBind.exitCode, 0);
-  assert.equal(JSON.parse(doctorAfterBindOut.value).status, 'pass');
+  assert.equal(JSON.parse(doctorAfterBindOut.value).status, 'warn');
 
   const reconcileOut = output();
   const reconciled = await runCli(['integration', 'brainbase', 'reconcile', root, '--json'], {
@@ -1225,4 +1250,46 @@ test('status/doctor/reconcile CLIはmanaged inboxと旧bind/event入口を互換
   });
   assert.equal(reconciled.exitCode, 0);
   assert.equal(JSON.parse(reconcileOut.value).status, 'ok');
+});
+
+test('status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'Outcome projection disclosure' });
+  const { config } = await configureManagedBrainbase(root);
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-08-30T00:00:02.000Z')
+  });
+
+  const status = await getBrainbaseIntegrationStatus(root, { storyId: STORY_ID });
+  assert.deepEqual(status.binding.outcome_case_projection, {
+    status: 'not_evaluated',
+    reason_code: 'pr_prepare_required',
+    reference: `vibepro pr prepare ${root} --story-id ${STORY_ID}`
+  });
+  assert.match(renderBrainbaseIntegrationStatus(status), /Outcome case projection: not_evaluated/);
+  assert.match(renderBrainbaseIntegrationStatus(status), /vibepro pr prepare/);
+  const doctor = await doctorBrainbaseIntegration(root, { storyId: STORY_ID });
+  assert.equal(doctor.status, 'warn');
+  assert.deepEqual(doctor.checks.find((check) => check.id === 'outcome_case_projection'), {
+    id: 'outcome_case_projection',
+    status: 'unknown',
+    code: 'OUTCOME_CASE_PROJECTION_NOT_EVALUATED',
+    detail: 'outcome-case trust and commit marker are evaluated only by pr prepare',
+    reference: `vibepro pr prepare ${root} --story-id ${STORY_ID}`
+  });
+  assert.match(renderBrainbaseDoctor(doctor), /unknown: outcome_case_projection/);
+  assert.match(renderBrainbaseDoctor(doctor), /vibepro pr prepare/);
+
+  const report = renderStoryReport({
+    story: { story_id: STORY_ID, title: 'Outcome projection disclosure', status: 'active' },
+    latestRun: { run_id: 'run-test', artifacts: {} },
+    runs: [],
+    evidence: {}
+  });
+  assert.match(report, /## Outcome Case Projection/);
+  assert.match(report, /Status \| not_evaluated/);
+  assert.match(report, /vibepro pr prepare/);
 });

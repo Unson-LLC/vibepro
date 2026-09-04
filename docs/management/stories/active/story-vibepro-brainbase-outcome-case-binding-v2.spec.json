@@ -47,16 +47,18 @@
     {
       "id": "AC-4",
       "type": "contract",
-      "statement": "PR準備は保存済み署名付きmanaged v2 handoffを設定済み信頼鍵で再検証し、canonical成果ケース、receipt/context digest、Story・project・repository identity、ledgerとcommit markerを照合できる場合だけ投影する。v1 Contextだけはnone/not_linkedで復旧判断を表示せず、v2のunknown・untrusted・partialだけを安全なreason codeと再bind/復旧判断で可視化し、完了や外部更新を推測しない。",
+      "statement": "PR準備は保存済み署名付きmanaged v2 handoffを設定済み信頼鍵で再検証し、canonical成果ケース、receipt/context digest、Story・project・repository identity、ledgerとcommit markerを照合できる場合だけ投影する。v1 Contextだけはnone/not_linkedで復旧判断を表示せず、v2のunknown・untrusted・partialだけを安全なreason codeと再bind/復旧判断で可視化し、完了や外部更新を推測しない。integration status、doctor、Story診断レポートはこの信頼検証を実行せず、not_evaluatedとpr prepareの検証導線を表示する。",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-4" }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
-        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "function readTrustedOutcomeCaseProjection" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function inspectManagedV2OutcomeCaseProjection" }, { "file": "src/brainbase-integration.js", "anchor": "function getBrainbaseIntegrationStatus" }, { "file": "src/story-manager.js", "anchor": "function renderStoryReport" }, { "file": "src/pr-manager.js", "anchor": "function readTrustedOutcomeCaseProjection" }],
         "test_refs": [
           { "file": "test/pr-manager.test.js", "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない" },
           { "file": "test/brainbase-integration.test.js", "case": "PR準備は共謀して書換えたContext・receipt・Story・commit markerを署名なしでは投影しない" },
           { "file": "test/brainbase-integration.test.js", "case": "PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する" },
-          { "file": "test/brainbase-integration.test.js", "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない" }
+          { "file": "test/brainbase-integration.test.js", "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "署名済みmanaged v1の完全publishを通したStoryのPR準備は未連携として扱い、v2復旧を案内しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する" }
         ]
       }
     },
