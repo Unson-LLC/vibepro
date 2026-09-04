@@ -1114,12 +1114,24 @@ test('PR準備はcanonical source receipt署名改ざんをuntrustedとして投
 });
 
 test('tampered recovery journal ledger is rejected before replay mutates any publication document', async () => {
-  for (const sourceArtifact of ['safe/../../outside.json', encodedTraversalBeyondNormalizationDepth()]) {
+  const variants = [
+    (root) => path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json'),
+    (_root, outsidePath) => outsidePath,
+    (root, outsidePath) => `safe/../../${path.basename(outsidePath)}`,
+    (root, outsidePath) => `safe\\..\\..\\${path.basename(outsidePath)}`,
+    () => encodedTraversalBeyondNormalizationDepth(),
+    () => 'symlink-handoff.json'
+  ];
+  for (const sourceArtifactFor of variants) {
     const root = await makeRepo();
     await addStory(root, { story_id: STORY_ID, title: 'Recovery source confinement' });
     const { config, receipt } = await configureManagedBrainbase(root, {
       receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
     });
+    const outsidePath = path.join(path.dirname(root), `${path.basename(root)}-recovery.json`);
+    await writeJson(outsidePath, receipt);
+    await symlink(outsidePath, path.join(root, 'symlink-handoff.json'));
+    const sourceArtifact = sourceArtifactFor(root, outsidePath);
     const bindOptions = {
       storyId: STORY_ID,
       input: '.vibepro/integrations/brainbase/inbox/handoff.json',
@@ -1140,14 +1152,20 @@ test('tampered recovery journal ledger is rejected before replay mutates any pub
     journal.commit_marker.publication_digest = journal.publication_digest;
     await writeJson(journalPath, journal);
     const before = await managedBindingMutationSnapshot(root, STORY_ID);
+    const trustSourceBefore = await managedTrustSourceMutationSnapshot(root, STORY_ID);
 
     await assert.rejects(
       bindBrainbaseContext(root, bindOptions),
-      /remain within the repository|normalization depth/i,
+      /repository-relative|canonical repository-relative|remain within the repository|symbolic links|normalization depth/i,
       sourceArtifact
     );
     assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
     assert.equal(await readFile(journalPath, 'utf8'), `${JSON.stringify(journal, null, 2)}\n`);
+
+    const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+    assert.equal(prepared.preparation.outcome_case, undefined, sourceArtifact);
+    assert.notEqual(prepared.preparation.outcome_case_status, 'trusted', sourceArtifact);
+    assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), trustSourceBefore);
   }
 });
 
