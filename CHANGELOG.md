@@ -3049,3 +3049,24 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:524:end -->
+
+<!-- vibepro-release-pr:525:start -->
+## [#525](https://github.com/Unson-LLC/vibepro/pull/525) fix: 旧レビューGate処理を削除して軽量レビューに統一
+
+- Author: @sintariran
+- Merged: 2026-09-04T13:49:01Z
+- Commit: `4a8507d9a15193c822c56838a35ad1582360fafb`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:525:end -->

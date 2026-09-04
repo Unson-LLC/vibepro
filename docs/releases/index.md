@@ -585,3 +585,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:524:start -->
 - [PR #524](https://github.com/Unson-LLC/vibepro/pull/524) — [2026-09](/releases/2026-09): feat(brainbase): managed closed-loop integration
 <!-- vibepro-release-index-pr:524:end -->
+
+<!-- vibepro-release-index-pr:525:start -->
+- [PR #525](https://github.com/Unson-LLC/vibepro/pull/525) — [2026-09](/releases/2026-09): fix: 旧レビューGate処理を削除して軽量レビューに統一
+<!-- vibepro-release-index-pr:525:end -->
