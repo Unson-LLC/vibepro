@@ -217,6 +217,59 @@ function outcomeCase(overrides = {}) {
   };
 }
 
+function invalidManagedV2OutcomeCases() {
+  const cases = [];
+  const missingFields = [
+    'case_id',
+    'outcome_case_ref',
+    'judgment_receipt_ref',
+    'decision_digest',
+    'user_observable_outcome',
+    'technical_acceptance',
+    'production_probe'
+  ];
+  for (const field of missingFields) {
+    const value = structuredClone(outcomeCase());
+    delete value[field];
+    cases.push({ name: `missing ${field}`, value });
+  }
+
+  const blankPaths = [
+    ['case_id'],
+    ['outcome_case_ref'],
+    ['judgment_receipt_ref'],
+    ['decision_digest'],
+    ['user_observable_outcome'],
+    ['technical_acceptance', 0, 'id'],
+    ['technical_acceptance', 0, 'criterion'],
+    ['production_probe', 'id'],
+    ['production_probe', 'procedure'],
+    ['production_probe', 'terminal_receipt_target']
+  ];
+  for (const pathParts of blankPaths) {
+    const value = structuredClone(outcomeCase());
+    let target = value;
+    for (const part of pathParts.slice(0, -1)) target = target[part];
+    target[pathParts.at(-1)] = '   ';
+    cases.push({ name: `blank ${pathParts.join('.')}`, value });
+  }
+
+  cases.push({
+    name: 'empty technical_acceptance',
+    value: outcomeCase({ technical_acceptance: [] })
+  });
+  cases.push({
+    name: 'duplicate technical_acceptance ids',
+    value: outcomeCase({
+      technical_acceptance: [
+        { id: 'TA-1', criterion: '最初の基準' },
+        { id: 'TA-1', criterion: '重複した基準' }
+      ]
+    })
+  });
+  return cases;
+}
+
 async function writeJson(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
@@ -388,6 +441,86 @@ test('署名済みmanaged v2成果ケース契約をcontextと既存Storyメタ�
   const story = projectedConfig.brainbase.stories.find((item) => item.story_id === STORY_ID);
   assert.deepEqual(story.outcome_case, context.outcome_case);
   assert.equal('outcome_case_status' in context, false);
+});
+
+test('managed v2はOutcomeCase必須7項目・空値・受入ID重複をbind前に拒否し、StoryやPRへ投影しない', async () => {
+  for (const invalidCase of invalidManagedV2OutcomeCases()) {
+    const root = await makeRepo();
+    await addStory(root, { story_id: STORY_ID, title: `Reject ${invalidCase.name}` });
+    const { config } = await configureManagedBrainbase(root, {
+      receipt: {
+        schemaVersion: 'brainbase-vibepro-managed-handoff.v2',
+        managedOutcomeCase: invalidCase.value
+      }
+    });
+    const configPath = path.join(root, '.vibepro', 'config.json');
+    const beforeConfig = await readFile(configPath, 'utf8');
+
+    await assert.rejects(
+      bindBrainbaseContext(root, {
+        storyId: STORY_ID,
+        input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+        config,
+        now: () => new Date('2026-09-03T00:00:02.000Z')
+      }),
+      undefined,
+      invalidCase.name
+    );
+
+    assert.equal(await readFile(configPath, 'utf8'), beforeConfig, `${invalidCase.name}: config must be unchanged`);
+    const bindingDir = path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID);
+    for (const artifact of ['context.json', 'bind-receipt.json', 'bind-commit.json']) {
+      assert.equal(
+        await readFile(path.join(bindingDir, artifact), 'utf8').catch(() => null),
+        null,
+        `${invalidCase.name}: ${artifact} must not be written`
+      );
+    }
+
+    const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+    assert.equal(prepared.preparation.outcome_case, undefined, invalidCase.name);
+    assert.equal(prepared.preparation.outcome_case_status, 'none', invalidCase.name);
+    assert.equal(prepared.preparation.outcome_case_reason_code, 'not_linked', invalidCase.name);
+  }
+});
+
+test('managed v2 Story addも不完全OutcomeCaseを原子的に拒否し、Storyやbind成果物を残さない', async () => {
+  const representativeCases = invalidManagedV2OutcomeCases().filter(({ name }) => [
+    'missing production_probe',
+    'blank user_observable_outcome',
+    'empty technical_acceptance',
+    'duplicate technical_acceptance ids'
+  ].includes(name));
+
+  for (const invalidCase of representativeCases) {
+    const root = await makeRepo();
+    await configureManagedBrainbase(root, {
+      receipt: {
+        schemaVersion: 'brainbase-vibepro-managed-handoff.v2',
+        managedOutcomeCase: invalidCase.value
+      }
+    });
+    const configPath = path.join(root, '.vibepro', 'config.json');
+    const beforeConfig = await readFile(configPath, 'utf8');
+
+    await assert.rejects(
+      addStory(root, { story_id: STORY_ID, title: `Reject ${invalidCase.name}` }),
+      undefined,
+      invalidCase.name
+    );
+
+    assert.equal(await readFile(configPath, 'utf8'), beforeConfig, `${invalidCase.name}: Story add must not write config`);
+    const persisted = JSON.parse(await readFile(configPath, 'utf8'));
+    assert.equal(persisted.brainbase.stories.some((story) => story.story_id === STORY_ID), false, invalidCase.name);
+    const bindingDir = path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID);
+    for (const artifact of ['context.json', 'bind-receipt.json', 'bind-commit.json']) {
+      assert.equal(
+        await readFile(path.join(bindingDir, artifact), 'utf8').catch(() => null),
+        null,
+        `${invalidCase.name}: ${artifact} must not be written`
+      );
+    }
+  }
 });
 
 test('非managed v2は成果ケース値の前にfail closedする', async () => {
