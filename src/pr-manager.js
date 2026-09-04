@@ -18,7 +18,7 @@
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { isDeepStrictEqual, promisify } from 'node:util';
+import { promisify } from 'node:util';
 
 import { getWorkspaceDir, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
@@ -37,6 +37,7 @@ import { readOperationalJudgmentProjection } from './judgment-operations.js';
 import { readNarrative } from './report-store.js';
 import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
+import { verifyTrustedManagedV2OutcomeCase } from './brainbase-integration.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -198,30 +199,13 @@ async function readStory(repoRoot, storyId) {
   };
 }
 
-// Story config is user-editable. Only project an outcome case to a PR when
-// the same value is present in the v2 context and its managed bind receipt.
-// This is deliberately a local consistency check: VibePro must not invent a
-// network verification call or treat arbitrary config as Brainbase authority.
+// Story config is user-editable. PR preparation is a separate trust boundary:
+// the signed managed envelope retained by the bind receipt is revalidated with
+// the configured local trust key before any Story metadata is projected. This
+// deliberately stays local; VibePro does not invent a network verification
+// call or treat arbitrary config as Brainbase authority.
 async function readTrustedOutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase) {
-  if (!rawOutcomeCase || typeof rawOutcomeCase !== 'object' || Array.isArray(rawOutcomeCase)) return null;
-  const base = path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', storyId);
-  let context;
-  let receipt;
-  try {
-    [context, receipt] = await Promise.all([
-      JSON.parse(await readFile(path.join(base, 'context.json'), 'utf8')),
-      JSON.parse(await readFile(path.join(base, 'bind-receipt.json'), 'utf8'))
-    ]);
-  } catch {
-    return null;
-  }
-  if (context?.schema_version !== 'vibepro-brainbase-context.v2'
-      || context?.source?.managed !== true
-      || context?.bind_receipt?.signature_trusted !== true
-      || receipt?.signature_trusted !== true
-      || context?.bind_receipt?.receipt_digest !== receipt?.receipt_digest
-      || !isDeepStrictEqual(context?.outcome_case, rawOutcomeCase)) return null;
-  return context.outcome_case;
+  return verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOutcomeCase);
 }
 
 async function readVerificationSummary(repoRoot, storyId) {

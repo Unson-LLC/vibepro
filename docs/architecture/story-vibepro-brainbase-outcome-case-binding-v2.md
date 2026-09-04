@@ -4,10 +4,11 @@
 
 ```
 Brainbase handoff v1 ──> v1検証 ──> v1 context（変更なし）
-signed managed handoff v2（outcome_caseを署名）──> v2検証 ──> context + existing Story metadata + PR metadata
-                                                    │
-                                                    └─> technical_complete / evidence
-                                                         （OutcomeCaseをcloseしない）
+signed managed handoff v2（outcome_caseを署名）──> v2検証 ──> durable journal
+                                                        │
+                                                        └─> config + context + bind receipt + ledger
+                                                             └─> commit marker ──> PR metadata
+                                                                  （OutcomeCaseをcloseしない）
 unmanaged handoff v2 ──> 拒否（Story/PRの権威メタデータへ投影しない）
 ```
 
@@ -27,7 +28,9 @@ v2は `brainbase-vibepro-managed-handoff.v2` の署名済み `outcome_case` と�
 
 ## 投影と完了境界
 
-成果ケース契約はv2 contextの `outcome_case`、既存Storyの `outcome_case`、PR準備の `outcome_case` に投影する。既存Storyがない場合はContextを書き込む前に失敗する。configとContextの個別原子的置換の間に失敗した場合はconfigを復元し、`bound` を返さない。PR準備は、同じ値を持つmanaged v2 Contextと署名済みbind receiptをローカルで照合できた場合だけStory値を投影する。PR準備の `technical_completion` は信頼済み検証証跡の有無を明示するが、受入条件と証跡の対応が不明な場合は `technical_complete: false` と `status: unknown` を返す。
+成果ケース契約はv2 contextの `outcome_case`、既存Storyの `outcome_case`、PR準備の `outcome_case` に投影する。既存Storyがない場合は書込み前に失敗する。managed bindはconfig、Context、bind receipt、消費ledgerを1つの耐久ジャーナルへ記録し、全ファイルの置換後にcommit markerを書き込む。中断時はmarkerのない部分投影をPR準備が信頼せず、次のbindが同じジャーナルを前進回復するため、`bound` を返さない。
+
+PR準備は、Context・Story・receipt・markerの局所一致だけを信頼しない。receiptに保持した署名済みmanaged handoff v2を設定済み信頼鍵で再検証し、canonical `outcome_case`、receipt/context digest、Story ID、project、repository、repository root、base SHA、resolution/turn、ledgerを照合できた場合だけStory値を投影する。ローカルの `signature_trusted` のような自己申告フラグは権威にしない。PR準備の `technical_completion` は信頼済み検証証跡の有無を明示するが、受入条件と証跡の対応が不明な場合は `technical_complete: false` と `status: unknown` を返す。
 
 OutcomeCaseの状態値、close要求、外部書込み経路は追加しない。production probeは実行せず、宣言された終端証跡の参照先だけを保持する。
 

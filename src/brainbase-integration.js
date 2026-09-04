@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
-import { mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -21,6 +21,7 @@ const EVENT_PAYLOAD_SCHEMA = 'vibepro-development-learning.v1';
 const OUTBOX_SCHEMA = 'vibepro-brainbase-outbox.v1';
 const BIND_RECEIPT_SCHEMA = 'vibepro-brainbase-bind-receipt.v1';
 const HANDOFF_LEDGER_SCHEMA = 'vibepro-brainbase-handoff-consumption-ledger.v1';
+const BIND_PUBLICATION_SCHEMA = 'vibepro-brainbase-bind-publication.v1';
 const DEFAULT_HANDOFF_HMAC_KEY_ID = 'brainbase-vibepro-handoff-hmac-v1';
 const MANAGED_HANDOFF_PAYLOAD_FIELDS = [
   'schema_version',
@@ -216,6 +217,14 @@ function outboxPath(repoRoot, eventId) {
 
 function handoffLedgerPath(repoRoot) {
   return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', 'handoff-consumption-ledger.json');
+}
+
+function bindPublicationJournalPath(repoRoot, storyId) {
+  return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', 'publications', `${safeIdentifier(storyId, 'story_id')}.json`);
+}
+
+function bindCommitMarkerPath(repoRoot, storyId) {
+  return path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', safeIdentifier(storyId, 'story_id'), 'bind-commit.json');
 }
 
 function defaultInboxCandidates(repoRoot) {
@@ -785,7 +794,7 @@ async function readHandoffConsumptionLedger(root) {
   return { schema_version: HANDOFF_LEDGER_SCHEMA, entries };
 }
 
-async function recordHandoffConsumption(root, storyId, validated, sourceArtifact, now) {
+async function nextHandoffConsumption(root, storyId, validated, sourceArtifact, now) {
   if (!validated.managed) return null;
   const relativeSource = requiredString(sourceArtifact, 'handoff source_artifact').replaceAll('\\', '/');
   const sourcePath = ledgerSourcePath(root, relativeSource);
@@ -806,7 +815,10 @@ async function recordHandoffConsumption(root, storyId, validated, sourceArtifact
     error.code = 'BRAINBASE_HANDOFF_ALREADY_BOUND';
     throw error;
   }
-  if (digestMatch || storyMatch) return digestMatch ?? storyMatch;
+  if (digestMatch || storyMatch) return {
+    entry: digestMatch ?? storyMatch,
+    ledger
+  };
   const entry = {
     receipt_digest: validated.managed.receiptDigest,
     story_id: storyId,
@@ -818,11 +830,13 @@ async function recordHandoffConsumption(root, storyId, validated, sourceArtifact
     source_artifact: relativeSource,
     consumed_at: dateFromOption(now ?? (() => new Date())).toISOString()
   };
-  await writeJsonAtomic(handoffLedgerPath(root), {
+  return {
+    entry,
+    ledger: {
     schema_version: HANDOFF_LEDGER_SCHEMA,
     entries: [...ledger.entries, entry]
-  });
-  return entry;
+    }
+  };
 }
 
 async function ledgerEntryForStory(root, storyId) {
@@ -883,10 +897,15 @@ async function preflightStoryProjection(root, storyId, validated) {
 }
 
 async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
+  // A journal without its final commit marker is deliberately not trusted by
+  // PR preparation. Replaying it before a new bind makes process interruption
+  // recoverable without ever treating a partial projection as authoritative.
+  await recoverManagedPublication(root, storyId, options);
   // Validate all cross-artifact invariants before creating context, receipts,
   // or ledger entries. A v2 result is never reported as bound without an
   // already-existing Story projection derived from the same signed payload.
   const projection = await preflightStoryProjection(root, storyId, validated);
+  const transactionId = validated.managed ? randomUUID() : null;
   const stableProjection = {
     schema_version: validated.contextSchema ?? CONTEXT_SCHEMA,
     story_id: storyId,
@@ -922,8 +941,11 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
       expires_at: validated.managed.expiresAt,
       bind_receipt: {
         schema_version: BIND_RECEIPT_SCHEMA,
-        receipt_digest: validated.managed.receiptDigest,
-        signature_trusted: validated.managed.signature.trusted
+        receipt_digest: validated.managed.receiptDigest
+      },
+      publication: {
+        schema_version: BIND_PUBLICATION_SCHEMA,
+        transaction_id: transactionId
       }
     } : {})
   };
@@ -933,22 +955,11 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
     bound_at: (options.now ?? (() => new Date()))().toISOString()
   };
   const outputPath = projection.outputPath;
-  if (validated.outcomeCase) {
-    // Each individual file replacement is atomic. If the second replacement
-    // fails, restore the first so this call cannot return a half-projection.
-    await writeJsonAtomic(projection.configPath, projection.nextConfig);
-    try {
-      await writeJsonAtomic(outputPath, context);
-    } catch (error) {
-      await writeJsonAtomic(projection.configPath, projection.config);
-      throw error;
-    }
-  } else {
-    await writeJsonAtomic(outputPath, context);
-  }
   const storyMetadataUpdated = projection.storyMetadataUpdated;
   let bindReceiptArtifact = null;
+  let consumptionLedgerArtifact = null;
   if (validated.managed) {
+    if (!options.handoffSource) throw new Error('managed Brainbase bind requires a repository-local handoff source');
     const receipt = {
       schema_version: BIND_RECEIPT_SCHEMA,
       story_id: storyId,
@@ -961,18 +972,45 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
       resolution_id: validated.managed.resolutionId,
       turn_id: validated.managed.turnId,
       receipt_digest: validated.managed.receiptDigest,
-      signature_trusted: validated.managed.signature.trusted,
       context_digest: context.context_digest,
-      bound_at: context.bound_at
+      bound_at: context.bound_at,
+      // Preserve the signed envelope, rather than a boolean assertion about
+      // it. Consumers must revalidate this payload against their local key.
+      managed_handoff: validated.handoff,
+      publication: {
+        schema_version: BIND_PUBLICATION_SCHEMA,
+        transaction_id: transactionId
+      }
     };
     const receiptPath = bindReceiptPath(root, storyId);
-    await writeJsonAtomic(receiptPath, receipt);
+    const nextLedger = await nextHandoffConsumption(root, storyId, validated, options.handoffSource, options.now);
+    const journal = {
+      schema_version: BIND_PUBLICATION_SCHEMA,
+      transaction_id: transactionId,
+      story_id: storyId,
+      documents: {
+        config: projection.nextConfig,
+        context,
+        receipt,
+        ledger: nextLedger.ledger
+      }
+    };
+    journal.publication_digest = publicationDigest(journal);
+    journal.commit_marker = {
+      schema_version: BIND_PUBLICATION_SCHEMA,
+      transaction_id: transactionId,
+      story_id: storyId,
+      publication_digest: journal.publication_digest,
+      context_digest: context.context_digest,
+      receipt_digest: validated.managed.receiptDigest,
+      committed_at: context.bound_at
+    };
+    await writeJsonAtomic(bindPublicationJournalPath(root, storyId), journal);
+    await completeManagedPublication(root, storyId, journal, options);
     bindReceiptArtifact = toWorkspaceRelative(root, receiptPath);
-  }
-  let consumptionLedgerArtifact = null;
-  if (validated.managed && options.handoffSource) {
-    await recordHandoffConsumption(root, storyId, validated, options.handoffSource, options.now);
     consumptionLedgerArtifact = toWorkspaceRelative(root, handoffLedgerPath(root));
+  } else {
+    await writeJsonAtomic(outputPath, context);
   }
   return {
     status: 'bound',
@@ -1099,6 +1137,100 @@ async function readJsonIfExists(filePath) {
   }
 }
 
+function publicationFailure(options, point) {
+  const failurePoints = Array.isArray(options?.publishFailureAt)
+    ? options.publishFailureAt
+    : [options?.publishFailureAt];
+  if (failurePoints.includes(point)) {
+    const error = new Error(`injected Brainbase bind publication failure at ${point}`);
+    error.code = 'BRAINBASE_BIND_PUBLICATION_INJECTED_FAILURE';
+    throw error;
+  }
+}
+
+function publicationDocuments(root, storyId) {
+  return {
+    config: path.join(getWorkspaceDir(root), 'config.json'),
+    context: contextPath(root, storyId),
+    receipt: bindReceiptPath(root, storyId),
+    ledger: handoffLedgerPath(root)
+  };
+}
+
+function publicationDigest(journal) {
+  return sha256(canonicalJson({
+    schema_version: journal.schema_version,
+    transaction_id: journal.transaction_id,
+    story_id: journal.story_id,
+    documents: journal.documents
+  }));
+}
+
+function validatePublicationJournal(root, storyId, journal) {
+  object(journal, 'Brainbase bind publication journal');
+  if (journal.schema_version !== BIND_PUBLICATION_SCHEMA) throw new Error('Brainbase bind publication journal has an unsupported schema');
+  if (safeIdentifier(journal.story_id, 'Brainbase bind publication journal.story_id') !== storyId) {
+    throw new Error('Brainbase bind publication journal story_id does not match');
+  }
+  managedIdentifier(journal.transaction_id, 'Brainbase bind publication journal.transaction_id');
+  object(journal.documents, 'Brainbase bind publication journal.documents');
+  for (const name of ['config', 'context', 'receipt', 'ledger']) object(journal.documents[name], `Brainbase bind publication journal.documents.${name}`);
+  if (sha256Field(journal.publication_digest, 'Brainbase bind publication journal.publication_digest') !== publicationDigest(journal)) {
+    throw new Error('Brainbase bind publication journal digest does not match');
+  }
+  object(journal.commit_marker, 'Brainbase bind publication journal.commit_marker');
+  if (journal.commit_marker.publication_digest !== journal.publication_digest
+      || journal.commit_marker.story_id !== storyId
+      || journal.commit_marker.schema_version !== BIND_PUBLICATION_SCHEMA) {
+    throw new Error('Brainbase bind publication commit marker does not match the journal');
+  }
+  return journal;
+}
+
+async function completeManagedPublication(root, storyId, journal, options = {}, { recovering = false } = {}) {
+  const documents = publicationDocuments(root, storyId);
+  try {
+    for (const name of ['config', 'context', 'receipt', 'ledger']) {
+      publicationFailure(options, recovering ? `recovery-${name}` : name);
+      await writeJsonAtomic(documents[name], journal.documents[name]);
+    }
+    publicationFailure(options, recovering ? 'recovery-commit' : 'commit');
+    await writeJsonAtomic(bindCommitMarkerPath(root, storyId), journal.commit_marker);
+    publicationFailure(options, recovering ? 'recovery-cleanup' : 'cleanup');
+    await unlink(bindPublicationJournalPath(root, storyId)).catch((error) => {
+      if (error?.code !== 'ENOENT') throw error;
+    });
+  } catch (error) {
+    // No compensating write can restore a crash-consistent multi-file state.
+    // Keep the durable journal and leave the marker absent; recovery replays
+    // the complete transaction. This checkpoint makes rollback-path failures
+    // executable without allowing a partial projection to become trusted.
+    publicationFailure(options, 'rollback');
+    throw error;
+  }
+}
+
+async function recoverManagedPublication(root, storyId, options = {}) {
+  const journalPath = bindPublicationJournalPath(root, storyId);
+  const journal = await readJsonIfExists(journalPath);
+  if (journal === null) return false;
+  validatePublicationJournal(root, storyId, journal);
+  const marker = await readJsonIfExists(bindCommitMarkerPath(root, storyId));
+  if (marker?.publication_digest === journal.publication_digest
+      && marker?.transaction_id === journal.transaction_id
+      && marker?.story_id === storyId
+      && marker?.schema_version === BIND_PUBLICATION_SCHEMA) {
+    publicationFailure(options, 'recovery-cleanup');
+    await unlink(journalPath).catch((error) => {
+      if (error?.code !== 'ENOENT') throw error;
+    });
+    return true;
+  }
+  publicationFailure(options, 'recovery');
+  await completeManagedPublication(root, storyId, journal, options, { recovering: true });
+  return true;
+}
+
 async function listOutboxFiles(repoRoot) {
   const directory = path.join(getWorkspaceDir(repoRoot), 'integrations', 'brainbase', 'outbox');
   try {
@@ -1115,6 +1247,81 @@ async function listOutboxFiles(repoRoot) {
 
 async function readBrainbaseConfig(repoRoot) {
   return await readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'config.json')) ?? {};
+}
+
+// PR preparation is a second trust boundary. Local context and receipt files
+// are mutable workspace artifacts, so never use their `signature_trusted`
+// claims. The signed managed envelope is retained in the receipt and verified
+// again with the configured local trust key.
+export async function verifyTrustedManagedV2OutcomeCase(repoRoot, storyId, rawOutcomeCase, options = {}) {
+  if (!rawOutcomeCase || typeof rawOutcomeCase !== 'object' || Array.isArray(rawOutcomeCase)) return null;
+  const root = path.resolve(repoRoot);
+  try {
+    const [config, context, receipt, marker] = await Promise.all([
+      readBrainbaseConfig(root),
+      readJsonIfExists(contextPath(root, storyId)),
+      readJsonIfExists(bindReceiptPath(root, storyId)),
+      readJsonIfExists(bindCommitMarkerPath(root, storyId))
+    ]);
+    if (context?.schema_version !== CONTEXT_V2_SCHEMA
+        || receipt?.schema_version !== BIND_RECEIPT_SCHEMA
+        || marker?.schema_version !== BIND_PUBLICATION_SCHEMA
+        || context?.story_id !== storyId
+        || receipt?.story_id !== storyId
+        || context?.publication?.schema_version !== BIND_PUBLICATION_SCHEMA
+        || receipt?.publication?.schema_version !== BIND_PUBLICATION_SCHEMA
+        || context.publication.transaction_id !== receipt.publication.transaction_id
+        || marker.transaction_id !== context.publication.transaction_id
+        || marker.story_id !== storyId
+        || marker.context_digest !== context.context_digest
+        || marker.receipt_digest !== receipt.receipt_digest
+        || context?.bind_receipt?.receipt_digest !== receipt.receipt_digest
+        || receipt.context_digest !== context.context_digest
+        || receipt.bound_at !== context.bound_at
+        || marker.committed_at !== context.bound_at) return null;
+    const stableContext = { ...context };
+    delete stableContext.context_digest;
+    delete stableContext.bound_at;
+    if (sha256(canonicalJson(stableContext)) !== context.context_digest) return null;
+
+    const validated = await validateManagedHandoff(
+      receipt.managed_handoff,
+      storyId,
+      root,
+      config,
+      options.now ?? (() => new Date()),
+      options.env ?? process.env
+    );
+    if (validated.managed?.schemaVersion !== MANAGED_HANDOFF_V2_SCHEMA
+        || marker.receipt_digest !== validated.managed.receiptDigest
+        || context?.source?.handoff_digest !== sha256(canonicalJson(validated.handoff))
+        || context?.source?.managed_receipt_digest !== validated.managed.receiptDigest
+        || context.project_code !== validated.projectCode
+        || receipt.project_code !== validated.projectCode
+        || context.repository !== validated.managed.repository
+        || receipt.repository !== validated.managed.repository
+        || context.repository_root !== validated.managed.repositoryRoot
+        || receipt.repository_root !== validated.managed.repositoryRoot
+        || context.base_sha !== validated.managed.baseSha
+        || receipt.base_sha !== validated.managed.baseSha
+        || context.judgment?.resolution_id !== validated.managed.resolutionId
+        || context.judgment?.receipt_digest !== validated.managed.receiptDigest
+        || receipt.resolution_id !== validated.managed.resolutionId
+        || context.judgment?.turn_id !== validated.managed.turnId
+        || receipt.turn_id !== validated.managed.turnId
+        || canonicalJson(context.outcome_case) !== canonicalJson(validated.outcomeCase)
+        || canonicalJson(rawOutcomeCase) !== canonicalJson(validated.outcomeCase)) return null;
+
+    const ledger = await readHandoffConsumptionLedger(root);
+    const entry = ledger.entries.find((candidate) => candidate.story_id === storyId);
+    if (!entry || entry.receipt_digest !== validated.managed.receiptDigest
+        || entry.project_code !== validated.projectCode
+        || entry.repository !== validated.managed.repository
+        || entry.base_sha !== validated.managed.baseSha) return null;
+    return validated.outcomeCase;
+  } catch {
+    return null;
+  }
 }
 
 function summarizeManagedReceipt(root, filePath, receipt, parseError = null) {
