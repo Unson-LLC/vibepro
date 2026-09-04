@@ -52,7 +52,7 @@ test('CLIは実HTTP送信後の受信記録を保存し、再実行でPOSTを重
     { method: 'POST', url: '/api/knowledge/events' },
     { method: 'GET', url: '/api/knowledge/cycles/ke_cli?project_code=project%2Ftest' }
   ]);
-  assert.deepEqual(calls[0].body, event);
+  assert.deepEqual(calls[0].body, { ...event, organization_id: 'org-fixture' });
   assert.ok(calls.every((call) => call.authorization === 'Bearer fixture-token' && call.organization === 'org-fixture'));
   const persisted = JSON.parse(await readFile(file, 'utf8'));
   assert.equal(persisted.receiver_status, 'confirmed');

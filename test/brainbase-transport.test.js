@@ -23,7 +23,8 @@ test('既存POST/GET契約、認証、redirect禁止、タイムアウトを使�
   await transport.send(candidate);
   await transport.readback(candidate);
   assert.equal(calls[0].url, 'https://brainbase.example/api/knowledge/events');
-  assert.deepEqual(JSON.parse(calls[0].options.body), candidate);
+  assert.deepEqual(JSON.parse(calls[0].options.body), { ...candidate, organization_id: 'org-test' });
+  assert.equal(candidate.organization_id, undefined);
   assert.equal(calls[1].url, 'https://brainbase.example/api/knowledge/cycles/kev_fixture?project_code=test%2Fproject');
   for (const { options } of calls) {
     assert.equal(options.headers.Authorization, 'Bearer fixture-secret');

@@ -29,7 +29,7 @@ Brainbase `4d04fa5c2` の `server/routes/knowledge-events.js`、`server/services
 2. `GET /api/knowledge/cycles/:eventId?project_code=...` で `knowledge_cycle_receipt.v1` を読み戻します。
 3. 両IDの一致、`semantic_state=active`、失敗理由なし、`processing_stage=retrievable`、検索可能になった時刻と段階履歴を確認します。
 
-両リクエストはBearer認証を使います。組織ヘッダーはサービス認証の組織指定に使われます。利用者認証の組織は受信側が認証情報から決め、ヘッダーで権限を上書きしません。
+両リクエストはBearer認証を使います。組織ヘッダーはサービス認証の組織指定に使われます。POST本文にも設定した `organization_id` を付加し、受信側に認証組織との一致を検証させます。利用者認証の組織は受信側が認証情報から決め、ヘッダーで権限を上書きしません。元のローカル候補は変更しません。
 
 ## 保存状態と再試行
 

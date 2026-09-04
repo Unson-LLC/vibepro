@@ -195,7 +195,9 @@ export function createBrainbaseTransport(
     assertOrganizationClaims(candidate, organizationId);
     let body;
     try {
-      body = JSON.stringify(candidate);
+      // User authentication ignores the organization header. An explicit body
+      // claim makes the receiver reject a token for a different organization.
+      body = JSON.stringify({ ...candidate, organization_id: organizationId });
     } catch {
       throw candidateError('Brainbase Knowledge candidate could not be serialized as JSON');
     }
