@@ -35,8 +35,8 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         }
       ],
       "mapped_evidence": [],
@@ -46,10 +46,8 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "untrusted",
-      "reason_codes": [
-        "verification_evidence_untrusted"
-      ],
+      "verification_status": "verified",
+      "reason_codes": [],
       "weak_mapping_reason": null
     },
     {
@@ -72,8 +70,8 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         }
       ],
       "mapped_evidence": [],
@@ -83,10 +81,8 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "untrusted",
-      "reason_codes": [
-        "verification_evidence_untrusted"
-      ],
+      "verification_status": "verified",
+      "reason_codes": [],
       "weak_mapping_reason": null
     },
     {
@@ -109,56 +105,56 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "Story add traceability再開は宣言不一致・未信頼v2・v1を拒否する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2 publish is journal-recoverable and never projects a partial transaction as trusted",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2 process recovery can fail closed and resume idempotently",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed handoff sourceは外部・traversal・encoded・symlinkを一切のbinding write前に拒否する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "tampered recovery journal ledger is rejected before replay mutates any publication document",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         }
       ],
       "mapped_evidence": [],
@@ -168,10 +164,8 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "untrusted",
-      "reason_codes": [
-        "verification_evidence_untrusted"
-      ],
+      "verification_status": "verified",
+      "reason_codes": [],
       "weak_mapping_reason": null
     },
     {
@@ -196,62 +190,62 @@
         {
           "file": "test/pr-manager.test.js",
           "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
           "blob_oid": "d16113be3c3e6fec767da38a3cf0da0b659d353e"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "PR準備は共謀して書換えたContext・receipt・Story・commit markerを署名なしでは投影しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "署名済みmanaged v1の完全publishを通したStoryのPR準備は未連携として扱い、v2復旧を案内しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "PR準備はcanonical source receipt欠損をuntrustedとして投影せずtrust sourceを変更しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "PR準備はcanonical source receipt改ざんをuntrustedとして投影せずtrust sourceを変更しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "PR準備はcanonical source receipt署名改ざんをuntrustedとして投影せずtrust sourceを変更しない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         }
       ],
       "mapped_evidence": [],
@@ -261,10 +255,8 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "untrusted",
-      "reason_codes": [
-        "verification_evidence_untrusted"
-      ],
+      "verification_status": "verified",
+      "reason_codes": [],
       "weak_mapping_reason": null
     },
     {
@@ -287,14 +279,14 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない",
-          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
-          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+          "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
+          "blob_oid": "6e07314c84bf65fdf676bc72c95fe54505fa84af"
         }
       ],
       "mapped_evidence": [],
@@ -304,10 +296,8 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "untrusted",
-      "reason_codes": [
-        "verification_evidence_untrusted"
-      ],
+      "verification_status": "verified",
+      "reason_codes": [],
       "weak_mapping_reason": null
     }
   ],
@@ -321,7 +311,7 @@
   },
   "accepted_spec_lineage": {
     "status": "resolved",
-    "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+    "head_sha": "818824a0cd53aca915ffad5fad7873300f38932d",
     "spec_path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
     "spec_blob_oid": "c6ee5228f40983b43a9841d0bf2703d0758753d4",
     "story_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
@@ -349,5 +339,5 @@
     "examples": []
   },
   "created_at": "2026-09-03T23:05:20.214Z",
-  "updated_at": "2026-09-04T08:49:31.285Z"
+  "updated_at": "2026-09-04T10:19:51.248Z"
 }

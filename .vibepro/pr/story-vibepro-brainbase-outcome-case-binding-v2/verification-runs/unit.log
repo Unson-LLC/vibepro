@@ -1,17 +1,17 @@
-✔ Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts (1727.052708ms)
-✔ Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate (3681.499333ms)
-✔ Issue #462 resolves test.each and it.each cases without weakening exact case matching (1008.33175ms)
-✔ Issue #454 resolves routing from target HEAD and trusts only exact computed evidence (825.315958ms)
-✔ Issue #454 keeps legacy heuristic behavior when accepted-spec is absent (497.298333ms)
-✔ bind creates deterministic accepted authority with tracked provenance (440.315041ms)
-✔ bind rejects untracked, wrong-story, duplicate, path escape, and diagnostic proposal inputs (886.915041ms)
-✔ diagnosis routes to proposal output and cannot overwrite accepted authority (362.716ms)
-✔ selected task validation fails closed outside accepted authority (458.8875ms)
-✔ selected task validation rejects stale or tampered accepted authority (719.450167ms)
-✔ task scope globstar accepts zero or nested directory segments (1537.404458ms)
-✔ task scope globstar still rejects wrong extensions and outside prefixes (1519.362416ms)
-✔ task bind CLI writes JSON result (686.447542ms)
-✔ bind preflights routed projections before writing accepted authority (335.32575ms)
+✔ Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts (1942.318292ms)
+✔ Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate (3918.276084ms)
+✔ Issue #462 resolves test.each and it.each cases without weakening exact case matching (1346.953292ms)
+✔ Issue #454 resolves routing from target HEAD and trusts only exact computed evidence (978.98125ms)
+✔ Issue #454 keeps legacy heuristic behavior when accepted-spec is absent (521.499417ms)
+✔ bind creates deterministic accepted authority with tracked provenance (515.773292ms)
+✔ bind rejects untracked, wrong-story, duplicate, path escape, and diagnostic proposal inputs (965.767041ms)
+✔ diagnosis routes to proposal output and cannot overwrite accepted authority (383.578875ms)
+✔ selected task validation fails closed outside accepted authority (489.282417ms)
+✔ selected task validation rejects stale or tampered accepted authority (727.112375ms)
+✔ task scope globstar accepts zero or nested directory segments (1627.336625ms)
+✔ task scope globstar still rejects wrong extensions and outside prefixes (1823.006292ms)
+✔ task bind CLI writes JSON result (948.556625ms)
+✔ bind preflights routed projections before writing accepted authority (408.21375ms)
 ℹ tests 14
 ℹ suites 0
 ℹ pass 14
@@ -19,4 +19,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 8153.505666
+ℹ duration_ms 9152.237917
