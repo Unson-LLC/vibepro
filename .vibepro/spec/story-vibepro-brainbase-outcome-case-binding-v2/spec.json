@@ -33,7 +33,7 @@
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-04T08:12:41.928Z"
+      "last_revised_at": "2026-09-04T08:17:15.078Z"
     },
     {
       "id": "C-002",
@@ -65,7 +65,7 @@
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-04T08:12:41.928Z"
+      "last_revised_at": "2026-09-04T08:17:15.078Z"
     },
     {
       "id": "C-003",
@@ -145,7 +145,7 @@
         ]
       },
       "first_seen_at": "2026-09-03T23:28:44.470Z",
-      "last_revised_at": "2026-09-04T08:12:41.928Z"
+      "last_revised_at": "2026-09-04T08:17:15.078Z"
     },
     {
       "id": "C-004",
@@ -225,7 +225,7 @@
         ]
       },
       "first_seen_at": "2026-09-04T00:00:00.000Z",
-      "last_revised_at": "2026-09-04T08:12:41.928Z"
+      "last_revised_at": "2026-09-04T08:17:15.078Z"
     },
     {
       "id": "INV-001",
@@ -269,13 +269,13 @@
         ]
       },
       "first_seen_at": "2026-09-04T05:36:27.558Z",
-      "last_revised_at": "2026-09-04T08:12:41.928Z"
+      "last_revised_at": "2026-09-04T08:17:15.078Z"
     }
   ],
-  "generated_at": "2026-09-04T08:12:41.926Z",
+  "generated_at": "2026-09-04T08:17:15.077Z",
   "generated_by": {
     "caller": "codex",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": "2026-09-04T05:36:27.558Z"
+  "previous_spec_id": "2026-09-04T08:12:41.926Z"
 }

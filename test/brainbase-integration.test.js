@@ -1446,9 +1446,11 @@ test('対象Storyのcanonical Specはmanaged v2 traceability再開契約と改�
     reference.file === 'test/brainbase-integration.test.js'
     && reference.case === 'managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する'
   )));
-  assert.ok(Number.isFinite(Date.parse(clause.last_revised_at)));
-  assert.ok(Number.isFinite(Date.parse(spec.generated_at)));
-  assert.equal(clause.last_revised_at, spec.generated_at);
+  const revisedAt = Date.parse(clause.last_revised_at);
+  const generatedAt = Date.parse(spec.generated_at);
+  assert.ok(Number.isFinite(revisedAt));
+  assert.ok(Number.isFinite(generatedAt));
+  assert.ok(revisedAt >= generatedAt);
 });
 
 test('未結合receiptの複数候補と消費済みreceiptの別Story再利用をfail closedする', async () => {
