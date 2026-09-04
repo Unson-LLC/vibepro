@@ -1163,15 +1163,11 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = safeIdentifier(options.storyId, 'story_id');
   const requestedInput = requiredString(options.input, 'input');
-  const configuredManaged = isManagedBrainbaseConfig(options.config ?? {});
-  if (configuredManaged) {
-    normalizeLedgerSourceArtifact(requestedInput, 'managed Brainbase handoff source');
-  }
   const requestedInputPath = path.resolve(root, requestedInput);
   const inputPath = await confinedRepositoryPath(root, requestedInputPath, 'managed Brainbase handoff source');
   const raw = await readJson(inputPath, 'Brainbase handoff');
   const managed = isManagedHandoffSchema(raw?.schema_version);
-  if (managed && !configuredManaged) {
+  if (raw?.schema_version === MANAGED_HANDOFF_V2_SCHEMA) {
     normalizeLedgerSourceArtifact(requestedInput, 'managed Brainbase handoff source');
   }
   const handoffSource = await canonicalRepositoryRelative(root, inputPath, 'handoff source_artifact');

@@ -449,7 +449,7 @@ test('署名済みmanaged v1の完全publishを通したStoryのPR準備は未�
   const { config } = await configureManagedBrainbase(root);
   const result = await bindBrainbaseContext(root, {
     storyId: STORY_ID,
-    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    input: path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json'),
     config,
     now: () => new Date('2026-08-30T00:00:02.000Z')
   });
