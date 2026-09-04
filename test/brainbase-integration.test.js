@@ -952,11 +952,13 @@ test('managed handoff sourceは外部・traversal・encoded・symlinkを一切�
   await writeJson(path.resolve(root, backslashTraversal), receipt);
   const encodedTraversal = 'safe/%2e%2e/%2e%2e/handoff.json';
   await writeJson(path.resolve(root, encodedTraversal), receipt);
+  const deeplyEncodedTraversal = 'safe/%25252e%25252e/%25252e%25252e/handoff.json';
+  await writeJson(path.resolve(root, deeplyEncodedTraversal), receipt);
   const symlinkPath = path.join(root, 'symlink-handoff.json');
   await symlink(outsidePath, symlinkPath);
   const before = await managedBindingMutationSnapshot(root, STORY_ID);
 
-  for (const input of [outsidePath, traversal, backslashTraversal, encodedTraversal, 'symlink-handoff.json']) {
+  for (const input of [outsidePath, traversal, backslashTraversal, encodedTraversal, deeplyEncodedTraversal, 'symlink-handoff.json']) {
     await assert.rejects(
       bindBrainbaseContext(root, {
         storyId: STORY_ID,
@@ -980,6 +982,7 @@ test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格
     (root, outsidePath) => `safe/../../${path.basename(outsidePath)}`,
     (_root, outsidePath) => outsidePath,
     () => 'safe/%252e%252e/%252e%252e/outside.json',
+    () => 'safe/%25252e%25252e/%25252e%25252e/outside.json',
     () => 'symlink-handoff.json'
   ];
   for (const sourceArtifact of variants) {
@@ -997,9 +1000,13 @@ test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格
     const outsidePath = path.join(path.dirname(root), `${path.basename(root)}-consumed.json`);
     await writeJson(outsidePath, receipt);
     await symlink(outsidePath, path.join(root, 'symlink-handoff.json'));
+    const tamperedSourceArtifact = sourceArtifact(root, outsidePath);
+    if (tamperedSourceArtifact.includes('%')) {
+      await writeJson(path.resolve(root, tamperedSourceArtifact), receipt);
+    }
     const ledgerPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'handoff-consumption-ledger.json');
     const ledger = JSON.parse(await readFile(ledgerPath, 'utf8'));
-    ledger.entries[0].source_artifact = sourceArtifact(root, outsidePath);
+    ledger.entries[0].source_artifact = tamperedSourceArtifact;
     await writeJson(ledgerPath, ledger);
     const configPath = path.join(root, '.vibepro', 'config.json');
     const stored = JSON.parse(await readFile(configPath, 'utf8'))
@@ -1063,6 +1070,32 @@ test('PR準備はcanonical source receipt改ざんをuntrustedとして投影せ
   assert.equal(prepared.preparation.outcome_case, undefined);
   assert.equal(prepared.preparation.outcome_case_status, 'untrusted');
   assert.equal(prepared.preparation.outcome_case_reason_code, 'consumption_ledger_mismatch');
+  assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), before);
+});
+
+test('PR準備はcanonical source receipt署名改ざんをuntrustedとして投影せずtrust sourceを変更しない', async () => {
+  const root = await makeRepo();
+  const { config } = await configureManagedBrainbase(root, {
+    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+  });
+  await addStory(root, { story_id: STORY_ID, title: 'Tampered canonical source receipt signature' });
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  });
+  const sourcePath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json');
+  const sourceReceipt = JSON.parse(await readFile(sourcePath, 'utf8'));
+  sourceReceipt.signature.value = '0'.repeat(64);
+  await writeJson(sourcePath, sourceReceipt);
+  const before = await managedTrustSourceMutationSnapshot(root, STORY_ID);
+
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+
+  assert.equal(prepared.preparation.outcome_case, undefined);
+  assert.equal(prepared.preparation.outcome_case_status, 'untrusted');
+  assert.equal(prepared.preparation.outcome_case_reason_code, 'managed_handoff_signature_invalid');
   assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), before);
 });
 

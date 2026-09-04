@@ -750,7 +750,8 @@ function pathRemainsWithin(root, candidate) {
 function decodedPathVariants(value, name) {
   const variants = [value];
   let current = value;
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  const maxDecodeDepth = 8;
+  for (let attempt = 0; attempt < maxDecodeDepth; attempt += 1) {
     let decoded;
     try {
       decoded = decodeURIComponent(current);
@@ -760,6 +761,15 @@ function decodedPathVariants(value, name) {
     if (decoded === current) break;
     variants.push(decoded.replaceAll('\\', '/'));
     current = decoded;
+  }
+  let residual;
+  try {
+    residual = decodeURIComponent(current);
+  } catch {
+    throw new Error(`${name} contains invalid percent encoding`);
+  }
+  if (residual !== current) {
+    throw new Error(`${name} exceeds the safe percent-encoding normalization depth`);
   }
   return variants;
 }
@@ -1656,6 +1666,18 @@ export async function inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, r
     const sourceReceipt = await readJson(sourcePath, 'consumed managed Brainbase handoff receipt');
     if (sourceReceipt?.receipt_digest !== entry.receipt_digest
         || sha256(canonicalManagedHandoffPayload(sourceReceipt)) !== entry.receipt_digest) {
+      return outcomeCaseProjectionStatus('untrusted', 'consumption_ledger_mismatch', storyId);
+    }
+    const validatedSource = await validateManagedHandoff(
+      sourceReceipt,
+      storyId,
+      root,
+      config,
+      options.now ?? (() => new Date()),
+      options.env ?? process.env
+    );
+    if (validatedSource.managed?.schemaVersion !== MANAGED_HANDOFF_V2_SCHEMA
+        || validatedSource.managed.receiptDigest !== entry.receipt_digest) {
       return outcomeCaseProjectionStatus('untrusted', 'consumption_ledger_mismatch', storyId);
     }
     return outcomeCaseProjectionStatus('trusted', 'verified_signed_managed_v2', storyId, validated.outcomeCase);
