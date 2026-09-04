@@ -7,7 +7,7 @@
   },
   "provenance": {
     "input_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
-    "input_sha256": "34fbc3301be80b98700900bab03aa817c0c038c32aef1dfe0ea1b640f899dbed"
+    "input_sha256": "08b24303ec4ea9bbc885f2e6b04288ec3ae3ab9bd7f49a23228f6ff0bf8817fa"
   },
   "tasks": [
     {
@@ -16,6 +16,14 @@
       "title": "署名済みv2成果ケースを原子的にStoryへ宣言し、PR準備へ安全に投影する",
       "allowed_paths": [
         ".vibepro/config.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/pr-body.md",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/pr-prepare.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/traceability.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.log",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.log",
         ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
         ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.json",
         ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.md",
