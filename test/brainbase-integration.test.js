@@ -321,6 +321,11 @@ async function managedTrustSourceMutationSnapshot(root, storyId) {
   ])));
 }
 
+function encodedTraversalBeyondNormalizationDepth(depth = 10) {
+  const encodedDot = `%${'25'.repeat(depth - 1)}2e`;
+  return `safe/${encodedDot}${encodedDot}/${encodedDot}${encodedDot}/outside.json`;
+}
+
 function refreshContextDigest(context) {
   const stable = { ...context };
   delete stable.context_digest;
@@ -954,11 +959,13 @@ test('managed handoff sourceは外部・traversal・encoded・symlinkを一切�
   await writeJson(path.resolve(root, encodedTraversal), receipt);
   const deeplyEncodedTraversal = 'safe/%25252e%25252e/%25252e%25252e/handoff.json';
   await writeJson(path.resolve(root, deeplyEncodedTraversal), receipt);
+  const excessiveEncodedTraversal = encodedTraversalBeyondNormalizationDepth();
+  await writeJson(path.resolve(root, excessiveEncodedTraversal), receipt);
   const symlinkPath = path.join(root, 'symlink-handoff.json');
   await symlink(outsidePath, symlinkPath);
   const before = await managedBindingMutationSnapshot(root, STORY_ID);
 
-  for (const input of [outsidePath, traversal, backslashTraversal, encodedTraversal, deeplyEncodedTraversal, 'symlink-handoff.json']) {
+  for (const input of [outsidePath, traversal, backslashTraversal, encodedTraversal, deeplyEncodedTraversal, excessiveEncodedTraversal, 'symlink-handoff.json']) {
     await assert.rejects(
       bindBrainbaseContext(root, {
         storyId: STORY_ID,
@@ -966,7 +973,7 @@ test('managed handoff sourceは外部・traversal・encoded・symlinkを一切�
         config,
         now: () => new Date('2026-09-03T00:00:02.000Z')
       }),
-      /repository-relative|canonical repository-relative|remain within the repository|symbolic links/i,
+      /repository-relative|canonical repository-relative|remain within the repository|symbolic links|normalization depth/i,
       input
     );
     assert.deepEqual(
@@ -983,6 +990,7 @@ test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格
     (_root, outsidePath) => outsidePath,
     () => 'safe/%252e%252e/%252e%252e/outside.json',
     () => 'safe/%25252e%25252e/%25252e%25252e/outside.json',
+    () => encodedTraversalBeyondNormalizationDepth(),
     () => 'symlink-handoff.json'
   ];
   for (const sourceArtifact of variants) {
@@ -1011,7 +1019,7 @@ test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格
     const configPath = path.join(root, '.vibepro', 'config.json');
     const stored = JSON.parse(await readFile(configPath, 'utf8'))
       .brainbase.stories.find((story) => story.story_id === STORY_ID);
-    const before = await managedBindingMutationSnapshot(root, STORY_ID);
+    const before = await managedTrustSourceMutationSnapshot(root, STORY_ID);
 
     const inspection = await inspectManagedV2OutcomeCaseProjection(
       root,
@@ -1020,7 +1028,12 @@ test('tampered consumption ledger source_artifactは読戻しでtrustedへ昇格
       { now: () => new Date('2026-09-03T00:00:03.000Z') }
     );
     assert.notEqual(inspection.status, 'trusted');
-    assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
+    assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), before);
+
+    const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+    assert.equal(prepared.preparation.outcome_case, undefined);
+    assert.notEqual(prepared.preparation.outcome_case_status, 'trusted');
+    assert.deepEqual(await managedTrustSourceMutationSnapshot(root, STORY_ID), before);
   }
 });
 
@@ -1100,34 +1113,41 @@ test('PR準備はcanonical source receipt署名改ざんをuntrustedとして投
 });
 
 test('tampered recovery journal ledger is rejected before replay mutates any publication document', async () => {
-  const root = await makeRepo();
-  await addStory(root, { story_id: STORY_ID, title: 'Recovery source confinement' });
-  const { config } = await configureManagedBrainbase(root, {
-    receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
-  });
-  const bindOptions = {
-    storyId: STORY_ID,
-    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
-    config,
-    now: () => new Date('2026-09-03T00:00:02.000Z')
-  };
-  await assert.rejects(bindBrainbaseContext(root, { ...bindOptions, publishFailureAt: 'receipt' }));
-  const journalPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'publications', `${STORY_ID}.json`);
-  const journal = JSON.parse(await readFile(journalPath, 'utf8'));
-  journal.documents.ledger.entries[0].source_artifact = 'safe/../../outside.json';
-  journal.publication_digest = sha256(canonicalJson({
-    schema_version: journal.schema_version,
-    transaction_id: journal.transaction_id,
-    story_id: journal.story_id,
-    documents: journal.documents
-  }));
-  journal.commit_marker.publication_digest = journal.publication_digest;
-  await writeJson(journalPath, journal);
-  const before = await managedBindingMutationSnapshot(root, STORY_ID);
+  for (const sourceArtifact of ['safe/../../outside.json', encodedTraversalBeyondNormalizationDepth()]) {
+    const root = await makeRepo();
+    await addStory(root, { story_id: STORY_ID, title: 'Recovery source confinement' });
+    const { config, receipt } = await configureManagedBrainbase(root, {
+      receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
+    });
+    const bindOptions = {
+      storyId: STORY_ID,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      now: () => new Date('2026-09-03T00:00:02.000Z')
+    };
+    await assert.rejects(bindBrainbaseContext(root, { ...bindOptions, publishFailureAt: 'receipt' }));
+    if (sourceArtifact.includes('%')) await writeJson(path.resolve(root, sourceArtifact), receipt);
+    const journalPath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'publications', `${STORY_ID}.json`);
+    const journal = JSON.parse(await readFile(journalPath, 'utf8'));
+    journal.documents.ledger.entries[0].source_artifact = sourceArtifact;
+    journal.publication_digest = sha256(canonicalJson({
+      schema_version: journal.schema_version,
+      transaction_id: journal.transaction_id,
+      story_id: journal.story_id,
+      documents: journal.documents
+    }));
+    journal.commit_marker.publication_digest = journal.publication_digest;
+    await writeJson(journalPath, journal);
+    const before = await managedBindingMutationSnapshot(root, STORY_ID);
 
-  await assert.rejects(bindBrainbaseContext(root, bindOptions), /remain within the repository/i);
-  assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
-  assert.equal(await readFile(journalPath, 'utf8'), `${JSON.stringify(journal, null, 2)}\n`);
+    await assert.rejects(
+      bindBrainbaseContext(root, bindOptions),
+      /remain within the repository|normalization depth/i,
+      sourceArtifact
+    );
+    assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before);
+    assert.equal(await readFile(journalPath, 'utf8'), `${JSON.stringify(journal, null, 2)}\n`);
+  }
 });
 
 test('routingだけ・personal knowledge・未要求entryを受け入れない', async () => {
