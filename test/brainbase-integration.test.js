@@ -950,6 +950,7 @@ test('managed handoff sourceは外部・traversal・encoded・symlinkを一切�
     receipt: { schemaVersion: 'brainbase-vibepro-managed-handoff.v2' }
   });
   await addStory(root, { story_id: STORY_ID, title: 'Confined handoff source' });
+  const inRepositoryAbsolutePath = path.join(root, '.vibepro', 'integrations', 'brainbase', 'inbox', 'handoff.json');
   const outsidePath = path.join(path.dirname(root), `${path.basename(root)}-outside-handoff.json`);
   await writeJson(outsidePath, receipt);
   const traversal = `safe/../../${path.basename(outsidePath)}`;
@@ -965,7 +966,7 @@ test('managed handoff sourceは外部・traversal・encoded・symlinkを一切�
   await symlink(outsidePath, symlinkPath);
   const before = await managedBindingMutationSnapshot(root, STORY_ID);
 
-  for (const input of [outsidePath, traversal, backslashTraversal, encodedTraversal, deeplyEncodedTraversal, excessiveEncodedTraversal, 'symlink-handoff.json']) {
+  for (const input of [inRepositoryAbsolutePath, outsidePath, traversal, backslashTraversal, encodedTraversal, deeplyEncodedTraversal, excessiveEncodedTraversal, 'symlink-handoff.json']) {
     await assert.rejects(
       bindBrainbaseContext(root, {
         storyId: STORY_ID,
