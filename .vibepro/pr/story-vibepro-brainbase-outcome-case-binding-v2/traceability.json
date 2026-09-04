@@ -35,8 +35,8 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         }
       ],
       "mapped_evidence": [],
@@ -46,8 +46,10 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "unverified",
-      "reason_codes": [],
+      "verification_status": "untrusted",
+      "reason_codes": [
+        "verification_evidence_untrusted"
+      ],
       "weak_mapping_reason": null
     },
     {
@@ -70,8 +72,8 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         }
       ],
       "mapped_evidence": [],
@@ -81,15 +83,17 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "unverified",
-      "reason_codes": [],
+      "verification_status": "untrusted",
+      "reason_codes": [
+        "verification_evidence_untrusted"
+      ],
       "weak_mapping_reason": null
     },
     {
       "id": "AC-3",
       "type": "acceptance_criterion",
-      "source_text": "AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。一般のbind APIと任意の事前作成Story宣言はfail closedする。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。",
-      "text": "AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。一般のbind APIと任意の事前作成Story宣言はfail closedする。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。",
+      "source_text": "AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。公開済みmanaged v2取引のtraceability書込みだけが失敗した場合は、commit済みStory・信頼済み投影・完全一致する正規化済み宣言・traceability欠落をすべて確認できる同じ標準Story追加だけが、公開を重複せずtraceabilityを冪等に再開する。不一致・未信頼v2・v1はfail closedする。一般のbind APIと任意の事前作成Story宣言はfail closedする。handoff sourceと消費ledgerの `source_artifact` は、正規のrepo相対パスであり、シンボリックリンク解決後もrepo root内に留まる場合だけ受理する。外部・traversal・encoded traversal・symlink escapeは、bindまたは回復による書込み前に拒否する。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。",
+      "text": "AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。公開済みmanaged v2取引のtraceability書込みだけが失敗した場合は、commit済みStory・信頼済み投影・完全一致する正規化済み宣言・traceability欠落をすべて確認できる同じ標準Story追加だけが、公開を重複せずtraceabilityを冪等に再開する。不一致・未信頼v2・v1はfail closedする。一般のbind APIと任意の事前作成Story宣言はfail closedする。handoff sourceと消費ledgerの `source_artifact` は、正規のrepo相対パスであり、シンボリックリンク解決後もrepo root内に留まる場合だけ受理する。外部・traversal・encoded traversal・symlink escapeは、bindまたは回復による書込み前に拒否する。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。",
       "source_line": 21,
       "status": "mapped",
       "story_scenario_ids": [],
@@ -104,21 +108,57 @@
       "mapped_test_provenance": [
         {
           "file": "test/brainbase-integration.test.js",
+          "case": "trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
           "case": "公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "Story add traceability再開は宣言不一致・未信頼v2・v1を拒否する",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2 publish is journal-recoverable and never projects a partial transaction as trusted",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "managed v2 process recovery can fail closed and resume idempotently",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "managed handoff sourceは外部・traversal・encoded・symlinkを一切のbinding write前に拒否する",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "tampered recovery journal ledger is rejected before replay mutates any publication document",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         }
       ],
       "mapped_evidence": [],
@@ -128,15 +168,17 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "unverified",
-      "reason_codes": [],
+      "verification_status": "untrusted",
+      "reason_codes": [
+        "verification_evidence_untrusted"
+      ],
       "weak_mapping_reason": null
     },
     {
       "id": "AC-4",
       "type": "acceptance_criterion",
-      "source_text": "AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、技術完了の判定と検証証跡だけを返す。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。",
-      "text": "AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、技術完了の判定と検証証跡だけを返す。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。",
+      "source_text": "AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、消費ledgerが指すrepo内のcanonical source receiptを再読込してダイジェストを照合し、技術完了の判定と検証証跡だけを返す。外部・非正規・欠落・改ざん済みsourceはtrustedへ昇格させない。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。`integration status`、`doctor`、Story診断レポートはこの信頼検証を実行しないため、`not_evaluated` と `pr prepare` の検証導線を表示する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。",
+      "text": "AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、消費ledgerが指すrepo内のcanonical source receiptを再読込してダイジェストを照合し、技術完了の判定と検証証跡だけを返す。外部・非正規・欠落・改ざん済みsourceはtrustedへ昇格させない。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。`integration status`、`doctor`、Story診断レポートはこの信頼検証を実行しないため、`not_evaluated` と `pr prepare` の検証導線を表示する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。",
       "source_line": 22,
       "status": "mapped",
       "story_scenario_ids": [],
@@ -154,20 +196,62 @@
         {
           "file": "test/pr-manager.test.js",
           "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
           "blob_oid": "d16113be3c3e6fec767da38a3cf0da0b659d353e"
         },
         {
           "file": "test/brainbase-integration.test.js",
+          "case": "PR準備は共謀して書換えたContext・receipt・Story・commit markerを署名なしでは投影しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
           "case": "PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "署名済みmanaged v1の完全publishを通したStoryのPR準備は未連携として扱い、v2復旧を案内しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "PR準備はcanonical source receipt欠損をuntrustedとして投影せずtrust sourceを変更しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "PR準備はcanonical source receipt改ざんをuntrustedとして投影せずtrust sourceを変更しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "PR準備はcanonical source receipt署名改ざんをuntrustedとして投影せずtrust sourceを変更しない",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
+        },
+        {
+          "file": "test/brainbase-integration.test.js",
+          "case": "status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する",
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         }
       ],
       "mapped_evidence": [],
@@ -177,8 +261,10 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "unverified",
-      "reason_codes": [],
+      "verification_status": "untrusted",
+      "reason_codes": [
+        "verification_evidence_untrusted"
+      ],
       "weak_mapping_reason": null
     },
     {
@@ -201,14 +287,14 @@
         {
           "file": "test/brainbase-integration.test.js",
           "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         },
         {
           "file": "test/brainbase-integration.test.js",
           "case": "signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない",
-          "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
-          "blob_oid": "9fbaff74a7a78a6adec82ad2b690fd78aabf3c91"
+          "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
+          "blob_oid": "0796144b546bab82fc3a458c8cd4d45e594bad84"
         }
       ],
       "mapped_evidence": [],
@@ -218,8 +304,10 @@
       ],
       "mapping_source": "accepted_spec",
       "lineage_status": "resolved",
-      "verification_status": "unverified",
-      "reason_codes": [],
+      "verification_status": "untrusted",
+      "reason_codes": [
+        "verification_evidence_untrusted"
+      ],
       "weak_mapping_reason": null
     }
   ],
@@ -233,11 +321,11 @@
   },
   "accepted_spec_lineage": {
     "status": "resolved",
-    "head_sha": "61dc388f4a3eee78f9ac6c4d760d60fdf251b70d",
+    "head_sha": "741ebe35008dfc7229f33fa0184298cb5f998d0c",
     "spec_path": ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
-    "spec_blob_oid": "77b1b00a466e8b1e2b418ef9f52f58ac7734c23a",
+    "spec_blob_oid": "c6ee5228f40983b43a9841d0bf2703d0758753d4",
     "story_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
-    "story_blob_oid": "e182ffac0b292070e5e120b464d3bbf8d71310f4",
+    "story_blob_oid": "7429e49d98635554c7efd5f44a7342543bc274f5",
     "mapping_source": "accepted_spec",
     "clause_count": 5,
     "resolved_clause_count": 5,
@@ -261,5 +349,5 @@
     "examples": []
   },
   "created_at": "2026-09-03T23:05:20.214Z",
-  "updated_at": "2026-09-04T01:56:00.377Z"
+  "updated_at": "2026-09-04T08:49:31.285Z"
 }
