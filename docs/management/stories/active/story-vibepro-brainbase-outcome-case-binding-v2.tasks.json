@@ -22,8 +22,8 @@
         "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md"
       ],
       "acceptance_criteria": [
-        "v1 handoff is unchanged",
-        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or formal story add declaration",
+        "v1 handoff is unchanged and a v1 context-only Story is none/not_linked without v2 recovery guidance",
+        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or an internal-only formal story add declaration; general bind APIs reject arbitrary declarations",
         "journal, commit marker, saved HMAC revalidation, and markerless non-projection are enforced",
         "unmanaged v2 and cross-case or unknown-issuer references are rejected",
         "PR preparation distinguishes none from unknown, untrusted, and partial with a safe recovery decision",

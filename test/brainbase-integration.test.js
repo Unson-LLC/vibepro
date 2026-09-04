@@ -16,6 +16,7 @@ import {
   createBrainbaseKnowledgeEvent,
   doctorBrainbaseIntegration,
   enqueueBrainbaseLearningCandidate,
+  ensureBrainbaseStoryBinding,
   getBrainbaseIntegrationStatus,
   reconcileBrainbaseOutbox,
   sha256,
@@ -315,6 +316,25 @@ test('Brainbase judgment・routing receipt・retrieval referencesをlocal contex
   assert.equal(context.context_digest.length, 64);
 });
 
+test('v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'v1 context-only Story' });
+  await writeJson(path.join(root, 'handoff.json'), handoff());
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: 'handoff.json',
+    now: () => new Date('2026-08-30T00:00:02.000Z')
+  });
+
+  const prepared = await preparePullRequest(root, { storyId: STORY_ID, baseRef: 'HEAD' });
+  assert.equal(prepared.preparation.outcome_case, undefined);
+  assert.equal(prepared.preparation.outcome_case_status, 'none');
+  assert.equal(prepared.preparation.outcome_case_reason_code, 'not_linked');
+  assert.equal(prepared.preparation.outcome_case_recovery, undefined);
+  const body = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.doesNotMatch(body, /再bind\/復旧判断/);
+});
+
 test('署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する', async () => {
   const root = await makeRepo();
   await addStory(root, { story_id: STORY_ID, title: 'Outcome case binding' });
@@ -368,6 +388,28 @@ test('managed v2はStory未作成時にcontextを書かず、v2からv1への再
     /requires existing Story.*before any write/
   );
   assert.equal(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8').catch(() => null), null);
+
+  await assert.rejects(
+    bindBrainbaseContext(root, {
+      storyId: STORY_ID,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      storyDeclaration: { story_id: STORY_ID, title: 'Injected declaration', status: 'active' },
+      now: () => new Date('2026-09-03T00:00:02.000Z')
+    }),
+    (error) => error?.code === 'BRAINBASE_STORY_DECLARATION_FORBIDDEN'
+  );
+  assert.equal(await readFile(path.join(root, '.vibepro', 'integrations', 'brainbase', STORY_ID, 'context.json'), 'utf8').catch(() => null), null);
+  const afterRejectedDeclaration = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+  assert.equal(afterRejectedDeclaration.brainbase.stories.some((story) => story.story_id === STORY_ID), false);
+  await assert.rejects(
+    ensureBrainbaseStoryBinding(root, {
+      storyId: STORY_ID,
+      config,
+      storyDeclaration: { story_id: STORY_ID, title: 'Injected declaration', status: 'active' }
+    }),
+    (error) => error?.code === 'BRAINBASE_STORY_DECLARATION_FORBIDDEN'
+  );
 
   // Simulate the already-declared Story state. Creating it through addStory
   // would correctly reject this v2 receipt before the Story exists.

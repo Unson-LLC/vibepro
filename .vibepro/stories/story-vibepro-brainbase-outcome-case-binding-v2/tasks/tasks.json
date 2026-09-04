@@ -7,7 +7,7 @@
   },
   "provenance": {
     "input_path": "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
-    "input_sha256": "717c749cfe26e8488e5d7113ae26738ae8e42e8a5a4ddbe6c4ed26bbc821c3b9"
+    "input_sha256": "8aae1275ccbb039ee570a47842c0b5e86458489438aceb5ad7188b49c038c33f"
   },
   "tasks": [
     {
@@ -30,8 +30,8 @@
         "test/pr-manager.test.js"
       ],
       "acceptance_criteria": [
-        "v1 handoff is unchanged",
-        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or formal story add declaration",
+        "v1 handoff is unchanged and a v1 context-only Story is none/not_linked without v2 recovery guidance",
+        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or an internal-only formal story add declaration; general bind APIs reject arbitrary declarations",
         "journal, commit marker, saved HMAC revalidation, and markerless non-projection are enforced",
         "unmanaged v2 and cross-case or unknown-issuer references are rejected",
         "PR preparation distinguishes none from unknown, untrusted, and partial with a safe recovery decision",

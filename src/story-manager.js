@@ -26,7 +26,7 @@ import {
   renderDevelopmentJudgmentPlanMarkdown
 } from './judgment-operations.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
-import { ensureBrainbaseStoryBinding } from './brainbase-integration.js';
+import { ensureBrainbaseStoryAddBinding, ensureBrainbaseStoryBinding } from './brainbase-integration.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -84,7 +84,7 @@ export async function addStory(repoRoot, options = {}) {
   if (stories.some((item) => item.story_id === story.story_id)) {
     throw new Error(`Story already exists: ${story.story_id}`);
   }
-  const binding = await ensureBrainbaseStoryBinding(root, {
+  const binding = await ensureBrainbaseStoryAddBinding(root, {
     storyId: story.story_id,
     config,
     // A signed managed v2 handoff can arrive before a Story exists. This is

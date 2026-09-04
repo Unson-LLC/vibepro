@@ -29,15 +29,15 @@ v2は `brainbase-vibepro-managed-handoff.v2` の署名済み `outcome_case` と�
 
 ## 投影と完了境界
 
-成果ケース契約はv2 contextの `outcome_case`、Storyの `outcome_case`、PR準備の `outcome_case` に投影する。既存Storyがないbindは書込み前に失敗するが、標準 `vibepro story add` は署名済みhandoffを先に検証し、そのStory宣言を同じ取引に含められる。managed bindはconfig、Context、bind receipt、消費ledgerを1つの耐久ジャーナルへ記録し、全ファイルの置換後にcommit markerを書き込む。中断時はmarkerのない部分投影をPR準備が信頼せず、次のbindが同じジャーナルを前進回復するため、`bound` を返さない。
+成果ケース契約はv2 contextの `outcome_case`、Storyの `outcome_case`、PR準備の `outcome_case` に投影する。既存Storyがない一般bindは書込み前に失敗し、任意の `storyDeclaration` も拒否する。標準 `vibepro story add` だけがモジュール内部の限定capabilityで署名済みhandoffを先に検証し、そのStory宣言を同じ取引に含められる。managed bindはconfig、Context、bind receipt、消費ledgerを1つの耐久ジャーナルへ記録し、全ファイルの置換後にcommit markerを書き込む。中断時はmarkerのない部分投影をPR準備が信頼せず、次のbindが同じジャーナルを前進回復するため、`bound` を返さない。
 
-PR準備は、Context・Story・receipt・markerの局所一致だけを信頼しない。receiptに保持した署名済みmanaged handoff v2を設定済み信頼鍵で再検証し、canonical `outcome_case`、receipt/context digest、Story ID、project、repository、repository root、base SHA、resolution/turn、ledgerを照合できた場合だけStory値を投影する。ローカルの `signature_trusted` のような自己申告フラグは権威にしない。投影しない場合も、未連携は `outcome_case_status: none`、改ざん・期限切れは `untrusted`、marker欠落や不足値は `partial`、読出し不能は `unknown` と安全なreason code・再bind/復旧判断をPR準備JSONとPR本文へ表示する。PR準備の `technical_completion` は信頼済み検証証跡の有無を明示するが、受入条件と証跡の対応が不明な場合は `technical_complete: false` と `status: unknown` を返す。
+PR準備は、Context・Story・receipt・markerの局所一致だけを信頼しない。receiptに保持した署名済みmanaged handoff v2を設定済み信頼鍵で再検証し、canonical `outcome_case`、receipt/context digest、Story ID、project、repository、repository root、base SHA、resolution/turn、ledgerを照合できた場合だけStory値を投影する。ローカルの `signature_trusted` のような自己申告フラグは権威にしない。v1 ContextだけのStoryは成果ケース未連携であり、`outcome_case_status: none` / `not_linked` と表示して復旧判断を付けない。v2を示す投影を信頼できない場合は、改ざん・期限切れを `untrusted`、marker欠落や不足値を `partial`、読出し不能を `unknown` と安全なreason code・再bind/復旧判断をPR準備JSONとPR本文へ表示する。PR準備の `technical_completion` は信頼済み検証証跡の有無を明示するが、受入条件と証跡の対応が不明な場合は `technical_complete: false` と `status: unknown` を返す。
 
 OutcomeCaseの状態値、close要求、外部書込み経路は追加しない。production probeは実行せず、宣言された終端証跡の参照先だけを保持する。
 
 ## 後方互換と失敗時
 
-v1入力は従来のcontext v1を生成する。v2だけがcontext v2を生成する。v2の必須値が欠ける、または証跡が未信頼なら、成功・完了を推測せず明示的に拒否またはunknownを返す。v2を一度投影したStoryはv1へ再bindできないため、古いv2投影だけが残る状態を作らない。
+v1入力は従来のcontext v1を生成する。v1 ContextだけのPR準備は `none` / `not_linked` であり、v2回復を要求しない。v2だけがcontext v2を生成する。v2の必須値が欠ける、または証跡が未信頼なら、成功・完了を推測せず明示的に拒否またはunknownを返す。v2を一度投影したStoryはv1へ再bindできないため、古いv2投影だけが残る状態を作らない。
 
 ## Codexからの直接利用
 

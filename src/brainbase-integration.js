@@ -12,6 +12,11 @@ const execFileAsync = promisify(execFile);
 
 const CONTEXT_SCHEMA = 'vibepro-brainbase-context.v1';
 const CONTEXT_V2_SCHEMA = 'vibepro-brainbase-context.v2';
+// Only the formal `story add` workflow may declare a previously absent Story
+// as part of the managed v2 publication.  This unexported capability prevents
+// the ordinary bind APIs from turning arbitrary caller options into a Story
+// creation authority.
+const STORY_ADD_DECLARATION_CAPABILITY = Symbol('story-add-declaration');
 const HANDOFF_SCHEMA = 'brainbase-vibepro-context-handoff.v1';
 const HANDOFF_V2_SCHEMA = 'brainbase-vibepro-context-handoff.v2';
 const MANAGED_HANDOFF_SCHEMA = 'brainbase-vibepro-managed-handoff.v1';
@@ -861,7 +866,14 @@ async function preflightStoryProjection(root, storyId, validated, options = {}) 
   if (!validated.managed || validated.managed.schemaVersion !== MANAGED_HANDOFF_V2_SCHEMA) {
     throw new Error('outcome-case projection requires a signed managed Brainbase handoff v2');
   }
-  const declaredStory = options.storyDeclaration;
+  if (options.storyDeclaration && options.storyAddDeclarationCapability !== STORY_ADD_DECLARATION_CAPABILITY) {
+    const error = new Error('storyDeclaration is reserved for the formal Story add workflow');
+    error.code = 'BRAINBASE_STORY_DECLARATION_FORBIDDEN';
+    throw error;
+  }
+  const declaredStory = options.storyAddDeclarationCapability === STORY_ADD_DECLARATION_CAPABILITY
+    ? options.storyDeclaration
+    : null;
   if (declaredStory && declaredStory?.story_id !== storyId) {
     throw new Error('managed v2 Story declaration does not match the binding Story');
   }
@@ -1051,6 +1063,11 @@ async function writeBrainbaseBinding(root, storyId, validated, options = {}) {
 }
 
 export async function bindBrainbaseContext(repoRoot, options = {}) {
+  if (Object.hasOwn(options, 'storyDeclaration') || Object.hasOwn(options, 'storyAddDeclarationCapability')) {
+    const error = new Error('storyDeclaration is reserved for the formal Story add workflow');
+    error.code = 'BRAINBASE_STORY_DECLARATION_FORBIDDEN';
+    throw error;
+  }
   const root = path.resolve(repoRoot);
   const storyId = safeIdentifier(options.storyId, 'story_id');
   const inputPath = path.resolve(root, requiredString(options.input, 'input'));
@@ -1065,7 +1082,7 @@ export async function bindBrainbaseContext(repoRoot, options = {}) {
   });
 }
 
-export async function ensureBrainbaseStoryBinding(repoRoot, options = {}) {
+async function ensureBrainbaseStoryBindingInternal(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = safeIdentifier(options.storyId, 'story_id');
   const config = options.config ?? {};
@@ -1136,6 +1153,34 @@ export async function ensureBrainbaseStoryBinding(repoRoot, options = {}) {
   return writeBrainbaseBinding(root, storyId, validated, {
     ...options,
     handoffSource: toWorkspaceRelative(root, inputPath)
+  });
+}
+
+// This is the normal public bind entrypoint.  It deliberately cannot create a
+// missing Story: callers must use the Story CLI's formal declaration flow.
+export async function ensureBrainbaseStoryBinding(repoRoot, options = {}) {
+  if (Object.hasOwn(options, 'storyDeclaration') || Object.hasOwn(options, 'storyAddDeclarationCapability')) {
+    const error = new Error('storyDeclaration is reserved for the formal Story add workflow');
+    error.code = 'BRAINBASE_STORY_DECLARATION_FORBIDDEN';
+    throw error;
+  }
+  return ensureBrainbaseStoryBindingInternal(repoRoot, options);
+}
+
+// The formal Story CLI is intentionally routed through this narrow entrypoint
+// so an absent Story and its managed v2 projection are one journaled publish.
+// The capability remains module-private and cannot be supplied through either
+// of the general-purpose binding APIs above.
+export async function ensureBrainbaseStoryAddBinding(repoRoot, options = {}) {
+  const declaration = options.storyDeclaration;
+  if (!declaration || typeof declaration !== 'object' || Array.isArray(declaration)) {
+    const error = new Error('formal Story add requires a Story declaration');
+    error.code = 'BRAINBASE_STORY_DECLARATION_REQUIRED';
+    throw error;
+  }
+  return ensureBrainbaseStoryBindingInternal(repoRoot, {
+    ...options,
+    storyAddDeclarationCapability: STORY_ADD_DECLARATION_CAPABILITY
   });
 }
 
@@ -1319,8 +1364,13 @@ export async function inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, r
       readJsonIfExists(bindCommitMarkerPath(root, storyId))
     ]);
     const hasRawOutcomeCase = Boolean(rawOutcomeCase && typeof rawOutcomeCase === 'object' && !Array.isArray(rawOutcomeCase));
-    const hasManagedArtifact = Boolean(context || receipt || marker);
-    if (!hasRawOutcomeCase && !hasManagedArtifact) {
+    // A v1 context is a valid judgment/knowledge binding, but it has no v2
+    // outcome-case publication contract.  Do not mislabel it as an incomplete
+    // v2 transaction or suggest recovery/rebind work that does not exist.
+    const hasV2ManagedArtifact = Boolean(
+      context?.schema_version === CONTEXT_V2_SCHEMA || receipt || marker
+    );
+    if (!hasRawOutcomeCase && !hasV2ManagedArtifact) {
       return outcomeCaseProjectionStatus('none', 'not_linked', storyId);
     }
     if (!hasRawOutcomeCase) return outcomeCaseProjectionStatus('partial', 'outcome_case_missing', storyId);
