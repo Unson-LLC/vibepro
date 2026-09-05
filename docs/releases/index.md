@@ -602,3 +602,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:528:start -->
 - [PR #528](https://github.com/Unson-LLC/vibepro/pull/528) — [2026-09](/releases/2026-09): chore: VibePro 0.2.0-beta.22を公開する
 <!-- vibepro-release-index-pr:528:end -->
+
+<!-- vibepro-release-index-pr:529:start -->
+- [PR #529](https://github.com/Unson-LLC/vibepro/pull/529) — [2026-09](/releases/2026-09): docs: VibeProの旧証跡回収ルールを廃止
+<!-- vibepro-release-index-pr:529:end -->

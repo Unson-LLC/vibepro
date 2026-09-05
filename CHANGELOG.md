@@ -3139,3 +3139,24 @@ managed v2を使う場合は、Brainbase issuerと共有する署名検証用環
 Brainbase managed v2連携を使う環境では、Brainbase issuerと共有する署名検証用環境変数を設定してください。
 
 <!-- vibepro-release-pr:528:end -->
+
+<!-- vibepro-release-pr:529:start -->
+## [#529](https://github.com/Unson-LLC/vibepro/pull/529) docs: VibeProの旧証跡回収ルールを廃止
+
+- Author: @sintariran
+- Merged: 2026-09-05T10:27:38Z
+- Commit: `240158539719e61e75222510e7090d62380eefaa`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:529:end -->
