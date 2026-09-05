@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+  "tasks": [
+    {
+      "task_id": "TASK-OUTCOME-CASE-BINDING-V2",
+      "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+      "title": "署名済みv2成果ケースを原子的にStoryへ宣言し、PR準備へ安全に投影する",
+      "allowed_paths": [
+        ".vibepro/config.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/pr-body.md",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/pr-prepare.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/traceability.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/integration.log",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.json",
+        ".vibepro/pr/story-vibepro-brainbase-outcome-case-binding-v2/verification-runs/unit.log",
+        ".vibepro/spec/story-vibepro-brainbase-outcome-case-binding-v2/spec.json",
+        ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.json",
+        ".vibepro/stories/story-vibepro-brainbase-outcome-case-binding-v2/tasks/tasks.md",
+        "src/brainbase-integration.js",
+        "src/story-manager.js",
+        "src/pr-manager.js",
+        "test/brainbase-integration.test.js",
+        "test/pr-manager.test.js",
+        "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.md",
+        "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.spec.json",
+        "docs/management/stories/active/story-vibepro-brainbase-outcome-case-binding-v2.tasks.json",
+        "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md"
+      ],
+      "acceptance_criteria": [
+        "v1 handoff is unchanged and a v1 context-only Story is none/not_linked without v2 recovery guidance",
+        "signed managed v2 outcome case metadata is validated and atomically projected to an existing Story or a complete normalized Story add contract with private declaration capability and traceability; after traceability-only failure, only the identical complete declaration with a committed trusted managed-v2 projection and missing traceability may resume without repeating publication; general bind APIs and public imports reject arbitrary declarations",
+        "journal, commit marker, saved HMAC revalidation, and markerless non-projection are enforced",
+        "unmanaged v2 and cross-case or unknown-issuer references are rejected",
+        "PR preparation distinguishes none from unknown, untrusted, and partial with a safe recovery decision; integration status, doctor, and Story report declare outcome-case trust not_evaluated and direct operators to pr prepare",
+        "C-003: bind, consumption ledger write/read, and recovery accept source_artifact only as a canonical repository-relative path whose realpath remains inside the repository; absolute outside paths, traversal, repeatedly encoded or normalized traversal at any accepted decoding depth, excessive residual encoding, and symlink escape are rejected before any binding, ledger, or publication output mutation, as verified by the focused cases 'managed handoff sourceは外部・traversal・encoded・symlinkを一切のbinding write前に拒否する', 'tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない', and 'tampered recovery journal ledger is rejected before replay mutates any publication document' in test/brainbase-integration.test.js",
+        "C-004: PR readback reopens only the canonical repository-confined source receipt named by the consumption ledger, revalidates its HMAC signature, and never promotes an outside, noncanonical, missing, payload-tampered, or signature-tampered source_artifact to trusted; a missing canonical receipt is surfaced as untrusted/consumption_source_missing, a payload-tampered canonical receipt as untrusted/consumption_ledger_mismatch, and a signature-tampered canonical receipt as untrusted/managed_handoff_signature_invalid; none projects outcome_case or mutates its trust source, as verified by the focused cases 'tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない', 'PR準備はcanonical source receipt欠損をuntrustedとして投影せずtrust sourceを変更しない', 'PR準備はcanonical source receipt改ざんをuntrustedとして投影せずtrust sourceを変更しない', and 'PR準備はcanonical source receipt署名改ざんをuntrustedとして投影せずtrust sourceを変更しない' in test/brainbase-integration.test.js",
+        "technical completion never closes OutcomeCase"
+      ],
+      "status": "in_progress"
+    }
+  ]
+}

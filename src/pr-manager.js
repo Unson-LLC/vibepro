@@ -37,6 +37,7 @@ import { readOperationalJudgmentProjection } from './judgment-operations.js';
 import { readNarrative } from './report-store.js';
 import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
+import { inspectManagedV2OutcomeCaseProjection } from './brainbase-integration.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -51,8 +52,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
-  const [story, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
-    readStory(root, storyId),
+  const [storyRecord, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
+    readStory(root, storyId, options),
     collectGitState(root, options),
     readInferredSpec(root, storyId).catch(() => null),
     readDrift(root, storyId).catch(() => null),
@@ -60,6 +61,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     readReviewSummary(root, storyId),
     readOperationalJudgmentProjection(root, storyId)
   ]);
+  const { story, outcomeCaseProjection } = storyRecord;
   assertRecordedRuntimeIdentities(verification);
 
   const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
@@ -79,6 +81,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     bugDiagnosis
   });
   const verificationTrustStatus = await evaluateVerificationEvidenceTrust(root, verification, git.head_sha);
+  const outcomeCase = projectOutcomeCaseMetadata(story, verification, verificationTrustStatus);
   const clauseMap = await buildClauseMapForPrepare(root, {
     storyId,
     storySource,
@@ -102,6 +105,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     created_at: new Date().toISOString(),
     runtime_identity: runtimeIdentity,
     story,
+    ...(outcomeCase ? { outcome_case: outcomeCase } : {}),
+    outcome_case_status: outcomeCaseProjection.status,
+    outcome_case_reason_code: outcomeCaseProjection.reason_code,
+    ...(outcomeCaseProjection.recovery ? { outcome_case_recovery: outcomeCaseProjection.recovery } : {}),
     task_context: options.taskId || options.groupId ? {
       task_id: options.taskId ?? null,
       group_id: options.groupId ?? null,
@@ -164,27 +171,49 @@ function requireStoryId(storyId, commandName) {
   return storyId;
 }
 
-async function readStory(repoRoot, storyId) {
+async function readStory(repoRoot, storyId, options = {}) {
   let config = null;
   try {
     config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
   } catch {
     config = null;
   }
-  const stories = normalizeActiveStories(config?.brainbase?.stories);
+  const rawStories = Array.isArray(config?.brainbase?.stories) ? config.brainbase.stories : [];
+  const stories = normalizeActiveStories(rawStories);
   const found = stories.find((item) => item.story_id === storyId);
-  if (found) return found;
+  if (found) {
+    const rawStory = rawStories.find((item) => item?.story_id === storyId);
+    const outcomeCaseProjection = await readTrustedOutcomeCaseProjection(repoRoot, storyId, rawStory?.outcome_case, options);
+    return {
+      story: outcomeCaseProjection.status === 'trusted'
+        ? { ...found, outcome_case: outcomeCaseProjection.outcome_case }
+        : found,
+      outcomeCaseProjection
+    };
+  }
   return {
-    story_id: storyId,
-    title: storyId,
-    ssot: null,
-    status: 'unknown',
-    horizon: null,
-    view: null,
-    period: null,
-    started_at: null,
-    due_at: null
+    story: {
+      story_id: storyId,
+      title: storyId,
+      ssot: null,
+      status: 'unknown',
+      horizon: null,
+      view: null,
+      period: null,
+      started_at: null,
+      due_at: null
+    },
+    outcomeCaseProjection: await readTrustedOutcomeCaseProjection(repoRoot, storyId, null, options)
   };
+}
+
+// Story config is user-editable. PR preparation is a separate trust boundary:
+// the signed managed envelope retained by the bind receipt is revalidated with
+// the configured local trust key before any Story metadata is projected. This
+// deliberately stays local; VibePro does not invent a network verification
+// call or treat arbitrary config as Brainbase authority.
+async function readTrustedOutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase, options = {}) {
+  return inspectManagedV2OutcomeCaseProjection(repoRoot, storyId, rawOutcomeCase, options);
 }
 
 async function readVerificationSummary(repoRoot, storyId) {
@@ -271,6 +300,32 @@ function extractComputedVerificationCounts(command) {
     if (Number.isFinite(value)) counts[key] = value;
   }
   return Object.keys(counts).length > 0 ? counts : null;
+}
+
+function projectOutcomeCaseMetadata(story, verification, verificationTrustStatus) {
+  const outcomeCase = story?.outcome_case;
+  if (!outcomeCase || typeof outcomeCase !== 'object' || Array.isArray(outcomeCase)) return null;
+  const evidence = (verification?.commands ?? [])
+    .filter((command) => command?.trust_status === 'trusted')
+    .map((command) => ({
+      kind: command.kind ?? null,
+      command: command.command ?? null,
+      status: command.status ?? null,
+      artifact_check: command.artifact_check?.status ?? null,
+      observation_check: command.observation_check?.status ?? null,
+      evidence_source: command.evidence_source ?? null,
+      executed_at: command.executed_at ?? null
+    }));
+  // A technical acceptance item has no evidence-to-criterion mapping in this
+  // handoff contract. Do not infer full acceptance from a passing command.
+  return {
+    ...outcomeCase,
+    technical_complete: false,
+    technical_completion_status: verificationTrustStatus === 'trusted'
+      ? 'unknown_acceptance_coverage'
+      : 'unknown_untrusted_or_missing_evidence',
+    evidence
+  };
 }
 
 function assertRecordedRuntimeIdentities(verification) {
@@ -542,12 +597,30 @@ function renderPrNarrative(narrative, status = 'missing') {
 }
 
 function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
   lines.push(`Story: \`${story.story_id}\``);
   if (story.ssot) lines.push(`SSOT: ${story.ssot}`);
+  lines.push('');
+  lines.push('### 成果ケース連携');
+  lines.push(`- 状態: \`${outcomeCaseStatus}\``);
+  lines.push(`- 理由コード: \`${outcomeCaseReasonCode}\``);
+  if (outcomeCaseRecovery) {
+    lines.push(`- 再bind/復旧判断: \`${outcomeCaseRecovery.decision}\` — \`${outcomeCaseRecovery.reference}\``);
+  }
+  if (outcomeCase) {
+    lines.push(`- ケースID: \`${outcomeCase.case_id}\``);
+    lines.push(`- 成果ケース参照: ${outcomeCase.outcome_case_ref}`);
+    lines.push(`- 判断受領参照: ${outcomeCase.judgment_receipt_ref}`);
+    lines.push(`- 判断ダイジェスト: \`${outcomeCase.decision_digest}\``);
+    lines.push(`- 利用者が観測できる成果: ${outcomeCase.user_observable_outcome}`);
+    lines.push(`- 技術完了: ${outcomeCase.technical_complete}`);
+    lines.push(`- 技術完了状態: ${outcomeCase.technical_completion_status}`);
+    lines.push(`- 信頼済み技術証跡: ${outcomeCase.evidence.length}件`);
+    lines.push('- OutcomeCaseの完了・close・外部更新はこのPR準備の対象外');
+  }
   lines.push('');
   const narrativeSection = renderPrNarrative(narrative, narrativeStatus);
   if (narrativeSection) lines.push(narrativeSection.trimEnd(), '');
@@ -1138,6 +1211,7 @@ export function renderPrPrepareSummary(result) {
     `- head: ${preparation.git.head_ref} (${preparation.git.head_sha ?? '-'})`,
     `- changed files: ${preparation.git.changed_files.length}`,
     `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
+    `- outcome case: ${preparation.outcome_case_status ?? 'unknown'} (${preparation.outcome_case_reason_code ?? 'projection_status_missing'})`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,

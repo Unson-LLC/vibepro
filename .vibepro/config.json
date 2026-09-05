@@ -1432,9 +1432,21 @@
         "category": "release",
         "artifact_profile": "feature_packet",
         "feature_slug": "release-0-2-0-beta-21"
+      },
+      {
+        "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+        "title": "Brainbase成果ケースへのv2紐付けを後方互換で保持する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": null,
+        "period": null,
+        "started_at": null,
+        "due_at": null,
+        "contract_type": null
       }
     ],
-    "current_story_id": "story-vibepro-release-0-2-0-beta-21"
+    "current_story_id": "story-vibepro-brainbase-outcome-case-binding-v2"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }
