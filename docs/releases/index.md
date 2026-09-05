@@ -593,3 +593,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:526:start -->
 - [PR #526](https://github.com/Unson-LLC/vibepro/pull/526) — [2026-09](/releases/2026-09): fix: Brainbaseへの送信と受信確認を分離する
 <!-- vibepro-release-index-pr:526:end -->
+
+<!-- vibepro-release-index-pr:527:start -->
+- [PR #527](https://github.com/Unson-LLC/vibepro/pull/527) — [2026-09](/releases/2026-09): feat: BrainbaseのOutcomeCaseをmanaged v2で受信する
+<!-- vibepro-release-index-pr:527:end -->

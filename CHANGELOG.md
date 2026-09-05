@@ -3091,3 +3091,27 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:526:end -->
+
+<!-- vibepro-release-pr:527:start -->
+## [#527](https://github.com/Unson-LLC/vibepro/pull/527) feat: BrainbaseのOutcomeCaseをmanaged v2で受信する
+
+- Author: @sintariran
+- Merged: 2026-09-05T00:58:39Z
+- Commit: `54fdc20b6f19ce98922872dad5562faa2c38a7d3`
+
+### Change Summary
+
+- `brainbase-vibepro-managed-handoff.v2` の署名・有効期限・対象repo・基準SHAを検証
+- OutcomeCaseの7項目をStoryへ投影し、context・bind receipt・消費ledgerを保存
+- 同一handoffの再利用、改ざん、期限切れ、対象不一致を拒否
+- PR本文にBrainbase受信証跡を反映し、古い生成済みPR証跡は除外
+
+### Compatibility
+
+既存の `brainbase-vibepro-context-handoff.v1` 送信・受信経路を維持します。
+
+### User Action
+
+managed v2を使う場合は、Brainbase issuerと共有する署名検証用環境変数を設定してください。
+
+<!-- vibepro-release-pr:527:end -->
