@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-05 | [`0.2.0-beta.22`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.22) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-03 | [`0.2.0-beta.21`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.21) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-02 | [`0.2.0-beta.20`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.20) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-02 | [`0.2.0-beta.19`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.19) | npm `beta` / `latest` | Post-merge continuous release |
@@ -597,3 +598,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:527:start -->
 - [PR #527](https://github.com/Unson-LLC/vibepro/pull/527) — [2026-09](/releases/2026-09): feat: BrainbaseのOutcomeCaseをmanaged v2で受信する
 <!-- vibepro-release-index-pr:527:end -->
+
+<!-- vibepro-release-index-pr:528:start -->
+- [PR #528](https://github.com/Unson-LLC/vibepro/pull/528) — [2026-09](/releases/2026-09): chore: VibePro 0.2.0-beta.22を公開する
+<!-- vibepro-release-index-pr:528:end -->

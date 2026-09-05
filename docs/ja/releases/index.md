@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-09-05 | [`0.2.0-beta.22`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.22) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-03 | [`0.2.0-beta.21`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.21) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-02 | [`0.2.0-beta.20`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.20) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-02 | [`0.2.0-beta.19`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.19) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -597,3 +598,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:527:start -->
 - [PR #527](https://github.com/Unson-LLC/vibepro/pull/527) — [2026-09](/ja/releases/2026-09): feat: BrainbaseのOutcomeCaseをmanaged v2で受信する
 <!-- vibepro-release-index-pr:527:end -->
+
+<!-- vibepro-release-index-pr:528:start -->
+- [PR #528](https://github.com/Unson-LLC/vibepro/pull/528) — [2026-09](/ja/releases/2026-09): chore: VibePro 0.2.0-beta.22を公開する
+<!-- vibepro-release-index-pr:528:end -->
