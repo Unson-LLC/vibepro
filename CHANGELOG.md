@@ -3007,3 +3007,111 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 なし
 
 <!-- vibepro-release-pr:522:end -->
+
+<!-- vibepro-release-pr:523:start -->
+## [#523](https://github.com/Unson-LLC/vibepro/pull/523) Issue #518の修正を0.2.0-beta.21として配布する
+
+- Author: @sintariran
+- Merged: 2026-09-03T05:18:12Z
+- Commit: `c3446c227873fc01c0223b3334cf5544903693a7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:523:end -->
+
+<!-- vibepro-release-pr:524:start -->
+## [#524](https://github.com/Unson-LLC/vibepro/pull/524) feat(brainbase): managed closed-loop integration
+
+- Author: @sintariran
+- Merged: 2026-09-03T06:09:45Z
+- Commit: `fea6fd025629cfd9663846c7fa783c7611022330`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:524:end -->
+
+<!-- vibepro-release-pr:525:start -->
+## [#525](https://github.com/Unson-LLC/vibepro/pull/525) fix: 旧レビューGate処理を削除して軽量レビューに統一
+
+- Author: @sintariran
+- Merged: 2026-09-04T13:49:01Z
+- Commit: `4a8507d9a15193c822c56838a35ad1582360fafb`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:525:end -->
+
+<!-- vibepro-release-pr:526:start -->
+## [#526](https://github.com/Unson-LLC/vibepro/pull/526) fix: Brainbaseへの送信と受信確認を分離する
+
+- Author: @sintariran
+- Merged: 2026-09-04T13:53:25Z
+- Commit: `a3060059dfedbe0e5d11bc543babc74670e41437`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:526:end -->
+
+<!-- vibepro-release-pr:527:start -->
+## [#527](https://github.com/Unson-LLC/vibepro/pull/527) feat: BrainbaseのOutcomeCaseをmanaged v2で受信する
+
+- Author: @sintariran
+- Merged: 2026-09-05T00:58:39Z
+- Commit: `54fdc20b6f19ce98922872dad5562faa2c38a7d3`
+
+### Change Summary
+
+- `brainbase-vibepro-managed-handoff.v2` の署名・有効期限・対象repo・基準SHAを検証
+- OutcomeCaseの7項目をStoryへ投影し、context・bind receipt・消費ledgerを保存
+- 同一handoffの再利用、改ざん、期限切れ、対象不一致を拒否
+- PR本文にBrainbase受信証跡を反映し、古い生成済みPR証跡は除外
+
+### Compatibility
+
+既存の `brainbase-vibepro-context-handoff.v1` 送信・受信経路を維持します。
+
+### User Action
+
+managed v2を使う場合は、Brainbase issuerと共有する署名検証用環境変数を設定してください。
+
+<!-- vibepro-release-pr:527:end -->

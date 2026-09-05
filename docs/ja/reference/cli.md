@@ -4,9 +4,9 @@
 
 実行中のbinaryが正本です。最初に `vibepro version` でpackage版を確認し、`main` のマニュアルを読む場合は[リリースと監査](/ja/guide/release-and-audit)で公開済みpackageとの差を確認してください。
 
-Architecture / Specを確定する前に `story diagnose --phase design-input --run-graphify`、実装またはPR readinessの前に `story diagnose --phase pre-implementation --run-graphify` を実行します。通常の出荷経路は `story diagnose` → Architecture / Spec → 実装 → `verify record` → `review prepare/start/close/record` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` です。`review record --status pass` は `--inspection-summary`、実在する `.vibepro` 外の `--inspection-input`、`--judgment-delta` を必須とします。旧来のassertion-only passは互換受理せずfail-closedになるため、既存automationを移行してください。各引数の完全な契約は以下の生成済みUsageを使ってください。
+Story・Specと検証結果を確認し、必要に応じて `review prepare` → `review record` → `review status` でレビューを記録します。`pr prepare` は変更と証拠を要約します。旧レビュー段階の設定は追加の出荷条件を作りません。
 
-`review record --strict-head-binding --strict-head-reason <text>` は無条件のCLI overrideではありません。role policyで既に `freshness_mode: strict_head` と `freshness_reason` を明示したroleか、activeなfrozen validation sequenceの `implementation:runtime_contract` `final_review` の場合だけ許可されます。それ以外のstage/roleは明示的なエラーで拒否されます。完全な由来モデルと `pr prepare` の移行警告は[Agent Review](/ja/guide/agent-review)を参照してください。
+合格の記録には実在する `.vibepro` 外の `--inspection-input` が必要です。確認対象の内容が変わると記録は古い状態になります。未記録や古い記録だけではPR準備を止めません。具体的な未解決指摘（`needs_changes` / `block`）は解消するまで表示し、PR準備を止めます。
 
 ## 現在のUsage
 
@@ -53,10 +53,9 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
-  vibepro review violations [repo] --id <story-id> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block|runtime_failed> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--runtime-failure-kind <empty_result|wrong_request|timeout|execution_error>] [--runtime-failure-detail <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
-  vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
+  vibepro review prepare [repo] --id <story-id> [--role <role>] [--roles <csv>] [--json]
+  vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
+  vibepro review status [repo] --id <story-id> [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--contract-type <bug_fix|regression_fix>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -80,6 +79,9 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
+  vibepro integration brainbase status [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase reconcile [repo] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]

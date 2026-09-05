@@ -27,22 +27,25 @@ import { createBrainbaseImport } from './brainbase-importer.js';
 import {
   bindBrainbaseContext,
   createBrainbaseKnowledgeEvent,
+  doctorBrainbaseIntegration,
+  getBrainbaseIntegrationStatus,
+  reconcileBrainbaseOutbox,
   renderBrainbaseContextBinding,
+  renderBrainbaseDoctor,
+  renderBrainbaseIntegrationStatus,
   renderBrainbaseKnowledgeEvent
 } from './brainbase-integration.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
 import { collectWorkspaceStatus, renderWorkspaceStatus } from './workspace-status.js';
 import {
-  getAgentReviewStatus,
-  prepareAgentReview,
-  recordAgentReview,
-  renderAgentReviewPrepareSummary,
-  renderAgentReviewRecordSummary,
-  renderAgentReviewStatusSummary,
-  renderReviewSurfaceViolationSummary,
-  readReviewSurfaceViolationSummary
-} from './agent-review.js';
+  getReviewStatus,
+  prepareReview,
+  recordReview,
+  renderReviewPrepareSummary,
+  renderReviewRecordSummary,
+  renderReviewStatusSummary
+} from './lightweight-review.js';
 import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
@@ -85,7 +88,6 @@ import {
 } from './judgment-workflow.js';
 import {
   getDecisionStatus,
-  readDecisionRecordsIfExists,
   recordDecision,
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
@@ -174,8 +176,8 @@ Typical flow:
   vibepro story diagnose <repo> --id <id> --run-graphify
   vibepro spec write <repo> --id <id> --draft
   vibepro verify record <repo> --id <id> --kind unit --status pass --command "npm test"
-  vibepro review prepare <repo> --id <id> --stage gate
-  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text>
+  vibepro review prepare <repo> --id <id> --role reviewer
+  vibepro review record <repo> --id <id> --role reviewer --status pass --summary <text> --inspection-input <file>
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
 
@@ -229,10 +231,9 @@ Usage:
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
-  vibepro review violations [repo] --id <story-id> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block|runtime_failed> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--runtime-failure-kind <empty_result|wrong_request|timeout|execution_error>] [--runtime-failure-detail <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
-  vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
+  vibepro review prepare [repo] --id <story-id> [--role <role>] [--roles <csv>] [--json]
+  vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
+  vibepro review status [repo] --id <story-id> [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--contract-type <bug_fix|regression_fix>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -256,6 +257,9 @@ Usage:
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
+  vibepro integration brainbase status [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase reconcile [repo] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -284,9 +288,9 @@ PR証跡を .vibepro/ に保存し、人間とAIエージェントが文脈を�
       code_refs/test_refsのトレーサビリティを持つSpecを書きます。
   vibepro verify record <repo> --id <id> --kind unit --status pass --command "npm test"
       現在のgit状態で実行した検証証跡を記録します。
-  vibepro review prepare <repo> --id <id> --stage gate
-      役割別レビュー依頼を作ります（lifecycle会計・予算・authorize儀式は無し）。
-  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text>
+  vibepro review prepare <repo> --id <id> --role reviewer
+      確認する役割と依頼内容を記録します。
+  vibepro review record <repo> --id <id> --role reviewer --status pass --summary <text> --inspection-input <file>
       レビュー結果を記録します。
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
       Story + Spec有無 + 記録済み検証 + 記録済みレビューを要約し、
@@ -346,10 +350,9 @@ Usage:
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
-  vibepro review violations [repo] --id <story-id> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block|runtime_failed> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--runtime-failure-kind <empty_result|wrong_request|timeout|execution_error>] [--runtime-failure-detail <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
-  vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
+  vibepro review prepare [repo] --id <story-id> [--role <role>] [--roles <csv>] [--json]
+  vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
+  vibepro review status [repo] --id <story-id> [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable> [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...
   vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
@@ -364,6 +367,9 @@ Usage:
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
+  vibepro integration brainbase status [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
+  vibepro integration brainbase reconcile [repo] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -502,8 +508,8 @@ async function dispatchCli(argv, io = {}) {
           ...parseStoryOptions(rest),
           story_id: storyId
         };
-        const story = await addStory(repoRoot, storyOptions);
-        await selectStory(repoRoot, story.story_id);
+        const story = await addStory(repoRoot, { ...storyOptions, env: io.env });
+        await selectStory(repoRoot, story.story_id, { env: io.env });
         write(stdout, localizedText(outputLanguage, {
           ja: `Storyを追加しました: ${story.story_id}\nStoryを選択しました: ${story.story_id}\n`,
           en: `Story added: ${story.story_id}\nStory selected: ${story.story_id}\n`
@@ -858,108 +864,51 @@ async function dispatchCli(argv, io = {}) {
           storyId,
           commandName: 'review prepare'
         });
-        const result = await prepareAgentReview(repoRoot, {
+        const requestedRoles = [
+          ...getOptions(rest, '--role'),
+          ...parseCsvOption(rest, '--roles')
+        ];
+        const result = await prepareReview(repoRoot, {
           storyId,
-          stage: getOption(rest, '--stage'),
-          roles: [
-            ...getOptions(rest, '--role'),
-            ...parseCsvOption(rest, '--roles')
-          ],
-          language: getOption(rest, '--language')
+          roles: requestedRoles.length > 0 ? requestedRoles : ['reviewer']
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderAgentReviewPrepareSummary(result));
+          : renderReviewPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'record') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
           commandName: 'review record'
         });
-        const inputPath = getOption(rest, '--input');
         const stdinText = hasFlag(rest, '--from-stdin')
-          ? inputPath
-            ? await readFile(path.resolve(inputPath), 'utf8')
-            : await readStdin(io.stdin ?? process.stdin)
+          ? await readStdin(io.stdin ?? process.stdin)
           : '';
-        const result = await recordAgentReview(repoRoot, {
+        const result = await recordReview(repoRoot, {
           storyId,
-          stage: getOption(rest, '--stage'),
-          role: getOption(rest, '--role'),
+          role: getOption(rest, '--role') ?? 'reviewer',
           status: getOption(rest, '--status'),
           summary: getOption(rest, '--summary'),
-          findings: getOptions(rest, '--finding'),
-          findingDispositions: getOptions(rest, '--finding-disposition'),
-          resolvedFindings: getOptions(rest, '--resolved-finding'),
-          artifacts: getOptions(rest, '--artifact'),
-          agentSystem: getOption(rest, '--agent-system') ?? getOption(rest, '--reviewer-system'),
-          executionMode: getOption(rest, '--execution-mode'),
-          agentId: getOption(rest, '--agent-id'),
-          agentRole: getOption(rest, '--agent-role'),
-          agentThreadId: getOption(rest, '--agent-thread-id'),
-          agentSessionId: getOption(rest, '--agent-session-id'),
-          agentCallId: getOption(rest, '--agent-call-id') ?? getOption(rest, '--agent-tool-call-id'),
-          agentModel: getOption(rest, '--agent-model'),
-          agentReasoningEffort: getOption(rest, '--agent-reasoning-effort'),
-          agentCostTier: getOption(rest, '--agent-cost-tier'),
-          agentInputTokens: getOption(rest, '--agent-input-tokens'),
-          agentOutputTokens: getOption(rest, '--agent-output-tokens'),
-          agentTotalTokens: getOption(rest, '--agent-total-tokens'),
-          agentCostUsd: getOption(rest, '--agent-cost-usd'),
-          agentTranscript: getOption(rest, '--agent-transcript'),
-          agentRequest: getOption(rest, '--agent-request'),
-          agentClosed: hasFlag(rest, '--agent-closed') || hasFlag(rest, '--subagent-closed'),
-          agentCloseEvidence: getOption(rest, '--agent-close-evidence') ?? getOption(rest, '--subagent-close-evidence'),
-          agentCloseNote: getOption(rest, '--agent-close-note') ?? getOption(rest, '--subagent-close-note'),
-          reviewerIdentity: getOption(rest, '--reviewer-identity'),
-          implementationSessionId: getOption(rest, '--implementation-session-id'),
-          inspectionSummary: getOption(rest, '--inspection-summary'),
-          inspectionEvidence: getOption(rest, '--inspection-evidence'),
           inspectionInputs: getOptions(rest, '--inspection-input'),
-          judgmentDeltas: getOptions(rest, '--judgment-delta'),
-          runtimeFailureKind: getOption(rest, '--runtime-failure-kind'),
-          runtimeFailureDetail: getOption(rest, '--runtime-failure-detail'),
-          strictHeadBinding: hasFlag(rest, '--strict-head-binding'),
-          strictHeadReason: getOption(rest, '--strict-head-reason'),
-          recordedBy: getOption(rest, '--recorded-by'),
+          artifacts: getOptions(rest, '--artifact'),
           stdinText,
-          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
-          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+          agentSystem: getOption(rest, '--agent-system'),
+          agentId: getOption(rest, '--agent-id'),
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderAgentReviewRecordSummary(result));
+          : renderReviewRecordSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'status') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
-          storyId,
-          commandName: 'review status'
-        });
-        const result = await getAgentReviewStatus(repoRoot, {
-          storyId,
-          stage: getOption(rest, '--stage'),
-          all: hasFlag(rest, '--all'),
-          history: hasFlag(rest, '--history')
-        });
-        void managedWorktreeContext;
+        const result = await getReviewStatus(repoRoot, { storyId });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderAgentReviewStatusSummary(result));
+          : renderReviewStatusSummary(result));
         return { exitCode: 0, command, subcommand, result };
-      }
-      if (subcommand === 'violations') {
-        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
-        const result = await readReviewSurfaceViolationSummary(repoRoot, storyId, {
-          decisionRecords: await readDecisionRecordsIfExists(repoRoot, storyId)
-        });
-        write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result, null, 2)}\n`
-          : renderReviewSurfaceViolationSummary(result));
-        return { exitCode: result.unacknowledged_count > 0 ? 2 : 0, command, subcommand, result };
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
@@ -1268,12 +1217,12 @@ ${renderHelp()}`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'add') {
-        const story = await addStory(repoRoot, parseStoryOptions(rest));
+        const story = await addStory(repoRoot, { ...parseStoryOptions(rest), env: io.env });
         write(stdout, `Story added: ${story.story_id}\n`);
         return { exitCode: 0, command, subcommand, story };
       }
       if (subcommand === 'select') {
-        const story = await selectStory(repoRoot, getOption(rest, '--id'));
+        const story = await selectStory(repoRoot, getOption(rest, '--id'), { env: io.env });
         write(stdout, `Story selected: ${story.story_id}\n`);
         return { exitCode: 0, command, subcommand, story };
       }
@@ -1495,7 +1444,8 @@ if (command === 'integration') {
   if (action === 'bind') {
     const result = await bindBrainbaseContext(repoRoot, {
       storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-      input: getOption(rest, '--input')
+      input: getOption(rest, '--input'),
+      env: io.env
     });
     write(stdout, hasFlag(rest, '--json')
       ? `${JSON.stringify(result, null, 2)}\n`
@@ -1505,12 +1455,45 @@ if (command === 'integration') {
   if (action === 'event') {
     const result = await createBrainbaseKnowledgeEvent(repoRoot, {
       storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-      summary: getOption(rest, '--summary')
+      summary: getOption(rest, '--summary'),
+      env: io.env,
+      send: io.brainbaseSend ?? io.sendCandidate ?? io.send
     });
     write(stdout, hasFlag(rest, '--json')
       ? `${JSON.stringify(result, null, 2)}\n`
       : renderBrainbaseKnowledgeEvent(result));
     return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'status') {
+    const result = await getBrainbaseIntegrationStatus(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      env: io.env
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseIntegrationStatus(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'doctor') {
+    const result = await doctorBrainbaseIntegration(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      env: io.env
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseDoctor(result));
+    return { exitCode: result.status === 'fail' ? 1 : 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'reconcile') {
+    const result = await reconcileBrainbaseOutbox(repoRoot, {
+      env: io.env,
+      send: io.brainbaseSend ?? io.sendCandidate ?? io.send,
+      readback: io.brainbaseReadback
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : `Brainbase 連携: ${result.status}; 送信=${result.sent}, 受信確認=${result.confirmed}, 受信未確認=${result.unconfirmed}, 送信待ち=${result.pending}\n`);
+    return { exitCode: result.status === 'ok' ? 0 : result.status === 'pending' ? 2 : 1, command, subcommand: `${provider}-${action}`, result };
   }
   write(stderr, `Unknown Brainbase integration action: ${action ?? ''}\n\n${renderHelp()}`);
   return { exitCode: 1, command, subcommand: `${provider}-${action ?? ''}` };
@@ -2109,7 +2092,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
   const base = baseBranch ?? '<base-branch>';
   const storyDiagnoseCommand = `vibepro story diagnose ${shellPath(repoRoot)} --id <story-id> --run-graphify`;
   const verifyRecordCommand = `vibepro verify record ${shellPath(repoRoot)} --id <story-id> --kind unit --status pass --command "npm test"`;
-  const reviewPrepareCommand = `vibepro review prepare ${shellPath(repoRoot)} --id <story-id> --stage gate`;
+  const reviewPrepareCommand = `vibepro review prepare ${shellPath(repoRoot)} --id <story-id> --role reviewer`;
   const prPrepareCommand = `vibepro pr prepare ${shellPath(repoRoot)} --base ${base}`;
   return localizedText(language, {
     ja: [
@@ -2156,7 +2139,7 @@ async function detectBaseBranch(repoRoot) {
 }
 
 async function executeStoryDiagnosis(repoRoot, args, io, stdout, options = {}) {
-  const story = await selectStory(repoRoot, getOption(args, '--id'));
+  const story = await selectStory(repoRoot, getOption(args, '--id'), { env: io.env });
   if (options.requireBugStory && !isBugStory(story)) {
     throw new Error('`vibepro verify-first` requires a Story registered with contract_type=bug_fix; use `vibepro story diagnose` for other Stories');
   }

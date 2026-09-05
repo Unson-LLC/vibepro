@@ -10,6 +10,7 @@ import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRuntimeIntegrity } from './runtime-info.js';
+import { enqueueBrainbaseLearningCandidate } from './brainbase-integration.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -79,8 +80,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     targets: observation.targets,
     artifacts: [options.artifact].filter(Boolean)
   });
+  let previousCommand = null;
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
+    previousCommand = existing.commands.find((item) => item.kind === options.kind) ?? null;
     const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
     const observationWarning = observationCheck.status === 'missing'
       ? {
@@ -147,10 +150,39 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     await writeJsonAtomic(evidencePath, nextEvidence);
     return nextEvidence;
   });
+  let brainbaseLearning = null;
+  if (computedRecording.source !== SELF_REPORTED_EVIDENCE_SOURCE && PASS_STATUSES.has(String(options.status).toLowerCase())) {
+    // Candidate generation and delivery are deliberately best-effort from the
+    // verification path: a verified command remains a pass even when Brainbase
+    // is unavailable. The durable outbox records the pending/retry state.
+    try {
+      brainbaseLearning = await enqueueBrainbaseLearningCandidate(root, {
+        storyId,
+        command: evidence.commands.find((item) => item.kind === options.kind),
+        previousCommand,
+        evidence,
+        gitContext,
+        now: options.now,
+        repositoryRef: options.repositoryRef,
+        send: options.brainbaseSend,
+        retryDelayMs: options.brainbaseRetryDelayMs
+      });
+    } catch {
+      // Candidate/outbox persistence is intentionally fail-soft. Keep the
+      // computed verification pass durable and expose an explicit retry state;
+      // never copy a transport or filesystem error into a learning artifact.
+      brainbaseLearning = {
+        status: 'pending',
+        story_id: storyId,
+        reason: 'candidate_enqueue_failed'
+      };
+    }
+  }
   return {
     evidence,
     runtime_identity: runtimeIdentity,
-    artifact: toWorkspaceRelative(root, evidencePath)
+    artifact: toWorkspaceRelative(root, evidencePath),
+    ...(brainbaseLearning ? { brainbase_learning: brainbaseLearning } : {})
   };
 }
 

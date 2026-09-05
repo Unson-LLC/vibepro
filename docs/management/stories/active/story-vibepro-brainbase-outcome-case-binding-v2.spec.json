@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-brainbase-outcome-case-binding-v2",
+  "story_context": "単一のVibeProリポジトリでBrainbase handoffを検証し、成果ケースをStoryとPR準備メタデータへ後方互換で投影する。",
+  "clauses": [
+    {
+      "id": "AC-1",
+      "type": "contract",
+      "statement": "v1 handoffは従来のcontext v1を生成し、成果ケース項目を要求しない。v1 ContextだけのStoryをPR準備すると、成果ケースはnone/not_linkedとなりv2再bind/復旧を案内しない。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-1" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function validateHandoff" }],
+        "test_refs": [{ "file": "test/brainbase-integration.test.js", "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない" }]
+      }
+    },
+    {
+      "id": "AC-2",
+      "type": "contract",
+      "statement": "v2 handoffは必須の成果ケース項目を検証し、contextと既存Storyメタデータへ同じ内容を投影する。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-2" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function validateOutcomeCase" }],
+        "test_refs": [{ "file": "test/brainbase-integration.test.js", "case": "署名済みmanaged v2成果ケース契約をcontextと既存Storyメタデータへ投影する" }]
+      }
+    },
+    {
+      "id": "AC-3",
+      "type": "contract",
+      "statement": "managed v2は既存Storyを事前検査するか、正規化済みCLI項目とtraceabilityを必須にする完全な標準Story add契約だけが、同一モジュール内の非export宣言capabilityで先行宣言を同一ジャーナル取引へ含める。一般bind APIと公開importは任意または不完全な先行宣言を拒否し、非managed v2とmarkerのない部分取引は投影しない。handoff sourceとledger source_artifactはcanonical repo相対パスかつsymlink解決後もrepo root内に限定し、外部・traversal・encoded traversal・symlink escapeはbindまたは回復の書込み前に拒否する。config、Context、bind receipt、ledger、commit markerを回復可能に公開してからStoryとPR準備へ同じ7項目を投影する。公開済みのmanaged v2取引後にtraceabilityだけが失敗した場合は、commit済みStory、信頼済み投影、完全一致する正規化済み宣言、traceability欠落を全て確認できる同一の標準Story addだけが、公開を再実行せずtraceabilityを冪等に再開する。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-3" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function normalizeLedgerSourceArtifact" }, { "file": "src/brainbase-integration.js", "anchor": "function validatePublicationJournal" }, { "file": "src/brainbase-integration.js", "anchor": "function preflightStoryProjection" }, { "file": "src/brainbase-integration.js", "anchor": "function addBrainbaseBoundStory" }, { "file": "src/pr-manager.js", "anchor": "function readTrustedOutcomeCaseProjection" }],
+        "test_refs": [
+          { "file": "test/brainbase-integration.test.js", "case": "trusted v2 bindはContext・Story・PR準備へ同じ7項目を投影し、技術完了を推測しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "公開importは不完全Story宣言を渡せず、標準CLI Story addだけが署名済みmanaged v2を原子的に宣言・検証・投影する" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed v2 Story addはtraceability失敗後に同一の完全宣言だけを冪等に再開する" },
+          { "file": "test/brainbase-integration.test.js", "case": "Story add traceability再開は宣言不一致・未信頼v2・v1を拒否する" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed v2 publish is journal-recoverable and never projects a partial transaction as trusted" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed v2 process recovery can fail closed and resume idempotently" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed handoff sourceは外部・traversal・encoded・symlinkを一切のbinding write前に拒否する" },
+          { "file": "test/brainbase-integration.test.js", "case": "tampered recovery journal ledger is rejected before replay mutates any publication document" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する" }
+        ]
+      }
+    },
+    {
+      "id": "AC-4",
+      "type": "contract",
+      "statement": "PR準備は保存済み署名付きmanaged v2 handoffを設定済み信頼鍵で再検証し、ledgerが指すrepo内のcanonical source receiptを再読込してdigestを照合し、canonical成果ケース、receipt/context digest、Story・project・repository identity、ledgerとcommit markerを照合できる場合だけ投影する。外部・非正規・欠落・改ざん済みsourceはtrustedへ昇格させない。v1 Contextだけはnone/not_linkedで復旧判断を表示せず、v2のunknown・untrusted・partialだけを安全なreason codeと再bind/復旧判断で可視化し、完了や外部更新を推測しない。integration status、doctor、Story診断レポートはこの信頼検証を実行せず、not_evaluatedとpr prepareの検証導線を表示する。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-4" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function inspectManagedV2OutcomeCaseProjection" }, { "file": "src/brainbase-integration.js", "anchor": "function getBrainbaseIntegrationStatus" }, { "file": "src/story-manager.js", "anchor": "function renderStoryReport" }, { "file": "src/pr-manager.js", "anchor": "function readTrustedOutcomeCaseProjection" }],
+        "test_refs": [
+          { "file": "test/pr-manager.test.js", "case": "pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備は共謀して書換えたContext・receipt・Story・commit markerを署名なしでは投影しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備は未連携・partial成果ケース・期限切れ署名を区別して安全な復旧判断を表示する" },
+          { "file": "test/brainbase-integration.test.js", "case": "v1 context-only StoryのPR準備は未連携として扱い、v2復旧を案内しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "署名済みmanaged v1の完全publishを通したStoryのPR準備は未連携として扱い、v2復旧を案内しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "tampered consumption ledger source_artifactは読戻しでtrustedへ昇格しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備はcanonical source receipt欠損をuntrustedとして投影せずtrust sourceを変更しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備はcanonical source receipt改ざんをuntrustedとして投影せずtrust sourceを変更しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "PR準備はcanonical source receipt署名改ざんをuntrustedとして投影せずtrust sourceを変更しない" },
+          { "file": "test/brainbase-integration.test.js", "case": "status・doctor・Story reportは成果ケース信頼性を未評価と明示し、PR準備へ誘導する" }
+        ]
+      }
+    },
+    {
+      "id": "AC-5",
+      "type": "invariant",
+      "statement": "caseとissuerが一致しないv2参照、既存Storyも同一取引の先行宣言もない投影、v2からv1への再bindはfail closedし、古いv2投影を残した成功を返さない。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-5" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [{ "file": "src/brainbase-integration.js", "anchor": "function validateOutcomeCase" }],
+        "test_refs": [{ "file": "test/brainbase-integration.test.js", "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する" }, { "file": "test/brainbase-integration.test.js", "case": "signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/brainbase-integration.test.js", "must_contain": "v2からv1への再bindも拒否する" }] }
+    }
+  ]
+}

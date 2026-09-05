@@ -7,7 +7,6 @@ import {
   normalizeGraphEdges
 } from './graph-context.js';
 import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-generator.js';
-import { bindStoryTraceability } from './traceability.js';
 import { renderStoryReportHtml } from './story-html.js';
 import { getJourneyStatus } from './journey-map.js';
 import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
@@ -26,6 +25,7 @@ import {
   renderDevelopmentJudgmentPlanMarkdown
 } from './judgment-operations.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { addBrainbaseBoundStory, ensureBrainbaseStoryBinding } from './brainbase-integration.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -76,24 +76,7 @@ const STORY_JOURNEY_PATTERNS = [
 ];
 
 export async function addStory(repoRoot, options = {}) {
-  const root = path.resolve(repoRoot);
-  const config = await readConfig(root);
-  const story = buildStory(options);
-  const stories = getStories(config);
-  if (stories.some((item) => item.story_id === story.story_id)) {
-    throw new Error(`Story already exists: ${story.story_id}`);
-  }
-  config.brainbase = {
-    ...(config.brainbase ?? {}),
-    stories: [...stories, story]
-  };
-  await writeConfig(root, config);
-  await bindStoryTraceability(root, {
-    storyId: story.story_id,
-    source: 'story_add',
-    lifecycle: 'declared_not_started'
-  });
-  return story;
+  return addBrainbaseBoundStory(repoRoot, options);
 }
 
 export async function listStories(repoRoot, options = {}) {
@@ -106,13 +89,22 @@ export async function listStories(repoRoot, options = {}) {
   };
 }
 
-export async function selectStory(repoRoot, storyId) {
+export async function selectStory(repoRoot, storyId, options = {}) {
   if (!storyId) throw new Error('--id is required');
   const root = path.resolve(repoRoot);
   const config = await readConfig(root);
   const story = getStories(config).find((item) => item.story_id === storyId);
   if (!story) throw new Error(`Story not found: ${storyId}`);
   if (isArchived(story)) throw new Error(`Archived story cannot be selected: ${storyId}`);
+  const binding = await ensureBrainbaseStoryBinding(root, {
+    storyId,
+    config,
+    env: options.env,
+    now: options.now
+  });
+  if (binding?.outcome_case) {
+    story.outcome_case = binding.outcome_case;
+  }
   config.brainbase = {
     ...(config.brainbase ?? {}),
     current_story_id: storyId
@@ -646,6 +638,14 @@ export function renderStoryReport({ story, latestRun, runs, evidence, taskState 
 | Story run数 | ${runs.length} |
 
 ${renderStoryJourneyContext(journeyContext)}
+
+## Outcome Case Projection
+
+| 項目 | 内容 |
+|------|------|
+| Status | not_evaluated |
+| Reason | このStory診断レポートは成果ケースの署名、commit marker、ledgerを検証しない。 |
+| Verify | \`vibepro pr prepare <repo> --story-id ${story.story_id}\` |
 
 ## graphify集計
 
@@ -2434,23 +2434,6 @@ function toWorkspaceRelativeFromAny(filePath) {
   const index = filePath.indexOf(marker);
   if (index === -1) return filePath;
   return `.vibepro/${filePath.slice(index + marker.length).split(path.sep).join('/')}`;
-}
-
-function buildStory(options) {
-  if (!options.story_id) throw new Error('--id is required');
-  if (!options.title) throw new Error('--title is required');
-  return {
-    story_id: options.story_id,
-    title: options.title,
-    ssot: 'local',
-    status: 'active',
-    horizon: options.horizon ?? null,
-    view: options.view ?? null,
-    period: options.period ?? null,
-    started_at: options.started_at ?? null,
-    due_at: options.due_at ?? null,
-    contract_type: options.contract_type ?? null
-  };
 }
 
 function getOption(args, name) {

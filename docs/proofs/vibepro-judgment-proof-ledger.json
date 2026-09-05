@@ -474,23 +474,12 @@
       "id": "VPJ-REV-013",
       "capability": "review_causal_convergence_and_delta_scoped_invalidation",
       "layer": "evaluation",
-      "claim": "レビューは変更差分の因果面で無効化され、進捗のない review wave が続くと nonconvergent として停止する。runtime 失敗は product finding と分離される",
+      "claim": "旧レビュー機構は因果関係による無効化と収束判定を実装していたが、最小構成への再構築で廃止した。現行機能の証明には使わない",
       "depth": "P1",
-      "status": "current_unit",
+      "status": "historical",
       "source": {
-        "implementation": [
-          "src/review-causal-dag.js"
-        ],
-        "tests": [
-          {
-            "file": "test/review-causal-dag.test.js",
-            "names": [
-              "two-file implementation and test fix preserves upstream planning judgments while invalidating descendants",
-              "three completed no-progress review waves after baseline stop as nonconvergent",
-              "runtime failures are separate from product findings",
-              "convergence state is persisted append-only by review event"
-            ]
-          }
+        "references": [
+          "docs/management/REBUILD.md"
         ]
       },
       "conditions": [
@@ -502,7 +491,8 @@
       "transfer_targets": {
         "fx": "BT/live reconcile の drift 停止条件と比較",
         "brainbase": "組織 replay の停止条件"
-      }
+      },
+      "removed_in": "PR #525 / issue #501: legacy review engine removal"
     },
     {
       "id": "VPJ-LIN-014",

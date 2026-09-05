@@ -8,70 +8,6 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import {
-  buildValidationSequencePlan,
-  createValidationSequenceState,
-  fingerprintValidationCommand,
-  readValidationSequence,
-  recordValidationPhase,
-  validateValidationPhaseEvidence,
-  writeValidationSequence
-} from '../src/validation-sequencing.js';
-
-// `vibepro sequence` was removed as a standalone CLI surface (review lifecycle
-// accounting retirement); these helpers drive validation-sequencing.js
-// directly the way the old CLI command did, since ci-evidence.js still
-// consumes the module internally.
-async function sequencePlan(root, storyId, headSha, { riskProfile = 'light', riskSurfaces = [], command = null, testFingerprint = null } = {}) {
-  const plan = buildValidationSequencePlan({ storyId, riskProfile, riskSurfaces });
-  const state = createValidationSequenceState({
-    plan,
-    headSha,
-    testFingerprint: testFingerprint ?? (command ? fingerprintValidationCommand(command, []) : null),
-    verificationCommand: command
-  });
-  await writeValidationSequence(root, state);
-  return state;
-}
-
-async function sequenceRecordTargetedValidation(root, storyId, headSha, { command, testFingerprint, evidence }) {
-  let state = await readValidationSequence(root, storyId);
-  const evidenceValidation = await validateValidationPhaseEvidence(root, evidence, {
-    storyId,
-    phase: 'targeted_validation',
-    headSha,
-    verificationCommand: command,
-    testFingerprint
-  });
-  state = recordValidationPhase(state, {
-    phase: 'targeted_validation',
-    status: 'passed',
-    headSha,
-    testFingerprint,
-    verificationCommand: command,
-    evidence,
-    evidenceValidation,
-    source: 'local'
-  });
-  await writeValidationSequence(root, state);
-  return state;
-}
-
-async function sequenceRecordCodeFrozen(root, storyId, headSha) {
-  let state = await readValidationSequence(root, storyId);
-  const proposed = state.proposed_binding ?? {};
-  state = recordValidationPhase(state, {
-    phase: 'code_frozen',
-    status: 'passed',
-    headSha,
-    testFingerprint: proposed.test_fingerprint,
-    verificationCommand: proposed.verification_command,
-    source: 'local'
-  });
-  await writeValidationSequence(root, state);
-  return state;
-}
-
 const execFileAsync = promisify(execFile);
 
 async function git(repo, args) {
@@ -145,42 +81,6 @@ function evidencePath(root) {
   return path.join(root, '.vibepro', 'pr', 'story-ci', 'verification-evidence.json');
 }
 
-async function writePhaseEvidence(root, headSha, command) {
-  const target = path.join(root, '.vibepro', 'pr', 'story-ci', 'verification-evidence.json');
-  await mkdir(path.dirname(target), { recursive: true });
-  const fingerprint = command === 'node --test' ? 'suite-v1' : 'security-v2';
-  const nativeCommand = (kind, phase, extra = {}) => ({
-    kind, status: 'pass', command, executed_at: new Date().toISOString(),
-    git_context: { head_sha: headSha }, artifact_check: { status: 'verified', format: 'vitest_jest' },
-    artifact_observed_values: { numTotalTests: '1' },
-    observation_check: { status: 'recorded' }, content_binding: { schema_version: '0.1.0', recorded_head_sha: headSha },
-    observation: { values: { test_fingerprint: fingerprint, validation_phase: phase, ...extra } }
-  });
-  await writeFile(target, JSON.stringify({
-    schema_version: '0.1.0', story_id: 'story-ci', commands: [
-      nativeCommand('unit', 'targeted_validation'),
-      nativeCommand('integration', 'preflight_review', { review_role: 'boundary_reviewer', review_surface: 'core_workflow_state' })
-    ]
-  }));
-}
-
-async function advanceSequenceToFreeze(root, headSha, command, fingerprint) {
-  await sequenceRecordTargetedValidation(root, 'story-ci', headSha, {
-    command,
-    testFingerprint: fingerprint,
-    evidence: '.vibepro/pr/story-ci/verification-evidence.json'
-  });
-  let state = await readValidationSequence(root, 'story-ci');
-  state = recordValidationPhase(state, {
-    phase: 'preflight_review', headSha, verificationCommand: command, testFingerprint: fingerprint,
-    evidence: '.vibepro/reviews/story-ci/architecture_spec/review-result-workflow_reviewer.json',
-    evidenceValidation: { status: 'verified' },
-    reviewProvenance: { role: 'workflow_reviewer', status: 'pass' }
-  });
-  await writeValidationSequence(root, state);
-  await sequenceRecordCodeFrozen(root, 'story-ci', headSha);
-}
-
 test('import-ci records successful CI checks as head-bound verification evidence', async () => {
   const root = await setupRepo();
   const headSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
@@ -211,52 +111,6 @@ test('import-ci records successful CI checks as head-bound verification evidence
   assert.equal(integration.computed_observation.producer, 'vibepro verify import-ci');
   assert.equal(integration.computed_observation.values.head_sha, headSha);
   assert.equal(integration.computed_observation.output_metrics, 'ci_check_conclusion');
-});
-
-test('import-ci public path records frozen node test coverage from realistic CI checks', async () => {
-  const root = await setupRepo();
-  const headSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
-  await writePhaseEvidence(root, headSha, 'node --test');
-  await sequencePlan(root, 'story-ci', headSha, {
-    riskProfile: 'workflow_heavy',
-    riskSurfaces: ['core_workflow_state'],
-    command: 'node --test',
-    testFingerprint: 'suite-v1'
-  });
-  await advanceSequenceToFreeze(root, headSha, 'node --test', 'suite-v1');
-
-  const gh = await makeFakeGhChecks(rollup(headSha));
-  const result = await runCli(
-    ['verify', 'import-ci', root, '--id', 'story-ci', '--pr', '300', '--coverage', 'test (20)=node --test::suite-v1', '--json'],
-    { env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` } }
-  );
-  assert.equal(result.exitCode, 0);
-  assert.equal(result.result.validation_sequence.recorded, true);
-  const persisted = await readValidationSequence(root, 'story-ci');
-  assert.equal(persisted.phases.expensive_verification.status, 'passed');
-  assert.equal(persisted.phases.expensive_verification.source, 'ci_import');
-  assert.equal(persisted.phases.expensive_verification.binding.verification_command, 'node --test');
-});
-
-test('import-ci does not treat an unrelated same-kind check as frozen command coverage', async () => {
-  const root = await setupRepo();
-  const headSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
-  await writePhaseEvidence(root, headSha, 'node --test test/security-boundary.test.js');
-  await sequencePlan(root, 'story-ci', headSha, {
-    riskProfile: 'workflow_heavy',
-    riskSurfaces: ['auth_boundary'],
-    command: 'node --test test/security-boundary.test.js',
-    testFingerprint: 'security-v2'
-  });
-  await advanceSequenceToFreeze(root, headSha, 'node --test test/security-boundary.test.js', 'security-v2');
-  const gh = await makeFakeGhChecks(rollup(headSha));
-  const result = await runCli(
-    ['verify', 'import-ci', root, '--id', 'story-ci', '--pr', '300', '--coverage', 'test (20)=node --test::suite-v1', '--json'],
-    { env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` } }
-  );
-  assert.equal(result.result.validation_sequence.recorded, false);
-  assert.match(result.result.validation_sequence.reason, /proves frozen verification command/);
-  assert.equal((await readValidationSequence(root, 'story-ci')).phases.expensive_verification.status, 'pending');
 });
 
 test('import-ci rejects when CI head does not match current HEAD', async () => {
@@ -361,4 +215,21 @@ test('import-ci does not grant coverage to a same-name check from another workfl
   );
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.imported[0].covered_command, undefined);
+});
+
+test('CI import leaves archived validation sequence state untouched', async () => {
+  const root = await setupRepo();
+  const headSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  const sequencePath = path.join(root, '.vibepro/validation-sequencing/story-ci/state.json');
+  await mkdir(path.dirname(sequencePath), { recursive: true });
+  const legacy = '{"status":"blocked","phases":{"expensive_verification":{"status":"pending"}}}\n';
+  await writeFile(sequencePath, legacy);
+  const gh = await makeFakeGhChecks(rollup(headSha));
+  const result = await runCli(['verify', 'import-ci', root, '--id', 'story-ci', '--pr', '300', '--json'], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal('validation_sequence' in result.result, false);
+  assert.equal(await readFile(sequencePath, 'utf8'), legacy);
+  assert.equal(result.result.imported.length, 2);
 });

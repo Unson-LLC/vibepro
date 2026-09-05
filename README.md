@@ -52,9 +52,10 @@ vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 
 # 4. Prepare and record review evidence
-vibepro review prepare /path/to/repo --id story-example --stage gate
-vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "Reviewed against the Story and Spec"
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro review record /path/to/repo --id story-example --role reviewer \
+  --status pass --summary "Reviewed against the Story and Spec" \
+  --inspection-input src/example.js
 
 # 5. Summarize the intent-to-implementation evidence for a PR
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
@@ -119,5 +120,5 @@ vibepro integration brainbase event . --id <story-id> --summary "<verified reusa
 
 `bind` accepts a managed Brainbase Judgment receipt plus matching `knowledge.resolve` routing receipts and actual retrieval references. It writes only canonical pointers and content digests under `.vibepro/integrations/`; it does not copy source bodies or Personal Knowledge.
 
-`event` fails unless computed passing verification was recorded after the context binding and still matches the current git fingerprint. It creates a local `knowledge_event.v1` development-learning candidate with Graph promotion and external action disabled. Recording is delegated to Brainbase's `brainbase_knowledge_event_record` MCP tool so the global Host can audit the write.
+`event` fails unless computed passing verification was recorded after the context binding and still matches the current git fingerprint. It creates a local `knowledge_event.v1` development-learning candidate with Graph promotion and external action disabled. With an explicitly configured, authorized destination and credentials, `integration brainbase reconcile` sends through the existing Knowledge Event API and reads back the receiver record. Transmission and receiver confirmation are stored separately; unconfirmed entries return exit code 2. See the [configuration and receiver verification guide](docs/guide/brainbase-receiver.md).
 <!-- BRAINBASE_RUNTIME_HANDOFF_END -->
