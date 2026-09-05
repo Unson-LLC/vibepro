@@ -35,7 +35,6 @@ const managedWorktreeState = {
       { id: 'head_bound', status: 'passed' },
       { id: 'implementation_started', status: 'passed' },
       { id: 'verification_recorded', status: 'pending' },
-      { id: 'agent_review_recorded', status: 'pending' },
       { id: 'pr_prepare_ready', status: 'pending' },
       { id: 'pr_created', status: 'pending' }
     ]
@@ -91,14 +90,13 @@ test('story-vibepro-managed-worktree-execution-dag ac4 replays workflow state tr
   // story-vibepro-managed-worktree-execution-dag ac:4
   // The workflow state transition scenario moves from missing/created worktree state through branch/head binding and PR readiness nodes.
   const transitionIds = managedWorktreeState.execution_dag.nodes.map((node) => node.id);
-  assert.deepEqual(transitionIds.slice(0, 8), [
+  assert.deepEqual(transitionIds.slice(0, 7), [
     'story_selected',
     'worktree_created',
     'branch_bound',
     'head_bound',
     'implementation_started',
     'verification_recorded',
-    'agent_review_recorded',
     'pr_prepare_ready'
   ]);
   assert.equal(transitionIds.includes('pr_created'), true);

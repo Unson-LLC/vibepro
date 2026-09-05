@@ -30,13 +30,15 @@ vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 ## 4. Review and decisions
 
 ```bash
-vibepro review prepare /path/to/repo --id story-example --stage gate
-vibepro review record /path/to/repo --id story-example --stage gate \
-  --role implementation --status pass --summary "Reviewed"
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro review record /path/to/repo --id story-example --role reviewer \
+  --status pass --summary "Reviewed the Story, Spec, and changed surface" \
+  --inspection-input src/example.js
+vibepro review status /path/to/repo --id story-example
 vibepro decision status /path/to/repo --id story-example
 ```
 
-These commands preserve review and decision records. They do not grant merge authority.
+These commands preserve a lightweight content-bound review and decision records. A missing inspection input alone does not block a review; concrete findings are recorded as `needs_changes` or `block`.
 
 ## 5. PR handoff
 

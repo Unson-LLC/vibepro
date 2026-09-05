@@ -1688,7 +1688,8 @@ test('Learning Candidate送信失敗はverify成功を止めずpending+retryに�
       attempts += 1;
     }
   });
-  assert.equal(retried.status, 'ok');
+  assert.equal(retried.status, 'pending');
+  assert.equal(retried.unconfirmed, 1);
   assert.equal(retried.sent, 1);
   assert.equal(attempts, 2);
   const outboxFile = (await readdir(path.join(root, '.vibepro', 'integrations', 'brainbase', 'outbox'))).find((name) => name.endsWith('.json'));

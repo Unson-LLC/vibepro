@@ -8,6 +8,7 @@ import { resolvePrArtifactFile } from './artifact-routing.js';
 import { collectGitContext, compareFingerprintContexts } from './git-fingerprint.js';
 import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, initWorkspace, toWorkspaceRelative } from './workspace.js';
+import { createBrainbaseTransport } from './brainbase-transport.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -1778,7 +1779,7 @@ export async function getBrainbaseIntegrationStatus(repoRoot, options = {}) {
         outcome_case_projection: outcomeCaseProjectionNotEvaluated(root, null)
       };
   const outboxFiles = await listOutboxFiles(root);
-  const outbox = { total: outboxFiles.length, pending: 0, sent: 0, invalid: 0, entries: [] };
+  const outbox = { total: outboxFiles.length, pending: 0, sent: 0, confirmed: 0, unconfirmed: 0, invalid: 0, entries: [] };
   for (const filePath of outboxFiles) {
     try {
       const item = await readJson(filePath, 'Brainbase outbox');
@@ -1786,11 +1787,17 @@ export async function getBrainbaseIntegrationStatus(repoRoot, options = {}) {
       if (deliveryStatus === 'sent') outbox.sent += 1;
       else if (deliveryStatus === 'pending') outbox.pending += 1;
       else outbox.invalid += 1;
+      const receiverStatus = item?.receiver_status ?? 'unknown';
+      if (receiverStatus === 'confirmed') outbox.confirmed += 1;
+      else outbox.unconfirmed += 1;
       outbox.entries.push({
         event_id: item?.event_id ?? null,
         status: deliveryStatus ?? 'invalid',
         attempts: Number(item?.attempts ?? item?.retry_count ?? 0),
         next_retry_at: item?.next_retry_at ?? null,
+        receiver_status: receiverStatus,
+        receiver_receipt: item?.receiver_receipt ?? null,
+        receiver_error: item?.receiver_error ?? null,
         artifact: toWorkspaceRelative(root, filePath)
       });
     } catch (error) {
@@ -1928,6 +1935,7 @@ export async function doctorBrainbaseIntegration(repoRoot, options = {}) {
   }
   if (status.outbox.invalid > 0) checks.push({ id: 'outbox', status: 'fail', detail: `${status.outbox.invalid} invalid outbox entries` });
   else if (status.outbox.pending > 0) checks.push({ id: 'outbox', status: 'warn', detail: `${status.outbox.pending} learning candidate(s) pending delivery` });
+  else if (status.outbox.unconfirmed > 0) checks.push({ id: 'outbox', status: 'warn', detail: `${status.outbox.unconfirmed} learning candidate(s) without confirmed receiver readback` });
   else checks.push({ id: 'outbox', status: 'pass', detail: 'outbox has no pending or invalid entries' });
   const hasFailure = checks.some((check) => check.status === 'fail');
   const hasWarning = checks.some((check) => check.status === 'warn' || check.status === 'unknown');
@@ -1972,6 +1980,7 @@ async function enqueueBrainbaseOutbox(repoRoot, event, options = {}) {
     kind: 'learning_candidate',
     status: 'pending',
     delivery_status: 'pending',
+    receiver_status: 'unknown',
     attempts: 0,
     retry_count: 0,
     next_retry_at: null,
@@ -2005,94 +2014,162 @@ function safeDeliveryError(error) {
   return message.slice(0, 500);
 }
 
-function dueForRetry(item, now) {
-  if (item.delivery_status === 'sent' || item.status === 'sent') return false;
-  if (!item.next_retry_at) return true;
-  const retryAtValue = Date.parse(item.next_retry_at);
-  return Number.isFinite(retryAtValue) && retryAtValue <= dateFromOption(now).valueOf();
+function dueForRetry(item, now, field = 'next_retry_at') {
+  if (!item[field]) return true;
+  const timestamp = Date.parse(item[field]);
+  return Number.isFinite(timestamp) && timestamp <= dateFromOption(now).valueOf();
+}
+
+function receiptIdentity(response, item) {
+  if (!response || response.event_id !== item.event_id
+    || typeof response.candidate_id !== 'string' || !response.candidate_id.trim()) {
+    throw new Error('Brainbase acknowledgement identity does not match the outbox event');
+  }
+  return {
+    event_id: response.event_id,
+    candidate_id: response.candidate_id,
+    idempotent: response.idempotent === true
+  };
+}
+
+function receiverReceipt(response, item) {
+  if (response?.schema_version !== 'knowledge_cycle_receipt.v1'
+    || response.event_id !== item.event_id
+    || response.candidate_id !== item.receiver_ack?.candidate_id
+    || !Array.isArray(response.stage_history)) {
+    throw new Error('Brainbase receiver readback does not match the acknowledged candidate');
+  }
+  const stages = new Set(['received', 'queued', 'extracted', 'resolved', 'indexed', 'retrievable']);
+  if (!stages.has(response.processing_stage) || typeof response.semantic_state !== 'string') {
+    throw new Error('Brainbase receiver readback has an invalid processing state');
+  }
+  return {
+    schema_version: response.schema_version,
+    event_id: response.event_id,
+    candidate_id: response.candidate_id,
+    processing_stage: response.processing_stage,
+    semantic_state: response.semantic_state,
+    failure_reason: response.failure_reason ? safeDeliveryError(response.failure_reason) : null,
+    retrievable_at: response.retrievable_at ?? null,
+    stage_history: response.stage_history.map((entry) => ({
+      stage: entry?.stage ?? null,
+      occurred_at: entry?.occurred_at ?? null
+    }))
+  };
 }
 
 /**
- * Deliver durable Brainbase learning candidates. The transport is deliberately
- * injected by the host/CLI boundary; VibePro never treats a failed send as a
- * failed verification and leaves the candidate pending for a later retry.
+ * Transmission and receiver readback are independent. A legacy sender that
+ * returns no acknowledgement stays sent/unknown. Once sent, retries only read
+ * the receiver; they never repeat the POST. Confirmation is not Outcome closure.
  */
 export async function reconcileBrainbaseOutbox(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const now = options.now ?? (() => new Date());
-  const sender = options.send ?? options.sendCandidate ?? options.sender ?? null;
+  const injectedSender = options.send ?? options.sendCandidate ?? options.sender ?? null;
+  // Explicit reconcile is the network boundary. Verification does not opt in.
+  const transport = typeof injectedSender === 'function' ? null : createBrainbaseTransport(options.env ?? process.env);
+  const sender = injectedSender ?? transport?.send;
+  const readback = options.readback ?? transport?.readback;
+  const target = transport?.target ?? options.target ?? null;
   const files = await listOutboxFiles(root);
-  const result = {
-    status: 'ok',
-    attempted: 0,
-    sent: 0,
-    pending: 0,
-    skipped: 0,
-    failed: 0,
-    entries: []
-  };
+  const result = { status: 'ok', attempted: 0, sent: 0, confirmed: 0, unconfirmed: 0, pending: 0, skipped: 0, failed: 0, entries: [] };
   for (const filePath of files) {
     let item;
+    const artifact = toWorkspaceRelative(root, filePath);
     try {
       item = JSON.parse(await readFile(filePath, 'utf8'));
+      if (!item || item.schema_version !== OUTBOX_SCHEMA || !item.event_id || !item.candidate
+        || item.event_id !== item.candidate.event_id
+        || !['pending', 'sent'].includes(item.delivery_status ?? item.status)) throw new Error('outbox entry is invalid');
     } catch (error) {
       result.failed += 1;
-      result.entries.push({ artifact: toWorkspaceRelative(root, filePath), status: 'invalid', error: safeDeliveryError(error) });
+      result.entries.push({ artifact, status: 'invalid', error: safeDeliveryError(error) });
       continue;
     }
-    if (!item || item.schema_version !== OUTBOX_SCHEMA || !item.event_id || !item.candidate) {
+    item.receiver_status ??= 'unknown';
+    let sent = item.delivery_status === 'sent' || item.status === 'sent';
+    // A receipt is scoped to the original receiver, even if environment changes.
+    if ((item.delivery_target && canonicalJson(item.delivery_target) !== canonicalJson(target))
+      || (sent && target && !item.delivery_target && item.receiver_ack)) {
       result.failed += 1;
-      result.entries.push({ artifact: toWorkspaceRelative(root, filePath), status: 'invalid', error: 'outbox entry is invalid' });
+      result.unconfirmed += 1;
+      result.entries.push({ event_id: item.event_id, status: sent ? 'sent' : 'pending', receiver_status: 'unknown', reason: 'receiver_target_mismatch' });
       continue;
     }
-    if (!dueForRetry(item, now)) {
-      result.skipped += 1;
-      result.entries.push({ event_id: item.event_id, status: item.delivery_status ?? item.status ?? 'pending' });
-      continue;
-    }
-    if (typeof sender !== 'function') {
-      result.pending += 1;
-      result.entries.push({ event_id: item.event_id, status: 'pending', reason: 'sender_not_configured' });
-      continue;
-    }
-    result.attempted += 1;
-    const attempts = Number(item.attempts ?? item.retry_count ?? 0) + 1;
-    try {
-      await sender(item.candidate, item);
-      const sentAt = outboxNow(now);
-      const next = {
-        ...item,
-        status: 'sent',
-        delivery_status: 'sent',
-        attempts,
-        retry_count: attempts,
-        next_retry_at: null,
-        last_error: null,
-        sent_at: sentAt,
-        updated_at: sentAt
-      };
-      await writeJsonAtomic(filePath, next);
+    if (!sent) {
+      if (!dueForRetry(item, now) || typeof sender !== 'function') {
+        result.pending += 1;
+        if (typeof sender === 'function') result.skipped += 1;
+        result.entries.push({ event_id: item.event_id, status: 'pending', receiver_status: 'unknown', reason: typeof sender === 'function' ? 'retry_not_due' : 'sender_not_configured' });
+        continue;
+      }
+      result.attempted += 1;
+      const attempts = Number(item.attempts ?? item.retry_count ?? 0) + 1;
+      let response;
+      try {
+        // Persist the destination before dispatch, including uncertain failures.
+        item = { ...item, delivery_target: target, attempts, retry_count: attempts, updated_at: outboxNow(now) };
+        await writeJsonAtomic(filePath, item);
+        response = await sender(item.candidate, item);
+      } catch (error) {
+        item = { ...item, status: 'pending', delivery_status: 'pending', next_retry_at: retryAt(now, attempts, options.retryDelayMs), last_error: safeDeliveryError(error) };
+        await writeJsonAtomic(filePath, item);
+        result.pending += 1;
+        result.failed += 1;
+        result.entries.push({ event_id: item.event_id, status: 'pending', receiver_status: 'unknown', attempts, next_retry_at: item.next_retry_at, error: item.last_error });
+        continue;
+      }
+      // Save transmission before checking the ack so a bad response cannot cause
+      // a second POST on the next reconciliation.
+      item = { ...item, status: 'sent', delivery_status: 'sent', sent_at: outboxNow(now), next_retry_at: null, last_error: null };
+      await writeJsonAtomic(filePath, item);
       result.sent += 1;
-      result.entries.push({ event_id: item.event_id, status: 'sent', attempts });
-    } catch (error) {
-      const failedAt = outboxNow(now);
-      const next = {
-        ...item,
-        status: 'pending',
-        delivery_status: 'pending',
-        attempts,
-        retry_count: attempts,
-        next_retry_at: retryAt(now, attempts, options.retryDelayMs),
-        last_error: safeDeliveryError(error),
-        updated_at: failedAt
-      };
-      await writeJsonAtomic(filePath, next);
-      result.pending += 1;
-      result.failed += 1;
-      result.entries.push({ event_id: item.event_id, status: 'pending', attempts, next_retry_at: next.next_retry_at, error: next.last_error });
+      sent = true;
+      if (response !== undefined && response !== null) {
+        try {
+          item.receiver_ack = receiptIdentity(response, item);
+        } catch (error) {
+          item.receiver_status = 'failed';
+          item.receiver_error = safeDeliveryError(error);
+        }
+      }
+      await writeJsonAtomic(filePath, item);
     }
+    if (item.receiver_status === 'confirmed') {
+      result.confirmed += 1;
+      result.skipped += 1;
+    } else if (typeof readback === 'function' && item.receiver_ack && dueForRetry(item, now, 'next_receiver_retry_at')) {
+      const attempts = Number(item.receiver_attempts ?? 0) + 1;
+      try {
+        const receipt = receiverReceipt(await readback(item.candidate, item), item);
+        item.receiver_receipt = receipt;
+        const failed = receipt.semantic_state !== 'active' || Boolean(receipt.failure_reason);
+        const retrievable = receipt.processing_stage === 'retrievable'
+          && Number.isFinite(Date.parse(receipt.retrievable_at))
+          && receipt.stage_history.some((entry) => entry.stage === 'retrievable' && Number.isFinite(Date.parse(entry.occurred_at)));
+        item.receiver_status = failed ? 'failed' : retrievable ? 'confirmed' : 'unknown';
+        item.receiver_error = failed ? 'Brainbase receiver reports an inactive or failed candidate' : retrievable ? null : 'Brainbase candidate is not yet retrievable';
+        if (item.receiver_status === 'confirmed') item.receiver_confirmed_at = outboxNow(now);
+      } catch (error) {
+        item.receiver_status = 'failed';
+        item.receiver_error = safeDeliveryError(error);
+      }
+      item.receiver_attempts = attempts;
+      item.receiver_checked_at = outboxNow(now);
+      item.next_receiver_retry_at = item.receiver_status === 'confirmed' ? null : retryAt(now, attempts, options.retryDelayMs);
+      item.updated_at = outboxNow(now);
+      await writeJsonAtomic(filePath, item);
+      if (item.receiver_status === 'confirmed') result.confirmed += 1;
+      else result.unconfirmed += 1;
+    } else {
+      result.unconfirmed += 1;
+    }
+    if (item.receiver_status === 'failed') result.failed += 1;
+    result.entries.push({ event_id: item.event_id, status: 'sent', attempts: item.attempts, receiver_status: item.receiver_status, receiver_receipt: item.receiver_receipt ?? null, ...(item.receiver_error ? { error: item.receiver_error } : {}) });
   }
   if (result.failed > 0) result.status = 'partial';
+  else if (result.pending > 0 || result.unconfirmed > 0) result.status = 'pending';
   return result;
 }
 
@@ -2340,7 +2417,7 @@ export function renderBrainbaseIntegrationStatus(result) {
   const outcomeCaseStatus = outcomeProjection
     ? `\nOutcome case projection: ${outcomeProjection.status}${outcomeProjection.reference ? ` (run ${outcomeProjection.reference})` : ''}`
     : '';
-  return `Brainbase integration ${result.status}: ${handoff} handoff receipt(s), ${pending} pending candidate(s)${outcomeCaseStatus}\n`;
+  return `Brainbase 連携 ${result.status}: 引継ぎ=${handoff}, 送信待ち=${pending}, 受信確認=${result.outbox?.confirmed ?? 0}, 受信未確認=${result.outbox?.unconfirmed ?? 0}${outcomeCaseStatus}\n`;
 }
 
 export function renderBrainbaseDoctor(result) {

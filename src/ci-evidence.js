@@ -5,16 +5,10 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { RUNNER_EVIDENCE_RECEIPT, recordVerificationEvidence } from './verification-evidence.js';
-import {
-  readValidationSequence,
-  recordValidationPhase,
-  writeValidationSequence
-} from './validation-sequencing.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRuntimeIntegrity } from './runtime-info.js';
 
 const execFileAsync = promisify(execFile);
-const CI_IMPORT_RECEIPT = Symbol('validated-ci-import');
 
 const DEFAULT_CHECK_KIND_MATCHERS = [
   { pattern: /^test\b|^test\s*\(|^unit\b/i, kind: 'integration' }
@@ -113,12 +107,6 @@ export async function importCiEvidence(repoRoot, options = {}) {
     });
   }
 
-  const validationSequence = await recordImportedCiVerification(root, storyId, currentHead, {
-    imported,
-    pending,
-    failures
-  }, CI_IMPORT_RECEIPT);
-
   return {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -127,71 +115,8 @@ export async function importCiEvidence(repoRoot, options = {}) {
     imported,
     skipped,
     pending,
-    failures,
-    validation_sequence: validationSequence
+    failures
   };
-}
-
-export async function recordImportedCiVerification(repoRoot, storyId, currentHead, ciResult = [], receipt = null) {
-  if (receipt !== CI_IMPORT_RECEIPT) {
-    return { recorded: false, reason: 'CI sequence recording requires a validated receipt from verify import-ci' };
-  }
-  const imported = Array.isArray(ciResult) ? ciResult : (ciResult.imported ?? []);
-  const pending = Array.isArray(ciResult) ? [] : (ciResult.pending ?? []);
-  const failures = Array.isArray(ciResult) ? [] : (ciResult.failures ?? []);
-  if (imported.length === 0) return { recorded: false, reason: 'no successful mapped CI checks were imported' };
-  if (pending.length > 0 || failures.length > 0) {
-    return { recorded: false, reason: 'mapped CI checks are incomplete or failing' };
-  }
-  const state = await readValidationSequence(repoRoot, storyId);
-  if (!state) return { recorded: false, reason: 'validation sequence is not planned' };
-  const binding = state.frozen_binding;
-  if (!binding || binding.head_sha !== currentHead) {
-    return { recorded: false, reason: 'CI evidence does not match a frozen current-HEAD binding' };
-  }
-  const expectedCommand = normalizeCiBinding(binding.verification_command);
-  const matchingCheck = imported.find((item) => (
-    normalizeCiBinding(item.covered_command) === expectedCommand
-    && item.covered_test_fingerprint === binding.test_fingerprint
-  ));
-  if (!matchingCheck) {
-    return {
-      recorded: false,
-      reason: `no successful mapped CI check proves frozen verification command: ${binding.verification_command}`
-    };
-  }
-  if (state.phases?.expensive_verification?.status === 'passed') {
-    const existing = state.phases.expensive_verification;
-    if (existing.binding?.head_sha === binding.head_sha
-      && existing.binding?.test_fingerprint === binding.test_fingerprint
-      && existing.binding?.verification_command === binding.verification_command) {
-      const next = structuredClone(state);
-      next.phases.expensive_verification.evidence = [
-        ...(existing.evidence ?? []),
-        ...imported.map((item) => item.artifact).filter(Boolean)
-      ];
-      next.phases.expensive_verification.ci_import_augmented = true;
-      await writeValidationSequence(repoRoot, next);
-      return { recorded: false, reused: true, augmented: true, source: 'ci_import', imported_checks: imported.length };
-    }
-  }
-  const next = recordValidationPhase(state, {
-    phase: 'expensive_verification',
-    status: 'passed',
-    headSha: binding.head_sha,
-    testFingerprint: binding.test_fingerprint,
-    verificationCommand: binding.verification_command,
-    evidence: imported.map((item) => item.artifact).filter(Boolean).join(','),
-    evidenceValidation: { status: 'verified', source: 'ci_import' },
-    source: 'ci_import',
-    reason: `Imported ${imported.length} successful mapped CI check(s) at the frozen HEAD`
-  });
-  await writeValidationSequence(repoRoot, next);
-  return { recorded: true, source: 'ci_import', imported_checks: imported.length };
-}
-
-function normalizeCiBinding(value) {
-  return String(value ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 export function renderCiImportSummary(result) {

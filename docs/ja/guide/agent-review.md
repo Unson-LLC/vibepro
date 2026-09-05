@@ -1,35 +1,35 @@
-# エージェントレビュー
+# レビューの記録
 
-Required Agent Reviewは、現在のdiffとevidenceに対する、独立したparallel-subagent検査です。人間のメモやprovenanceのないsecond opinionは、required parallel-subagent reviewの代替になりません。
+VibeProのレビュー記録は、Storyに対する軽量な確認結果を保存します。レビューの役割は必要に応じて指定できます。`prepare` は確認対象と記録方法を示し、`record` は判定と具体的な証跡を保存します。
 
 ```bash
-vibepro review prepare . --id <story-id> --stage gate --role <role>
+vibepro review prepare . --id <story-id> --role reviewer
 ```
 
-prepared request、current diff、関係するStory / Architecture / Spec、verification artifact、正確なinspection inputをreviewerへ渡します。Reviewerはimplementation identityから独立し、具体的findingを返す必要があります。
-
-結果を受け取った後、そのsubagent thread/sessionをclose/shutdownしてから記録します。
+複数の役割を準備する場合は `--roles reviewer,security` または `--role` の繰り返しを使います。レビュー結果を記録する例は次のとおりです。
 
 ```bash
 vibepro review record . \
-  --id <story-id> --stage gate --role <role> \
-  --status pass --summary "<summary>" \
-  --agent-system codex --execution-mode parallel_subagent \
-  --agent-id <agent-id> --agent-closed \
-  --reviewer-identity separate_session \
-  --implementation-session-id <implementation-session> \
-  --inspection-summary "<what was inspected>" \
-  --inspection-input <source-test-story-spec-contract-or-config> \
-  --inspection-evidence <transcript-or-result> \
-  --judgment-delta "<initial judgment -> final judgment because evidence>"
-
-vibepro review status . --id <story-id> --stage gate
+  --id <story-id> --role reviewer \
+  --status pass --summary "StoryとSpec、変更対象を確認済み" \
+  --inspection-input src/example.js \
+  --artifact .vibepro/verification/unit.json
 ```
 
-有効なstatusは `pass`、`needs_changes`、`block` です。`pass` のinspection inputには、実際に読んだ `.vibepro` 外のsource、test、Story、Spec、contract、configを指定します。生成された `.vibepro` artifactだけではinspection surfaceになりません。
+標準入力からレビュー結果を渡す場合は `--from-stdin` を使います。利用できる状態は `pass`、`needs_changes`、`block`、`runtime_failed` です。`agent-system` と `agent-id` は、別のレビュー実行元を記録する場合に指定できます。
 
-`gate_evidence`と`release_risk`を含むreviewは既定でcontent-surface-boundです。record後にcommitが増えてもinspection surfaceが不変ならcurrentを維持し、inspection surfaceを変更するとstaleになります。理由付きのrole別`strict_head` policyのreviewはstrict HEAD-boundで、任意のcommit後にstaleになります。
+```bash
+vibepro review record . --id <story-id> --role reviewer \
+  --status needs_changes --summary "入力検証に具体的な不足がある" \
+  --inspection-input src/example.js --agent-system codex --agent-id reviewer-1
+```
 
-`--strict-head-binding --strict-head-reason <reason>` は無条件のCLI overrideでは**ありません**。許可される由来は2つだけです: role policyで既に `freshness_mode: strict_head` と `freshness_reason` を明示したrole（この場合flagは冗長だが害はない）、または activeなfrozen validation sequenceの `implementation:runtime_contract` `final_review`（release candidateへのTOCTOU防止）。それ以外のstage/roleはそのroleの設定済みfreshness modeを名指しした明示的なエラーで拒否されます。通常のcontent-surface reviewをCLIからstrict化しようとしないでください。`vibepro pr prepare`は各strict bindingの由来（`role_policy` / `validation_sequence` / legacyな `cli_override`）を報告し、既存の `cli_override` artifactは自動書き換えせず移行警告として表示します。
+```bash
+vibepro review status . --id <story-id>
+```
 
-accepted findingを修正し、再検証して、final treeに対する影響reviewだけを取り直します。
+合格の記録には、実在する `.vibepro` 外の確認対象ファイルが必要です。確認したファイルの内容が変わると、記録は古い状態になります。未記録や古い記録だけではPR準備を止めません。具体的な未解決指摘を `needs_changes` または `block` で記録すると、解消するまでPR準備を止めます。
+
+以前のレビュー段階や実行履歴・コスト・strict-headの設定は、軽量レビューでは参照せず無視します。PRの準備では、Story、Spec、検証、レビューの記録を人間が確認できる要約として扱います。
+
+問題を修正したら、最新の変更箇所を確認してレビューを記録し直してください。
