@@ -606,3 +606,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:529:start -->
 - [PR #529](https://github.com/Unson-LLC/vibepro/pull/529) — [2026-09](/ja/releases/2026-09): docs: VibeProの旧証跡回収ルールを廃止
 <!-- vibepro-release-index-pr:529:end -->
+
+<!-- vibepro-release-index-pr:530:start -->
+- [PR #530](https://github.com/Unson-LLC/vibepro/pull/530) — [2026-09](/ja/releases/2026-09): refactor: retire VibePro merge authority
+<!-- vibepro-release-index-pr:530:end -->
