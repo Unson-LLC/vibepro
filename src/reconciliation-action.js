@@ -41,7 +41,9 @@ export function resolveReconciliationAction(merge = {}) {
     reason: merge.reconciliation?.reasons?.[0] ?? merge.stop_reason ?? 'delivery_reconciliation_required',
     commands: [
       `vibepro pr prepare . --story-id ${storyId} --base ${base}`,
-      `vibepro execute merge . --story-id ${storyId} --base ${base}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}`
+      retainedPrSelector
+        ? `Complete review and merge ${retainedPrSelector} through the repository's normal GitHub workflow.`
+        : 'Complete review and merge through the repository\'s normal GitHub workflow.'
     ]
   };
 }

@@ -63,6 +63,8 @@ vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 
 `pr prepare` は `.vibepro/pr/<story-id>/` に機械可読な要約とPR本文を書きます。そこでは記録された内容と、実装がStory / Specへどう紐づいているかを要約しますが、自律的な安全性承認ではありません。`pr create` は選択したbranchをpushしてGitHub CLIを呼べますが、最終レビューとmerge権限はVibeProの外にあります。
 
+通常のGitHub PR・レビュー・マージの流れが正本です。VibeProは、1つのStoryをSpec・実装・影響するテストにつなぐ軽量な補助であり、`gh pr merge` を実行したり、マージ権限を持ったりしません。
+
 バグ修正ではStoryを `--contract-type bug_fix` 付きで登録します。VibeProは再現から同経路再検証までの順序付き診断証拠を要求します。詳しくは[バグ診断への移行](docs/ja/guide/bug-diagnosis-migration.md)を参照してください。
 
 base branchは `origin/main` に固定せず、対象リポジトリの実際の既定branchを指定してください。
