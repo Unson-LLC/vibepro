@@ -54,6 +54,7 @@ import {
 } from './managed-worktree.js';
 import {
   createPullRequest,
+  assertPushRepositoryTarget,
   preparePullRequest,
   renderPrCreateSummary,
   renderPrPrepareSummary
@@ -227,6 +228,7 @@ Usage:
   vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
+  vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -346,6 +348,7 @@ Usage:
   vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
+  vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -1079,6 +1082,22 @@ ${renderHelp()}`);
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
+      if (subcommand === 'target') {
+        const environment = io.env ?? process.env;
+        const repository = assertPushRepositoryTarget(
+          environment.VIBEPRO_EXPECTED_REPOSITORY,
+          getOption(rest, '--push-url')
+        );
+        const result = {
+          schema_version: 'repository-target-v1',
+          repository,
+          status: 'matched'
+        };
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result)}\n`
+          : `guard target: ${result.status} (${result.repository})\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'check') {
         const bypassReason = process.env.VIBEPRO_GUARD_BYPASS ?? '';
         if (hasFlag(rest, '--pretooluse')) {
@@ -1093,6 +1112,7 @@ ${renderHelp()}`);
         }
         if (hasFlag(rest, '--pre-push')) {
           const prePushRemote = getOption(rest, '--pre-push');
+          assertPushRepositoryTarget(process.env.VIBEPRO_EXPECTED_REPOSITORY, getOption(rest, '--push-url'));
           const config = await readGuardConfig(repoRoot);
           const rawStdin = await readStdin(io.stdin ?? process.stdin);
           const parsed = parsePrePushRefs(rawStdin, config.protected_branches);
