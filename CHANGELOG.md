@@ -3202,3 +3202,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:531:end -->
+
+<!-- vibepro-release-pr:532:start -->
+## [#532](https://github.com/Unson-LLC/vibepro/pull/532) chore: release 0.2.0-beta.23
+
+- Author: @sintariran
+- Merged: 2026-09-12T21:24:30Z
+- Commit: `80e0b5cf1ae133be802c88344cf7cf35abd1b597`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:532:end -->

@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-09-12 | [`0.2.0-beta.23`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.23) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-05 | [`0.2.0-beta.22`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.22) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-03 | [`0.2.0-beta.21`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.21) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-02 | [`0.2.0-beta.20`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.20) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -614,3 +615,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:531:start -->
 - [PR #531](https://github.com/Unson-LLC/vibepro/pull/531) — [2026-09](/ja/releases/2026-09): fix: require explicit repository targets before push
 <!-- vibepro-release-index-pr:531:end -->
+
+<!-- vibepro-release-index-pr:532:start -->
+- [PR #532](https://github.com/Unson-LLC/vibepro/pull/532) — [2026-09](/ja/releases/2026-09): chore: release 0.2.0-beta.23
+<!-- vibepro-release-index-pr:532:end -->
