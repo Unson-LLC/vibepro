@@ -136,8 +136,59 @@ test('pr create fails closed before push when distinct remotes leave the destina
 
   await assert.rejects(
     createPullRequest(root, { storyId, prBase: 'upstream/develop', baseRef: 'upstream/develop', dryRun: true }),
-    /PR destination is ambiguous/
+    /explicit repository target/
   );
+});
+
+test('pr create requires an explicit repository target even with one remote or --push-remote alone', async () => {
+  const storyId = 'story-pr-manager-required-repository';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/single-repo');
+
+  await assert.rejects(
+    createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true }),
+    /explicit repository target/
+  );
+  await assert.rejects(
+    createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', pushRemote: 'origin', dryRun: true }),
+    /explicit repository target/
+  );
+});
+
+test('pr create rejects multiple push URLs before sending', async () => {
+  const storyId = 'story-pr-multiple-push-urls';
+  const root = await setupRepo({ storyId });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/organization-repo');
+  await git(root, ['config', '--add', 'remote.origin.pushurl', 'https://github.com/example/organization-repo.git']);
+  await git(root, ['config', '--add', 'remote.origin.pushurl', 'https://github.com/example/public-repo.git']);
+  await assert.rejects(createPullRequest(root, {
+    storyId, prBase: 'main', baseRef: 'main', pushRemote: 'origin',
+    repository: 'example/organization-repo', dryRun: true
+  }), /exactly one push URL/);
+});
+
+test('pr create rejects a second push URL added after planning without sending', async () => {
+  const storyId = 'story-pr-added-push-url';
+  const root = await setupRepo({ storyId });
+  await disableAgentReviews(root);
+  await addGitHubRemote(root, 'origin', 'example/organization-repo');
+  const invoked = [];
+  await assert.rejects(createPullRequest(root, {
+    storyId, prBase: 'main', baseRef: 'main', pushRemote: 'origin',
+    repository: 'example/organization-repo',
+    beforeDestinationRevalidation: async (stage) => {
+      if (stage !== 'before_push') return;
+      await git(root, ['config', '--add', 'remote.origin.pushurl', 'https://github.com/example/organization-repo.git']);
+      await git(root, ['config', '--add', 'remote.origin.pushurl', 'https://github.com/example/public-repo.git']);
+    },
+    commandRunner: async (bin, args) => {
+      invoked.push([bin, ...args]);
+      return { stdout: '', stderr: '' };
+    }
+  }), /exactly one push URL/);
+  assert.deepEqual(invoked, []);
 });
 
 test('pr create dry-run exposes an explicit destination and persists its validation evidence', async () => {
@@ -227,13 +278,13 @@ test('pr create records failed validation when a remote changes to an unsupporte
   assert.match(artifact.destination_validation.at(-1).reason, /Unsupported GitHub remote URL/);
 });
 
-test('pr create preserves implicit destination selection for a single remote', async () => {
+test('pr create selects a single remote from an explicit repository', async () => {
   const storyId = 'story-pr-manager-single-remote';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
   await disableAgentReviews(root);
   await addGitHubRemote(root, 'origin', 'example/single-repo');
 
-  const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true });
+  const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', repository: 'example/single-repo', dryRun: true });
   assert.equal(result.execution.push_remote, 'origin');
   assert.equal(result.execution.pr_repository, 'example/single-repo');
   assert.equal(result.execution.base_repository, 'example/single-repo');
@@ -271,7 +322,7 @@ test('pr create accepts only exact GitHub remote URL forms', async () => {
     const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
     await disableAgentReviews(root);
     await git(root, ['remote', 'add', 'origin', remoteUrl]);
-    const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true });
+    const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', repository: 'example/url-repo', dryRun: true });
     assert.equal(result.execution.pr_repository, 'example/url-repo');
   }
 
@@ -287,7 +338,7 @@ test('pr create accepts only exact GitHub remote URL forms', async () => {
     await disableAgentReviews(root);
     await git(root, ['remote', 'add', 'origin', remoteUrl]);
     await assert.rejects(
-      createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true }),
+      createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', repository: 'example/url-repo', dryRun: true }),
       /Unsupported GitHub remote URL/
     );
   }
@@ -394,7 +445,7 @@ test('pr create human summary exposes destination and validation evidence', asyn
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
   await disableAgentReviews(root);
   await addGitHubRemote(root, 'origin', 'example/summary-repo');
-  const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', dryRun: true });
+  const result = await createPullRequest(root, { storyId, baseRef: 'main', prBase: 'main', repository: 'example/summary-repo', dryRun: true });
 
   const summary = renderPrCreateSummary(result);
   assert.match(summary, new RegExp(`HEAD SHA: ${result.execution.head_sha}`));
@@ -598,7 +649,7 @@ test('configured legacy stages do not block PR creation or schedule reviews', as
   config.budgets = { delivery_efficiency: { max_subagent_count: 0 } };
   await writeFile(configPath, JSON.stringify(config));
   const { preparation, execution } = await createPullRequest(root, {
-    storyId: 'story-pr-manager-ac', baseRef: 'main', dryRun: true
+    storyId: 'story-pr-manager-ac', baseRef: 'main', repository: 'example/project', dryRun: true
   });
   assert.equal(preparation.gate_status, 'ready');
   assert.equal(preparation.review.recorded, false);
@@ -641,6 +692,6 @@ test('concrete unresolved review findings block PR creation until the same revie
   await writeFile(path.join(root, 'widget.js'), 'export function renderWidget() { return false; }\n');
   await assert.rejects(createPullRequest(root, { storyId, baseRef: 'main', dryRun: true }), /空入力で例外になる/);
   await recordReview(root, { storyId, role: 'reviewer', status: 'pass', summary: '空入力の修正を確認しました', inspectionInputs: ['widget.js'] });
-  const result = await createPullRequest(root, { storyId, baseRef: 'main', dryRun: true });
+  const result = await createPullRequest(root, { storyId, baseRef: 'main', repository: 'example/project', dryRun: true });
   assert.equal(result.preparation.gate_status, 'ready');
 });

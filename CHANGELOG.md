@@ -3115,3 +3115,90 @@ Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 
 managed v2を使う場合は、Brainbase issuerと共有する署名検証用環境変数を設定してください。
 
 <!-- vibepro-release-pr:527:end -->
+
+<!-- vibepro-release-pr:528:start -->
+## [#528](https://github.com/Unson-LLC/vibepro/pull/528) chore: VibePro 0.2.0-beta.22を公開する
+
+- Author: @sintariran
+- Merged: 2026-09-05T01:19:11Z
+- Commit: `b5b6e6742652caba9cb5e6402e848e57321576d8`
+
+### Change Summary
+
+- Brainbase発行の `brainbase-vibepro-managed-handoff.v2` を検証・受信
+- OutcomeCaseの7項目をStoryへ投影し、context・bind receipt・消費ledgerを保存
+- 改ざん、期限切れ、repo/基準SHA不一致、同一handoff再利用を拒否
+- VibePro package versionを `0.2.0-beta.22` へ更新
+
+### Compatibility
+
+既存のmanaged v1互換経路を維持します。managed v2を使わない利用者への破壊的変更はありません。
+
+### User Action
+
+Brainbase managed v2連携を使う環境では、Brainbase issuerと共有する署名検証用環境変数を設定してください。
+
+<!-- vibepro-release-pr:528:end -->
+
+<!-- vibepro-release-pr:529:start -->
+## [#529](https://github.com/Unson-LLC/vibepro/pull/529) docs: VibeProの旧証跡回収ルールを廃止
+
+- Author: @sintariran
+- Merged: 2026-09-05T10:27:38Z
+- Commit: `240158539719e61e75222510e7090d62380eefaa`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:529:end -->
+
+<!-- vibepro-release-pr:530:start -->
+## [#530](https://github.com/Unson-LLC/vibepro/pull/530) refactor: retire VibePro merge authority
+
+- Author: @sintariran
+- Merged: 2026-09-06T06:06:07Z
+- Commit: `18210e5e275f81878d4f632ac0f921f9b41d4ca0`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:530:end -->
+
+<!-- vibepro-release-pr:531:start -->
+## [#531](https://github.com/Unson-LLC/vibepro/pull/531) fix: require explicit repository targets before push
+
+- Author: @sintariran
+- Merged: 2026-09-12T21:18:19Z
+- Commit: `15391b125d502557bc19ab695e0cc855893efa4c`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:531:end -->

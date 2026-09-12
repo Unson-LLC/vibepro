@@ -1,111 +1,32 @@
 ---
 name: vibepro-gate-evidence
-description: Use when recording VibePro verification or review evidence, writing Architecture/Spec artifacts, or resolving blocked gates when pr prepare reports needs_verification, needs_review, or unresolved gate ids.
+description: Compatibility notice for repositories that still reference VibePro's retired Gate and evidence workflow.
 ---
 
-# VibePro Gate Evidence Playbook
+# VibePro Gate Evidence
 
 ## Purpose
 
-Distilled operating knowledge for closing VibePro gates efficiently. `pr prepare` tells you *which* gates block; this Skill tells you *how* to produce evidence that actually resolves them, in the right order, without stale-evidence rework.
+旧Gate／証跡運用が廃止済みであることを示し、過去の参照から証跡収集が再開されるのを防ぐ。
 
 ## When to Use
 
-Use this Skill when recording `vibepro verify record` / `vibepro review record` evidence, writing Architecture or Spec artifacts through the CLI, or when `pr prepare` / `gate check` reports `needs_verification`, `needs_review`, or specific unresolved gate ids. Also use it before deciding the commit/evidence/review order for any VibePro-managed change.
+旧Skill名が参照された場合、または利用者が旧Gate挙動の調査を明示した場合だけ使う。通常の実装・レビューでは使わない。
 
-## Required Workflow
+## Process
 
-1. Finalize the entire tree (see Commit Ordering Rule below).
-2. Record verification evidence with structured observations and strong artifacts.
-3. Run the Agent Review lifecycle once, in order, with honest inspection inputs.
-4. `pr prepare --summary-json`, resolve remaining gate ids using the troubleshooting patterns, then `pr create`.
-
-> `vibepro adjudicate` and the gate DAG were removed in PR #430 (2026-09-02); this Skill no longer covers adjudication gates.
-
-## Commit Ordering Rule (most important)
-
-Verification and review records are content-surface-bound by default. A later commit only makes them stale when it changes a recorded target or inspected file. Configured high-risk review roles remain strict-HEAD-bound; a CLI override requires both `--strict-head-binding` and `--strict-head-reason`.
-
-1. Finalize the intended verification and review surfaces first: implementation, tests, relevant Story/Spec/Architecture docs, frontmatter, lineage, config registration.
-2. Then record verification evidence.
-3. Then run Agent Review last, in one pass.
-4. Only then `pr prepare` → `pr create`.
-
-Touching any file listed in a review's inspected surface (even a Story doc) after the review invalidates that review. An unrelated main advance does not invalidate a content-scoped review. Strict roles still invalidate on every HEAD change.
-
-## Verification Evidence
-
-- **Prefer `vibepro verify run . --id <id> --kind <kind> -- <command...>` over `verify record` for anything runnable locally.** VibePro executes the command itself and writes the outcome: status from the exit code, test counts parsed from the real output, head sha before/after, duration, and a SHA-256 of stdout. `--status` is rejected, and any `--observed` key the runner computes — every fact it computes is in one asserted set — is overwritten with the computed value and kept as a visible `observation_overrides` diff. Records carry `evidence_source: runner_direct`; `pr autopilot` records `autopilot_run` (VibePro-executed, but shell-run and exit-code-only), `verify import-ci` records `ci_import`, and `verify record` stays `self_reported`.
-- The runner reruns leave a real artifact diff (timestamps, duration, stdout hash), which is what makes "I reran it" checkable instead of assertable. It also strips `NODE_TEST_CONTEXT` from the child env — inherited, it makes `node --test` exit 0 having run nothing.
-- `verify run` exits non-zero when the executed command fails, and still records the failing run honestly. Read its warnings before treating a pass as coverage: `counts_trivial` / `counts_not_parsed` mean the record proves the command did not fail, not how much it checked.
-- `vibepro verify record` overwrites per `--kind`. A throwaway `--command "echo test"` destroys the real record for that kind.
-- Prefer structured observations: `--target <path>`, `--scenario <text>`, `--observed key=value`. Evidence classification matches the **observation text**, not the summary. Put markers like `scenario_clause_e2e: spec clause S-001 ...` directly in `--scenario`, using the registered Spec's clause id scheme.
-- Evidence strength: a matching kind alone is `supporting` and does not satisfy judgment-spine gates. Attach a real status artifact generated from the actual exit code (`{"status":"pass","exit_code":0}`) via `--artifact` to reach `quality=verified` / `strength=strong`.
-- Once a PR exists, `vibepro verify import-ci <repo> --id <id> --pr <n>` converts successful CI checks into head-bound verification evidence instead of rerunning full suites locally. Head SHA mismatch throws; failures are reported, not recorded.
-- If a full local suite is unavoidable and the host is memory-constrained, run `node --test --test-concurrency=2` and never mutate the tree while a suite is running.
-
-## Agent Review Lifecycle
-
-Order per role: `review prepare` → `review authorize` (model, risk closure, freeze, Story-wide budget) → dispatch only when authorized → `review start --dispatch-authorization <id>` (with the **real** subagent id) → `review close --close-reason completed` → `review record --agent-closed`.
-
-- Never spawn first and authorize later. An authorization stop means no subagent is started. Active reservations count against the Story budget, preventing parallel coordinators from overbooking it.
-
-- Started with a placeholder id? Repair: `close --close-reason replaced` → obtain a fresh authorization → `start` with the real id and authorization → `close completed` → `record`.
-- Always pass `--inspection-input <ref>` listing the real source, test, Story, Spec, contract, or config files inspected. A review-request path or generated `.vibepro` artifact alone is not a content surface. Keep the list honest and minimal — every listed file that later changes makes the review stale.
-- Do not append `--strict-head-binding` to every review. Configured strict roles apply automatically; a deliberate override must include `--strict-head-reason <text>`.
-- `vibepro review repair <repo> --story-id <id>` generates the prepare→start→close→record command sequence for incomplete review evidence.
-- Subagent dispatch prompt must state explicitly: work autonomously without spawning further agents, do not run the full test suite yourself (read the coordinator's run logs instead), and the final message of this run must be the verdict JSON only. Omitting these produces subagents that return no verdict.
-- After a rebase, a differential re-review (one subagent covering multiple roles over the delta scope) is a valid fast path.
-
-## Scanner Conclusiveness (`inconclusive` vs `not_applicable`)
-
-Scanners that examine zero targets no longer report `pass`. `inconclusive` means the scanner applied to the story but discovered no scan targets — absence of coverage is not evidence of a pass; give the scanner real targets or fix discovery before treating the gate as closed. `not_applicable` means the scanner is out of scope for the story. Never present an `inconclusive` result as a passing gate.
-
-## Architecture / Spec Write
-
-- `vibepro spec write` validates that `code_refs`/`test_refs` files exist and anchor strings are present — register the Spec **after or together with** implementation. Input JSON needs `schema_version` and `story_id`; clause types are invariant/scenario/contract/sla.
-- `spec write --final` requires fresh Pre-Spec Readiness; rerun `vibepro spec readiness --base <ref>` if stale. State diagrams require `entities`. Errors return as `ok:false` JSON — read the whole output, not the tail.
-- Gates that need specific diagrams (e.g. threat_model) read only the final Spec artifact's `diagrams[]`, not a "## Diagrams" section in the Spec doc, and not draft Specs.
-- Architecture gate without a separate ADR: declare in Story frontmatter under a `reason:` key covering alternatives, compatibility, rollback, and boundary.
-- Register hand-written Stories by appending an entry to `.vibepro/config.json` `brainbase.stories[]`; `story derive` catalogs are clustered separately and will not pick them up.
-
-## Gate Troubleshooting Patterns
-
-- `story diagnose` reads Graphify output per run: pass `--run-graphify` on the diagnose command itself; a prior standalone import does not resolve it.
-- Requirement-anchoring records whose tokens are all generic words (e.g. `unit_regression`) only match when the record text includes a contract clause id from the Spec.
-- `failure_mode_coverage` candidates are derived from Story/Spec keywords and also fire on negated phrasing ("network-free" still yields a provider_failure candidate). Decisions do not clear this gate; state the verified truth (dependency absent and its absence verified) with the token in a `--scenario`.
-- `release_ops` axis resolves when the record observation includes explicit release_note / rollout_plan / rollback_instruction / observability_evidence tokens grounded in real artifacts.
-- Judgment-axis followup decisions count as accepted only with **both** `--reason` and `--artifact`.
-- REQ-GAP (existing branch in a diff file not covered): add an English inherited-behavior sentence with the condition token ("<condition> is unchanged/existing") to a requirement source such as the Story doc.
-- When extending the Gate DAG itself, every new node needs an **incoming** edge on an existing path from story; outgoing-only nodes make `gate:dag_connectivity` unreachable and pin overall status at needs_verification.
-
-## Fast Lane
-
-`gate:agent_review` becomes typed N/A when the route is docs_only, or when the profile is light **and** source file count is zero, with no disqualifying signals (risk surfaces, secret surface, new network calls, high-risk routes). Source changes always keep review, even on light profiles.
-
-## Context Economy
-
-Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>`; drill into full artifacts only for flagged gate ids. Full JSON artifacts are the persisted source of truth, not the first read.
-
-## Common Rationalizations
-
-- "I'll record the evidence now and commit the docs after." The commit invalidates every record; finalize the tree first.
-- "The tests passed, so the gate should accept the record." Kind match without a real status artifact stays `supporting`; judgment-spine gates need `strength=strong`.
-- "I'll hand-write the status artifact so the cross-check passes." Then the check compares one piece of agent prose with another. Use `verify run` and let the execution write it.
-- "A quick manual review note will satisfy the review gate." Required Agent Review needs the full lifecycle with subagent provenance, `--agent-closed`, and inspection inputs.
-- "Rewording the summary should clear the gate." Gates match observation text and artifacts; add verifiable facts, not phrasing.
-- "I'll write the Spec first so the gates are ready." `spec write` validates that code_refs/test_refs exist; register it after or with implementation.
-- "The scanner found nothing, so the gate passes." Zero scanned targets is `inconclusive`, not a pass.
+1. 必要なら旧Gate成果物を読み取り専用の履歴・参考情報として確認する。
+2. 製品の完了は、合意済みの受け入れ条件、実際の差分、影響範囲のテスト、通常のCI／レビューで判断する。
+3. 未確認は未確認のまま報告し、追加の証跡登録へ変換しない。
 
 ## Red Flags
 
-- Evidence or review records taken before the tree was final.
-- A review record without `--inspection-input` or `--agent-closed`.
-- A `pass` verify record with no artifact on a judgment-spine-gated story.
-- Editing files while a test suite is running.
-- Resolving a blocked gate by rewording summaries instead of adding verifiable observations or artifacts.
-- An `inconclusive` scanner status reported as a pass.
+Gateを閉じるための証跡登録、レビュー派遣、head再拘束、waiver作成、PR準備の反復を開始しない。旧Gateの未解決、stale、missingを新しい作業や通常PRの停止条件にしない。
+
+## Common Rationalizations
+
+「旧成果物にmissingがあるから埋める」は理由にならない。旧成果物は現在の完了契約ではない。
 
 ## Verification
 
-Before treating a gate as resolved, rerun `vibepro pr prepare <repo> --story-id <id> --summary-json` (or `vibepro gate check`) and confirm the specific gate id left the blocking list. Before calling the work PR-ready, confirm `gate_status.ready_for_pr_create=true` and `overall_status=ready_for_review` in the current-head output, and name the exact record or artifact that closed each previously blocked gate.
+新しいGate記録やレビュー派遣を作っていないことを確認し、必要な製品検証だけを通常のリポジトリ手順で行う。

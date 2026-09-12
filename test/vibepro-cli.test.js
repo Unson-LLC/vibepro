@@ -970,10 +970,12 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   const meetingMinutesSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-meeting-minutes-editor', 'SKILL.md');
   const npmPublishSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-npm-publish', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
-  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro execute start/);
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /Story、最小のSpec、実装、影響範囲のテスト、通常のGitHub PR/);
+  assert.doesNotMatch(await readFile(workflowSkillPath, 'utf8'), /vibepro execute start/);
   assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /name: vibepro-codebase-memory/);
   assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /codebase-memory-mcp cli detect_changes/);
-  assert.match(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
+  assert.match(await readFile(reviewSkillPath, 'utf8'), /通常のGitHub PRと権限境界へ判断を返す/);
+  assert.doesNotMatch(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /name: vibepro-meeting-minutes-editor/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Slack attachments/);
   assert.match(await readFile(meetingMinutesSkillPath, 'utf8'), /Core Synopsis/);
@@ -6174,8 +6176,8 @@ test('--version prints the package version', async () => {
   assert.equal(new Set(versions).size, 1);
 });
 
-test('beta.22 release metadata and CLI report the exact candidate version', async () => {
-  const expectedVersion = '0.2.0-beta.22';
+test('beta.23 release metadata and CLI report the exact candidate version', async () => {
+  const expectedVersion = '0.2.0-beta.23';
   const packageJson = await readJson(path.resolve('package.json'));
   const packageLock = await readJson(path.resolve('package-lock.json'));
   let out = '';
