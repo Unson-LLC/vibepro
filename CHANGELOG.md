@@ -3181,3 +3181,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:530:end -->
+
+<!-- vibepro-release-pr:531:start -->
+## [#531](https://github.com/Unson-LLC/vibepro/pull/531) fix: require explicit repository targets before push
+
+- Author: @sintariran
+- Merged: 2026-09-12T21:18:19Z
+- Commit: `15391b125d502557bc19ab695e0cc855893efa4c`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:531:end -->

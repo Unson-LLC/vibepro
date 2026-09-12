@@ -610,3 +610,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:530:start -->
 - [PR #530](https://github.com/Unson-LLC/vibepro/pull/530) — [2026-09](/ja/releases/2026-09): refactor: retire VibePro merge authority
 <!-- vibepro-release-index-pr:530:end -->
+
+<!-- vibepro-release-index-pr:531:start -->
+- [PR #531](https://github.com/Unson-LLC/vibepro/pull/531) — [2026-09](/ja/releases/2026-09): fix: require explicit repository targets before push
+<!-- vibepro-release-index-pr:531:end -->
