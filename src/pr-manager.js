@@ -888,7 +888,9 @@ export async function createPullRequest(repoRoot, options = {}) {
       await writePrCreateArtifacts(root, prepareResult, execution);
       throw error;
     }
-    const pushResult = await runCommand(root, pushCommand, options);
+    const pushResult = await runCommand(root, pushCommand, {
+      ...options, env: { ...process.env, ...options.env, VIBEPRO_EXPECTED_REPOSITORY: destination.prRepository }
+    });
     execution.results.push(pushResult);
     if (pushResult.exit_code !== 0) {
       execution.status = 'failed';
@@ -952,7 +954,15 @@ export async function createPullRequest(repoRoot, options = {}) {
   };
 }
 
+export function assertPushRepositoryTarget(expectedRepository, actualPushUrl) {
+  if (!expectedRepository || !actualPushUrl) throw new Error('Push requires an explicit repository target and destination URL.');
+  const expected = normalizeRepository(expectedRepository);
+  if (repositoryFromRemoteUrl(actualPushUrl) !== expected) throw new Error('Push destination does not match the explicit repository target.');
+  return expected;
+}
+
 async function resolvePrDestination(repoRoot, options = {}) {
+  if (!options.repository) throw new Error('PR creation requires an explicit repository target (--repo owner/name).');
   const remotes = await readGitRemotes(repoRoot);
   if (remotes.length === 0) {
     throw new Error('PR destination cannot be resolved because this repository has no Git remote.');
@@ -1006,14 +1016,19 @@ async function readGitRemotes(repoRoot) {
   const { stdout } = await execFileAsync('git', ['remote'], { cwd: repoRoot, encoding: 'utf8' });
   const names = stdout.split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
   return Promise.all(names.map(async (name) => {
-    const result = await execFileAsync('git', ['remote', 'get-url', '--push', name], { cwd: repoRoot, encoding: 'utf8' });
-    const url = result.stdout.trim();
+    const result = await execFileAsync('git', ['remote', 'get-url', '--push', '--all', name], { cwd: repoRoot, encoding: 'utf8' });
+    const urls = result.stdout.trim().split(/\r?\n/).filter(Boolean);
+    if (urls.length !== 1) {
+      throw new Error('PR destination requires exactly one push URL per remote.');
+    }
+    const [url] = urls;
     return { name, url, repository: repositoryFromRemoteUrl(url) };
   }));
 }
 
 function repositoryFromRemoteUrl(url) {
   const value = String(url ?? '').trim();
+  if (/[?#]/.test(value)) throw new Error('Unsupported GitHub remote URL.');
   let repositoryPath = null;
   const scpMatch = value.match(/^git@github\.com:(.+)$/i);
   if (scpMatch) {
@@ -1032,12 +1047,12 @@ function repositoryFromRemoteUrl(url) {
       }
       repositoryPath = parsed.pathname;
     } catch {
-      throw new Error(`Unsupported GitHub remote URL: ${url}`);
+      throw new Error('Unsupported GitHub remote URL.');
     }
   }
   const normalized = repositoryPath.replace(/^\/+|\/+$/g, '').replace(/\.git$/i, '');
   if (!/^[^/\s:]+\/[^/\s:]+$/.test(normalized)) {
-    throw new Error(`Unsupported GitHub remote URL: ${url}`);
+    throw new Error('Unsupported GitHub remote URL.');
   }
   return normalized;
 }
@@ -1045,8 +1060,8 @@ function repositoryFromRemoteUrl(url) {
 function normalizeRepository(repository) {
   if (repository == null) return null;
   const value = String(repository).trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/, '').replace(/^\/+|\/+$/g, '');
-  if (!/^[^/\s]+\/[^/\s]+$/.test(value)) {
-    throw new Error(`Invalid GitHub repository: ${repository}. Expected owner/name.`);
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(value)) {
+    throw new Error('Invalid GitHub repository. Expected owner/name.');
   }
   return value;
 }

@@ -254,12 +254,9 @@ async function installPrePushHook(root) {
 function buildPrePushHookScript() {
   return `#!/bin/sh
 ${GUARD_HOOK_MARKER}
-# Managed by \`vibepro guard install\`. Delegates protected-branch pushes to
-# \`vibepro guard check\`; other refs pass through untouched. If the vibepro CLI
-# is not on PATH the hook allows the push instead of bricking git (boundary
-# documented in the release-surface-guard architecture doc).
-command -v \${VIBEPRO_GUARD_BIN:-vibepro} >/dev/null 2>&1 || exit 0
-exec \${VIBEPRO_GUARD_BIN:-vibepro} guard check "$(git rev-parse --show-toplevel)" --pre-push "$1" <&0
+# Validate the expected repository against Git's actual destination for every ref.
+command -v "\${VIBEPRO_GUARD_BIN:-vibepro}" >/dev/null 2>&1 || { echo 'Push blocked: destination validator unavailable.' >&2; exit 1; }
+exec "\${VIBEPRO_GUARD_BIN:-vibepro}" guard check "$(git rev-parse --show-toplevel)" --pre-push "$1" --push-url "$2" <&0
 `;
 }
 
