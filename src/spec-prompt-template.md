@@ -4,8 +4,8 @@ You are receiving a JSON payload from `vibepro spec fingerprint`. Your job is to
 emit an updated `spec.json` and pipe it back into `vibepro spec write --from-stdin`.
 
 VibePro will validate your output against `schema_for_your_output`. If any
-clause fails validation, VibePro returns a `validation_report.errors[]` and you
-must regenerate only the failing clauses.
+clause fails deterministic validation, VibePro returns a
+`validation_report.errors[]` and you must regenerate only the failing clauses.
 
 ## What a clause is
 
@@ -38,6 +38,39 @@ A clause is a single machine-checkable statement about the system. Four types:
 6. **No prose blocks, no markdown.** Output strict JSON only.
 7. **Use `open_questions[]`** when Story / Code / Test conflict or the spec
    cannot be determined. Do not invent clauses to paper over ambiguity.
+
+## Semantic sufficiency contract (when meaning matters)
+
+When the Story depends on whether a result actually answers a question, add a
+top-level `semantic_contract`. It is optional for legacy Specs, which remain
+valid but report `semantic_contract_missing` and semantic status
+`unavailable`. The contract must name these six responsibilities with
+non-empty text: `semantic_owner`, `deterministic_owner`, `core_hypothesis`,
+`strongest_counterexample`, `false_success_mode`, and `unknown_representation`.
+It must also define each of these terms operationally: `sufficient`,
+`relevant`, `directly_answers`, `applicable`, `current`, `non_conflicting`, and
+`unambiguous`. Do not use keywords or prose similarity as a semantic proof;
+the model supplies the declaration and the host checks only its deterministic
+shape and consistency.
+
+Each clause may declare `outcome_kind` as `internal_output`,
+`downstream_outcome`, or `canonical_readback`, and `case_kind` as `positive`,
+`negative`, `ambiguous`, `conflicting`, `stale`, or `unavailable`. A
+`semantic_evaluation` contains `answer_status` (`resolved`, `ambiguous`,
+`no_answer`, `conflicting`, `stale`, or `unavailable`), the seven tri-state
+`checks` above (`true`, `false`, or `null`), `question_digest`,
+`relevance_explanation`, `applicability_scope`, `confidence`,
+`conflict_check`, `freshness_check`, `supporting_record_ids`, and either a
+`derived_answer` or a `selected_choice` contained in `normalized_choices`.
+`null` means unknown and must stay unknown.
+
+Declare `resolved` only when all seven checks are `true`, the outcome kind and
+supporting explanation fields are complete, at least one supporting record is
+named, and `case_kind` is `positive`. A result existing is
+not evidence that it supports the requested claim. Negative and unresolved
+cases remain valid Specs and must preserve their declared answer status. The
+validator emits a non-blocking counterexample-missing warning until a
+non-positive clause points to a concrete, resolvable test file and case.
 
 ## マルチテナント契約（該当する変更のみ）
 
@@ -98,9 +131,8 @@ Storyが複数の組織・ワークスペース・顧客間のデータ、認証
 
 ## Design diagrams (MUST-HAVE, change-type-triggered)
 
-Some change types make a design diagram mandatory. VibePro detects the trigger
-and the `gate:design_diagrams` Gate blocks PR creation until the listed kinds
-are present in `diagrams[]`. The 8 kinds are:
+Some change types benefit from a design diagram. VibePro records the triggered
+kind and reports missing `diagrams[]` entries for human review. The 8 kinds are:
 
 | kind | trigger | mermaid prefix |
 |---|---|---|
@@ -151,7 +183,7 @@ For each scenario clause:
 
 ## What VibePro does with your output
 
-- Runs JSON schema validation.
+- Checks deterministic shape and references in the supplied schema.
 - Verifies every `code_refs[].file` exists and `anchor` is grep-findable.
 - Runs each `verifiable_by.code_pattern` / `test_pattern` against the actual
   repo. If `must_contain` / `must_not_contain` / `must_cover` fails to match
@@ -160,7 +192,8 @@ For each scenario clause:
   spec (text similarity > 0.7 → preserve id; first_seen_at preserved).
 - Writes `.vibepro/spec/<story-id>/spec.json` and rotates history.
 - Optionally runs `vibepro spec drift` to detect Spec↔Code↔Test↔PR
-  inconsistencies. Drift items are surfaced via Gate DAG and PR body.
+  inconsistencies. Drift items are surfaced in the PR preparation summary and
+  PR body.
 
 ## Common mistakes
 

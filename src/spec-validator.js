@@ -2,6 +2,19 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
+import { assessSemanticContract } from './semantic-contract.js';
+
+export {
+  assessSemanticClause,
+  assessSemanticContract,
+  createSemanticUnavailableAssessment,
+  SEMANTIC_ANSWER_STATUSES,
+  SEMANTIC_CASE_KINDS,
+  SEMANTIC_CHECK_NAMES,
+  SEMANTIC_OUTCOME_KINDS,
+  summarizeSemanticOutcomeCoverage,
+  validateSemanticContractShape
+} from './semantic-contract.js';
 
 const CLAUSE_TYPES = new Set(['invariant', 'scenario', 'contract', 'sla']);
 const ORIGIN_KINDS = new Set(['acceptance_criteria', 'background', 'policy', 'frontmatter', 'other']);
@@ -41,7 +54,19 @@ export async function validateSpec(repoRoot, spec, options = {}) {
   }
   if (!Array.isArray(spec.clauses)) {
     errors.push({ code: 'clauses_missing', message: 'clauses must be an array' });
-    return { ok: false, errors, warnings, spec };
+    const semanticAssessment = assessSemanticContract(spec);
+    errors.push(...semanticAssessment.errors);
+    warnings.push(...semanticAssessment.warnings);
+    return {
+      ok: false,
+      errors,
+      warnings,
+      clause_reports: [],
+      semantic_assessment: semanticAssessment,
+      // Alias retained for consumers that use the input field name.
+      semantic_contract: semanticAssessment,
+      spec
+    };
   }
 
   const clauseReports = [];
@@ -51,6 +76,18 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     if (report.errors.length > 0) errors.push(...report.errors);
     if (report.warnings.length > 0) warnings.push(...report.warnings);
     clauseReports.push(report);
+  }
+
+  const semanticAssessment = assessSemanticContract(spec, {
+    verifiedCounterexampleIndexes: clauseReports
+      .filter((report) => report.counterexample_test_verified)
+      .map((report) => report.index)
+  });
+  errors.push(...semanticAssessment.errors);
+  warnings.push(...semanticAssessment.warnings);
+  for (const semanticClause of semanticAssessment.clause_assessments) {
+    const report = clauseReports[semanticClause.index];
+    if (report) report.semantic_assessment = semanticClause;
   }
 
   if (spec.diagrams !== undefined) {
@@ -130,6 +167,9 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     errors,
     warnings,
     clause_reports: clauseReports,
+    semantic_assessment: semanticAssessment,
+    // Alias retained for consumers that use the input field name.
+    semantic_contract: semanticAssessment,
     multi_tenant_architecture: multiTenantArchitecture,
     spec
   };
@@ -163,6 +203,7 @@ async function validateClause(repoRoot, clause, index) {
   const architectureRefs = Array.isArray(origin.architecture_refs) ? origin.architecture_refs : [];
   const codeRefs = Array.isArray(origin.code_refs) ? origin.code_refs : [];
   const testRefs = Array.isArray(origin.test_refs) ? origin.test_refs : [];
+  let verifiedConcreteTestRefs = 0;
   if (storyRefs.length === 0 && architectureRefs.length === 0 && codeRefs.length === 0 && testRefs.length === 0) {
     errors.push({
       code: 'origin_empty',
@@ -192,6 +233,7 @@ async function validateClause(repoRoot, clause, index) {
         code: 'architecture_ref_missing',
         message: `${locator}.origin.architecture_refs[${i}].file "${ref.file}" not found in repository`
       });
+      continue;
     }
   }
 
@@ -232,6 +274,11 @@ async function validateClause(repoRoot, clause, index) {
         code: 'test_ref_missing',
         message: `${locator}.origin.test_refs[${i}].file "${ref.file}" not found in repository`
       });
+      continue;
+    }
+    if (typeof ref.case === 'string' && ref.case.trim().length > 0
+        && await fileIncludes(repoRoot, ref.file, ref.case)) {
+      verifiedConcreteTestRefs += 1;
     }
   }
 
@@ -254,7 +301,15 @@ async function validateClause(repoRoot, clause, index) {
     }
   }
 
-  return { index, id: clause.id ?? null, errors, warnings };
+  return {
+    index,
+    id: clause.id ?? null,
+    errors,
+    warnings,
+    counterexample_test_verified: clause.case_kind !== 'positive'
+      && testRefs.length > 0
+      && verifiedConcreteTestRefs === testRefs.length
+  };
 }
 
 async function verifyPattern(repoRoot, pattern, { locator }) {
