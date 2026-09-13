@@ -510,6 +510,67 @@ test('spec write rejects clauses whose code_refs do not exist', async () => {
   assert.ok(report.errors.some((err) => err.code === 'code_ref_missing'));
 });
 
+test('spec write JSON keeps semantic assessment and contract aliases on success and validation failure', async () => {
+  const repo = await makeSpecRepo();
+  const semanticContract = {
+    semantic_owner: 'The requesting user owns the meaning of the claim.',
+    deterministic_owner: 'The VibePro host validates declared structure.',
+    core_hypothesis: 'A result is sufficient only when it answers the requested claim.',
+    strongest_counterexample: 'A present result can describe a different subject.',
+    false_success_mode: 'Treating any result as an answer suppresses a needed question.',
+    unknown_representation: 'Use unknown when evidence cannot establish the claim.',
+    operational_definitions: [
+      ['sufficient', 'supports the requested claim'],
+      ['relevant', 'concerns the requested subject'],
+      ['directly_answers', 'answers the requested question'],
+      ['applicable', 'applies to the requested scope'],
+      ['current', 'is fresh for the requested time'],
+      ['non_conflicting', 'has no contradictory evidence'],
+      ['unambiguous', 'has one clear interpretation']
+    ].map(([term, definition]) => ({ term, definition }))
+  };
+  const makeSpec = (codeFile) => ({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    semantic_contract: semanticContract,
+    clauses: [{
+      id: 'INV-SEMANTIC-1',
+      type: 'invariant',
+      statement: 'semantic answer resolution remains explicit when evidence is incomplete',
+      origin: { code_refs: [{ file: codeFile, anchor: 'handleCancel' }] },
+      outcome_kind: 'internal_output',
+      case_kind: 'negative',
+      semantic_evaluation: {
+        answer_status: 'no_answer',
+        checks: { current: null }
+      }
+    }]
+  });
+
+  const success = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test'],
+    { stdin: readableFrom(JSON.stringify(makeSpec('src/lib/services/billing.ts'))) }
+  );
+  assert.equal(success.exitCode, 0, success.stdout);
+  const successJson = JSON.parse(success.stdout);
+  assert.equal(successJson.semantic_assessment.answer_status, 'no_answer');
+  assert.equal(successJson.semantic_assessment.answer_resolution, 'unresolved');
+  assert.equal(successJson.semantic_contract.answer_resolution, 'unresolved');
+  assert.deepEqual(successJson.semantic_contract.outcome_coverage, successJson.semantic_assessment.outcome_coverage);
+
+  const failure = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test'],
+    { stdin: readableFrom(JSON.stringify(makeSpec('src/does-not-exist.ts'))) }
+  );
+  assert.equal(failure.exitCode, 2, failure.stdout);
+  const failureJson = JSON.parse(failure.stdout);
+  assert.ok(failureJson.errors.some((error) => error.code === 'code_ref_missing'));
+  assert.equal(failureJson.semantic_assessment.answer_status, 'no_answer');
+  assert.equal(failureJson.semantic_assessment.answer_resolution, 'unresolved');
+  assert.equal(failureJson.semantic_contract.answer_resolution, 'unresolved');
+  assert.deepEqual(failureJson.semantic_contract.outcome_coverage, failureJson.semantic_assessment.outcome_coverage);
+});
+
 test('spec write accepts valid clause and assigns stable id; spec show reads it back', async () => {
   const repo = await makeSpecRepo();
   const valid = {

@@ -5,7 +5,12 @@ import { promisify } from 'node:util';
 
 import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 import { extractMarkdownAcceptanceCriteria } from './markdown-acceptance-criteria.js';
-import { globToRegExp } from './spec-validator.js';
+import {
+  assessSemanticContract,
+  createSemanticUnavailableAssessment,
+  globToRegExp,
+  summarizeSemanticOutcomeCoverage
+} from './spec-validator.js';
 import { toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -36,6 +41,8 @@ export function buildTraceability(existing, {
   scenarioClauses = null,
   scenarioLineage = null,
   acceptedSpecLineage = undefined,
+  semanticAssessment = undefined,
+  outcomeCoverage = undefined,
   now = null
 }) {
   const timestamp = now ?? new Date().toISOString();
@@ -69,6 +76,17 @@ export function buildTraceability(existing, {
     : existing?.scenario_lineage && typeof existing.scenario_lineage === 'object'
       ? existing.scenario_lineage
       : null;
+  const semanticClauses = [...acceptance_criteria, ...scenario_clauses];
+  const semanticClausesWereSupplied = Array.isArray(acceptanceCriteria) || Array.isArray(scenarioClauses);
+  const semantic_assessment = semanticAssessment === undefined
+    ? semanticClausesWereSupplied
+      ? deriveSemanticAssessmentFromClauses(semanticClauses)
+      : existing?.semantic_assessment ?? deriveSemanticAssessmentFromClauses(semanticClauses)
+    : semanticAssessment;
+  const outcome_coverage = outcomeCoverage === undefined
+    ? semantic_assessment?.outcome_coverage
+      ?? summarizeSemanticOutcomeCoverage(semanticAssessmentsFromClauses(semanticClauses))
+    : outcomeCoverage;
   return {
     schema_version: TRACEABILITY_SCHEMA_VERSION,
     story_id: storyId,
@@ -82,15 +100,40 @@ export function buildTraceability(existing, {
     accepted_spec_lineage: acceptedSpecLineage === undefined
       ? existing?.accepted_spec_lineage ?? null
       : acceptedSpecLineage,
-    coverage_summary: summarizeTraceabilityClauseMap({ acceptance_criteria, scenario_clauses, scenario_lineage }),
+    semantic_assessment,
+    semantic_assessments: semantic_assessment?.clause_assessments
+      ?? semanticAssessmentsFromClauses(semanticClauses),
+    outcome_coverage,
+    coverage_summary: summarizeTraceabilityClauseMap({
+      acceptance_criteria,
+      scenario_clauses,
+      scenario_lineage,
+      semantic_assessment,
+      outcome_coverage
+    }),
     created_at: existing?.created_at ?? timestamp,
     updated_at: timestamp
   };
 }
 
-export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scenario_clauses = [], scenario_lineage = null } = {}) {
+export function summarizeTraceabilityClauseMap({
+  acceptance_criteria = [],
+  scenario_clauses = [],
+  scenario_lineage = null,
+  semantic_assessment = null,
+  outcome_coverage = null
+} = {}) {
   const clauses = [...acceptance_criteria, ...scenario_clauses];
   const countByStatus = (status) => clauses.filter((item) => item.status === status).length;
+  const semanticAssessments = semanticAssessmentsFromClauses(clauses);
+  const projectedSemanticAssessment = semantic_assessment ?? (
+    semanticAssessments.length > 0
+      ? deriveSemanticAssessmentFromClauses(clauses)
+      : createSemanticUnavailableAssessment()
+  );
+  const semanticOutcomeCoverage = outcome_coverage
+    ?? projectedSemanticAssessment?.outcome_coverage
+    ?? summarizeSemanticOutcomeCoverage(semanticAssessments);
   return {
     clause_count: clauses.length,
     acceptance_criteria_count: acceptance_criteria.length,
@@ -98,6 +141,9 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
     mapped_count: countByStatus('mapped'),
     weakly_mapped_count: countByStatus('weakly_mapped'),
     unmapped_count: countByStatus('unmapped'),
+    semantic_assessment: projectedSemanticAssessment,
+    semantic_assessments: semanticAssessments,
+    outcome_coverage: semanticOutcomeCoverage,
     scenario_lineage: scenario_lineage && typeof scenario_lineage === 'object'
       ? {
           status: scenario_lineage.status ?? 'mapped',
@@ -117,6 +163,77 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
         source_text: item.source_text,
         weak_mapping_reason: item.weak_mapping_reason ?? null
       }))
+  };
+}
+
+function semanticAssessmentsFromClauses(clauses = []) {
+  const entries = Array.isArray(clauses) ? clauses : [];
+  return entries.flatMap((item) => {
+    if (Array.isArray(item?.semantic_assessments)) return item.semantic_assessments;
+    return item?.semantic_assessment ? [item.semantic_assessment] : [];
+  });
+}
+
+function deriveSemanticAssessmentFromClauses(clauses = []) {
+  const clauseAssessments = semanticAssessmentsFromClauses(clauses);
+  if (clauseAssessments.length === 0) return createSemanticUnavailableAssessment();
+
+  const answerStatuses = new Set(['resolved', 'ambiguous', 'no_answer', 'conflicting', 'stale', 'unavailable']);
+  const statuses = clauseAssessments
+    .map((assessment) => assessment.answer_status)
+    .filter((status) => answerStatuses.has(status));
+  const uniqueStatuses = [...new Set(statuses)];
+  const answerStatus = uniqueStatuses.length === 0
+    ? 'unavailable'
+    : uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'mixed';
+  const answerResolution = statuses.length === 0
+    ? 'unavailable'
+    : statuses.every((status) => status === 'resolved') ? 'resolved' : 'unresolved';
+  const status = clauseAssessments.some((assessment) => assessment.status === 'invalid')
+    ? 'invalid'
+    : 'available';
+  const outcomeCoverage = summarizeSemanticOutcomeCoverage(clauseAssessments);
+  const positiveOnly = clauseAssessments.every((assessment) => assessment.case_kind === 'positive');
+  const resolvedCount = clauseAssessments.filter((assessment) => (
+    assessment.status === 'resolved' && assessment.answer_status === 'resolved'
+  )).length;
+  const warnings = clauseAssessments.flatMap((assessment) => assessment.warnings ?? []);
+  if (status === 'available' && positiveOnly && resolvedCount > 0) {
+    warnings.push({
+      code: 'semantic_counterexample_missing',
+      severity: 'warning',
+      path: 'semantic_contract.strongest_counterexample',
+      message: 'happy-path semantic resolution has no declared counterexample'
+    });
+  }
+  return {
+    status,
+    semantic_contract_status: status,
+    semantic_contract_present: true,
+    answer_status: answerStatus,
+    answer_resolution: status === 'invalid' ? 'unavailable' : answerResolution,
+    automatic_continuation: status === 'available'
+      && answerResolution === 'resolved'
+      && clauseAssessments.every((assessment) => (
+        ['internal_output', 'downstream_outcome', 'canonical_readback'].includes(assessment.outcome_kind)
+      )),
+    unresolved_behavior: { action: 'ask_once', max_questions: 1, automatic_continuation: false },
+    counterexample: {
+      status: clauseAssessments.some((assessment) => (
+        assessment.case_kind && assessment.case_kind !== 'positive' && assessment.case_kind !== 'unknown'
+      )) ? 'declared_unverified' : 'unavailable',
+      declared: clauseAssessments.some((assessment) => (
+        assessment.case_kind && assessment.case_kind !== 'positive' && assessment.case_kind !== 'unknown'
+      )),
+      happy_path_resolutions: clauseAssessments
+        .filter((assessment) => assessment.status === 'resolved' && assessment.answer_status === 'resolved')
+        .map((assessment) => assessment.clause_id)
+    },
+    clause_assessments: clauseAssessments,
+    outcome_coverage: outcomeCoverage,
+    reason_codes: [...new Set(clauseAssessments.flatMap((assessment) => assessment.reason_codes ?? []))],
+    errors: clauseAssessments.flatMap((assessment) => assessment.errors ?? []),
+    warnings
   };
 }
 
@@ -247,7 +364,6 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
     return emptyAcceptedSpecMap({ headSha, specPath, specBlobOid: headSpec?.oid ?? null, reasonCodes: globalReasons });
   }
   if (spec.story_id !== storyId) globalReasons.push('accepted_spec_story_id_mismatch');
-
   const headStory = await gitBlob(root, headRef, authoritativeStoryPath);
   if (!headStory) globalReasons.push('story_not_in_head');
   const criteria = headStory ? extractMarkdownAcceptanceCriteria(headStory.content) : [];
@@ -271,11 +387,14 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
     mapping_source: 'accepted_spec',
     lineage_status: 'unresolved',
     verification_status: verificationStatusFor([], verification, verificationTrustStatus),
+    semantic_assessment: null,
+    semantic_assessments: [],
     reason_codes: [],
     weak_mapping_reason: null
   }));
   const itemsById = new Map(items.map((item) => [item.id, item]));
   const blobCache = new Map();
+  const verifiedCounterexampleIndexes = new Set();
 
   for (const [clauseIndex, clause] of (spec.clauses ?? []).entries()) {
     const clauseId = typeof clause?.id === 'string' ? clause.id : `clause:${clauseIndex + 1}`;
@@ -319,6 +438,10 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
         blob_oid: blob.oid
       });
     }
+    if (clause?.case_kind && clause.case_kind !== 'positive'
+        && testRefs.length > 0 && testProvenance.length === testRefs.length) {
+      verifiedCounterexampleIndexes.add(clauseIndex);
+    }
 
     const patterns = Array.isArray(clause?.verifiable_by?.test_pattern)
       ? clause.verifiable_by.test_pattern
@@ -345,6 +468,19 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
     }
   }
 
+  const semanticAssessment = assessSemanticContract(spec, { verifiedCounterexampleIndexes });
+  if (semanticAssessment.status === 'invalid') {
+    globalReasons.push('semantic_contract_invalid');
+    failures.push({
+      clause_id: 'semantic_contract',
+      reason_codes: [...new Set(semanticAssessment.reason_codes)]
+    });
+  }
+
+  const semanticByClauseId = new Map(
+    semanticAssessment.clause_assessments.map((assessment) => [assessment.clause_id, assessment])
+  );
+
   for (const item of items) {
     item.spec_clause_ids = [...new Set(item.spec_clause_ids)];
     item.mapped_tests = [...new Set(item.mapped_tests)];
@@ -356,14 +492,36 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
     item.status = item.lineage_status === 'resolved' ? 'mapped' : 'unmapped';
     item.verification_status = verificationStatusFor(item.mapped_test_provenance, verification, verificationTrustStatus);
     if (item.verification_status === 'untrusted') item.reason_codes.push('verification_evidence_untrusted');
+    const semanticEntries = item.spec_clause_ids
+      .map((clauseId) => semanticByClauseId.get(clauseId))
+      .filter(Boolean)
+      .map((assessment) => ({ ...assessment, verification_status: item.verification_status }));
+    item.semantic_assessments = semanticEntries;
+    item.semantic_assessment = semanticEntries.length === 1 ? semanticEntries[0] : null;
     item.reason_codes = [...new Set(item.reason_codes)];
   }
+
+  const projectedClauseAssessments = semanticAssessment.clause_assessments.map((assessment) => {
+    const item = items.find((candidate) => candidate.spec_clause_ids.includes(assessment.clause_id));
+    return {
+      ...assessment,
+      verification_status: item?.verification_status ?? 'unknown'
+    };
+  });
+  const projectedSemanticAssessment = {
+    ...semanticAssessment,
+    clause_assessments: projectedClauseAssessments,
+    outcome_coverage: summarizeSemanticOutcomeCoverage(projectedClauseAssessments)
+  };
 
   const reasonCodes = [...new Set([...globalReasons, ...failures.flatMap((failure) => failure.reason_codes)])];
   return {
     acceptance_criteria: items,
     scenario_clauses: [],
     scenario_lineage: null,
+    semantic_assessment: projectedSemanticAssessment,
+    semantic_assessments: projectedClauseAssessments,
+    outcome_coverage: projectedSemanticAssessment.outcome_coverage,
     accepted_spec_lineage: {
       status: reasonCodes.length === 0 && items.every((item) => item.lineage_status === 'resolved') ? 'resolved' : 'invalid',
       head_sha: headSha || null,
@@ -381,10 +539,14 @@ export async function buildAcceptedSpecClauseMap(repoRoot, {
 }
 
 function emptyAcceptedSpecMap({ headSha, specPath, specBlobOid, reasonCodes }) {
+  const semanticAssessment = createSemanticUnavailableAssessment(reasonCodes);
   return {
     acceptance_criteria: [],
     scenario_clauses: [],
     scenario_lineage: null,
+    semantic_assessment: semanticAssessment,
+    semantic_assessments: [],
+    outcome_coverage: semanticAssessment.outcome_coverage,
     accepted_spec_lineage: {
       status: 'invalid',
       head_sha: headSha || null,
@@ -690,7 +852,9 @@ export async function bindStoryTraceability(repoRoot, {
   acceptanceCriteria = null,
   scenarioClauses = null,
   scenarioLineage = null,
-  acceptedSpecLineage = undefined
+  acceptedSpecLineage = undefined,
+  semanticAssessment = undefined,
+  outcomeCoverage = undefined
 }) {
   const artifactPath = await traceabilityArtifactPath(repoRoot, storyId);
   const existing = await readJsonIfExists(artifactPath);
@@ -703,7 +867,9 @@ export async function bindStoryTraceability(repoRoot, {
     acceptanceCriteria,
     scenarioClauses,
     scenarioLineage,
-    acceptedSpecLineage
+    acceptedSpecLineage,
+    semanticAssessment,
+    outcomeCoverage
   });
   await mkdir(path.dirname(artifactPath), { recursive: true });
   await writeFile(artifactPath, `${JSON.stringify(traceability, null, 2)}\n`);
