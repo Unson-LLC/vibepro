@@ -619,3 +619,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:532:start -->
 - [PR #532](https://github.com/Unson-LLC/vibepro/pull/532) — [2026-09](/ja/releases/2026-09): chore: release 0.2.0-beta.23
 <!-- vibepro-release-index-pr:532:end -->
+
+<!-- vibepro-release-index-pr:534:start -->
+- [PR #534](https://github.com/Unson-LLC/vibepro/pull/534) — [2026-09](/ja/releases/2026-09): fix: preserve semantic sufficiency across Story traceability
+<!-- vibepro-release-index-pr:534:end -->
