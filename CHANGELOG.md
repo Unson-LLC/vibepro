@@ -3202,3 +3202,45 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:531:end -->
+
+<!-- vibepro-release-pr:532:start -->
+## [#532](https://github.com/Unson-LLC/vibepro/pull/532) chore: release 0.2.0-beta.23
+
+- Author: @sintariran
+- Merged: 2026-09-12T21:24:30Z
+- Commit: `80e0b5cf1ae133be802c88344cf7cf35abd1b597`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:532:end -->
+
+<!-- vibepro-release-pr:534:start -->
+## [#534](https://github.com/Unson-LLC/vibepro/pull/534) fix: preserve semantic sufficiency across Story traceability
+
+- Author: @sintariran
+- Merged: 2026-09-13T14:42:55Z
+- Commit: `7f8ff6a4a7572bcb763a7b5c1ef232a93d29ab29`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:534:end -->

@@ -1639,7 +1639,9 @@ if (command === 'integration') {
             ok: false,
             errors: validation.errors,
             warnings: validation.warnings,
-            multi_tenant_architecture: validation.multi_tenant_architecture
+            multi_tenant_architecture: validation.multi_tenant_architecture,
+            semantic_assessment: validation.semantic_assessment,
+            semantic_contract: validation.semantic_contract
           }, null, 2)}\n`);
           return { exitCode: 2, command, subcommand, validation };
         }
@@ -1669,6 +1671,8 @@ if (command === 'integration') {
           clauses: stabilized.clauses.length,
           warnings: validation.warnings,
           multi_tenant_architecture: validation.multi_tenant_architecture,
+          semantic_assessment: validation.semantic_assessment,
+          semantic_contract: validation.semantic_contract,
           pre_spec_readiness: preSpecReadiness ? {
             status: preSpecReadiness.status,
             created_at: preSpecReadiness.created_at,

@@ -374,7 +374,9 @@ async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verif
     acceptanceCriteria: clauseMap.acceptance_criteria,
     scenarioClauses: clauseMap.scenario_clauses,
     scenarioLineage: clauseMap.scenario_lineage,
-    acceptedSpecLineage: clauseMap.accepted_spec_lineage ?? null
+    acceptedSpecLineage: clauseMap.accepted_spec_lineage ?? null,
+    semanticAssessment: clauseMap.semantic_assessment,
+    outcomeCoverage: clauseMap.outcome_coverage
   });
 }
 
@@ -668,6 +670,31 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
     : '- no accepted spec found for this story');
   if (specDrift) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
+  }
+  lines.push('');
+  lines.push('### Semantic sufficiency');
+  const semanticAssessment = traceability?.semantic_assessment
+    ?? traceability?.summary?.semantic_assessment
+    ?? null;
+  const outcomeCoverage = traceability?.outcome_coverage
+    ?? traceability?.summary?.outcome_coverage
+    ?? semanticAssessment?.outcome_coverage
+    ?? null;
+  if (!semanticAssessment) {
+    lines.push('- status: `unavailable`');
+  } else {
+    lines.push(`- answer resolution: \`${semanticAssessment.answer_resolution ?? 'unavailable'}\``);
+    lines.push(`- automatic continuation: \`${semanticAssessment.automatic_continuation === true ? 'true' : semanticAssessment.automatic_continuation === false ? 'false' : 'unknown'}\``);
+    lines.push(`- counterexample status: \`${semanticAssessment.counterexample?.status ?? 'unavailable'}\``);
+    const warningCodes = (semanticAssessment.warnings ?? [])
+      .map((warning) => warning?.code)
+      .filter((code) => typeof code === 'string' && code.length > 0);
+    lines.push(`- warnings: ${warningCodes.length > 0 ? warningCodes.join(', ') : 'none'}`);
+    lines.push('- outcome coverage:');
+    for (const kind of ['internal_output', 'downstream_outcome', 'canonical_readback']) {
+      const coverage = outcomeCoverage?.[kind] ?? {};
+      lines.push(`  - ${kind}: \`${coverage.status ?? 'unknown'}\` (declared=${coverage.declared_count ?? 0}, answer_resolved=${coverage.answer_resolved_count ?? 0}, verification=${coverage.verification_status ?? 'unknown'})`);
+    }
   }
   lines.push('');
   lines.push('### Multi-tenant architecture');

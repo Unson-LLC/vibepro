@@ -558,6 +558,69 @@ test('pr prepare summarizes multi-tenant contract, six views, findings, and revi
   assert.match(body, /unconfirmed: none/);
 });
 
+test('pr prepare renders semantic resolution, outcome coverage, and counterexample warnings', async () => {
+  const storyId = 'story-pr-manager-semantic-sufficiency';
+  const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
+  await writeInferredSpec(root, storyId, {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    semantic_contract: {
+      semantic_owner: 'The requesting user owns the meaning of the claim.',
+      deterministic_owner: 'The VibePro host validates declared structure.',
+      core_hypothesis: 'A result is sufficient only when it answers the requested claim.',
+      strongest_counterexample: 'A present result can describe a different subject.',
+      false_success_mode: 'Treating any result as an answer suppresses a needed question.',
+      unknown_representation: 'Use unknown when evidence cannot establish the claim.',
+      operational_definitions: [
+        'sufficient', 'relevant', 'directly_answers', 'applicable', 'current',
+        'non_conflicting', 'unambiguous'
+      ].map((term) => ({ term, definition: `${term} is explicitly evaluated.` }))
+    },
+    clauses: [{
+      id: 'INV-SEMANTIC-1',
+      type: 'invariant',
+      statement: 'a resolved semantic declaration is visible to reviewers',
+      origin: { story_refs: [{ kind: 'acceptance_criteria', ac_id: 'AC-1' }] },
+      outcome_kind: 'internal_output',
+      case_kind: 'positive',
+      semantic_evaluation: {
+        answer_status: 'resolved',
+        question_digest: 'f'.repeat(64),
+        derived_answer: 'The widget renders without error.',
+        relevance_explanation: 'The semantic record directly evaluates the requested widget rendering claim.',
+        applicability_scope: 'The feature branch widget implementation under review.',
+        confidence: 0.98,
+        conflict_check: 'clear',
+        freshness_check: 'current',
+        checks: {
+          relevant: true,
+          directly_answers: true,
+          applicable: true,
+          current: true,
+          non_conflicting: true,
+          unambiguous: true,
+          sufficient: true
+        },
+        supporting_record_ids: ['semantic-record-1']
+      }
+    }]
+  });
+  await git(root, ['add', '-f', '.vibepro/spec']);
+  await git(root, ['commit', '-m', 'test: add semantic sufficiency spec']);
+
+  const { artifacts, preparation } = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  const body = await readFile(artifacts.pr_body, 'utf8');
+  assert.equal(preparation.traceability.summary.semantic_assessment.answer_resolution, 'resolved');
+  assert.match(body, /### Semantic sufficiency/);
+  assert.match(body, /answer resolution: `resolved`/);
+  assert.match(body, /automatic continuation: `true`/);
+  assert.match(body, /counterexample status: `missing`/);
+  assert.match(body, /warnings: semantic_counterexample_missing/);
+  assert.match(body, /internal_output: `partial`/);
+  assert.match(body, /downstream_outcome: `unknown`/);
+  assert.match(body, /canonical_readback: `unknown`/);
+});
+
 test('pr prepare projects non-applicability readiness from caller evidence bound to current HEAD', async () => {
   const storyId = 'story-pr-manager-tenant-na';
   const storyDoc = STORY_DOC
