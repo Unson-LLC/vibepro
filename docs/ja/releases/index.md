@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-09-13 | [`0.2.0-beta.24`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.24) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-12 | [`0.2.0-beta.23`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.23) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-05 | [`0.2.0-beta.22`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.22) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-03 | [`0.2.0-beta.21`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.21) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -623,3 +624,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:534:start -->
 - [PR #534](https://github.com/Unson-LLC/vibepro/pull/534) — [2026-09](/ja/releases/2026-09): fix: preserve semantic sufficiency across Story traceability
 <!-- vibepro-release-index-pr:534:end -->
+
+<!-- vibepro-release-index-pr:535:start -->
+- [PR #535](https://github.com/Unson-LLC/vibepro/pull/535) — [2026-09](/ja/releases/2026-09): chore: VibePro 0.2.0-beta.24を公開
+<!-- vibepro-release-index-pr:535:end -->
