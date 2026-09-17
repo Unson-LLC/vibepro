@@ -3328,3 +3328,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:540:end -->
+
+<!-- vibepro-release-pr:541:start -->
+## [#541](https://github.com/Unson-LLC/vibepro/pull/541) chore: VibePro 0.2.0-beta.26を公開
+
+- Author: @sintariran
+- Merged: 2026-09-17T15:24:31Z
+- Commit: `a56dddd8f548022c2a26c70af2ee02b01c7ea2e8`
+
+### Change Summary
+
+`vibepro worktree inspect`と`vibepro worktree close`を追加しました。dirty、未統合、active、未登録、入れ子、検査不能なworktreeはfail closedし、安全条件を満たす対象だけをcloseします。通常mergeとsquash mergeの両方を統合済みとして判定します。
+
+### Compatibility
+
+既存コマンドへの破壊的変更はありません。worktree lifecycleはJudgment/Gate DAGから独立した運用コマンドです。
+
+### User Action
+
+確認には`vibepro worktree inspect &lt;repo&gt; --path &lt;path&gt; --base &lt;ref&gt;`、安全に閉じるには`vibepro worktree close &lt;repo&gt; --path &lt;path&gt; --base &lt;ref&gt;`を使います。`close`は`--force`を使いません。
+
+<!-- vibepro-release-pr:541:end -->
