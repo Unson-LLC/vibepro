@@ -646,3 +646,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:541:start -->
 - [PR #541](https://github.com/Unson-LLC/vibepro/pull/541) — [2026-09](/releases/2026-09): chore: VibePro 0.2.0-beta.26を公開
 <!-- vibepro-release-index-pr:541:end -->
+
+<!-- vibepro-release-index-pr:542:start -->
+- [PR #542](https://github.com/Unson-LLC/vibepro/pull/542) — [2026-09](/releases/2026-09): feat(skills): add worktree lifecycle guidance
+<!-- vibepro-release-index-pr:542:end -->
