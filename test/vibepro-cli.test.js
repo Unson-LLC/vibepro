@@ -6183,8 +6183,8 @@ test('--version prints the package version', async () => {
   assert.equal(new Set(versions).size, 1);
 });
 
-test('beta.26 release metadata and CLI report the exact candidate version', async () => {
-  const expectedVersion = '0.2.0-beta.26';
+test('beta.27 release metadata and CLI report the exact candidate version', async () => {
+  const expectedVersion = '0.2.0-beta.27';
   const packageJson = await readJson(path.resolve('package.json'));
   const packageLock = await readJson(path.resolve('package-lock.json'));
   let out = '';
