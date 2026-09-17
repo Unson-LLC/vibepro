@@ -65,7 +65,7 @@ vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 
 通常のGitHub PR・レビュー・マージの流れが正本です。VibeProは、1つのStoryをSpec・実装・影響するテストにつなぐ軽量な補助であり、`gh pr merge` を実行したり、マージ権限を持ったりしません。
 
-バグ修正ではStoryを `--contract-type bug_fix` 付きで登録します。VibeProは再現から同経路再検証までの順序付き診断証拠を要求します。詳しくは[バグ診断への移行](docs/ja/guide/bug-diagnosis-migration.md)を参照してください。
+バグ修正ではStoryを `--contract-type bug_fix` 付きで登録します。下流実行と正本側readbackが確認されるまでは `partial_fix` と表示し、ローカルテストだけで利用者問題の解決とは判定しません。詳しくは[バグ診断への移行](docs/ja/guide/bug-diagnosis-migration.md)を参照してください。
 
 base branchは `origin/main` に固定せず、対象リポジトリの実際の既定branchを指定してください。
 

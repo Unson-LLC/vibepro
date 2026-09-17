@@ -11,8 +11,8 @@ import { isSafeStoryPathSegment } from './story-id.js';
 // reviews/<story> (agent-review), adjudication/<story> (adjudication.js),
 // verification/<story> (execution-state), spec/<story> (spec-store),
 // evidence/<story>, executions/<story> (runs + decisions), and
-// pr/<story> (verification-evidence.json, verification-runs/,
-// bug-diagnosis/<story>/<run> (ordered bug diagnosis evidence),
+// pr/<story> (verification-evidence.json, verification-runs/),
+// bug-diagnosis/<story>/<run> (legacy read-only records; never completion authority),
 // decision-outcome-ledger.json via artifact-routing).
 export const STORY_SCOPED_RECORD_CLASSES = Object.freeze([
   'reviews',

@@ -1,59 +1,34 @@
-# Bug diagnosis migration
+# Bug-fix migration
 
-VibePro is the single workflow authority for bug fixes. The former Verify-first entry does not own a separate DAG.
+VibePro no longer uses the ordered bug-diagnosis DAG as completion authority. Its node order, evidence-reference strings, Git HEAD, and matching path identifiers could prove internal consistency, but they could not prove the original user problem, the production path, downstream execution, or canonical receiver readback.
 
-## Register a bug Story
+## Current workflow
 
-New Stories declare their contract when created:
+Register the Story contract and use the minimal Story → Spec → code → verification → lightweight review → PR flow:
 
 ```bash
 vibepro story add . --id story-example-bug --title "Fix example failure" --contract-type bug_fix
 vibepro story diagnose . --id story-example-bug --pre-architecture --run-graphify
+vibepro verify .
+vibepro pr prepare . --base main
 ```
 
-For an existing Story, add `"contract_type": "bug_fix"` to its entry in `.vibepro/config.json`, then run `story diagnose`. The run creates `.vibepro/bug-diagnosis/<story-id>/<run-id>/bug-diagnosis.json`, bound to the Story, run, and Git HEAD.
+`story diagnose` remains a general investigation command. It does not create or certify a root-cause DAG.
 
-## Record the ordered evidence
+For `bug`, `bug_fix`, and `regression_fix` Stories, `pr prepare` emits `fix_scope`:
 
-Use `vibepro bug diagnose record` in this order:
+- `status: partial_fix` until downstream execution and canonical receiver readback are verified.
+- `completion_claim: implementation_verified_external_outcome_unknown` while those boundaries remain unknown.
+- `original_problem`, affected outcome stages, and confirmed/unconfirmed boundaries near the PR evidence.
 
-1. `failure_reproduced` with `--path-id`
-2. `failure_localized`
-3. `relationship_analysis`
-4. `preconditions_confirmed`
-5. `root_cause_confirmed`
-6. `regression_test_failed_before_fix`
-7. `root_fix_applied`
-8. `same_path_reverified` with the same `--path-id`
+Local tests can verify an implementation stage. They cannot, by themselves, establish a production same-path result or a receiver-side readback. External flows should use the terminal receipt contract tracked in [Issue #507](https://github.com/Unson-LLC/vibepro/issues/507).
 
-Every passed node requires at least one `--evidence` reference and records the current HEAD. Choose only the relationship analyses needed for the failure from `data_flow`, `control_flow`, `async_flow`, `module_boundary`, and `change_history`. `relationship_analysis` may be `not_applicable` when no relationship analysis is needed. A regression test may also be `not_applicable` only with a concrete `--reason`.
+## Existing artifacts
 
-Run `vibepro bug diagnose record --help` for the complete recording syntax. This
-guide intentionally does not provide a copy-pasteable passing-evidence command:
-the operator must supply evidence from the current Story run and HEAD.
+The `vibepro bug diagnose record` and `vibepro verify-first` commands are removed. Existing `.vibepro/bug-diagnosis/...` and `.vibepro-store/.../bug-diagnosis/...` files remain readable historical records and are not rewritten or deleted.
 
-New diagnosis artifacts are stored under
-`.vibepro/bug-diagnosis/<story-id>/<run-id>/bug-diagnosis.json` and mirrored to
-the worktree-independent process-record store after every successful record.
-Manifest references to the former `.vibepro/diagnostics/...` location remain
-readable for backward compatibility.
+For historical artifacts:
 
-`pr prepare` persists incomplete diagnosis as `gate_status: blocked`, including `return_to_node` and `next_actions`. `pr create` refuses to create or refresh a PR until every required node is accepted. A passing unit test alone does not satisfy this contract.
-If HEAD changes after the final diagnosis record, the evidence becomes stale and
-`pr prepare` returns to `failure_reproduced`; rerun the diagnosis on the current HEAD.
-
-## Verify-first compatibility entry
-
-`vibepro verify-first` is deprecated. It emits a warning and invokes the same `story diagnose` implementation for a registered bug Story; it creates no independent evidence model or DAG.
-
-| Former Verify-first phase | VibePro bug Story node |
-|---|---|
-| Reproduce | `failure_reproduced` |
-| Localize | `failure_localized` |
-| Analyze relations and preconditions | `relationship_analysis`, `preconditions_confirmed` |
-| Confirm root cause | `root_cause_confirmed` |
-| Add regression proof | `regression_test_failed_before_fix` |
-| Apply root fix | `root_fix_applied` |
-| Reverify | `same_path_reverified` |
-
-Migrate automation to `story diagnose` and `bug diagnose record`. The compatibility entry is a removal candidate for the next major release after migration usage has been reviewed.
+- `ready`, `root_cause_confirmed`, `same_path_reverified`, and `verified_complete` describe the retired structural model only.
+- They do not authorize a current root-cause or user-outcome completion claim.
+- Regenerate PR preparation with the current VibePro version to obtain `fix_scope` and explicit unknown boundaries.
