@@ -94,7 +94,6 @@ import {
   renderDecisionStatusSummary
 } from './decision-records.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
-import { isBugStory, recordBugDiagnosisNode } from './bug-diagnosis-dag.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
@@ -163,8 +162,8 @@ Per docs/management/REBUILD.md ("最小コアのスコープ"), it no longer car
 general-purpose Gate DAG, readiness/blocking evaluation, delivery-efficiency budgets, review
 lifecycle accounting, or auto-generated audit artifacts. It stores Story,
 Spec, verification, review, and PR evidence under .vibepro/ so humans and AI
-agents can continue with reviewable context. Bug Stories are the narrow exception:
-PR creation fails closed while ordered diagnosis evidence is incomplete or stale.
+agents can continue with reviewable context. Bug Stories expose their fix scope and
+keep downstream execution and canonical receiver readback explicitly unconfirmed.
 
 Core model:
   Story defines user value and acceptance criteria.
@@ -183,11 +182,11 @@ Typical flow:
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
 
 pr prepare writes .vibepro/pr/<story-id>/pr-prepare.json (Story + Spec presence +
-recorded verification + recorded review, plus diagnosis status for bug Stories;
+recorded verification + recorded review, with external outcome boundaries kept explicit;
 no general-purpose Gate DAG) and a PR body markdown file.
 pr create pushes the current branch and runs \`gh pr create\` (or refreshes an
-existing open PR's body). Bug Stories are refused while diagnosis evidence is
-incomplete or stale; other Stories have no general-purpose blocking gate.
+existing open PR's body). Concrete unresolved review findings remain blocking;
+there is no general-purpose or bug-specific DAG gate.
 
 Usage:
   vibepro help [command]
@@ -244,8 +243,6 @@ Usage:
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
-  vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable> [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...
-  vibepro verify-first [repo] --id <story-id> [--run-graphify]  # deprecated compatibility entry; routes to story diagnose
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
@@ -357,8 +354,6 @@ Usage:
   vibepro review record [repo] --id <story-id> [--role <role>] --status <pass|needs_changes|block|runtime_failed> [--summary <text>] [--inspection-input <ref>]... [--artifact <path>]... [--from-stdin] [--agent-system <system>] [--agent-id <id>] [--json]
   vibepro review status [repo] --id <story-id> [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
-  vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable> [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...
-  vibepro verify-first [repo] --id <story-id> [--run-graphify]  # 非推奨の互換入口。story diagnoseへ転送
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
@@ -387,7 +382,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'integration', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
-  'workspace', 'store', 'bug', 'verify-first'
+  'workspace', 'store'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -400,8 +395,7 @@ const AUTO_SNAPSHOT_SUBCOMMANDS = {
   spec: ['write'],
   pr: ['prepare'],
   decision: ['record'],
-  judgment: ['evaluate', 'outcome-record'],
-  bug: ['diagnose-record']
+  judgment: ['evaluate', 'outcome-record']
 };
 
 async function maybeAutoSnapshotProcessRecords(argv, result, io) {
@@ -410,7 +404,7 @@ async function maybeAutoSnapshotProcessRecords(argv, result, io) {
   if (!prefixes || result?.exitCode !== 0) return;
   const subcommand = typeof result.subcommand === 'string' ? result.subcommand : rest[0];
   if (!prefixes.some((prefix) => subcommand === prefix || String(subcommand ?? '').startsWith(`${prefix}-`))) return;
-  const repoIndex = command === 'bug' || (command === 'judgment' && rest[0] === 'outcome') ? 2 : 1;
+  const repoIndex = command === 'judgment' && rest[0] === 'outcome' ? 2 : 1;
   const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
   const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
   if (!storyId) return;
@@ -443,48 +437,6 @@ async function dispatchCli(argv, io = {}) {
       const version = await readPackageVersion();
       write(stdout, `${version}\n`);
       return { exitCode: 0, command: 'version', version };
-    }
-
-    if (command === 'verify-first') {
-      const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
-      write(stderr, 'DEPRECATED: `vibepro verify-first` is a compatibility entry and routes into the VibePro bug Story DAG. Use `vibepro story diagnose` instead.\n');
-      const result = await executeStoryDiagnosis(repoRoot, ['diagnose', ...rest], io, stdout, { requireBugStory: true });
-      return { exitCode: 0, command, subcommand: 'compat-route', result };
-    }
-
-    if (command === 'bug') {
-      if (hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, [
-          'Usage:',
-          '  vibepro bug diagnose record [repo] --id <story-id> --node <node-id> --status <passed|failed|not_applicable>',
-          '    [--run-id <run-id>] [--evidence <ref>]... [--reason <text>] [--path-id <id>] [--analysis <type>]...',
-          '',
-          'Records one ordered diagnosis node for a registered bug Story and snapshots the evidence to the durable process-record store.',
-          ''
-        ].join('\n'));
-        return { exitCode: 0, command, subcommand: 'help' };
-      }
-      const subcommand = rest[0];
-      const action = rest[1];
-      const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
-      if (subcommand !== 'diagnose' || action !== 'record') {
-        write(stderr, `Unknown bug command: ${[subcommand, action].filter(Boolean).join(' ')}\n\n${renderHelp()}`);
-        return { exitCode: 1, command };
-      }
-      const result = await recordBugDiagnosisNode(repoRoot, {
-        storyId: getOption(rest, '--id'),
-        runId: getOption(rest, '--run-id'),
-        nodeId: getOption(rest, '--node'),
-        status: getOption(rest, '--status'),
-        reason: getOption(rest, '--reason'),
-        pathId: getOption(rest, '--path-id'),
-        evidenceRefs: getOptions(rest, '--evidence'),
-        analyses: getOptions(rest, '--analysis')
-      });
-      write(stdout, hasFlag(rest, '--json')
-        ? `${JSON.stringify(result, null, 2)}\n`
-        : `Bug diagnosis recorded: ${result.evidence.story_id}/${result.evidence.run_id}/${getOption(rest, '--node')} (${result.evidence.status})\n`);
-      return { exitCode: 0, command, subcommand: `${subcommand}-${action}`, result };
     }
 
     if (command === 'init') {
@@ -2122,7 +2074,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     ja: [
       `VibePro workspaceを初期化しました: ${workspaceDir}`,
       '',
-      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。汎用Gate DAGは持ちませんが、バグStoryは診断証跡が未完了または古い場合にPR作成を止めます。',
+      '.vibepro/ はStory・Spec・検証証跡・レビュー証跡・PR証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。汎用Gate DAGは持たず、外部成果が未確認なら未確認のままPR本文へ表示します。',
       `人間向け出力言語: ${language}`,
       `base branch候補: ${baseBranch ?? '未検出。origin/main, origin/develop, main, develop など実リポジトリの既定branchを指定してください。'}`,
       '',
@@ -2137,7 +2089,7 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
     en: [
       `VibePro workspace initialized: ${workspaceDir}`,
       '',
-      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. Commands may enforce Story-specific readiness contracts before PR creation.',
+      '.vibepro/ is the workspace for Story, Spec, verification, review, and PR evidence. It is separate from application source changes. External outcomes remain explicitly unconfirmed until receiver-side readback exists.',
       `Human output language: ${language}`,
       `Base branch candidate: ${baseBranch ?? 'not detected. Use the repository default such as origin/main, origin/develop, main, or develop.'}`,
       '',
@@ -2162,11 +2114,8 @@ async function detectBaseBranch(repoRoot) {
   return null;
 }
 
-async function executeStoryDiagnosis(repoRoot, args, io, stdout, options = {}) {
+async function executeStoryDiagnosis(repoRoot, args, io, stdout) {
   const story = await selectStory(repoRoot, getOption(args, '--id'), { env: io.env });
-  if (options.requireBugStory && !isBugStory(story)) {
-    throw new Error('`vibepro verify-first` requires a Story registered with contract_type=bug_fix; use `vibepro story diagnose` for other Stories');
-  }
   write(stdout, `Story selected: ${story.story_id}\n`);
   const graph = await importGraphifyArtifacts(repoRoot, {
     storyId: story.story_id,

@@ -33,8 +33,6 @@ import {
 } from './graph-context.js';
 import { buildRequirementConsistency, renderRequirementConsistencyReport } from './requirement-consistency.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
-import { summarizeBugDiagnosisEvidence, writeInitialBugDiagnosis } from './bug-diagnosis-dag.js';
-import { snapshotProcessRecordsFailSoft } from './process-record-store.js';
 import { readInferredSpec } from './spec-store.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
@@ -102,11 +100,6 @@ export async function runDiagnosis(repoRoot, options = {}) {
     evidence,
     runId,
     gateStatus
-  });
-  const bugDiagnosis = await writeInitialBugDiagnosis(root, {
-    story: currentStory,
-    runId,
-    runDir
   });
 
   const evidencePath = path.join(runDir, 'evidence.json');
@@ -180,7 +173,6 @@ export async function runDiagnosis(repoRoot, options = {}) {
       : null,
     created_at: new Date().toISOString(),
     gate_status: gateStatus,
-    bug_diagnosis: bugDiagnosis ? summarizeBugDiagnosisEvidence(bugDiagnosis.evidence) : null,
     toolchain,
     artifacts: {
       summary: toWorkspaceRelative(root, summaryPath),
@@ -196,7 +188,6 @@ export async function runDiagnosis(repoRoot, options = {}) {
       refactoring_delta: toWorkspaceRelative(root, refactoringDeltaPath),
       requirement_consistency: toWorkspaceRelative(root, requirementConsistencyPath),
       spec_drift: toWorkspaceRelative(root, specDriftPath),
-      ...(bugDiagnosis ? { bug_diagnosis: toWorkspaceRelative(root, bugDiagnosis.artifactPath) } : {}),
       ...storyTasks.artifacts
     }
   };
@@ -207,10 +198,6 @@ export async function runDiagnosis(repoRoot, options = {}) {
   };
   manifest.runs = [run, ...(manifest.runs ?? []).filter((item) => item.run_id !== runId)];
   await writeManifest(root, manifest);
-  if (bugDiagnosis) {
-    await snapshotProcessRecordsFailSoft({ repoRoot: root, storyId: currentStory.story_id });
-  }
-
   return { runDir, run };
 }
 

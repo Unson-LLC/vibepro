@@ -42,4 +42,4 @@ Do not use or require retired contracts such as:
 - automatic audit bundles
 - raw `gh pr create` prohibition
 
-For bug fixes, use the repository's current VibePro bug diagnosis contract when it applies, then return to the same minimal loop. For repository-local decisions, the target repository's own `AGENTS.md` remains authoritative; this managed block only defines VibePro-specific behavior.
+For bug fixes, record the original user problem and the affected outcome stages. Treat local implementation and test evidence as a `partial_fix`; keep downstream execution and canonical receiver readback unknown until they are directly verified. For repository-local decisions, the target repository's own `AGENTS.md` remains authoritative; this managed block only defines VibePro-specific behavior.
