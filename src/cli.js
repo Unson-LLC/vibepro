@@ -38,6 +38,7 @@ import {
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
 import { collectWorkspaceStatus, renderWorkspaceStatus } from './workspace-status.js';
+import { closeWorktree, inspectWorktreeLifecycle, renderWorktreeLifecycle } from './worktree-lifecycle.js';
 import {
   getReviewStatus,
   prepareReview,
@@ -198,6 +199,8 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
+  vibepro worktree inspect [repo] --path <worktree-path> --base <ref> [--json]
+  vibepro worktree close [repo] --path <worktree-path> --base <ref> [--json]
   vibepro store snapshot [repo] --story-id <id> [--json]
   vibepro store hydrate [repo] --story-id <id> [--json]
   vibepro store status [repo] --story-id <id> [--json]
@@ -319,6 +322,8 @@ Usage:
   vibepro runtime identity [--json]
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
+  vibepro worktree inspect [repo] --path <worktree-path> --base <ref> [--json]
+  vibepro worktree close [repo] --path <worktree-path> --base <ref> [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -382,7 +387,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'integration', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
-  'workspace', 'store'
+  'workspace', 'worktree', 'store'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -672,6 +677,35 @@ async function dispatchCli(argv, io = {}) {
       }
       write(stderr, `Unknown workspace command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command, subcommand };
+    }
+
+    if (command === 'worktree') {
+      const subcommand = rest[0];
+      if (!['inspect', 'close'].includes(subcommand)) {
+        write(stderr, `Unknown worktree command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+        return { exitCode: 1, command, subcommand };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const worktreePath = getOption(rest, '--path');
+      const baseRef = getOption(rest, '--base');
+      if (!worktreePath || !baseRef) {
+        const missing = !worktreePath ? '--path <worktree-path>' : '--base <ref>';
+        write(stderr, `Missing required option: ${missing}\n`);
+        return { exitCode: 1, command, subcommand };
+      }
+      const options = { worktreePath, baseRef };
+      const result = subcommand === 'inspect'
+        ? await inspectWorktreeLifecycle(repoRoot, options)
+        : await closeWorktree(repoRoot, options);
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : renderWorktreeLifecycle(result));
+      return {
+        exitCode: ['safe_to_close', 'closed'].includes(result.status) ? 0 : 2,
+        command,
+        subcommand,
+        result
+      };
     }
 
     if (command === 'store') {
