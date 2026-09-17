@@ -938,13 +938,14 @@ test('skills commands list install and verify bundled VibePro skills', async () 
 
   const listResult = await runCli(['skills', 'list']);
   assert.equal(listResult.exitCode, 0);
-  assert.equal(listResult.result.skills.length, 8);
+  assert.equal(listResult.result.skills.length, 9);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-gate-evidence'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-codebase-memory'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-meeting-minutes-editor'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-npm-publish'), true);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-worktree-lifecycle'), true);
 
   const lint = await runCli(['skills', 'lint', repo, '--json']);
   assert.equal(lint.exitCode, 0);
@@ -969,6 +970,7 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   const diagnosisSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-diagnosis-packages', 'SKILL.md');
   const meetingMinutesSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-meeting-minutes-editor', 'SKILL.md');
   const npmPublishSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-npm-publish', 'SKILL.md');
+  const worktreeLifecycleSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-worktree-lifecycle', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
   assert.match(await readFile(workflowSkillPath, 'utf8'), /Story、最小のSpec、実装、影響範囲のテスト、通常のGitHub PR/);
   assert.doesNotMatch(await readFile(workflowSkillPath, 'utf8'), /vibepro execute start/);
@@ -985,6 +987,11 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.match(await readFile(npmPublishSkillPath, 'utf8'), /Unson-LLC\/vibepro/);
   assert.match(await readFile(npmPublishSkillPath, 'utf8'), /post-merge-release\.yml/);
   assert.doesNotMatch(await readFile(npmPublishSkillPath, 'utf8'), /Exact-SHA Evidence Reuse/);
+  assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /name: vibepro-worktree-lifecycle/);
+  assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /vibepro worktree inspect/);
+  assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /vibepro worktree close/);
+  assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /判断DAGから独立/);
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro-worktree-lifecycle/);
 
   const verify = await runCli(['skills', 'verify', repo]);
   assert.equal(verify.exitCode, 0);
