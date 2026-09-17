@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-17 | [`0.2.0-beta.26`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.26) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-17 | [`0.2.0-beta.25`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.25) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-13 | [`0.2.0-beta.24`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.24) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-12 | [`0.2.0-beta.23`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.23) | npm `beta` / `latest` | Post-merge continuous release |
@@ -641,3 +642,11 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:540:start -->
 - [PR #540](https://github.com/Unson-LLC/vibepro/pull/540) — [2026-09](/releases/2026-09): feat: add safe worktree lifecycle commands
 <!-- vibepro-release-index-pr:540:end -->
+
+<!-- vibepro-release-index-pr:541:start -->
+- [PR #541](https://github.com/Unson-LLC/vibepro/pull/541) — [2026-09](/releases/2026-09): chore: VibePro 0.2.0-beta.26を公開
+<!-- vibepro-release-index-pr:541:end -->
+
+<!-- vibepro-release-index-pr:542:start -->
+- [PR #542](https://github.com/Unson-LLC/vibepro/pull/542) — [2026-09](/releases/2026-09): feat(skills): add worktree lifecycle guidance
+<!-- vibepro-release-index-pr:542:end -->

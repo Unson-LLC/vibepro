@@ -21,6 +21,7 @@ description: Use only when a target repository explicitly uses VibePro's current
 4. 実装し、変更の影響範囲に対応するテストだけを実行する。
 5. 必要な場合に限り一度だけレビューし、通常のGitHub PR、CI、mergeへ進む。
 6. 非阻害の指摘は現在の変更を膨らませず、後続StoryまたはIssueへ移す。
+7. worktreeを使った場合は、mergeまたは作業中止後に`vibepro-worktree-lifecycle`を使い、対象ごとの安全判定とreadbackを行う。owner不明または未統合のworktreeは閉じない。
 
 ## Red Flags
 
