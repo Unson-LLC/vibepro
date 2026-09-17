@@ -75,6 +75,7 @@ const SMOKE = {
   spec: { setup: 'story', args: (r) => ['spec', r] },
   report: { setup: 'story', args: (r) => ['report', r] },
   workspace: { setup: 'story', args: (r) => ['workspace', 'status', r, '--json'] },
+  worktree: { setup: 'story', args: (r) => ['worktree', 'inspect', r, '--path', r, '--base', 'main', '--json'] },
   store: { setup: 'story', args: (r) => ['store', 'status', r, '--story-id', 'story-x', '--json'] }
 };
 

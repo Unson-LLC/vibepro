@@ -20,6 +20,8 @@ Story・Specと検証結果を確認し、必要に応じて `review prepare` �
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
+  vibepro worktree inspect [repo] --path <worktree-path> --base <ref> [--json]
+  vibepro worktree close [repo] --path <worktree-path> --base <ref> [--json]
   vibepro store snapshot [repo] --story-id <id> [--json]
   vibepro store hydrate [repo] --story-id <id> [--json]
   vibepro store status [repo] --story-id <id> [--json]

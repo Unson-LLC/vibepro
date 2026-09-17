@@ -20,6 +20,8 @@ A passing record requires an existing `--inspection-input` outside `.vibepro`. C
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
+  vibepro worktree inspect [repo] --path <worktree-path> --base <ref> [--json]
+  vibepro worktree close [repo] --path <worktree-path> --base <ref> [--json]
   vibepro store snapshot [repo] --story-id <id> [--json]
   vibepro store hydrate [repo] --story-id <id> [--json]
   vibepro store status [repo] --story-id <id> [--json]
