@@ -11,9 +11,9 @@
 //   - createPullRequest: turn a prepare result into an actual PR (push +
 //     `gh pr create`, or refresh an existing open PR's body).
 //
-// Bug Stories and concrete unresolved review findings add narrow,
-// fail-closed readiness checks. The former general-purpose Gate DAG and route
-// classification remain removed.
+// Concrete unresolved review findings remain the only PR-readiness blocker.
+// Bug-fix scope and external outcome boundaries are reported separately so a
+// local implementation result cannot be presented as a verified user outcome.
 
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -31,7 +31,6 @@ import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError
 import { assertSelectedTaskAccepted, assertSelectedTaskScope, readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
-import { readLatestBugDiagnosis } from './bug-diagnosis-dag.js';
 import { buildExecutionDag } from './managed-worktree.js';
 import { readOperationalJudgmentProjection } from './judgment-operations.js';
 import { readNarrative } from './report-store.js';
@@ -68,8 +67,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
 
   const storySource = await findStorySource(root, story).catch(() => null);
-  const bugDiagnosis = await readLatestBugDiagnosis(root, story);
-  const readiness = resolvePrReadiness({ bugDiagnosis, review });
+  const readiness = resolvePrReadiness({ review });
   const executionDag = buildExecutionDag({
     managedWorktree: { mode: 'disabled' },
     completedPhases: [
@@ -77,8 +75,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       readiness.status === 'ready' ? 'ready_for_pr_create' : null
     ].filter(Boolean),
     completionStatus: 'not_prepared',
-    expectedHeadSha: git.head_sha,
-    bugDiagnosis
+    expectedHeadSha: git.head_sha
   });
   const verificationTrustStatus = await evaluateVerificationEvidenceTrust(root, verification, git.head_sha);
   const outcomeCase = projectOutcomeCaseMetadata(story, verification, verificationTrustStatus);
@@ -89,6 +86,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     verification,
     verificationTrustStatus
   });
+  const fixScope = projectFixScope({ story, storySource, clauseMap, verificationTrustStatus });
   const taskAuthorities = await readTaskAuthorities(root, storyId, storySource);
   const selectedTaskAuthority = await assertSelectedTaskAccepted(root, storyId, options.taskId);
   const selectedTaskScope = await assertSelectedTaskScope(root, selectedTaskAuthority?.selected, git);
@@ -127,7 +125,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       ...multiTenantArchitecture,
       review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
     },
-    bug_diagnosis: bugDiagnosis,
+    ...(fixScope ? { fix_scope: fixScope } : {}),
     execution_dag: executionDag,
     gate_status: readiness.status,
     blocking_reasons: readiness.reasons,
@@ -349,11 +347,8 @@ async function readReviewSummary(repoRoot, storyId) {
   return getReviewStatus(repoRoot, { storyId });
 }
 
-function resolvePrReadiness({ bugDiagnosis, review }) {
+function resolvePrReadiness({ review }) {
   const blockedReasons = [];
-  if (bugDiagnosis?.status === 'blocked') {
-    blockedReasons.push(...bugDiagnosis.failures.map((failure) => `bug_diagnosis:${failure.id}`));
-  }
   for (const finding of review.blocking_findings ?? []) {
     blockedReasons.push(`review:${finding.role}:${finding.summary}`);
   }
@@ -361,6 +356,33 @@ function resolvePrReadiness({ bugDiagnosis, review }) {
     return { status: 'blocked', reasons: blockedReasons };
   }
   return { status: 'ready', reasons: [] };
+}
+
+function projectFixScope({ story, storySource, clauseMap, verificationTrustStatus }) {
+  const contractType = String(story?.contract_type ?? '').trim().toLowerCase();
+  if (!['bug', 'bug_fix', 'regression_fix'].includes(contractType)) return null;
+
+  const outcomeCoverage = clauseMap?.outcome_coverage ?? {};
+  const stages = ['internal_output', 'downstream_outcome', 'canonical_readback'];
+  const confirmedBoundaries = stages.filter((stage) => outcomeCoverage[stage]?.status === 'verified');
+  const unconfirmedBoundaries = stages.filter((stage) => outcomeCoverage[stage]?.status !== 'verified');
+  const userOutcomeConfirmed = stages
+    .every((stage) => outcomeCoverage[stage]?.status === 'verified');
+  const implementationConfirmed = outcomeCoverage.internal_output?.status === 'verified'
+    || verificationTrustStatus === 'trusted';
+
+  return {
+    status: userOutcomeConfirmed ? 'user_outcome_fix' : 'partial_fix',
+    original_problem: storySource?.title ?? story?.title ?? story?.story_id ?? 'unknown',
+    affected_stages: stages.filter((stage) => (outcomeCoverage[stage]?.declared_count ?? 0) > 0),
+    confirmed_boundaries: confirmedBoundaries,
+    unconfirmed_boundaries: unconfirmedBoundaries,
+    completion_claim: userOutcomeConfirmed
+      ? 'user_outcome_verified'
+      : implementationConfirmed
+        ? 'implementation_verified_external_outcome_unknown'
+        : 'implementation_unverified_external_outcome_unknown'
+  };
 }
 
 async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification, storySource, clauseMap }) {
@@ -717,20 +739,17 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
     }
   }
   lines.push('');
-  lines.push('### Bug diagnosis DAG');
-  if (preparation.bug_diagnosis) {
-    lines.push(`- gate: ${preparation.bug_diagnosis.status}`);
-    lines.push(`- run: \`${preparation.bug_diagnosis.run_id ?? 'missing'}\` @ \`${preparation.bug_diagnosis.target_head_sha ?? 'missing'}\``);
-    for (const node of preparation.bug_diagnosis.nodes ?? []) {
-      lines.push(`- [${node.status}] ${node.id}${node.head_sha ? ` @ \`${node.head_sha}\`` : ''}`);
-    }
-    if (preparation.bug_diagnosis.return_to_node) {
-      lines.push(`- return_to_node: \`${preparation.bug_diagnosis.return_to_node}\``);
-    }
-  } else {
-    lines.push('- not applicable (Story contract type is not bug_fix/regression_fix)');
+  if (preparation.fix_scope) {
+    lines.push('### Fix scope');
+    lines.push(`- status: \`${preparation.fix_scope.status}\``);
+    lines.push(`- original problem: ${preparation.fix_scope.original_problem}`);
+    lines.push(`- affected stages: ${preparation.fix_scope.affected_stages.join(', ') || 'not declared'}`);
+    lines.push(`- confirmed boundaries: ${preparation.fix_scope.confirmed_boundaries.join(', ') || 'none'}`);
+    lines.push(`- unconfirmed boundaries: ${preparation.fix_scope.unconfirmed_boundaries.join(', ') || 'none'}`);
+    lines.push(`- completion claim: \`${preparation.fix_scope.completion_claim}\``);
+    lines.push('- note: local verification does not establish a production-path match or terminal receiver readback');
+    lines.push('');
   }
-  lines.push('');
   lines.push('### Verification evidence');
   if (verification.recorded) {
     for (const command of verification.commands) {
@@ -848,8 +867,7 @@ export async function createPullRequest(repoRoot, options = {}) {
   const { preparation } = prepareResult;
   if (preparation.gate_status !== 'ready') {
     throw new Error(
-      `PR creation blocked: ${preparation.blocking_reasons.join(', ')}. `
-      + (preparation.bug_diagnosis?.next_actions?.[0] ?? 'Complete the required VibePro evidence.')
+      `PR creation blocked: ${preparation.blocking_reasons.join(', ')}. Complete the required VibePro evidence.`
     );
   }
   const currentBranch = preparation.git.current_branch;
@@ -1257,7 +1275,7 @@ export function renderPrPrepareSummary(result) {
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,
-    ...(preparation.bug_diagnosis ? [`- bug diagnosis return: ${preparation.bug_diagnosis.return_to_node ?? '-'}`] : []),
+    ...(preparation.fix_scope ? [`- fix scope: ${preparation.fix_scope.status} (${preparation.fix_scope.completion_claim})`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];

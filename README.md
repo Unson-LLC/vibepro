@@ -65,7 +65,7 @@ vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 
 The repository's normal GitHub PR, review, and merge flow is canonical. VibePro is a lightweight aid that connects one Story to its Spec, implementation, and affected tests; it never invokes `gh pr merge` or grants merge authority.
 
-For a bug fix, register the Story with `--contract-type bug_fix`. VibePro then requires ordered diagnosis evidence from reproduction through same-path reverification. See [Bug diagnosis migration](docs/guide/bug-diagnosis-migration.md).
+For a bug fix, register the Story with `--contract-type bug_fix`. VibePro reports the change as `partial_fix` until downstream execution and canonical receiver readback are verified; local tests do not establish user-outcome completion. See [Bug diagnosis migration](docs/guide/bug-diagnosis-migration.md).
 
 Use the repository's actual default branch instead of assuming `origin/main`.
 

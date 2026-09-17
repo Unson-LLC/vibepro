@@ -610,40 +610,30 @@
       "id": "VPJ-BUG-018",
       "capability": "bug_diagnosis_ordered_fail_closed_head_bound",
       "layer": "authority",
-      "claim": "bug 種別 Story では再現→局所化→根本原因→修正→同一経路再検証の順序付き診断が揃い、かつ現在 HEAD に束縛されていなければ pr prepare が blocked になる",
+      "claim": "旧実装では、bug 種別 Story の順序付き診断と現在 HEAD の一致を pr prepare の blocking authority としていた",
       "depth": "P2",
-      "status": "current_integrated",
+      "status": "historical",
+      "removed_in": "Issue #537 minimal-core simplification",
       "source": {
-        "implementation": [
-          "src/bug-diagnosis-dag.js",
-          "src/pr-manager.js"
-        ],
-        "tests": [
-          {
-            "file": "test/bug-diagnosis-dag.test.js",
-            "names": [
-              "bug diagnosis fails closed, selects only necessary analyses, and requires same-path reverification"
-            ]
-          },
-          {
-            "file": "test/integration/bug-diagnosis-pr-readiness.test.js",
-            "names": [
-              "passing unit test cannot make a bug Story PR-ready without actual failure-path evidence",
-              "a diagnosis accepted at an older HEAD becomes blocked before PR preparation"
-            ]
-          }
+        "implementation": [],
+        "tests": [],
+        "references": [
+          "docs/architecture/story-vibepro-bug-diagnosis-dag.md",
+          "docs/guide/bug-diagnosis-migration.md"
         ]
       },
       "conditions": [
-        "縮小後に残った唯一の blocking gate",
-        "適用は contract_type が bug_fix / regression_fix / bug の Story のみ"
+        "retired: ローカル構造整合性を外部成果の根拠にできない",
+        "既存artifactは履歴としてのみ保持する"
       ],
       "not_proven": [
-        "実バグ修正での誤 block 率（P4 以上）"
+        "元の利用者問題の同一性",
+        "本番同経路の実行",
+        "正本側readback"
       ],
       "transfer_targets": {
-        "fx": "原因確定前の対策禁止（verify-first）と同型",
-        "brainbase": "診断 DAG の順序不変条件 fixture"
+        "fx": "履歴参照のみ。完了権限として移植しない",
+        "brainbase": "履歴参照のみ。完了権限として移植しない"
       }
     },
     {
