@@ -628,3 +628,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:535:start -->
 - [PR #535](https://github.com/Unson-LLC/vibepro/pull/535) — [2026-09](/releases/2026-09): chore: VibePro 0.2.0-beta.24を公開
 <!-- vibepro-release-index-pr:535:end -->
+
+<!-- vibepro-release-index-pr:538:start -->
+- [PR #538](https://github.com/Unson-LLC/vibepro/pull/538) — [2026-09](/releases/2026-09): fix: バグ診断の完了権限を廃止
+<!-- vibepro-release-index-pr:538:end -->

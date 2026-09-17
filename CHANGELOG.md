@@ -3265,3 +3265,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:535:end -->
+
+<!-- vibepro-release-pr:538:start -->
+## [#538](https://github.com/Unson-LLC/vibepro/pull/538) fix: バグ診断の完了権限を廃止
+
+- Author: @sintariran
+- Merged: 2026-09-17T02:52:09Z
+- Commit: `8929f36d6c359f3be8cb6c6cf4d3d10ac4175397`
+
+### Change Summary
+
+バグ診断が「診断完了」を宣言する旧経路を廃止しました。PR evidence は修正範囲を記録しますが、下流影響や canonical 状態を確認済みとは扱いません。
+
+### Compatibility
+
+`vibepro diagnose bug` コマンドは廃止されます。旧バグ診断 artifact は履歴用途としてのみ残ります。
+
+### User Action
+
+`vibepro diagnose bug` を利用している自動化は、通常の issue 調査と PR evidence に移行してください。
+
+<!-- vibepro-release-pr:538:end -->
