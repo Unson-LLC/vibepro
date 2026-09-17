@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-09-17 | [`0.2.0-beta.25`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.25) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-13 | [`0.2.0-beta.24`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.24) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-12 | [`0.2.0-beta.23`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.23) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-05 | [`0.2.0-beta.22`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.22) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -632,3 +633,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:538:start -->
 - [PR #538](https://github.com/Unson-LLC/vibepro/pull/538) — [2026-09](/ja/releases/2026-09): fix: バグ診断の完了権限を廃止
 <!-- vibepro-release-index-pr:538:end -->
+
+<!-- vibepro-release-index-pr:539:start -->
+- [PR #539](https://github.com/Unson-LLC/vibepro/pull/539) — [2026-09](/ja/releases/2026-09): chore: VibePro 0.2.0-beta.25を公開
+<!-- vibepro-release-index-pr:539:end -->

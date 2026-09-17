@@ -3286,3 +3286,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 `vibepro diagnose bug` を利用している自動化は、通常の issue 調査と PR evidence に移行してください。
 
 <!-- vibepro-release-pr:538:end -->
+
+<!-- vibepro-release-pr:539:start -->
+## [#539](https://github.com/Unson-LLC/vibepro/pull/539) chore: VibePro 0.2.0-beta.25を公開
+
+- Author: @sintariran
+- Merged: 2026-09-17T02:57:40Z
+- Commit: `9ce9cf32604682e52ab66074bcf7b011bc4efe19`
+
+### Change Summary
+
+バグ診断が根拠なく完了を宣言する旧経路を廃止しました。PR evidence は `fix_scope` で修正範囲を明示し、下流影響や canonical 状態の未確認を保持します。
+
+### Compatibility
+
+`vibepro diagnose bug` コマンドは廃止されます。旧バグ診断 artifact は履歴用途としてのみ残ります。
+
+### User Action
+
+`vibepro diagnose bug` を利用している自動化は、通常の issue 調査と PR evidence に移行してください。
+
+<!-- vibepro-release-pr:539:end -->

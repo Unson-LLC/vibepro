@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-17 | [`0.2.0-beta.25`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.25) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-13 | [`0.2.0-beta.24`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.24) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-12 | [`0.2.0-beta.23`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.23) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-05 | [`0.2.0-beta.22`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.22) | npm `beta` / `latest` | Post-merge continuous release |
@@ -632,3 +633,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:538:start -->
 - [PR #538](https://github.com/Unson-LLC/vibepro/pull/538) — [2026-09](/releases/2026-09): fix: バグ診断の完了権限を廃止
 <!-- vibepro-release-index-pr:538:end -->
+
+<!-- vibepro-release-index-pr:539:start -->
+- [PR #539](https://github.com/Unson-LLC/vibepro/pull/539) — [2026-09](/releases/2026-09): chore: VibePro 0.2.0-beta.25を公開
+<!-- vibepro-release-index-pr:539:end -->
