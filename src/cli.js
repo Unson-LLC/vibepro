@@ -88,6 +88,7 @@ import {
   renderJudgmentOutcomeSummary,
   renderJudgmentPrepareSummary
 } from './judgment-workflow.js';
+import { renderExpertJudgmentSummary, suggestExpertJudgments } from './expert-judgment.js';
 import {
   getDecisionStatus,
   recordDecision,
@@ -223,6 +224,7 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
+  vibepro judgment suggest --input <json> [--json]
   vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
@@ -343,6 +345,7 @@ Usage:
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
+  vibepro judgment suggest --input <json> [--json]
   vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
@@ -912,6 +915,24 @@ async function dispatchCli(argv, io = {}) {
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'suggest') {
+        const inputPath = getOption(rest, '--input');
+        if (!inputPath) throw new Error('judgment suggest には --input <json> が必要です');
+        let input;
+        try {
+          input = JSON.parse(await readFile(path.resolve(inputPath), 'utf8'));
+        } catch (error) {
+          if (error instanceof SyntaxError) {
+            throw new Error(`judgment suggest: 入力が有効なJSONではありません: ${error.message}`);
+          }
+          throw error;
+        }
+        const result = suggestExpertJudgments(input);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderExpertJudgmentSummary(result));
+        return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'applicability' && nestedAction === 'record') {
         const result = await recordJudgmentApplicability(repoRoot, {

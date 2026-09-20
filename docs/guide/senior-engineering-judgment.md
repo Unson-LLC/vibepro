@@ -4,6 +4,8 @@
 
 Use it when a change is material, hard to reverse, spans several components, or when the team needs to decide whether to add capability, simplify accumulated machinery, or validate an uncertain constraint first.
 
+観測から仮説や選択肢を作る初期段階には、独立した [`judgment suggest` の専門判断ノード](./expert-judgment-nodes.md)を試せます。出力は候補であり、この評価フローには自動採用されません。
+
 ## Decision order
 
 Every evaluation follows the same top-level order:

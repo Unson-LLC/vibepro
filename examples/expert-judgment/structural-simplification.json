@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1.0",
+  "case_id": "example-repeated-retries",
+  "observations": [
+    { "id": "fixes", "kind": "repeated_local_fixes", "value": true, "source_refs": ["example:retry-history"] },
+    { "id": "complexity", "kind": "complexity_growing", "value": true, "source_refs": ["example:retry-exceptions"] },
+    { "id": "outcome", "kind": "outcome_improving", "value": false, "source_refs": ["example:retry-failures"] },
+    { "id": "urgency", "kind": "urgent_containment", "value": false, "source_refs": ["example:no-active-impact"] }
+  ]
+}
