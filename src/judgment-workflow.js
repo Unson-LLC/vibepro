@@ -12,6 +12,7 @@ import {
   createJudgmentDag,
   summarizeJudgmentDag
 } from './judgment-dag.js';
+import { countExpertUnresolvedNodes, suggestExpertJudgments, renderExpertJudgmentSummary } from './expert-judgment.js';
 import { extractMarkdownAcceptanceCriteria } from './markdown-acceptance-criteria.js';
 import {
   STANDARD_JUDGMENT_AXES,
@@ -115,6 +116,18 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     options: []
   };
 
+  let expertJudgment;
+  if (options.expertInputPath !== undefined) {
+    const expertPath = path.resolve(root, requireText(options.expertInputPath, '--expert-input requires a path'));
+    const expertInput = JSON.parse(await readFile(expertPath, 'utf8'));
+    expertJudgment = suggestExpertJudgments(expertInput);
+    if (expertInput.case_id !== storyId) {
+      throw new Error(`expert_input.case_id ${String(expertInput.case_id)} must match story_id ${storyId}`);
+    }
+    // Embed the observations so adoption binds their bytes, not a mutable external file.
+    input.expert_input = expertInput;
+  }
+
   const defaultPath = path.join(reviewRoot, 'senior-judgment', 'input-draft.json');
   const outputPath = await resolveOutputPath(root, options.outputPath ?? defaultPath);
   await mkdir(path.dirname(outputPath), { recursive: true });
@@ -125,6 +138,7 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     story_id: storyId,
     run_id: runId,
     input,
+    ...(expertJudgment ? { expert_judgment: expertJudgment } : {}),
     source_head_sha: git.head_sha,
     changed_files: git.changed_files,
     artifact: toWorkspaceRelative(root, outputPath),
@@ -175,6 +189,7 @@ export function compileSeniorJudgmentToDevelopmentDag(senior) {
     development_mode: senior.development_mode ?? null,
     recommendation: senior.recommendation ?? null,
     unknown_count: senior.unknowns?.length ?? 0,
+    ...(senior.expert_judgment ? { expert_unresolved_node_count: countExpertUnresolvedNodes(senior.expert_judgment) } : {}),
     advisory: true,
     blocking: false,
     source_artifacts: senior.artifacts ?? null
@@ -272,6 +287,39 @@ export function compileSeniorJudgmentToDevelopmentDag(senior) {
       reason: `${to} is evaluated after ${from}`
     });
   }
+  if (senior.expert_judgment) {
+    const expert = senior.expert_judgment;
+    dag.expert_judgment = expert;
+    for (const node of expert.nodes) {
+      dag = addJudgmentNode(dag, {
+        id: `expert:${node.node_id}`,
+        question: node.question,
+        context_snapshot: node,
+        evidence_refs: node.evidence_refs,
+        judgment: node.finding,
+        options: node.options,
+        authority: { kind: 'advisory', ref: node.provenance_ref },
+        runner_type: 'deterministic_rule',
+        status: 'proposed'
+      });
+    }
+    for (const edge of expert.dag.edges) {
+      dag = addJudgmentEdge(dag, {
+        from: `expert:${edge.from}`, to: `expert:${edge.to}`,
+        relation: 'depends_on', reason: edge.reason
+      });
+    }
+    dag = addJudgmentEdge(dag, {
+      from: 'goal_contract', to: 'expert:outcome-scope', relation: 'supports',
+      reason: 'Storyの成果を専門判断の対象として照合する'
+    });
+    for (const node of expert.nodes) {
+      dag = addJudgmentEdge(dag, {
+        from: `expert:${node.node_id}`, to: 'recommendation', relation: 'supports',
+        reason: '専門判断の候補と未確認事項を次の作業の検討へ渡す。自動採用しない'
+      });
+    }
+  }
   return dag;
 }
 
@@ -357,6 +405,7 @@ export function renderJudgmentPrepareSummary(result) {
     `Story: ${result.story_id}`,
     `Run: ${result.run_id}`,
     `Changed files observed: ${result.changed_files.length}`,
+    ...(result.expert_judgment ? [renderExpertJudgmentSummary(result.expert_judgment).trimEnd()] : []),
     'Problem framing remains uncertain until explicitly adopted.',
     'Judgment remains advisory and non-blocking.',
     ''
@@ -429,6 +478,7 @@ function renderDevelopmentJudgmentMarkdown(dag) {
     '',
     ...dag.nodes.map((node) => `- \`${node.id}\`: ${node.decision ?? node.judgment ?? 'no decision'}`),
     '',
+    ...(dag.expert_judgment ? ['## 専門判断', '', renderExpertJudgmentSummary(dag.expert_judgment).trimEnd(), ''] : []),
     '## Outcome evaluations',
     '',
     ...(evaluations.length > 0
@@ -449,6 +499,7 @@ function buildProjection(dag, artifact) {
     development_mode: dag.development_mode ?? null,
     recommendation: dag.recommendation ?? recommendation?.decision ?? null,
     unknown_count: dag.unknown_count ?? 0,
+    ...(dag.expert_judgment ? { expert_judgment: dag.expert_judgment, expert_unresolved_node_count: dag.expert_unresolved_node_count } : {}),
     outcome_count: evaluations.length,
     latest_outcome_status: evaluations.at(-1)?.status ?? null,
     artifact,

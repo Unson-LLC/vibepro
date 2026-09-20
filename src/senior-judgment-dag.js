@@ -3,6 +3,11 @@ import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { assertArtifactWritePath, resolveArtifactRoute } from './artifact-routing.js';
+import {
+  renderExpertJudgmentSummary,
+  suggestExpertJudgments,
+  validateExpertJudgmentInput
+} from './expert-judgment.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const SCHEMA_VERSION = '0.3.0';
@@ -47,6 +52,9 @@ const MODE_ALLOWED_OPTION_ACTIONS = Object.freeze({
 
 export function evaluateSeniorJudgment(input) {
   const normalized = validateSeniorJudgmentInput(input);
+  const expertJudgment = normalized.expert_input === undefined
+    ? undefined
+    : suggestExpertJudgments(normalized.expert_input);
   const analysisDepth = deriveAnalysisDepth(normalized);
   const frameStatus = normalized.problem_frame.status;
   const frameValid = frameStatus === 'valid';
@@ -97,6 +105,9 @@ export function evaluateSeniorJudgment(input) {
     recommendation,
     developmentMode
   });
+  if (expertJudgment) {
+    nextActions.push(...buildExpertReviewActions(expertJudgment));
+  }
   const graph = buildJudgmentGraph(normalized, {
     analysisDepth,
     activeAxes,
@@ -107,7 +118,7 @@ export function evaluateSeniorJudgment(input) {
   });
   const topologicalOrder = validateJudgmentGraph(graph);
 
-  return {
+  const result = {
     schema_version: SCHEMA_VERSION,
     model: MODEL,
     story_id: normalized.story_id,
@@ -140,6 +151,10 @@ export function evaluateSeniorJudgment(input) {
     advisory: true,
     authority: 'human_ci_repository_rules'
   };
+  if (expertJudgment) {
+    result.expert_judgment = expertJudgment;
+  }
+  return result;
 }
 
 export async function evaluateSeniorJudgmentRun(repoRoot, options = {}) {
@@ -186,21 +201,25 @@ export async function evaluateSeniorJudgmentRun(repoRoot, options = {}) {
     current_json: toRelative(root, currentJsonPath),
     current_markdown: toRelative(root, currentMarkdownPath)
   };
+  const decisionContext = {
+    goal: input.goal,
+    observations: input.observations,
+    contradictions: input.contradictions,
+    problem_frame: input.problem_frame,
+    development_cycle: input.development_cycle,
+    decision_profile: input.decision_profile,
+    axes: input.axes,
+    constraints: input.constraints,
+    options: input.options
+  };
+  if (input.expert_input !== undefined) {
+    decisionContext.expert_input = input.expert_input;
+  }
   const recorded = {
     ...evaluation,
     recorded_at: new Date().toISOString(),
     input_sha256: createHash('sha256').update(inputBytes).digest('hex'),
-    decision_context: {
-      goal: input.goal,
-      observations: input.observations,
-      contradictions: input.contradictions,
-      problem_frame: input.problem_frame,
-      development_cycle: input.development_cycle,
-      decision_profile: input.decision_profile,
-      axes: input.axes,
-      constraints: input.constraints,
-      options: input.options
-    },
+    decision_context: decisionContext,
     decision_delta: buildDecisionDelta(parent, evaluation, input),
     artifacts
   };
@@ -215,6 +234,9 @@ export async function evaluateSeniorJudgmentRun(repoRoot, options = {}) {
 }
 
 export function renderSeniorJudgmentSummary(result) {
+  const expertSummary = result.expert_judgment
+    ? renderExpertJudgmentSummary(result.expert_judgment).trimEnd()
+    : null;
   return [
     `Senior judgment run: ${result.run_id}`,
     `Story: ${result.story_id}`,
@@ -224,6 +246,7 @@ export function renderSeniorJudgmentSummary(result) {
     `Active axes: ${result.active_axes.join(', ') || 'none'}`,
     `Unknowns: ${result.unknowns.length}`,
     `Artifact: ${result.artifacts.current_markdown}`,
+    ...(expertSummary ? ['Expert judgment DAG:', expertSummary] : []),
     'Final authority remains with humans, CI, and repository rules.',
     ''
   ].join('\n');
@@ -275,6 +298,14 @@ export function renderSeniorJudgmentMarkdown(result) {
     ? result.development_mode_reasons.map((reason) => `- ${reason}`)
     : ['- Development mode was not selected because the problem frame did not reach the mode route.'];
   const developmentCycle = context.development_cycle;
+  const expertSummary = result.expert_judgment
+    ? [
+      '## Expert judgment DAG',
+      '',
+      renderExpertJudgmentSummary(result.expert_judgment).trimEnd(),
+      ''
+    ]
+    : [];
 
   return [
     '# Senior Engineering Judgment',
@@ -336,6 +367,7 @@ export function renderSeniorJudgmentMarkdown(result) {
     '',
     ...actions,
     '',
+    ...expertSummary,
     '## Decision delta',
     '',
     ...delta,
@@ -350,6 +382,15 @@ export function validateSeniorJudgmentInput(input) {
   }
   requireText(input.story_id, 'story_id');
   requireText(input.run_id, 'run_id');
+  if (input.expert_input !== undefined) {
+    if (input.expert_input === null) {
+      throw new Error('expert_input must be an object when provided');
+    }
+    const expertInput = validateExpertJudgmentInput(input.expert_input);
+    if (expertInput.case_id !== input.story_id) {
+      throw new Error(`expert_input.case_id must match story_id: ${expertInput.case_id} !== ${input.story_id}`);
+    }
+  }
   if (input.parent_run_id !== null && input.parent_run_id !== undefined) {
     requireText(input.parent_run_id, 'parent_run_id');
     if (input.parent_run_id === input.run_id) {
@@ -882,6 +923,22 @@ function buildNextActions({ frameStatus, outcomes, viableOptions, recommendation
     actions.push({ type: 'hand_off_to_human_ci', reason: 'All reachable hypotheses were refuted or no risk axis was active.' });
   }
   return actions;
+}
+
+function buildExpertReviewActions(expertJudgment) {
+  return expertJudgment.nodes
+    .filter((node) => ['proposed', 'insufficient'].includes(node.status))
+    .map((node) => ({
+      type: 'review_expert_judgment',
+      node_id: node.node_id,
+      summary: node.finding,
+      adoption_status: node.adoption_status,
+      options: node.options,
+      next_checks: node.next_checks,
+      unknowns: node.unknowns,
+      upstream_unknowns: node.upstream_unknowns,
+      context_requirements: node.context_requirements
+    }));
 }
 
 function buildRecommendationReasons({

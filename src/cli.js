@@ -225,7 +225,7 @@ Usage:
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro judgment suggest --input <json> [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
@@ -346,7 +346,7 @@ Usage:
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro judgment suggest --input <json> [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
@@ -948,10 +948,15 @@ async function dispatchCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand: 'applicability-record', result };
       }
       if (subcommand === 'prepare') {
+        const expertInputPath = getOption(rest, '--expert-input');
+        if (hasFlag(rest, '--expert-input') && (!expertInputPath || expertInputPath.startsWith('--'))) {
+          throw new Error('--expert-input には観測JSONのパスが必要です');
+        }
         const options = {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           runId: getOption(rest, '--run-id'),
-          outputPath: getOption(rest, '--output')
+          outputPath: getOption(rest, '--output'),
+          expertInputPath: expertInputPath ?? undefined
         };
         const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
         const result = status.applicable === null
@@ -962,7 +967,7 @@ async function dispatchCli(argv, io = {}) {
 `
           : status.applicable === null
             ? renderJudgmentPrepareSummary(result)
-            : renderJudgmentOperationalStatus(await getJudgmentOperationalStatus(repoRoot, result.story_id)));
+            : (result.expert_judgment ? renderJudgmentPrepareSummary(result) : '') + renderJudgmentOperationalStatus(await getJudgmentOperationalStatus(repoRoot, result.story_id)));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'input' && nestedAction === 'adopt') {

@@ -37,17 +37,27 @@ flowchart TD
 
 これは助言用DAGです。権限の付与、コマンドの実行、外部共有、承認、マージの制御は行いません。
 
+Storyの評価へ接続した場合も、専門判断は候補として扱います。既存の `VALUE` / `SIMPLIFY` / `VALIDATE`、seniorの推奨、`human_ci_repository_rules` の権限境界を置き換えず、条件分岐を自動採択しません。
+
 ## 実行する
 
+単独で確認する場合は、従来どおり `vibepro judgment suggest --input <観測.json> --json` を使えます。ワークスペース初期化やStory登録は不要です。
+
+Storyのsenior judgmentへ任意で接続する場合は、`observations.json` の `case_id` を対象Story ID（ここでは `story-example`）と一致させます。`prepare` は観測を `expert_input` として入力ドラフトへ埋め込み、`expert_judgment` のプレビューを返します。次の3コマンドは、既存の採択手順を通してから評価する例です。
+
 ```sh
-node bin/vibepro.js judgment suggest --input examples/expert-judgment/boundary-dag.json --json
+vibepro judgment prepare . --id story-example --expert-input observations.json --json
+vibepro judgment input adopt . --id story-example --input .vibepro/reviews/story-example/senior-judgment/input-draft.json --reviewed-by <actor> --authority <source> --summary "専門観測を確認した" --json
+vibepro judgment evaluate . --id story-example --input .vibepro/reviews/story-example/senior-judgment/input-draft.json --json
 ```
 
-インストール済みのCLIでは `vibepro judgment suggest --input <観測.json> --json` を使います。ワークスペース初期化やStory登録は不要です。`--json` を省略すると日本語の要約を返します。
+上のパスは標準配置の例です。実際には `prepare` の `artifact` を使い、`evaluate` には `input adopt` が返す `adoption.adopted_input` を指定します。採択前に問題設定・選択肢と専門観測を確認してください。`prepare` だけでは問題設定は未確定のままで、専門観測を加えても自動で計画の実行可能状態にはなりません。
+
+`input adopt` はドラフトに埋め込まれた観測のバイト列も含めて採択します。`evaluate` は採択済み入力の観測から専門判断を毎回再評価します。`case_id` が `--id` と異なる入力は受け付けません。
 
 サンプルは、今回必要な情報提供を、指定された受信者へ届ける架空の変更です。実行依存先が使えず、同じ契約を保つ代替経路を比較する状況を表します。`structural-simplification.json` は、従来の4観測だけの例です。新しい前段の観測がないため、後段の提案も条件付きになります。
 
-入力スキーマは `0.1.0` のままです。以前の観測を受け付けます。出力スキーマは `schema_version: "0.2.0"` に更新し、`input_schema_version: "0.1.0"`、8ノード、`dag` を返します。出力を読む側は版とノードIDで扱い、旧3ノードの配列位置には依存しないでください。判断則は `rule_version: "2"` です。
+専門観測の入力スキーマは `0.1.0` のままです。以前の観測を受け付けます。出力スキーマは `schema_version: "0.2.0"` に更新し、`input_schema_version: "0.1.0"`、8ノード、`dag` を返します。出力を読む側は版とノードIDで扱い、旧3ノードの配列位置には依存しないでください。判断則は `rule_version: "2"` です。
 
 ```json
 {
@@ -60,6 +70,8 @@ node bin/vibepro.js judgment suggest --input examples/expert-judgment/boundary-d
   ]
 }
 ```
+
+この例を `prepare --expert-input` で使うときは、`case_id` を対象Story IDへ合わせます。
 
 この例では、通常の範囲拡大は後へ回せても、必要な保護を削る提案は出しません。
 
@@ -100,7 +112,11 @@ node bin/vibepro.js judgment suggest --input examples/expert-judgment/boundary-d
 
 `adoption_status: conditional` は前提や観測の解消を要する候補、`candidate` は既知の条件で比較できる候補、`not_applicable` は対象外です。いずれも権限や実行許可には変換されません。各出力は `advisory: true` / `blocking: false` を保持します。
 
-因果モデル、予測、反証条件、選択肢、根拠、次の確認を合わせて読みます。既存の `judgment prepare` / `input adopt` / `evaluate` へは自動投入しません。
+因果モデル、予測、反証条件、選択肢、根拠、次の確認を合わせて読みます。`prepare --expert-input` のプレビューと `evaluate` の結果には `expert_judgment` が含まれます。評価結果の development DAG には `expert:<node-id>` の8ノードと専門DAG内の依存関係が残り、すべて `proposed` です。専門ノードは `recommendation` を支える候補として記録されますが、`conditional` を含む条件分岐を自動採択しません。
+
+`expert_unresolved_node_count` は、観測不足・未成立の前提・上流の未解決が残る専門ノード数です。従来の `unknown_count` とは分けて表示します。
+
+専門判断がある評価では、未確認または提案状態のノードごとに `next_actions` へ `review_expert_judgment` が追加されます。運用上のStory planでは、これを次の作業で確認する候補として扱います。`--expert-input` を省略した `prepare` と `expert_input` を持たない従来入力は、専門判断なしの従来フローを保ちます。
 
 ## 出典と検証の限界
 
@@ -108,4 +124,4 @@ node bin/vibepro.js judgment suggest --input examples/expert-judgment/boundary-d
 
 公開ルールには匿名の `curation:<node-id>@2` を付け、個人知識の識別子・原文・ログ位置との対応は本人用の別ファイルに置きます。個人ログの原文や絶対パスは公開パッケージに含めません。
 
-テストは条件分岐、反例、未確認の伝播、入力更新、CLI実行を確かめます。架空ケースでの分岐成功は、本人の判断の再現性や実案件の成果改善を証明しません。ログの自動収集、自由文の意味抽出、判断則の自動学習は、この版にはありません。
+実装中のため、このガイドにはテスト結果を記載していません。検証対象は条件分岐、反例、未確認の伝播、入力更新、CLI実行です。架空ケースでの分岐成功は、本人の判断の再現性や実案件の成果改善を証明しません。ログの自動収集、自由文の意味抽出、判断則の自動学習は、この版にはありません。

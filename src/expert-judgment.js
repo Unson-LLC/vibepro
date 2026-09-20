@@ -987,16 +987,31 @@ function requireText(value, label) {
   }
 }
 
+export function countExpertUnresolvedNodes(result) {
+  return result.nodes.filter((node) => node.status === 'insufficient'
+    || node.unknowns.length > 0
+    || node.context_requirements.length > 0
+    || node.upstream_unknowns.length > 0).length;
+}
+
 export function renderExpertJudgmentSummary(result) {
   const lines = [
     `専門判断の提案: ${result.case_id}`,
     `プロファイル: ${result.profile_status}`,
+    `未解決の専門判断ノード: ${countExpertUnresolvedNodes(result)}`,
     `助言のみ: ${result.advisory}`,
     `ブロック: ${result.blocking}`
   ];
   for (const node of result.nodes) {
     lines.push(`- ${node.node_id}: ${node.status} / ${node.adoption_status} — ${node.finding}`);
+    for (const option of node.options) lines.push(`  選択肢 ${option.id}: ${option.summary}`);
+    for (const check of node.next_checks) {
+      lines.push(`  次の確認: ${check.question}`);
+      if (check.prediction) lines.push(`    予測: ${check.prediction}`);
+      if (check.counterexample) lines.push(`    反証条件: ${check.counterexample}`);
+    }
     if (node.unknowns.length > 0) lines.push(`  未確認: ${node.unknowns.join(', ')}`);
+    if (node.context_requirements.length > 0) lines.push(`  未成立の前提: ${node.context_requirements.join(', ')}`);
     if (node.context_status === 'unresolved') {
       lines.push(`  上流の未解決: ${node.upstream_unknowns.map((item) => item.node_id).join(', ')}`);
     }

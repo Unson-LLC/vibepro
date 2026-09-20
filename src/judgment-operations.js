@@ -1,3 +1,4 @@
+import { countExpertUnresolvedNodes, renderExpertJudgmentSummary } from './expert-judgment.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -207,6 +208,7 @@ export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}
     viable_options: result.senior.viable_options ?? [],
     pruned_options: result.senior.pruned_options ?? [],
     next_actions: result.senior.next_actions ?? [],
+    ...(result.senior.expert_judgment ? { expert_judgment: result.senior.expert_judgment, expert_unresolved_node_count: countExpertUnresolvedNodes(result.senior.expert_judgment) } : {}),
     evaluated_at: evaluatedAt,
     artifact: toWorkspaceRelative(root, evaluationPath),
     advisory: true,
@@ -472,6 +474,7 @@ export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
     recommendation: projection?.recommendation ?? null,
     actionable: Boolean(projection?.actionable),
     unknown_count: projection?.unknown_count ?? 0,
+    ...(projection?.expert_judgment ? { expert_unresolved_node_count: projection.expert_unresolved_node_count } : {}),
     judgment_artifact: projection?.artifact ?? null,
     evaluation_artifact: projection?.operational_status?.evaluation?.artifact ?? null,
     input_sha256: projection?.operational_status?.evaluation?.input_sha256 ?? null,
@@ -583,6 +586,7 @@ export function renderJudgmentOperationalEvaluationSummary(result) {
     `Development mode: ${result.operational.development_mode ?? 'not_selected'}`,
     `Recommendation: ${result.operational.recommendation ?? 'none'}`,
     `Lifecycle: ${result.operational_status.lifecycle}`,
+    ...(result.senior.expert_judgment ? [renderExpertJudgmentSummary(result.senior.expert_judgment).trimEnd()] : []),
     'The evaluation is advisory and cannot change PR readiness or merge authority.',
     ''
   ].join('\n');
@@ -827,7 +831,7 @@ function isActionableEvaluation(senior) {
   if (!frameValid || !senior?.development_mode) return false;
   if (senior.recommendation === 'revise_problem' || senior.recommendation === 'human_decision_required') return false;
   if (ACTIONABLE_RECOMMENDATIONS.has(senior.recommendation)) return true;
-  return Array.isArray(senior.next_actions) && senior.next_actions.length > 0;
+  return Array.isArray(senior.next_actions) && senior.next_actions.some((action) => action?.type !== 'review_expert_judgment');
 }
 
 function evaluationReasonCodes(senior) {
@@ -900,6 +904,22 @@ function normalizeObservedOutcomes(values) {
 function formatNextAction(action) {
   if (typeof action === 'string') return action;
   if (!action || typeof action !== 'object') return String(action);
+  if (action.type === 'review_expert_judgment') {
+    const checks = (action.next_checks ?? []).map((check) => check.question).filter(Boolean);
+    const options = (action.options ?? []).map((option) => option.summary).filter(Boolean);
+    const pending = [
+      ...(action.unknowns ?? []),
+      ...(action.context_requirements ?? []),
+      ...(action.upstream_unknowns ?? []).map((upstream) => upstream.node_id)
+    ];
+    return [
+      `専門判断 ${action.node_id} (採用状態: ${action.adoption_status})`, action.summary,
+      ...(options.length ? [`選択肢: ${options.join(' / ')}`] : []),
+      ...(checks.length ? [`次の確認: ${checks.join(' / ')}`] : []),
+      ...(pending.length ? [`未解決: ${pending.join(', ')}`] : []),
+      '候補を確認して作業を選ぶ。実行権限の付与ではない'
+    ].filter(Boolean).join(' — ');
+  }
   return [action.type, action.hypothesis_id, action.detail, action.summary].filter(Boolean).join(' / ') || JSON.stringify(action);
 }
 
