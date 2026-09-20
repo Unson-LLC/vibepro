@@ -37,6 +37,107 @@ flowchart TD
 
 これは助言用DAGです。権限の付与、コマンドの実行、外部共有、承認、マージの制御は行いません。
 
+## 判断層が調査を起動する
+
+専門判断の責任は判断DAGに置きます。調査手段の責任をGraphifyに移すわけではありません。判断DAGは、依頼から仮の目的・範囲を置き、現状との差から「何を決める必要があるか」「どの証拠なら案を分けられるか」「次に誰へ何を確認するか」を組み立てます。Graphify adapterは、ホストが明示した `graphPath` の既存Graphify成果物を読み取って構造上の候補を返す、読み取り専用の証拠プロバイダーです。今回のCLIはGraphifyの実行・生成・再生成を行いません。成果物を作る責任は、既存のGraphify実行経路またはホストに残ります。
+
+同じGraphifyの結果を、判断の前後で使うことがあります。
+
+```text
+生の依頼・期待する成果
+  ↓
+判断DAGが仮の目的、範囲、最初の問いを置く
+  ↓
+Graphifyが対象ファイル・呼び出し関係・共有箇所の候補を返す
+  ↓
+判断DAGが問題設定、選択肢、成立条件、追加質問を更新する
+  ↓
+必要ならGraphifyで絞った経路をもう一度読む
+  ↓
+実行ログ・テスト・利用者確認などの独立した証拠と照合する
+```
+
+先に既存のGraphify成果物を読むと、依頼に書かれていない既存経路、共有実装、影響範囲が見つかり、判断すべき問い自体が変わることがあります。先に判断DAGを置くのは、読み取るファイル範囲と結果の意味を決めるためです。どちらかを固定の入口にはしません。判断DAGが調査を指示し、Graphify adapterの結果を受けて再評価します。
+
+Graphifyのノードや辺は、構造上の候補です。そこから「同じ利用者の仕事を満たす」「契約が一致する」「実行時に到達する」「再発しない」とは判断しません。目的、認証、保存、実動作、失敗時の再開、利用者の仕事は、コード・設定・実行結果・業務確認など別の根拠で照合します。`graphPath` がない、成果物を読めない、対象ファイルがグラフに載っていない、静的な辺しか得られない場合は、`unavailable` / `partial` として根拠不足を保持します。成果物を生成できたことや、生成日時が新しいことをCLIは推測しません。
+
+## 外部モデルを使う調査ラウンド
+
+調査の問いや自由記述の意味整理を、VibePro内蔵のキーワード規則で決めません。`judgment investigate` は、ホストが実際に使っているモデルへ渡す `model_request` と、その応答を検証するためのスキーマを返します。ホストはその要求を読んで、現在取得できた証拠だけを使った応答を作り、VibeProへ `--response` で渡します。VibeProは応答を候補・質問・根拠として保持し、権限の付与や自律的なLLM呼び出しを行いません。
+
+最初の入力は、真偽の観測を先に埋めたJSONではなく、依頼の事実を置くJSONです。少なくとも `case_id`、`goal`、`scope.files`、`constraints` を含めます。何が起きたかをまだ確認できていないときに `true` / `false` を作ってはいけません。モデルが確認すべき対象を、`questions`、`requests`、`options` の形で返した場合は、実際の調査結果を取得して次のラウンドへ渡します。質問の形式は、各ラウンドの `model_request` に含まれる応答スキーマを正本にします。
+
+ホストは次の境界を守ります。
+
+- `model_request` の要求を、現在の証拠を読むための指示として扱う。過去の仮説や前回の回答を、現在の事実へ昇格させない。
+- Graphifyの要求は、明示された既存成果物を読む指示として扱う。Graphifyの実行・生成・再生成をCLIが代行したとは扱わない。
+- Graphifyの辺を契約・因果・実行成功の証拠にしない。構造候補を、追加調査の範囲を決める材料として使う。
+- Source adapterを使う場合も、リポジトリ内の相対パスを範囲内で読み取るだけであり、変更やコマンド実行はしない。抜粋・行数・バイト数の上限と静的解析の限界を保持する。
+- グラフが欠けている、取得が失敗した、実行時の証拠がない、本人の選択が必要な場合は `unknown` / `partial` のまま返し、推測で埋めない。
+- 応答は `candidate` / `advisory` として扱う。採択、マージ、デプロイ、コマンド実行、外部共有は別の人間・CI・リポジトリの責任である。
+- 外部providerは、実装された認証済みホストまたはコネクタが実際に証拠を返す場合だけ使う。今回のCLIだけで外部取得をしたとは扱わず、未取得なら `unavailable` のまま返す。
+- 必要な根拠が取得できないときは、質問を残して「次に何を確認すれば候補が変わるか」を明示する。根拠のない選択肢を一つに絞らない。
+
+CLIが確認するのは、入力と調査contextの一致、参照の整合性、許可されたproviderか、providerの `available` / `partial` / `unavailable` 状態、派生statusの再計算です。JSON snapshotに含まれるreceiptが本物か、内容が業務上妥当か、ホストが見ていない案件で判断が正確かまでは保証しません。根拠の内容を読み、現在の案件へ適用できるかを判断する責任はホストに残ります。
+
+## `judgment investigate` の使い方
+
+CLIは、初回の生の目的または前回ラウンドの出力を `--input` で受け取ります。Graphifyのファイルは任意で `--graph` に渡せます。モデルの利用、リポジトリの読み取り、実行ログの取得はホストが担当します。
+
+```sh
+vibepro judgment investigate . \
+  --input raw-goal.json \
+  [--graph path/to/current-graphify-artifact.json] \
+  --json
+
+vibepro judgment investigate . \
+  --input round-1.json \
+  --response semantic-model-response.json \
+  [--graph path/to/current-graphify-artifact.json] \
+  --json
+```
+
+初回に `--response` を省略した結果には、ホストが実モデルへ渡す `model_request` が含まれます。ホストは要求内の応答スキーマに従って `semantic-model-response.json` を作ります。応答を渡したラウンドは、根拠に対応する候補、未解決の質問、調査すべき次の一手を返します。結果を次の `--input` に使うことで、GraphifyやCLIが実際に取得したsource証拠を加えた再解釈を新しいラウンドとして残せます。実行結果・本人の回答などの外部証拠は、許可されたホスト側の実装済みcollectorが取得して応答へ含めた場合に限り保持できます。CLIには外部取得経路を内蔵していません。
+
+## 二巡の最小例
+
+次の例では、依頼を受けた時点では「新しい画面を作る」のか「既存の経路を直す」のか決めません。まず目的と範囲を入力し、ホストが返された `model_request` を実モデルへ渡します。モデル応答のJSONは、初回結果に含まれる `response_schema` の実際の形に合わせて保存してください。自由に新しい項目を足して応答を作ってはいけません。
+
+`raw-goal.json`:
+
+```json
+{
+  "schema_version": "0.1.0",
+  "case_id": "checkout-entry",
+  "goal": "既存の購入導線から、利用者が選択内容を確認して購入結果を受け取れるようにする",
+  "scope": { "files": ["src/checkout-entry.js", "src/checkout-api.js"] },
+  "constraints": [
+    "既存の認証・テナント境界を保つ",
+    "業務状態の確定は業務APIに残す"
+  ]
+}
+```
+
+```sh
+# 1. 目的から最初の問いとモデル要求を作る
+vibepro judgment investigate . --input raw-goal.json --json > round-1.json
+
+# round-1.json の model_request を実際のホストモデルに渡し、
+# response_schema に適合した semantic-model-response.json を保存する。
+# ここで「既存経路がある」「契約が一致する」と推測して埋めない。
+
+# 2. Graphifyの構造候補とモデル応答を照合して再評価する
+vibepro judgment investigate . \
+  --input round-1.json \
+  --response semantic-model-response.json \
+  --graph path/to/current-graphify-artifact.json \
+  --json > round-2.json
+```
+
+`round-2.json` が `candidate_ready` でも、Graphifyの構造候補だけで実行成立を証明したことにはなりません。未解決の `questions`、`requests`、`unknowns` が残る場合は、その質問に対応する実行ログ、設定、テスト、利用者確認を取得して、前回出力を入力にした次のラウンドへ進みます。`advisory: true` と `blocking: false` は、候補を既存の採択フローへ自動接続しないための境界です。
+
+Storyへ下書きを接続する場合は、調査結果を `prepare --investigation` に渡せます。これは候補と未解決の質問を入力ドラフトへ添付するだけで、既存の `judgment input adopt` や評価結果を変更しません。調査結果の添付だけで採択や実行を行わず、既存の明示された採択権限を自動実行しません。`prepare` の結果だけで実行可能・マージ可能とは判断しません。
+
 Storyの評価へ接続した場合も、専門判断は候補として扱います。既存の `VALUE` / `SIMPLIFY` / `VALIDATE`、seniorの推奨、`human_ci_repository_rules` の権限境界を置き換えず、条件分岐を自動採択しません。
 
 ## 実行する
@@ -114,7 +215,7 @@ vibepro judgment evaluate . --id story-example --input .vibepro/reviews/story-ex
 
 ## 観測の意味
 
-観測の分類は根拠を読める人またはAIが担当します。ノードは自由文のキーワードから事実を推測しません。参照先の取得、真偽・対象範囲・鮮度の照合も呼び出し元が担います。`source_refs` があること自体は、検証成功の証明ではありません。
+観測の分類は根拠を読める人またはAIが担当します。ノードは自由文のキーワードから事実を推測しません。`judgment suggest --input` で既存の観測を渡す場合、参照先の取得、真偽・対象範囲・鮮度の照合は呼び出し元が担います。`judgment investigate` では、明示したGraphify成果物とboundedなsource抜粋をCLIの読み取り専用adapterが取得しますが、証拠の意味・鮮度・業務妥当性は保証せず、external providerは未取得のままです。`source_refs` があること自体は、検証成功の証明ではありません。
 
 `value` は `true` / `false` です。未確認は観測を省略するか、根拠なしとして渡します。欠落や根拠なしを `false` に置き換えません。観測IDと種類の重複は入力エラーです。
 
@@ -161,4 +262,4 @@ vibepro judgment evaluate . --id story-example --input .vibepro/reviews/story-ex
 
 公開ルールには匿名の `curation:<node-id>@3` を付け、個人知識の識別子・原文・ログ位置との対応は本人用の別ファイルに置きます。個人ログの原文や絶対パスは公開パッケージに含めません。
 
-テスト結果と比較検証は変更単位で記録します。検証対象は条件分岐、反例、未確認の伝播、入力更新、CLI実行です。架空ケースでの分岐成功は、本人の判断の再現性や実案件の成果改善を証明しません。ログの自動収集、自由文の意味抽出、判断則の自動学習は、この版にはありません。
+テスト結果と比較検証は変更単位で記録します。検証対象は条件分岐、反例、未確認の伝播、入力更新、CLI実行です。架空ケースでの分岐成功は、本人の判断の再現性や実案件の成果改善を証明しません。自由文の意味解釈は呼び出し元AIが担当し、CLIには内蔵モデルも判断則の自動学習もありません。

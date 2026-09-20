@@ -204,7 +204,12 @@ export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}
     reason_codes: evaluationReasonCodes(result.senior),
     development_mode: result.senior.development_mode ?? null,
     recommendation: result.senior.recommendation ?? null,
-    unknown_count: result.senior.unknowns?.length ?? 0,
+    unknown_count: result.senior.unknown_count ?? result.senior.unknowns?.length ?? 0,
+    ...(result.senior.investigation_input ? {
+      investigation_context: structuredClone(result.senior.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(result.senior.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: result.senior.investigation_unresolved_questions?.length ?? 0
+    } : {}),
     viable_options: result.senior.viable_options ?? [],
     pruned_options: result.senior.pruned_options ?? [],
     next_actions: result.senior.next_actions ?? [],
@@ -474,6 +479,14 @@ export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
     recommendation: projection?.recommendation ?? null,
     actionable: Boolean(projection?.actionable),
     unknown_count: projection?.unknown_count ?? 0,
+    ...(projection?.investigation_input ? {
+      investigation_input: structuredClone(projection.investigation_input),
+      investigation_context: structuredClone(projection.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(projection.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: projection.investigation_unresolved_count
+        ?? projection.investigation_unresolved_questions?.length
+        ?? 0
+    } : {}),
     ...(projection?.expert_judgment ? {
       expert_unresolved_node_count: projection.expert_unresolved_node_count,
       expert_decision_paths: [...(projection.expert_judgment.decision_paths ?? [])],
@@ -506,6 +519,17 @@ export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
         question: `Development Judgment ${projection.run_id} has ${projection.unknown_count} unresolved item(s); close or explicitly defer them before claiming the recommendation was followed.`,
         priority: 'high'
       }, ...(next.questions ?? [])].slice(0, 20);
+    }
+    const investigationQuestions = projection.investigation_unresolved_questions ?? [];
+    if (investigationQuestions.length > 0) {
+      const questions = investigationQuestions.map((item) => ({
+        story_id: storyId,
+        field: `judgment_investigation_${item.kind ?? 'question'}`,
+        question: item.text ?? item.question ?? String(item),
+        source: item.id ?? null,
+        priority: 'high'
+      }));
+      next.questions = [...questions, ...(next.questions ?? [])].slice(0, 20);
     }
     next.next_commands = uniqueStrings([
       `vibepro judgment status . --id ${storyId}`,
@@ -554,6 +578,7 @@ export function renderDevelopmentJudgmentPlanMarkdown(binding) {
     `- Run: ${binding.run_id ? `\`${binding.run_id}\`` : '-'}`,
     `- Development mode: ${binding.development_mode ?? 'not_selected'}`,
     `- Recommendation: ${binding.recommendation ?? 'none'}`,
+    `- Investigation unresolved questions: ${binding.investigation_unresolved_count ?? 0}`,
     `- Plan effect: ${binding.effect ?? 'no_effect'}`,
     `- Actionable: ${Boolean(binding.actionable)}`,
     `- Advisory: true`,
@@ -699,6 +724,7 @@ function buildJudgmentGuidanceTask(storyId, projection) {
   const nextActions = projection.operational_status?.evaluation?.next_actions ?? [];
   const priorityChecks = projection.expert_judgment?.priority_checks ?? [];
   const notAssessedPaths = projection.expert_judgment?.not_assessed_paths ?? [];
+  const investigationQuestions = projection.investigation_unresolved_questions ?? [];
   return {
     id: `${storyId}-development-judgment-${mode.toLowerCase()}`,
     story_id: storyId,
@@ -712,6 +738,11 @@ function buildJudgmentGuidanceTask(storyId, projection) {
         : []),
       ...(notAssessedPaths.length
         ? [`未評価の詳細経路を不適用と断定せず記録する: ${notAssessedPaths.join(', ')}`]
+        : []),
+      ...(investigationQuestions.length
+        ? investigationQuestions.map((item) => (
+          `調査の未解決事項: ${item.text ?? item.question ?? String(item)}`
+        ))
         : []),
       ...(nextActions.length ? nextActions.map((action) => `次アクション: ${formatNextAction(action)}`) : ['未解決事項を明示的に閉じるかdeferする'])
     ],
@@ -740,6 +771,9 @@ function buildJudgmentGuidanceTask(storyId, projection) {
       decision_paths: [...(projection.expert_judgment?.decision_paths ?? [])],
       priority_checks: structuredClone(priorityChecks),
       not_assessed_paths: [...notAssessedPaths],
+      investigation_context: structuredClone(projection.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(investigationQuestions),
+      investigation_unresolved_count: investigationQuestions.length,
       advisory: true,
       blocking: false
     }
@@ -856,6 +890,7 @@ function evaluationReasonCodes(senior) {
   if (frame !== 'valid') reasons.push(`problem_frame_${frame ?? 'missing'}`);
   if (!senior?.development_mode) reasons.push('development_mode_not_selected');
   if (senior?.unknowns?.length) reasons.push('unknowns_present');
+  if (senior?.investigation_unresolved_questions?.length) reasons.push('investigation_unresolved');
   if (senior?.recommendation) reasons.push(`recommendation_${senior.recommendation}`);
   return reasons;
 }
@@ -952,6 +987,17 @@ function formatNextAction(action) {
       ...(pending.length ? [`未解決: ${pending.join(', ')}`] : []),
       '候補を確認して作業を選ぶ。実行権限の付与ではない'
     ].filter(Boolean).join(' — ');
+  }
+  if (action.investigation_kind || String(action.type ?? '').startsWith('resolve_investigation_')
+    || String(action.type ?? '').startsWith('retry_investigation_')
+    || String(action.type ?? '').startsWith('reinterpret_investigation_')
+    || String(action.type ?? '').startsWith('collect_investigation_')) {
+    return [
+      action.type,
+      action.investigation_kind,
+      action.question,
+      action.reason
+    ].filter(Boolean).join(' / ');
   }
   return [action.type, action.hypothesis_id, action.detail, action.summary].filter(Boolean).join(' / ') || JSON.stringify(action);
 }

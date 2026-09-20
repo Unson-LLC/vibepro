@@ -8,6 +8,10 @@ import {
   suggestExpertJudgments,
   validateExpertJudgmentInput
 } from './expert-judgment.js';
+import {
+  buildJudgmentInvestigationContext,
+  validateJudgmentInvestigationResult
+} from './judgment-investigation.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const SCHEMA_VERSION = '0.3.0';
@@ -52,6 +56,9 @@ const MODE_ALLOWED_OPTION_ACTIONS = Object.freeze({
 
 export function evaluateSeniorJudgment(input) {
   const normalized = validateSeniorJudgmentInput(input);
+  const investigation = normalized.investigation_input
+    ? deriveInvestigationState(normalized.investigation_input)
+    : null;
   const expertJudgment = normalized.expert_input === undefined
     ? undefined
     : suggestExpertJudgments(normalized.expert_input);
@@ -97,7 +104,10 @@ export function evaluateSeniorJudgment(input) {
     prunedOptions,
     optionCount: normalized.options.length
   });
-  const unknowns = buildUnknowns(reachableOutcomes);
+  const unknowns = [
+    ...buildUnknowns(reachableOutcomes),
+    ...(investigation?.unresolved ?? [])
+  ];
   const nextActions = buildNextActions({
     frameStatus,
     outcomes: reachableOutcomes,
@@ -105,6 +115,9 @@ export function evaluateSeniorJudgment(input) {
     recommendation,
     developmentMode
   });
+  if (investigation) {
+    nextActions.push(...buildInvestigationReviewActions(investigation.unresolved));
+  }
   if (expertJudgment) {
     nextActions.push(...buildExpertReviewActions(expertJudgment));
   }
@@ -144,10 +157,20 @@ export function evaluateSeniorJudgment(input) {
       viableOptions,
       recommendation,
       developmentMode,
-      developmentModeReasons: modeDecision?.reasons ?? []
+      developmentModeReasons: modeDecision?.reasons ?? [],
+      investigationUnresolvedCount: investigation?.unresolved.length ?? 0
     }),
     unknowns,
+    unknown_count: unknowns.length,
     next_actions: nextActions,
+    ...(investigation ? {
+      investigation_input: investigation.input,
+      investigation_context: investigation.context,
+      investigation_unresolved_questions: investigation.unresolved
+    } : {}),
+    ...(normalized.expert_input !== undefined
+      ? { expert_input: structuredClone(normalized.expert_input) }
+      : {}),
     advisory: true,
     authority: 'human_ci_repository_rules'
   };
@@ -210,10 +233,15 @@ export async function evaluateSeniorJudgmentRun(repoRoot, options = {}) {
     decision_profile: input.decision_profile,
     axes: input.axes,
     constraints: input.constraints,
-    options: input.options
+    options: input.options,
+    ...(evaluation.investigation_input ? { investigation_input: evaluation.investigation_input } : {}),
+    ...(evaluation.investigation_context ? { investigation_context: evaluation.investigation_context } : {}),
+    ...(evaluation.investigation_unresolved_questions
+      ? { investigation_unresolved_questions: evaluation.investigation_unresolved_questions }
+      : {})
   };
-  if (input.expert_input !== undefined) {
-    decisionContext.expert_input = input.expert_input;
+  if (evaluation.expert_input !== undefined) {
+    decisionContext.expert_input = evaluation.expert_input;
   }
   const recorded = {
     ...evaluation,
@@ -245,6 +273,9 @@ export function renderSeniorJudgmentSummary(result) {
     `Advisory recommendation: ${result.recommendation}`,
     `Active axes: ${result.active_axes.join(', ') || 'none'}`,
     `Unknowns: ${result.unknowns.length}`,
+    ...(result.investigation_input ? [
+      `Investigation unresolved questions: ${result.investigation_unresolved_questions?.length ?? 0}`
+    ] : []),
     `Artifact: ${result.artifacts.current_markdown}`,
     ...(expertSummary ? ['Expert judgment DAG:', expertSummary] : []),
     'Final authority remains with humans, CI, and repository rules.',
@@ -293,6 +324,9 @@ export function renderSeniorJudgmentMarkdown(result) {
   const actions = result.next_actions.length > 0
     ? result.next_actions.map((action) => `- ${action.type}${action.hypothesis_id ? ` for \`${action.hypothesis_id}\`` : ''}`)
     : ['- None'];
+  const investigation = result.investigation_input
+    ? renderInvestigationMarkdown(result.investigation_unresolved_questions ?? [])
+    : [];
   const delta = renderDecisionDelta(result.decision_delta);
   const modeReasons = result.development_mode_reasons.length > 0
     ? result.development_mode_reasons.map((reason) => `- ${reason}`)
@@ -367,6 +401,7 @@ export function renderSeniorJudgmentMarkdown(result) {
     '',
     ...actions,
     '',
+    ...investigation,
     ...expertSummary,
     '## Decision delta',
     '',
@@ -382,13 +417,41 @@ export function validateSeniorJudgmentInput(input) {
   }
   requireText(input.story_id, 'story_id');
   requireText(input.run_id, 'run_id');
-  if (input.expert_input !== undefined) {
+  let investigationInput;
+  let investigationContext;
+  if (input.investigation_input !== undefined) {
+    if (!isPlainObject(input.investigation_input)) {
+      throw new Error('investigation_input must be an object when provided');
+    }
+    investigationInput = validateJudgmentInvestigationResult(input.investigation_input);
+    const investigationCaseId = investigationInput.case_id ?? investigationInput.story_id;
+    if (investigationCaseId !== input.story_id) {
+      throw new Error(
+        `investigation_input.case_id must match story_id: ${String(investigationCaseId)} !== ${input.story_id}`
+      );
+    }
+    // Recompute this projection from the embedded result.  A caller-supplied
+    // investigation_context is only a stale cache and never affects evaluation.
+    investigationContext = buildJudgmentInvestigationContext(investigationInput);
+  }
+  let effectiveExpertInput;
+  if (investigationInput) {
+    // The investigation snapshot owns expert_input.  A stale top-level expert
+    // input from an earlier round is discarded, including when the snapshot is
+    // explicitly null while interpretation is still pending.
+    if (isPlainObject(investigationInput.expert_input)) {
+      effectiveExpertInput = validateExpertJudgmentInput(investigationInput.expert_input);
+      if (effectiveExpertInput.case_id !== input.story_id) {
+        throw new Error(`investigation expert_input.case_id must match story_id: ${effectiveExpertInput.case_id} !== ${input.story_id}`);
+      }
+    }
+  } else if (input.expert_input !== undefined) {
     if (input.expert_input === null) {
       throw new Error('expert_input must be an object when provided');
     }
-    const expertInput = validateExpertJudgmentInput(input.expert_input);
-    if (expertInput.case_id !== input.story_id) {
-      throw new Error(`expert_input.case_id must match story_id: ${expertInput.case_id} !== ${input.story_id}`);
+    effectiveExpertInput = validateExpertJudgmentInput(input.expert_input);
+    if (effectiveExpertInput.case_id !== input.story_id) {
+      throw new Error(`expert_input.case_id must match story_id: ${effectiveExpertInput.case_id} !== ${input.story_id}`);
     }
   }
   if (input.parent_run_id !== null && input.parent_run_id !== undefined) {
@@ -519,10 +582,19 @@ export function validateSeniorJudgmentInput(input) {
     }
   }
 
-  return {
+  const normalized = {
     ...input,
-    parent_run_id: input.parent_run_id ?? null
+    parent_run_id: input.parent_run_id ?? null,
+    ...(investigationInput ? {
+      investigation_input: structuredClone(investigationInput),
+      investigation_context: structuredClone(investigationContext)
+    } : {})
   };
+  if (investigationInput) {
+    if (effectiveExpertInput) normalized.expert_input = structuredClone(effectiveExpertInput);
+    else delete normalized.expert_input;
+  }
+  return normalized;
 }
 
 function validateDevelopmentCycle(cycle, storyId, allIds) {
@@ -950,13 +1022,33 @@ function buildExpertReviewActions(expertJudgment) {
     }));
 }
 
+function buildInvestigationReviewActions(items) {
+  return (items ?? []).map((item) => {
+    const actionByKind = {
+      open_question: 'resolve_investigation_open_question',
+      pending_question: 'resolve_investigation_question',
+      failed_request: 'retry_investigation_request',
+      pending_reinterpretation: 'reinterpret_investigation_result',
+      evidence_request: 'collect_investigation_evidence'
+    };
+    return {
+      type: actionByKind[item.kind] ?? 'resolve_investigation_question',
+      investigation_kind: item.kind,
+      investigation_item_id: item.id,
+      question: item.text,
+      reason: item.reason ?? item.status ?? 'Investigation remains unresolved.'
+    };
+  });
+}
+
 function buildRecommendationReasons({
   frameStatus,
   outcomes,
   viableOptions,
   recommendation,
   developmentMode,
-  developmentModeReasons
+  developmentModeReasons,
+  investigationUnresolvedCount = 0
 }) {
   if (frameStatus === 'invalid') return ['The problem frame was judged invalid before risk-axis evaluation.'];
   if (frameStatus === 'uncertain') return ['The problem frame remains uncertain and requires explicit human judgment.'];
@@ -968,7 +1060,10 @@ function buildRecommendationReasons({
     `Reachable hypotheses: ${outcomes.length}.`,
     `Outcomes: ${Object.entries(counts).map(([state, count]) => `${state}=${count}`).join(', ') || 'none'}.`,
     `Viable mitigation options: ${viableOptions.length}.`,
-    `Advisory recommendation: ${recommendation}.`
+    `Advisory recommendation: ${recommendation}.`,
+    ...(investigationUnresolvedCount > 0
+      ? [`Investigation unresolved questions: ${investigationUnresolvedCount}.`]
+      : [])
   ];
 }
 
@@ -1199,6 +1294,127 @@ function renderDecisionDelta(delta) {
   return lines;
 }
 
+function deriveInvestigationState(input) {
+  const validated = validateJudgmentInvestigationResult(input);
+  const context = buildJudgmentInvestigationContext(validated);
+  return {
+    input: validated,
+    context,
+    unresolved: collectInvestigationUnresolvedItems(context, validated)
+  };
+}
+
+function collectInvestigationUnresolvedItems(context, input) {
+  const entries = [];
+  const seen = new Set();
+  const add = (kind, value, index) => {
+    if (value === null || value === undefined) return;
+    const item = isPlainObject(value) ? value : { text: String(value) };
+    const text = firstText([
+      item.text,
+      item.question,
+      item.prompt,
+      item.query,
+      item.purpose,
+      item.reason,
+      item.limitation,
+      item.summary,
+      item.description
+    ]) ?? `${kind} ${index + 1}`;
+    const status = typeof item.status === 'string' ? item.status : null;
+    if (kind === 'question' && ['answered', 'closed', 'resolved', 'complete', 'completed'].includes(status)) {
+      return;
+    }
+    const id = firstText([item.id, item.question_id, item.request_id, item.path_id])
+      ?? `investigation-${kind}-${index + 1}`;
+    // A recomputed context can expose the same question through both
+    // `questions` and `pending_questions`.  De-duplicate by its stable id and
+    // text rather than by the display category so analysis invalidation does
+    // not inflate the unresolved count.
+    const key = `${id}:${text}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    entries.push({
+      axis_id: 'investigation',
+      hypothesis_id: id,
+      disposition: status ?? 'unresolved',
+      missing_predictions: [],
+      conflicting_predictions: [],
+      kind: kind === 'question' ? 'open_question' : kind,
+      id,
+      text,
+      question: text,
+      status: status ?? 'unresolved',
+      ...(item.reason ? { reason: item.reason } : {}),
+      ...(item.source_refs ? { source_refs: structuredClone(item.source_refs) } : {}),
+      source: structuredClone(item)
+    });
+  };
+
+  // `questions` is the canonical active question list in the investigation
+  // context.  `pending_questions` mirrors it only after interpretation has
+  // been invalidated, so use it as a fallback to avoid counting both lists.
+  const questions = Array.isArray(context?.questions)
+    ? context.questions
+    : (Array.isArray(context?.pending_questions) ? context.pending_questions : []);
+  for (const [index, value] of questions.entries()) add('question', value, index);
+
+  const failedReceipts = Array.isArray(context?.failed_receipts)
+    ? context.failed_receipts
+    : [];
+  for (const [index, value] of failedReceipts.entries()) add('failed_request', value, index);
+
+  // A pending request is an explicit read-only collection action that still
+  // has to be completed.  Keep it distinct from a failed receipt so callers
+  // can choose collect versus retry wording.
+  const pendingRequests = Array.isArray(context?.pending_requests)
+    ? context.pending_requests
+    : [];
+  for (const [index, value] of pendingRequests.entries()) add('evidence_request', value, index);
+
+  for (const [index, value] of (Array.isArray(context?.collection_limitations)
+    ? context.collection_limitations
+    : []).entries()) {
+    add('failed_request', { id: `collection-limitation-${index + 1}`, text: value, reason: value }, index);
+  }
+
+  for (const [index, value] of (Array.isArray(context?.unknowns) ? context.unknowns : []).entries()) {
+    add('investigation_unknown', { id: `unknown-${index + 1}`, text: value }, index);
+  }
+
+  // With no semantic analysis yet, the next required step is interpretation
+  // itself even when there are no question objects.  This keeps an initial or
+  // invalidated investigation visible to the plan without treating the stale
+  // recommendation as current.
+  if (['awaiting_interpretation', 'needs_interpretation'].includes(context?.status)) {
+    add('pending_reinterpretation', {
+      id: `status:${context.status}`,
+      text: context.status === 'needs_interpretation'
+        ? '調査結果を再解釈し、問い・選択肢・推薦を更新する。'
+        : '調査結果を解釈し、今回の問い・選択肢・推薦を作成する。',
+      reason: context.status
+    }, 0);
+  }
+  return entries;
+}
+
+function renderInvestigationMarkdown(items) {
+  if (!items || items.length === 0) return [];
+  return [
+    '## Investigation context',
+    '',
+    `- Unresolved questions: ${items.length}`,
+    ...items.map((item) => (
+      `- \`${item.kind}/${item.id}\`: ${item.text}${item.reason ? ` — ${item.reason}` : ''}`
+    )),
+    ''
+  ];
+}
+
+function firstText(values) {
+  return values.find((value) => typeof value === 'string' && value.trim())?.trim() ?? null;
+}
+
 async function readJsonIfExists(filePath) {
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
@@ -1256,6 +1472,10 @@ function assertPlainObject(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error(`${label} must be an object`);
   }
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function requireText(value, label) {

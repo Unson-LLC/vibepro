@@ -88,6 +88,11 @@ import {
   renderJudgmentOutcomeSummary,
   renderJudgmentPrepareSummary
 } from './judgment-workflow.js';
+import {
+  advanceJudgmentInvestigation,
+  renderJudgmentInvestigationSummary,
+  validateJudgmentInvestigationResult
+} from './judgment-investigation.js';
 import { renderExpertJudgmentSummary, suggestExpertJudgments } from './expert-judgment.js';
 import {
   getDecisionStatus,
@@ -225,7 +230,8 @@ Usage:
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro judgment suggest --input <json> [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json>] [--json]
+  vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
@@ -346,7 +352,8 @@ Usage:
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro judgment suggest --input <json> [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json>] [--json]
+  vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
@@ -934,6 +941,46 @@ async function dispatchCli(argv, io = {}) {
           : renderExpertJudgmentSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'investigate') {
+        const inputPath = getOption(rest, '--input');
+        if (!inputPath || inputPath.startsWith('--')) {
+          throw new Error('judgment investigate には --input <request-or-result.json> が必要です');
+        }
+        const responsePath = getOption(rest, '--response');
+        if (hasFlag(rest, '--response') && (!responsePath || responsePath.startsWith('--'))) {
+          throw new Error('--response にはモデル応答JSONのパスが必要です');
+        }
+        const graphPath = getOption(rest, '--graph');
+        if (hasFlag(rest, '--graph') && (!graphPath || graphPath.startsWith('--'))) {
+          throw new Error('--graph にはGraphify成果物のパスが必要です');
+        }
+        const readInvestigationJson = async (candidatePath, optionName) => {
+          const resolvedPath = path.isAbsolute(candidatePath)
+            ? candidatePath
+            : path.resolve(repoRoot, candidatePath);
+          try {
+            return JSON.parse(await readFile(resolvedPath, 'utf8'));
+          } catch (error) {
+            if (error instanceof SyntaxError) {
+              throw new Error(`${optionName}: 入力が有効なJSONではありません: ${error.message}`);
+            }
+            throw error;
+          }
+        };
+        const input = await readInvestigationJson(inputPath, 'judgment investigate --input');
+        const response = responsePath === null
+          ? undefined
+          : await readInvestigationJson(responsePath, 'judgment investigate --response');
+        const result = await advanceJudgmentInvestigation(repoRoot, input, {
+          response,
+          graphPath: graphPath ?? undefined
+        });
+        const validated = validateJudgmentInvestigationResult(result);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(validated, null, 2)}\n`
+          : renderJudgmentInvestigationSummary(validated));
+        return { exitCode: 0, command, subcommand, result: validated };
+      }
       if (subcommand === 'applicability' && nestedAction === 'record') {
         const result = await recordJudgmentApplicability(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
@@ -949,14 +996,22 @@ async function dispatchCli(argv, io = {}) {
       }
       if (subcommand === 'prepare') {
         const expertInputPath = getOption(rest, '--expert-input');
+        const investigationInputPath = getOption(rest, '--investigation');
         if (hasFlag(rest, '--expert-input') && (!expertInputPath || expertInputPath.startsWith('--'))) {
           throw new Error('--expert-input には観測JSONのパスが必要です');
+        }
+        if (hasFlag(rest, '--investigation') && (!investigationInputPath || investigationInputPath.startsWith('--'))) {
+          throw new Error('--investigation には調査結果JSONのパスが必要です');
+        }
+        if (expertInputPath !== null && investigationInputPath !== null) {
+          throw new Error('--expert-input と --investigation は同時に指定できません');
         }
         const options = {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           runId: getOption(rest, '--run-id'),
           outputPath: getOption(rest, '--output'),
-          expertInputPath: expertInputPath ?? undefined
+          expertInputPath: expertInputPath ?? undefined,
+          investigationInputPath: investigationInputPath ?? undefined
         };
         const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
         const result = status.applicable === null
