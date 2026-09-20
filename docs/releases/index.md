@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-17 | [`0.2.0-beta.27`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.27) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-17 | [`0.2.0-beta.26`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.26) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-17 | [`0.2.0-beta.25`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.25) | npm `beta` / `latest` | Post-merge continuous release |
@@ -659,3 +660,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:544:start -->
 - [PR #544](https://github.com/Unson-LLC/vibepro/pull/544) — [2026-09](/releases/2026-09): feat: 専門判断DAGへGraphify調査と再判断ループを接続
 <!-- vibepro-release-index-pr:544:end -->
+
+<!-- vibepro-release-index-pr:545:start -->
+- [PR #545](https://github.com/Unson-LLC/vibepro/pull/545) — [2026-09](/releases/2026-09): chore(release): publish 0.2.0-beta.28
+<!-- vibepro-release-index-pr:545:end -->
