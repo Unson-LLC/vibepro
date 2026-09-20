@@ -248,7 +248,7 @@ test('catalog and fully evidenced observations produce eight advisory nodes', ()
     'runtime-reachability',
     'evidence-decision-value'
   ]);
-  assert.equal(result.schema_version, '0.2.0');
+  assert.equal(result.schema_version, '0.3.0');
   assert.equal(result.input_schema_version, '0.1.0');
   assert.equal(result.advisory, true);
   assert.equal(result.blocking, false);
@@ -257,8 +257,8 @@ test('catalog and fully evidenced observations produce eight advisory nodes', ()
 
   for (const candidate of result.nodes) {
     assert.equal(candidate.interpretation_status, 'candidate');
-    assert.equal(candidate.rule_version, '2');
-    assert.match(candidate.provenance_ref, /^curation:[\w-]+@2$/);
+    assert.equal(candidate.rule_version, '3');
+    assert.match(candidate.provenance_ref, /^curation:[\w-]+@3$/);
     assert.equal(candidate.advisory, true);
     assert.equal(candidate.blocking, false);
     assert.ok(candidate.causal_model);

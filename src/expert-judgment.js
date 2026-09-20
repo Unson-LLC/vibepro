@@ -1,6 +1,31 @@
+import {
+  EXPERT_DECISION_PATHS,
+  EXPERT_DETAIL_KINDS,
+  evaluateDecisionPaths,
+  validateDecisionPaths
+} from './expert-judgment-steps.js';
+
+export {
+  EXPERT_DECISION_PATHS,
+  EXPERT_DETAIL_KINDS,
+  evaluateDecisionPaths,
+  validateDecisionPaths
+};
+
 const EXPERT_JUDGMENT_SCHEMA_VERSION = '0.1.0';
-const EXPERT_JUDGMENT_OUTPUT_SCHEMA_VERSION = '0.2.0';
-const EXPERT_JUDGMENT_RULE_VERSION = '2';
+const EXPERT_JUDGMENT_OUTPUT_SCHEMA_VERSION = '0.3.0';
+const EXPERT_JUDGMENT_RULE_VERSION = '3';
+
+// Detail paths are advisory metadata. Their ordering is kept separate from
+// the path catalog so the public priority queue keeps the outcome, interaction,
+// handoff, structure, and runtime boundaries in a stable order.
+const DETAIL_PATH_PRIORITY = Object.freeze([
+  'target-alignment',
+  'interaction-contract',
+  'responsibility-handoff',
+  'existing-mechanism',
+  'recurrence-prevention'
+]);
 
 const EVIDENCE_BOUNDARY =
   'source_refs は入力のまま保持し、参照先の存在や観測を証明するかどうかは検証しません。';
@@ -118,8 +143,18 @@ const ALL_OBSERVATION_KINDS = new Set([
   ...EXECUTION_BOUNDARY_KINDS,
   ...STRUCTURAL_KINDS,
   ...RUNTIME_KINDS,
-  ...EVIDENCE_KINDS
+  ...EVIDENCE_KINDS,
+  ...EXPERT_DETAIL_KINDS
 ]);
+
+function detailCatalogForNode(nodeId) {
+  return EXPERT_DECISION_PATHS
+    .filter((path) => path.node_id === nodeId)
+    .map((path) => ({
+      ...path,
+      steps: path.steps.map((step) => ({ ...step, depends_on: [...step.depends_on] }))
+    }));
+}
 
 function defineCatalog(definition) {
   return {
@@ -127,7 +162,8 @@ function defineCatalog(definition) {
     ...definition,
     interpretation_status: 'candidate',
     rule_version: EXPERT_JUDGMENT_RULE_VERSION,
-    provenance_ref: `curation:${definition.id}@2`
+    provenance_ref: `curation:${definition.id}@3`,
+    detail_paths: detailCatalogForNode(definition.id)
   };
 }
 
@@ -277,7 +313,7 @@ const CATALOG_SOURCE = [
     observation_questions: {
       capability_claimed: 'この能力が意図した振る舞いとして主張されているか？',
       implementation_present: '現在のコードにこの能力が実装されているか？',
-      intended_path_observed: '実行時に意図した経路を観測できたか？'
+      intended_path_observed: '利用者の実際の入口で期待した業務出力を観測できたか？ 画面表示・HTTP成功・代替カードだけを業務の成功と扱っていないか？'
     },
     owner_principle: '実装の存在と、意図した実行経路での効果を分けて確認する。到達性は受け手の価値の証明ではない。',
     causal_model: '実装があっても意図した呼び出し経路に到達しなければ、意図した効果は出ない。',
@@ -334,14 +370,39 @@ export const EXPERT_JUDGMENT_DAG = deepFreeze({
   edges: DAG_EDGE_SOURCE.map((edge) => ({ ...edge }))
 });
 
+function orderDetailPaths(paths) {
+  const priority = new Map(DETAIL_PATH_PRIORITY.map((pathId, index) => [pathId, index]));
+  return [...paths].sort((left, right) => (
+    (priority.get(left.path_id) ?? Number.MAX_SAFE_INTEGER)
+      - (priority.get(right.path_id) ?? Number.MAX_SAFE_INTEGER)
+  ));
+}
+
 export function suggestExpertJudgments(input) {
   const normalized = validateExpertJudgmentInput(input);
+  const detailEvaluations = evaluateDecisionPaths(normalized.decision_paths, normalized.byKind);
+  const orderedDetailEvaluations = orderDetailPaths(detailEvaluations);
+  const detailPathsByNode = new Map();
+  for (const evaluation of detailEvaluations) {
+    const paths = detailPathsByNode.get(evaluation.node_id) ?? [];
+    paths.push(evaluation);
+    detailPathsByNode.set(evaluation.node_id, paths);
+  }
   const evaluated = new Map();
   const nodes = EXPERT_JUDGMENT_CATALOG.map((catalog) => {
-    const node = buildNode(catalog, normalized, evaluated);
+    const node = buildNode(catalog, normalized, evaluated, detailPathsByNode);
     evaluated.set(catalog.id, node);
     return node;
   });
+  const selectedPathIds = new Set(normalized.decision_paths);
+  const priorityChecks = orderedDetailEvaluations
+    .filter((evaluation) => evaluation.next_checks.length > 0)
+    .map((evaluation) => ({
+      ...evaluation.next_checks[0],
+      node_id: evaluation.node_id,
+      path_status: evaluation.status
+    }));
+  const notAssessedPaths = DETAIL_PATH_PRIORITY.filter((pathId) => !selectedPathIds.has(pathId));
 
   return {
     schema_version: EXPERT_JUDGMENT_OUTPUT_SCHEMA_VERSION,
@@ -352,6 +413,10 @@ export function suggestExpertJudgments(input) {
     profile_status: 'candidate',
     evidence_boundary: EVIDENCE_BOUNDARY,
     dag: EXPERT_JUDGMENT_DAG,
+    rule_version: EXPERT_JUDGMENT_RULE_VERSION,
+    decision_paths: [...normalized.decision_paths],
+    not_assessed_paths: notAssessedPaths,
+    priority_checks: priorityChecks,
     observations: normalized.observations.map((observation) => ({
       id: observation.id,
       kind: observation.kind,
@@ -417,11 +482,12 @@ export function validateExpertJudgmentInput(input) {
     schema_version: EXPERT_JUDGMENT_SCHEMA_VERSION,
     case_id: input.case_id,
     observations,
+    decision_paths: validateDecisionPaths(input.decision_paths),
     byKind: new Map(observations.map((observation) => [observation.kind, observation]))
   };
 }
 
-function buildNode(catalog, normalized, evaluated) {
+function buildNode(catalog, normalized, evaluated, detailPathsByNode) {
   const states = Object.fromEntries(catalog.observation_kinds.map((kind) => [kind, observationState(normalized.byKind.get(kind))]));
   let decision;
   if (catalog.id === 'outcome-scope') {
@@ -442,6 +508,40 @@ function buildNode(catalog, normalized, evaluated) {
     decision = decideEvidenceDecisionValue(states);
   }
 
+  const detailPaths = orderDetailPaths(detailPathsByNode.get(catalog.id) ?? []);
+  const detailUnknowns = detailPaths.flatMap((path) => path.unknowns);
+  const detailRequirements = detailPaths.flatMap((path) => path.context_requirements);
+  const detailUnresolved = detailPaths.some((path) => (
+    path.unknowns.length > 0 || path.context_requirements.length > 0
+  ));
+  const baseAssessment = decision;
+  if (detailPaths.length > 0) {
+    // Detailed prerequisites govern the actionable conclusion. Keep the broad
+    // assessment separately so a consumer cannot mistake it for clearance.
+    const detailedOptions = detailPaths.map((path) => option(
+      `detail:${path.path_id}`,
+      path.recommendation
+    ));
+    decision = {
+      ...decision,
+      status: detailUnknowns.length > 0 ? 'insufficient'
+        : decision.status === 'not_applicable' ? 'proposed' : decision.status,
+      finding: detailUnresolved
+        ? `詳細判断に未確認または未成立の前提があります。${detailPaths.map((path) => `${path.name}: ${path.recommendation}`).join(' ')}`
+        : `${detailPaths.map((path) => `${path.name}: ${path.recommendation}`).join(' ')} 基本観測: ${decision.finding}`,
+      options: detailUnresolved
+        ? [...detailedOptions, ...decision.options.filter((candidate) => (
+          ['preserve-required-protection', 'containment-first'].includes(candidate.id)
+        ))]
+        : [...detailedOptions, ...decision.options]
+    };
+  }
+  decision = {
+    ...decision,
+    unknowns: unique([...decision.unknowns, ...detailUnknowns]),
+    context_requirements: unique([...decision.context_requirements, ...detailRequirements])
+  };
+
   const ancestors = ancestorIds(catalog.id)
     .map((nodeId) => evaluated.get(nodeId))
     .filter(Boolean);
@@ -449,6 +549,9 @@ function buildNode(catalog, normalized, evaluated) {
     node.status === 'insufficient'
     || node.context_requirements.length > 0
     || (node.status === 'proposed' && node.unknowns.length > 0)
+    || (node.detail_paths ?? []).some((path) => (
+      path.unknowns.length > 0 || path.context_requirements.length > 0
+    ))
   ));
   const upstreamUnknowns = pendingAncestors.map((node) => ({
     node_id: node.node_id,
@@ -462,8 +565,25 @@ function buildNode(catalog, normalized, evaluated) {
     decision = guardEvidenceCompletion(decision, upstreamUnknowns);
   }
 
-  const evidenceRefs = unique(catalog.observation_kinds.flatMap((kind) => states[kind].source_refs));
-  const adoptionStatus = decision.status === 'not_applicable' && contextStatus === 'available'
+  const detailEvidenceRefs = detailPaths.flatMap((path) => path.steps.flatMap((step) => step.evidence_refs));
+  const evidenceRefs = unique([
+    ...catalog.observation_kinds.flatMap((kind) => states[kind].source_refs),
+    ...detailEvidenceRefs
+  ]);
+  const detailChecks = detailPaths.flatMap((path) => path.next_checks);
+  const priorityChecks = detailPaths
+    .filter((path) => path.next_checks.length > 0)
+    .map((path) => ({
+      ...path.next_checks[0],
+      node_id: catalog.id,
+      path_status: path.status
+    }));
+  const genericChecks = normalizeNextChecks(catalog, decision);
+  const notAssessedPaths = DETAIL_PATH_PRIORITY.filter((pathId) => (
+    catalog.detail_paths.some((path) => path.id === pathId)
+      && !normalized.decision_paths.includes(pathId)
+  ));
+  const adoptionStatus = decision.status === 'not_applicable' && contextStatus === 'available' && !detailUnresolved
     ? 'not_applicable'
     : decision.status === 'proposed'
       && contextStatus === 'available'
@@ -492,10 +612,14 @@ function buildNode(catalog, normalized, evaluated) {
     hypotheses: catalog.hypotheses.map((hypothesis) => ({ ...hypothesis })),
     counterexamples: [...catalog.counterexamples],
     options: decision.options,
-    next_checks: normalizeNextChecks(catalog, decision),
+    ...(detailPaths.length > 0 ? { base_assessment: baseAssessment } : {}),
+    detail_paths: detailPaths,
+    not_assessed_paths: notAssessedPaths,
+    priority_checks: priorityChecks,
+    next_checks: [...detailChecks, ...genericChecks],
     evidence_refs: evidenceRefs,
-    unknowns: decision.unknowns,
-    context_requirements: decision.context_requirements,
+    unknowns: [...decision.unknowns],
+    context_requirements: [...decision.context_requirements],
     evidence_boundary: EVIDENCE_BOUNDARY,
     advisory: true,
     blocking: false
@@ -1002,10 +1126,24 @@ export function renderExpertJudgmentSummary(result) {
     `助言のみ: ${result.advisory}`,
     `ブロック: ${result.blocking}`
   ];
+  if (result.priority_checks?.length > 0) {
+    lines.push('優先確認:');
+    for (const check of result.priority_checks) {
+      lines.push(`  ${check.path_id}/${check.step_id}: ${check.question}`);
+      lines.push(`    if_true: ${check.if_true}`);
+      lines.push(`    if_false: ${check.if_false}`);
+    }
+  }
+  if (result.not_assessed_paths?.length > 0) {
+    lines.push(`未評価の詳細経路: ${result.not_assessed_paths.join(', ')}`);
+  }
   for (const node of result.nodes) {
     lines.push(`- ${node.node_id}: ${node.status} / ${node.adoption_status} — ${node.finding}`);
+    for (const detailPath of node.detail_paths ?? []) {
+      lines.push(`  詳細経路 ${detailPath.path_id}: ${detailPath.status} — ${detailPath.recommendation}`);
+    }
     for (const option of node.options) lines.push(`  選択肢 ${option.id}: ${option.summary}`);
-    for (const check of node.next_checks) {
+    for (const check of node.next_checks.filter((candidate) => !candidate.path_id)) {
       lines.push(`  次の確認: ${check.question}`);
       if (check.prediction) lines.push(`    予測: ${check.prediction}`);
       if (check.counterexample) lines.push(`    反証条件: ${check.counterexample}`);

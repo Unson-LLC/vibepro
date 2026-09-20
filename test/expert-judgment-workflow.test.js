@@ -243,7 +243,11 @@ async function makeActionable(root, artifact) {
 test('CLI preserves external observations through adoption and recomputes a tampered expert cache', async () => {
   const root = await setupRepo('snapshot');
   await recordApplicability(root);
-  const external = await writeExpertInput(root, 'snapshot');
+  const external = await writeExpertInput(root, 'snapshot', (input) => {
+    input.decision_paths = ['recurrence-prevention'];
+    input.observations.push({ id: 'restored', kind: 'current_state_restored', value: true,
+      source_refs: ['readback:current-state'] });
+  });
 
   const prepared = await prepare(root, 'expert-snapshot-run', external.path);
   assert.equal(prepared.exitCode, 0);
@@ -270,6 +274,9 @@ test('CLI preserves external observations through adoption and recomputes a tamp
   const adoptedInput = await readArtifact(root, adopted.result.adoption.adopted_input);
   assert.deepEqual(adoptedInput.input.expert_input.observations, external.input.observations);
   assert.notEqual(judgment.nodes[0].finding, 'tampered cache must not be trusted');
+  assert.deepEqual(adoptedInput.input.expert_input.decision_paths, ['recurrence-prevention']);
+  assert.equal(judgment.priority_checks[0].step_id, 'state-origin');
+  assert.equal(expertNode(evaluated.result, 'runtime-reachability').detail_paths[0].steps[2].status, 'deferred');
   assert.ok(allNextActions(evaluated.result).some((action) => (
     action && typeof action === 'object' && action.type === 'review_expert_judgment'
   )));
@@ -459,7 +466,11 @@ test('legacy judgment keeps its five-node DAG and mode/recommendation when no ex
 test('operational plan acceptance carries expert node, adoption status, and next checks', async () => {
   const root = await setupRepo('plan-acceptance');
   await recordApplicability(root);
-  const external = await writeExpertInput(root, 'plan-acceptance');
+  const external = await writeExpertInput(root, 'plan-acceptance', (input) => {
+    input.decision_paths = ['recurrence-prevention'];
+    input.observations.push({ id: 'restored', kind: 'current_state_restored', value: true,
+      source_refs: ['readback:current-state'] });
+  });
   const prepared = await prepare(root, 'expert-plan-acceptance-run', external.path);
   assert.equal(prepared.exitCode, 0);
   await makeActionable(root, prepared.result.artifact);
@@ -476,4 +487,6 @@ test('operational plan acceptance carries expert node, adoption status, and next
   assert.match(acceptance, /expert:outcome-scope|outcome-scope/);
   assert.match(acceptance, /adoption_status|採択|採用/);
   assert.match(acceptance, /next_checks|次の確認/);
+  assert.match(acceptance, /意図しない状態を作った/);
+  assert.match(acceptance, /原因を決めつけず/);
 });

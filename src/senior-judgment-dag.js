@@ -927,7 +927,12 @@ function buildNextActions({ frameStatus, outcomes, viableOptions, recommendation
 
 function buildExpertReviewActions(expertJudgment) {
   return expertJudgment.nodes
-    .filter((node) => ['proposed', 'insufficient'].includes(node.status))
+    .filter((node) => ['proposed', 'insufficient'].includes(node.status)
+      || (node.detail_paths ?? []).some((path) => (
+        path.next_checks.length > 0
+        || path.unknowns.length > 0
+        || path.context_requirements.length > 0
+      )))
     .map((node) => ({
       type: 'review_expert_judgment',
       node_id: node.node_id,
@@ -935,6 +940,10 @@ function buildExpertReviewActions(expertJudgment) {
       adoption_status: node.adoption_status,
       options: node.options,
       next_checks: node.next_checks,
+      detail_paths: node.detail_paths,
+      not_assessed_paths: node.not_assessed_paths,
+      priority_checks: (expertJudgment.priority_checks ?? [])
+        .filter((check) => check.node_id === node.node_id),
       unknowns: node.unknowns,
       upstream_unknowns: node.upstream_unknowns,
       context_requirements: node.context_requirements

@@ -474,7 +474,12 @@ export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
     recommendation: projection?.recommendation ?? null,
     actionable: Boolean(projection?.actionable),
     unknown_count: projection?.unknown_count ?? 0,
-    ...(projection?.expert_judgment ? { expert_unresolved_node_count: projection.expert_unresolved_node_count } : {}),
+    ...(projection?.expert_judgment ? {
+      expert_unresolved_node_count: projection.expert_unresolved_node_count,
+      expert_decision_paths: [...(projection.expert_judgment.decision_paths ?? [])],
+      expert_priority_checks: structuredClone(projection.expert_judgment.priority_checks ?? []),
+      expert_not_assessed_paths: [...(projection.expert_judgment.not_assessed_paths ?? [])]
+    } : {}),
     judgment_artifact: projection?.artifact ?? null,
     evaluation_artifact: projection?.operational_status?.evaluation?.artifact ?? null,
     input_sha256: projection?.operational_status?.evaluation?.input_sha256 ?? null,
@@ -692,6 +697,8 @@ function buildJudgmentGuidanceTask(storyId, projection) {
     VALIDATE: '本実装より先に識別的な証拠を得る検証を実行する'
   }[mode] ?? '判断で示された次アクションを明示的に計画へ反映する';
   const nextActions = projection.operational_status?.evaluation?.next_actions ?? [];
+  const priorityChecks = projection.expert_judgment?.priority_checks ?? [];
+  const notAssessedPaths = projection.expert_judgment?.not_assessed_paths ?? [];
   return {
     id: `${storyId}-development-judgment-${mode.toLowerCase()}`,
     story_id: storyId,
@@ -700,6 +707,12 @@ function buildJudgmentGuidanceTask(storyId, projection) {
     acceptance: [
       `Judgment run ${projection.run_id}を計画根拠として保持する`,
       modeText,
+      ...(priorityChecks.length
+        ? priorityChecks.map((check) => `専門判断の優先確認: ${formatExpertPriorityCheck(check)}`)
+        : []),
+      ...(notAssessedPaths.length
+        ? [`未評価の詳細経路を不適用と断定せず記録する: ${notAssessedPaths.join(', ')}`]
+        : []),
       ...(nextActions.length ? nextActions.map((action) => `次アクション: ${formatNextAction(action)}`) : ['未解決事項を明示的に閉じるかdeferする'])
     ],
     priority: 'high',
@@ -724,6 +737,9 @@ function buildJudgmentGuidanceTask(storyId, projection) {
       run_id: projection.run_id,
       development_mode: mode,
       recommendation: projection.recommendation,
+      decision_paths: [...(projection.expert_judgment?.decision_paths ?? [])],
+      priority_checks: structuredClone(priorityChecks),
+      not_assessed_paths: [...notAssessedPaths],
       advisory: true,
       blocking: false
     }
@@ -901,11 +917,27 @@ function normalizeObservedOutcomes(values) {
   });
 }
 
+function formatExpertPriorityCheck(check) {
+  if (!check || typeof check !== 'object') return String(check);
+  return [
+    `${check.path_id ?? 'detail'}/${check.step_id ?? 'check'}`,
+    check.question,
+    `if_true=${check.if_true}`,
+    `if_false=${check.if_false}`
+  ].filter(Boolean).join(' — ');
+}
+
 function formatNextAction(action) {
   if (typeof action === 'string') return action;
   if (!action || typeof action !== 'object') return String(action);
   if (action.type === 'review_expert_judgment') {
-    const checks = (action.next_checks ?? []).map((check) => check.question).filter(Boolean);
+    const detailPaths = (action.detail_paths ?? []).map((path) => (
+      `詳細経路 ${path.path_id}: ${path.status}${path.recommendation ? ` — ${path.recommendation}` : ''}`
+    ));
+    const checks = (action.next_checks ?? [])
+      .filter((check) => !check.path_id)
+      .map((check) => check.question)
+      .filter(Boolean);
     const options = (action.options ?? []).map((option) => option.summary).filter(Boolean);
     const pending = [
       ...(action.unknowns ?? []),
@@ -914,6 +946,7 @@ function formatNextAction(action) {
     ];
     return [
       `専門判断 ${action.node_id} (採用状態: ${action.adoption_status})`, action.summary,
+      ...(detailPaths.length ? detailPaths : []),
       ...(options.length ? [`選択肢: ${options.join(' / ')}`] : []),
       ...(checks.length ? [`次の確認: ${checks.join(' / ')}`] : []),
       ...(pending.length ? [`未解決: ${pending.join(', ')}`] : []),
