@@ -938,11 +938,12 @@ test('skills commands list install and verify bundled VibePro skills', async () 
 
   const listResult = await runCli(['skills', 'list']);
   assert.equal(listResult.exitCode, 0);
-  assert.equal(listResult.result.skills.length, 9);
+  assert.equal(listResult.result.skills.length, 10);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-gate-evidence'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-codebase-memory'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-judgment-investigation'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-meeting-minutes-editor'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-npm-publish'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-worktree-lifecycle'), true);
@@ -960,6 +961,7 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.equal(dryRun.result.dry_run, true);
   assert.equal(dryRun.result.skills.every((skill) => skill.status === 'would_install'), true);
   assert.equal(await pathExists(path.join(repo, '.claude', 'skills', 'vibepro-workflow', 'SKILL.md')), false);
+  assert.equal(await pathExists(path.join(repo, '.claude', 'skills', 'vibepro-judgment-investigation', 'SKILL.md')), false);
 
   const install = await runCli(['skills', 'install', repo]);
   assert.equal(install.exitCode, 0);
@@ -971,6 +973,7 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   const meetingMinutesSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-meeting-minutes-editor', 'SKILL.md');
   const npmPublishSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-npm-publish', 'SKILL.md');
   const worktreeLifecycleSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-worktree-lifecycle', 'SKILL.md');
+  const judgmentInvestigationSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-judgment-investigation', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
   assert.match(await readFile(workflowSkillPath, 'utf8'), /Story、最小のSpec、実装、影響範囲のテスト、通常のGitHub PR/);
   assert.doesNotMatch(await readFile(workflowSkillPath, 'utf8'), /vibepro execute start/);
@@ -991,6 +994,9 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /vibepro worktree inspect/);
   assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /vibepro worktree close/);
   assert.match(await readFile(worktreeLifecycleSkillPath, 'utf8'), /判断DAGから独立/);
+  assert.match(await readFile(judgmentInvestigationSkillPath, 'utf8'), /name: vibepro-judgment-investigation/);
+  assert.match(await readFile(judgmentInvestigationSkillPath, 'utf8'), /vibepro judgment investigate/);
+  assert.match(await readFile(judgmentInvestigationSkillPath, 'utf8'), /Graphify/);
   assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro-worktree-lifecycle/);
 
   const verify = await runCli(['skills', 'verify', repo]);
@@ -6183,8 +6189,8 @@ test('--version prints the package version', async () => {
   assert.equal(new Set(versions).size, 1);
 });
 
-test('beta.27 release metadata and CLI report the exact candidate version', async () => {
-  const expectedVersion = '0.2.0-beta.27';
+test('beta.28 release metadata and CLI report the exact candidate version', async () => {
+  const expectedVersion = '0.2.0-beta.28';
   const packageJson = await readJson(path.resolve('package.json'));
   const packageLock = await readJson(path.resolve('package-lock.json'));
   let out = '';

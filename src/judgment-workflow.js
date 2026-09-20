@@ -12,12 +12,17 @@ import {
   createJudgmentDag,
   summarizeJudgmentDag
 } from './judgment-dag.js';
+import { countExpertUnresolvedNodes, suggestExpertJudgments, renderExpertJudgmentSummary } from './expert-judgment.js';
 import { extractMarkdownAcceptanceCriteria } from './markdown-acceptance-criteria.js';
 import {
   STANDARD_JUDGMENT_AXES,
   evaluateSeniorJudgmentRun,
   renderSeniorJudgmentSummary
 } from './senior-judgment-dag.js';
+import {
+  buildJudgmentInvestigationContext,
+  validateJudgmentInvestigationResult
+} from './judgment-investigation.js';
 import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -115,6 +120,48 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     options: []
   };
 
+  if (options.expertInputPath !== undefined && options.investigationInputPath !== undefined) {
+    throw new Error('--expert-input and --investigation are mutually exclusive');
+  }
+
+  let expertJudgment;
+  let investigationContext;
+  if (options.expertInputPath !== undefined) {
+    const expertPath = path.resolve(root, requireText(options.expertInputPath, '--expert-input requires a path'));
+    const expertInput = JSON.parse(await readFile(expertPath, 'utf8'));
+    expertJudgment = suggestExpertJudgments(expertInput);
+    if (expertInput.case_id !== storyId) {
+      throw new Error(`expert_input.case_id ${String(expertInput.case_id)} must match story_id ${storyId}`);
+    }
+    // Embed the observations so adoption binds their bytes, not a mutable external file.
+    input.expert_input = expertInput;
+  }
+  if (options.investigationInputPath !== undefined) {
+    const investigationPath = path.resolve(root, requireText(options.investigationInputPath, '--investigation requires a path'));
+    const rawInvestigation = JSON.parse(await readFile(investigationPath, 'utf8'));
+    const validatedInvestigation = validateJudgmentInvestigationResult(rawInvestigation);
+    if (validatedInvestigation.case_id !== undefined && validatedInvestigation.case_id !== storyId) {
+      throw new Error(`investigation.case_id ${String(validatedInvestigation.case_id)} must match story_id ${storyId}`);
+    }
+    investigationContext = buildJudgmentInvestigationContext(validatedInvestigation);
+    // Keep the complete validated result immutable inside the draft. Derived fields
+    // in the result are recomputed by the core validator before this snapshot is used.
+    input.investigation_input = structuredClone(validatedInvestigation);
+    input.investigation_context = structuredClone(investigationContext);
+    // The validated investigation result is the sole source of compact expert
+    // input.  An explicit null means interpretation is still pending.
+    const expertInput = isPlainObject(validatedInvestigation?.expert_input)
+      ? validatedInvestigation.expert_input
+      : null;
+    if (expertInput) {
+      if (expertInput.case_id !== undefined && expertInput.case_id !== storyId) {
+        throw new Error(`investigation expert_input.case_id ${String(expertInput.case_id)} must match story_id ${storyId}`);
+      }
+      expertJudgment = suggestExpertJudgments(expertInput);
+      input.expert_input = structuredClone(expertInput);
+    }
+  }
+
   const defaultPath = path.join(reviewRoot, 'senior-judgment', 'input-draft.json');
   const outputPath = await resolveOutputPath(root, options.outputPath ?? defaultPath);
   await mkdir(path.dirname(outputPath), { recursive: true });
@@ -125,6 +172,8 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     story_id: storyId,
     run_id: runId,
     input,
+    ...(expertJudgment ? { expert_judgment: expertJudgment } : {}),
+    ...(investigationContext ? { investigation_context: investigationContext } : {}),
     source_head_sha: git.head_sha,
     changed_files: git.changed_files,
     artifact: toWorkspaceRelative(root, outputPath),
@@ -161,6 +210,11 @@ export function compileSeniorJudgmentToDevelopmentDag(senior) {
   const storyId = requireText(senior?.story_id, 'senior judgment requires story_id');
   const runId = requireText(senior?.run_id, 'senior judgment requires run_id');
   const context = senior.decision_context ?? {};
+  const investigationInput = senior.investigation_input ?? context.investigation_input ?? null;
+  const investigationContext = senior.investigation_context ?? context.investigation_context ?? null;
+  const investigationQuestions = senior.investigation_unresolved_questions
+    ?? context.investigation_unresolved_questions
+    ?? [];
   let dag = createJudgmentDag({
     scope: `vibepro:${storyId}`,
     storyId,
@@ -175,6 +229,13 @@ export function compileSeniorJudgmentToDevelopmentDag(senior) {
     development_mode: senior.development_mode ?? null,
     recommendation: senior.recommendation ?? null,
     unknown_count: senior.unknowns?.length ?? 0,
+    ...(investigationInput ? {
+      investigation_input: structuredClone(investigationInput),
+      investigation_context: structuredClone(investigationContext),
+      investigation_unresolved_questions: structuredClone(investigationQuestions),
+      investigation_unresolved_count: investigationQuestions.length
+    } : {}),
+    ...(senior.expert_judgment ? { expert_unresolved_node_count: countExpertUnresolvedNodes(senior.expert_judgment) } : {}),
     advisory: true,
     blocking: false,
     source_artifacts: senior.artifacts ?? null
@@ -208,6 +269,30 @@ export function compileSeniorJudgmentToDevelopmentDag(senior) {
     runner_type: 'deterministic_rule',
     status: 'accepted'
   });
+  if (investigationInput) {
+    dag = addJudgmentNode(dag, {
+      id: 'investigation_context',
+      question: 'What evidence and questions must be resolved before adopting a frame or option?',
+      context_snapshot: {
+        investigation_input: structuredClone(investigationInput),
+        investigation_context: structuredClone(investigationContext),
+        unresolved_questions: structuredClone(investigationQuestions)
+      },
+      evidence_refs: collectInvestigationRefs(investigationContext, investigationInput),
+      judgment: investigationQuestions.length > 0
+        ? `${investigationQuestions.length} investigation question(s) remain unresolved.`
+        : 'The investigation context has no recorded unresolved question.',
+      decision: null,
+      authority: { kind: 'advisory', ref: 'vibepro-judgment-investigation' },
+      runner_type: 'deterministic_rule',
+      status: investigationQuestions.length > 0 ? 'proposed' : 'accepted',
+      expected_outcomes: investigationQuestions.map((item, index) => ({
+        id: item.id ?? `investigation-question-${index + 1}`,
+        statement: item.text ?? item.question ?? String(item),
+        metric: null
+      }))
+    });
+  }
   dag = addJudgmentNode(dag, {
     id: 'development_mode',
     question: 'Should the next development batch create value, simplify structure, or validate uncertainty?',
@@ -271,6 +356,53 @@ export function compileSeniorJudgmentToDevelopmentDag(senior) {
       relation: 'depends_on',
       reason: `${to} is evaluated after ${from}`
     });
+  }
+  if (investigationInput) {
+    dag = addJudgmentEdge(dag, {
+      from: 'goal_contract',
+      to: 'investigation_context',
+      relation: 'depends_on',
+      reason: '調査の候補と未解決の問いを今回の成果へ結び付ける'
+    });
+    dag = addJudgmentEdge(dag, {
+      from: 'investigation_context',
+      to: 'recommendation',
+      relation: 'supports',
+      reason: '調査結果と未解決事項を次の判断へ渡す。問題設定や選択肢を自動採用しない'
+    });
+  }
+  if (senior.expert_judgment) {
+    const expert = senior.expert_judgment;
+    dag.expert_judgment = expert;
+    for (const node of expert.nodes) {
+      dag = addJudgmentNode(dag, {
+        id: `expert:${node.node_id}`,
+        question: node.question,
+        context_snapshot: node,
+        evidence_refs: node.evidence_refs,
+        judgment: node.finding,
+        options: node.options,
+        authority: { kind: 'advisory', ref: node.provenance_ref },
+        runner_type: 'deterministic_rule',
+        status: 'proposed'
+      });
+    }
+    for (const edge of expert.dag.edges) {
+      dag = addJudgmentEdge(dag, {
+        from: `expert:${edge.from}`, to: `expert:${edge.to}`,
+        relation: 'depends_on', reason: edge.reason
+      });
+    }
+    dag = addJudgmentEdge(dag, {
+      from: 'goal_contract', to: 'expert:outcome-scope', relation: 'supports',
+      reason: 'Storyの成果を専門判断の対象として照合する'
+    });
+    for (const node of expert.nodes) {
+      dag = addJudgmentEdge(dag, {
+        from: `expert:${node.node_id}`, to: 'recommendation', relation: 'supports',
+        reason: '専門判断の候補と未確認事項を次の作業の検討へ渡す。自動採用しない'
+      });
+    }
   }
   return dag;
 }
@@ -352,15 +484,28 @@ export async function readDevelopmentJudgmentProjection(repoRoot, storyId) {
 }
 
 export function renderJudgmentPrepareSummary(result) {
+  const investigationQuestions = unresolvedInvestigationQuestions(result.investigation_context);
   return [
     `Judgment input draft: ${result.artifact}`,
     `Story: ${result.story_id}`,
     `Run: ${result.run_id}`,
     `Changed files observed: ${result.changed_files.length}`,
+    ...(result.expert_judgment ? [renderExpertJudgmentSummary(result.expert_judgment).trimEnd()] : []),
+    ...(result.investigation_context ? [
+      `Investigation unresolved questions: ${Array.isArray(investigationQuestions) ? investigationQuestions.length : 0}`
+    ] : []),
     'Problem framing remains uncertain until explicitly adopted.',
     'Judgment remains advisory and non-blocking.',
     ''
   ].join('\n');
+}
+
+function unresolvedInvestigationQuestions(context) {
+  if (!isPlainObject(context)) return [];
+  const questions = Array.isArray(context.questions)
+    ? context.questions
+    : (Array.isArray(context.pending_questions) ? context.pending_questions : []);
+  return questions.filter((question) => question?.status === 'open');
 }
 
 export function renderJudgmentEvaluationSummary(result) {
@@ -420,6 +565,7 @@ function renderDevelopmentJudgmentMarkdown(dag) {
     `- Development mode: **${dag.development_mode ?? 'not_selected'}**`,
     `- Advisory recommendation: **${dag.recommendation ?? 'none'}**`,
     `- Unknowns: ${dag.unknown_count ?? 0}`,
+    ...(dag.investigation_input ? [`- Investigation unresolved questions: ${dag.investigation_unresolved_count ?? 0}`] : []),
     `- Outcome evaluations: ${evaluations.length}`,
     '- Blocking authority: **none**',
     '',
@@ -429,6 +575,17 @@ function renderDevelopmentJudgmentMarkdown(dag) {
     '',
     ...dag.nodes.map((node) => `- \`${node.id}\`: ${node.decision ?? node.judgment ?? 'no decision'}`),
     '',
+    ...(dag.expert_judgment ? ['## 専門判断', '', renderExpertJudgmentSummary(dag.expert_judgment).trimEnd(), ''] : []),
+    ...(dag.investigation_input ? [
+      '## Investigation context',
+      '',
+      ...(dag.investigation_unresolved_questions?.length
+        ? dag.investigation_unresolved_questions.map((item) => (
+          `- \`${item.kind ?? 'question'}/${item.id ?? 'unknown'}\`: ${item.text ?? item.question ?? String(item)}`
+        ))
+        : ['- No unresolved investigation question.']),
+      ''
+    ] : []),
     '## Outcome evaluations',
     '',
     ...(evaluations.length > 0
@@ -449,6 +606,13 @@ function buildProjection(dag, artifact) {
     development_mode: dag.development_mode ?? null,
     recommendation: dag.recommendation ?? recommendation?.decision ?? null,
     unknown_count: dag.unknown_count ?? 0,
+    ...(dag.investigation_input ? {
+      investigation_input: structuredClone(dag.investigation_input),
+      investigation_context: structuredClone(dag.investigation_context),
+      investigation_unresolved_questions: structuredClone(dag.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: dag.investigation_unresolved_count ?? 0
+    } : {}),
+    ...(dag.expert_judgment ? { expert_judgment: dag.expert_judgment, expert_unresolved_node_count: dag.expert_unresolved_node_count } : {}),
     outcome_count: evaluations.length,
     latest_outcome_status: evaluations.at(-1)?.status ?? null,
     artifact,
@@ -466,6 +630,9 @@ function emptyProjection() {
     development_mode: null,
     recommendation: null,
     unknown_count: 0,
+    investigation_context: null,
+    investigation_unresolved_questions: [],
+    investigation_unresolved_count: 0,
     outcome_count: 0,
     latest_outcome_status: null,
     artifact: null,
@@ -545,6 +712,17 @@ function collectDevelopmentCycleRefs(cycle = {}) {
   ]);
 }
 
+function collectInvestigationRefs(context = {}, input = {}) {
+  const contextEvidence = Array.isArray(context.evidence) ? context.evidence : [];
+  const inputEvidence = Array.isArray(input.evidence) ? input.evidence : [];
+  return uniqueStrings([
+    ...contextEvidence.flatMap((item) => item?.source_refs ?? []),
+    ...contextEvidence.map((item) => item?.source_ref),
+    ...inputEvidence.flatMap((item) => item?.source_refs ?? []),
+    ...inputEvidence.map((item) => item?.source_ref)
+  ]);
+}
+
 function normalizeObservedOutcomes(value) {
   if (!value) return [];
   if (!Array.isArray(value)) throw new Error('--observed-outcome must be repeatable');
@@ -617,4 +795,8 @@ function requireText(value, message) {
 
 function sanitizeError(error) {
   return String(error?.message ?? error).replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }

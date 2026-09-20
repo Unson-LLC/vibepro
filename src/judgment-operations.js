@@ -1,3 +1,4 @@
+import { countExpertUnresolvedNodes, renderExpertJudgmentSummary } from './expert-judgment.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -203,10 +204,16 @@ export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}
     reason_codes: evaluationReasonCodes(result.senior),
     development_mode: result.senior.development_mode ?? null,
     recommendation: result.senior.recommendation ?? null,
-    unknown_count: result.senior.unknowns?.length ?? 0,
+    unknown_count: result.senior.unknown_count ?? result.senior.unknowns?.length ?? 0,
+    ...(result.senior.investigation_input ? {
+      investigation_context: structuredClone(result.senior.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(result.senior.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: result.senior.investigation_unresolved_questions?.length ?? 0
+    } : {}),
     viable_options: result.senior.viable_options ?? [],
     pruned_options: result.senior.pruned_options ?? [],
     next_actions: result.senior.next_actions ?? [],
+    ...(result.senior.expert_judgment ? { expert_judgment: result.senior.expert_judgment, expert_unresolved_node_count: countExpertUnresolvedNodes(result.senior.expert_judgment) } : {}),
     evaluated_at: evaluatedAt,
     artifact: toWorkspaceRelative(root, evaluationPath),
     advisory: true,
@@ -472,6 +479,20 @@ export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
     recommendation: projection?.recommendation ?? null,
     actionable: Boolean(projection?.actionable),
     unknown_count: projection?.unknown_count ?? 0,
+    ...(projection?.investigation_input ? {
+      investigation_input: structuredClone(projection.investigation_input),
+      investigation_context: structuredClone(projection.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(projection.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: projection.investigation_unresolved_count
+        ?? projection.investigation_unresolved_questions?.length
+        ?? 0
+    } : {}),
+    ...(projection?.expert_judgment ? {
+      expert_unresolved_node_count: projection.expert_unresolved_node_count,
+      expert_decision_paths: [...(projection.expert_judgment.decision_paths ?? [])],
+      expert_priority_checks: structuredClone(projection.expert_judgment.priority_checks ?? []),
+      expert_not_assessed_paths: [...(projection.expert_judgment.not_assessed_paths ?? [])]
+    } : {}),
     judgment_artifact: projection?.artifact ?? null,
     evaluation_artifact: projection?.operational_status?.evaluation?.artifact ?? null,
     input_sha256: projection?.operational_status?.evaluation?.input_sha256 ?? null,
@@ -498,6 +519,17 @@ export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
         question: `Development Judgment ${projection.run_id} has ${projection.unknown_count} unresolved item(s); close or explicitly defer them before claiming the recommendation was followed.`,
         priority: 'high'
       }, ...(next.questions ?? [])].slice(0, 20);
+    }
+    const investigationQuestions = projection.investigation_unresolved_questions ?? [];
+    if (investigationQuestions.length > 0) {
+      const questions = investigationQuestions.map((item) => ({
+        story_id: storyId,
+        field: `judgment_investigation_${item.kind ?? 'question'}`,
+        question: item.text ?? item.question ?? String(item),
+        source: item.id ?? null,
+        priority: 'high'
+      }));
+      next.questions = [...questions, ...(next.questions ?? [])].slice(0, 20);
     }
     next.next_commands = uniqueStrings([
       `vibepro judgment status . --id ${storyId}`,
@@ -546,6 +578,7 @@ export function renderDevelopmentJudgmentPlanMarkdown(binding) {
     `- Run: ${binding.run_id ? `\`${binding.run_id}\`` : '-'}`,
     `- Development mode: ${binding.development_mode ?? 'not_selected'}`,
     `- Recommendation: ${binding.recommendation ?? 'none'}`,
+    `- Investigation unresolved questions: ${binding.investigation_unresolved_count ?? 0}`,
     `- Plan effect: ${binding.effect ?? 'no_effect'}`,
     `- Actionable: ${Boolean(binding.actionable)}`,
     `- Advisory: true`,
@@ -583,6 +616,7 @@ export function renderJudgmentOperationalEvaluationSummary(result) {
     `Development mode: ${result.operational.development_mode ?? 'not_selected'}`,
     `Recommendation: ${result.operational.recommendation ?? 'none'}`,
     `Lifecycle: ${result.operational_status.lifecycle}`,
+    ...(result.senior.expert_judgment ? [renderExpertJudgmentSummary(result.senior.expert_judgment).trimEnd()] : []),
     'The evaluation is advisory and cannot change PR readiness or merge authority.',
     ''
   ].join('\n');
@@ -688,6 +722,9 @@ function buildJudgmentGuidanceTask(storyId, projection) {
     VALIDATE: '本実装より先に識別的な証拠を得る検証を実行する'
   }[mode] ?? '判断で示された次アクションを明示的に計画へ反映する';
   const nextActions = projection.operational_status?.evaluation?.next_actions ?? [];
+  const priorityChecks = projection.expert_judgment?.priority_checks ?? [];
+  const notAssessedPaths = projection.expert_judgment?.not_assessed_paths ?? [];
+  const investigationQuestions = projection.investigation_unresolved_questions ?? [];
   return {
     id: `${storyId}-development-judgment-${mode.toLowerCase()}`,
     story_id: storyId,
@@ -696,6 +733,17 @@ function buildJudgmentGuidanceTask(storyId, projection) {
     acceptance: [
       `Judgment run ${projection.run_id}を計画根拠として保持する`,
       modeText,
+      ...(priorityChecks.length
+        ? priorityChecks.map((check) => `専門判断の優先確認: ${formatExpertPriorityCheck(check)}`)
+        : []),
+      ...(notAssessedPaths.length
+        ? [`未評価の詳細経路を不適用と断定せず記録する: ${notAssessedPaths.join(', ')}`]
+        : []),
+      ...(investigationQuestions.length
+        ? investigationQuestions.map((item) => (
+          `調査の未解決事項: ${item.text ?? item.question ?? String(item)}`
+        ))
+        : []),
       ...(nextActions.length ? nextActions.map((action) => `次アクション: ${formatNextAction(action)}`) : ['未解決事項を明示的に閉じるかdeferする'])
     ],
     priority: 'high',
@@ -720,6 +768,12 @@ function buildJudgmentGuidanceTask(storyId, projection) {
       run_id: projection.run_id,
       development_mode: mode,
       recommendation: projection.recommendation,
+      decision_paths: [...(projection.expert_judgment?.decision_paths ?? [])],
+      priority_checks: structuredClone(priorityChecks),
+      not_assessed_paths: [...notAssessedPaths],
+      investigation_context: structuredClone(projection.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(investigationQuestions),
+      investigation_unresolved_count: investigationQuestions.length,
       advisory: true,
       blocking: false
     }
@@ -827,7 +881,7 @@ function isActionableEvaluation(senior) {
   if (!frameValid || !senior?.development_mode) return false;
   if (senior.recommendation === 'revise_problem' || senior.recommendation === 'human_decision_required') return false;
   if (ACTIONABLE_RECOMMENDATIONS.has(senior.recommendation)) return true;
-  return Array.isArray(senior.next_actions) && senior.next_actions.length > 0;
+  return Array.isArray(senior.next_actions) && senior.next_actions.some((action) => action?.type !== 'review_expert_judgment');
 }
 
 function evaluationReasonCodes(senior) {
@@ -836,6 +890,7 @@ function evaluationReasonCodes(senior) {
   if (frame !== 'valid') reasons.push(`problem_frame_${frame ?? 'missing'}`);
   if (!senior?.development_mode) reasons.push('development_mode_not_selected');
   if (senior?.unknowns?.length) reasons.push('unknowns_present');
+  if (senior?.investigation_unresolved_questions?.length) reasons.push('investigation_unresolved');
   if (senior?.recommendation) reasons.push(`recommendation_${senior.recommendation}`);
   return reasons;
 }
@@ -897,9 +952,53 @@ function normalizeObservedOutcomes(values) {
   });
 }
 
+function formatExpertPriorityCheck(check) {
+  if (!check || typeof check !== 'object') return String(check);
+  return [
+    `${check.path_id ?? 'detail'}/${check.step_id ?? 'check'}`,
+    check.question,
+    `if_true=${check.if_true}`,
+    `if_false=${check.if_false}`
+  ].filter(Boolean).join(' — ');
+}
+
 function formatNextAction(action) {
   if (typeof action === 'string') return action;
   if (!action || typeof action !== 'object') return String(action);
+  if (action.type === 'review_expert_judgment') {
+    const detailPaths = (action.detail_paths ?? []).map((path) => (
+      `詳細経路 ${path.path_id}: ${path.status}${path.recommendation ? ` — ${path.recommendation}` : ''}`
+    ));
+    const checks = (action.next_checks ?? [])
+      .filter((check) => !check.path_id)
+      .map((check) => check.question)
+      .filter(Boolean);
+    const options = (action.options ?? []).map((option) => option.summary).filter(Boolean);
+    const pending = [
+      ...(action.unknowns ?? []),
+      ...(action.context_requirements ?? []),
+      ...(action.upstream_unknowns ?? []).map((upstream) => upstream.node_id)
+    ];
+    return [
+      `専門判断 ${action.node_id} (採用状態: ${action.adoption_status})`, action.summary,
+      ...(detailPaths.length ? detailPaths : []),
+      ...(options.length ? [`選択肢: ${options.join(' / ')}`] : []),
+      ...(checks.length ? [`次の確認: ${checks.join(' / ')}`] : []),
+      ...(pending.length ? [`未解決: ${pending.join(', ')}`] : []),
+      '候補を確認して作業を選ぶ。実行権限の付与ではない'
+    ].filter(Boolean).join(' — ');
+  }
+  if (action.investigation_kind || String(action.type ?? '').startsWith('resolve_investigation_')
+    || String(action.type ?? '').startsWith('retry_investigation_')
+    || String(action.type ?? '').startsWith('reinterpret_investigation_')
+    || String(action.type ?? '').startsWith('collect_investigation_')) {
+    return [
+      action.type,
+      action.investigation_kind,
+      action.question,
+      action.reason
+    ].filter(Boolean).join(' / ');
+  }
   return [action.type, action.hypothesis_id, action.detail, action.summary].filter(Boolean).join(' / ') || JSON.stringify(action);
 }
 
