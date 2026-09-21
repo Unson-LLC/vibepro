@@ -3496,3 +3496,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:548:end -->
+
+<!-- vibepro-release-pr:550:start -->
+## [#550](https://github.com/Unson-LLC/vibepro/pull/550) feat: UI変更の標準部品探索と視覚確認を促す
+
+- Author: @sintariran
+- Merged: 2026-09-21T23:54:06Z
+- Commit: `3539e0f691161d8a6343d14370bd858e6db9e695`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:550:end -->

@@ -676,3 +676,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:548:start -->
 - [PR #548](https://github.com/Unson-LLC/vibepro/pull/548) — [2026-09](/ja/releases/2026-09): fix: マニュアルの日本語切替404を解消
 <!-- vibepro-release-index-pr:548:end -->
+
+<!-- vibepro-release-index-pr:550:start -->
+- [PR #550](https://github.com/Unson-LLC/vibepro/pull/550) — [2026-09](/ja/releases/2026-09): feat: UI変更の標準部品探索と視覚確認を促す
+<!-- vibepro-release-index-pr:550:end -->
