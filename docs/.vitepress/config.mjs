@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
-const productDescription = 'Bring a change’s purpose, implementation references, and check results into PR review with VibePro.';
+const productDescription = 'Investigate what should change with your AI host, then connect the reasoning to implementation and PR review.';
 
 export default {
   title: 'VibePro',
@@ -103,7 +103,7 @@ export default {
       lang: 'ja-JP',
       link: '/ja/',
       title: 'VibePro',
-      description: '変更の目的、実装の参照先、確認結果をPRレビューへ届けるCLI。AI支援開発のためのVibePro。',
+      description: 'AIと何を変えるべきかを調べて判断し、その理由を実装・PRレビューまでつなぐCLI。',
       themeConfig: {
         siteTitle: 'VibeProマニュアル',
         nav: [

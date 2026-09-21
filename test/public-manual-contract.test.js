@@ -16,6 +16,11 @@ test('public manual states the current positioning and human authority boundary'
 
   assert.match(english, /Bring the reason for a change into its PR/);
   assert.match(japanese, /変更の目的を、PRレビューまで届ける/);
+  for (const page of [english, japanese, englishOverview, japaneseOverview]) {
+    assert.match(page, /judgment investigate/);
+    assert.match(page, /senior-engineering-judgment/);
+    assert.match(page, /host|ホスト/i);
+  }
   assert.match(englishOverview, /maintain|maintenance/i);
   assert.match(japaneseOverview, /更新|維持|保守/);
   for (const overview of [englishOverview, japaneseOverview]) {
@@ -71,6 +76,11 @@ test('public manual explains the advisory senior engineering judgment DAG in bot
     assert.match(guide, /human_ci_repository_rules/);
     assert.match(guide, /ready_for_pr_create/);
     assert.match(guide, /merge_allowed/);
+    assert.match(guide, /judgment investigate/);
+    assert.match(guide, /prepare[^\n]*--investigation/);
+    assert.match(guide, /model_request/);
+    assert.match(guide, /partial/);
+    assert.match(guide, /expert-judgment-nodes/);
   }
   assert.match(english, /advisory decision support/i);
   assert.match(japanese, /助言型の意思決定支援/);

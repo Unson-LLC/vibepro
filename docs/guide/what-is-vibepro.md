@@ -1,11 +1,13 @@
 # What VibePro Is
 
-VibePro brings the reason for a change into its pull request. It keeps the user need, agreed behavior, implementation references, checks, and review context close enough that a teammate can inspect the same story behind the diff.
+VibePro supports investigating what should change, then carrying that reasoning into implementation and PR review. It connects the user need, decision evidence, agreed behavior, implementation references, and check results.
 
 AI coding agents can produce technically valid code while solving the wrong problem. VibePro addresses that product-intent gap with a small set of repository-local records:
 
 ```text
-User need
+Request and expected outcome
+  -> When needed: frame questions <-> investigate <-> reconsider with evidence
+  -> Adopt a direction under human and repository authority
   -> Story (need and acceptance criteria)
     -> Spec (behavior, invariants, code/test references)
       -> Implementation
@@ -13,7 +15,11 @@ User need
           -> PR summary
 ```
 
+This is a conceptual connection, not a mandatory command order. Investigation can start from an existing Story, and its results do not automatically finalize a Story or Spec.
+
 ## What each record contributes
+
+- **Investigation and judgment** retain questions, evidence, options, and unresolved issues. The AI host and `judgment investigate` support investigation and reconsideration; `judgment prepare --investigation` carries candidates into an input draft, not automatic adoption. See [Senior Engineering Judgment](/guide/senior-engineering-judgment).
 
 - **Story** states the user need and the acceptance criteria that make the change worth doing.
 - **Spec** turns that need into concrete behavior and invariants, with `code_refs` and `test_refs` pointing toward implementation and verification.
@@ -29,6 +35,7 @@ The current beta can:
 
 - initialize a repository-local `.vibepro/` workspace and choose an output language;
 - add, select, and diagnose Stories;
+- prepare investigation requests for the AI host, read explicitly supplied existing Graphify artifacts and source, and revisit judgments with new evidence;
 - write draft or final Specs and check their structural references;
 - declare or inspect traces and explicit decisions when the change needs them;
 - run or record unit, integration, end-to-end, typecheck, or build verification;
@@ -43,7 +50,9 @@ Draft Specs can be used while shaping a change. A final Spec has stronger readin
 
 VibePro can check structural facts such as whether a declared file, symbol, or test reference exists, whether a reference has the expected anchor, and what a recorded verification command returned. Those checks make evidence easier to inspect.
 
-They do not establish semantic correctness. A code reference may point to the wrong behavior, and a passing test may cover the wrong scenario. VibePro does not autonomously decide whether the implementation satisfies the user's need; human product and engineering review remain necessary.
+The AI host also interprets evidence and generates questions and options. The CLI returns a `model_request` and validates responses, but does not autonomously call models, generate Graphify artifacts, or fetch through external connectors. New evidence requires reinterpretation rather than reuse of the old recommendation. Missing evidence remains `unknown`, `partial`, or `unavailable`.
+
+This does not establish semantic correctness. Graphify edges are structural candidates, not proof of contracts or runtime success. A code reference may point to the wrong behavior, and a passing test may cover the wrong scenario. Human product and engineering review and adoption responsibility remain necessary.
 
 Likewise, VibePro does not implement application code, certify safety, approve a pull request, or merge code. Repository policy, CI, and people retain those authorities.
 
@@ -51,7 +60,7 @@ Likewise, VibePro does not implement application code, certify safety, approve a
 
 Story and Spec records are an explicit maintenance cost. Keep them when the connection between a product need and a code change is valuable; update them when the intended behavior changes. They complement README files, issues, design documents, and normal code review—they are not a claim that those forms of context can be replaced by one generated artifact.
 
-The minimal core also does not include the former broad Gate DAG, managed execution controller, review-lifecycle accounting, delivery-efficiency budgets, or automatic audit bundles. Optional Development Judgment tooling can help compare approaches and record a disposition. It is advisory context, separate from the retired broad Gate machinery, and does not become automatic intent-drift detection or merge authority.
+The minimal core also does not include the former broad Gate DAG, managed execution controller, review-lifecycle accounting, delivery-efficiency budgets, or automatic audit bundles. The current judgment DAG provides optional investigation and reconsideration support. Unlike the retired gates, it does not automatically certify intent alignment or hold adoption, execution, or merge authority.
 
 ## Authority and history
 

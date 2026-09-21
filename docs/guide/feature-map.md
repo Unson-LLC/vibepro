@@ -9,6 +9,8 @@ For a first change, start with [Story, Spec, checks, review, and PR preparation]
 | Preserve product intent | `story`, `spec`, `trace` | Story, Spec, and trace records |
 | Preserve execution evidence | `verify` | Verification records tied to repository state |
 | Preserve human or agent judgment | `review`, `decision` | Review and decision records |
+| Frame questions and reconsider with evidence | `judgment investigate` | [AI-host requests, investigation evidence, candidates, and unresolved questions](/guide/senior-engineering-judgment) |
+| Carry investigation into judgment input | `judgment prepare --investigation` | An input draft awaiting explicit adoption |
 | Suggest expert judgment from observations | `judgment suggest` | [Hypotheses, options, and next checks](./expert-judgment-nodes.md) on standard output |
 | Evaluate senior engineering choices | `judgment evaluate` | Advisory decision DAG and immutable run history |
 | Add command guardrails | `guard` | Local guard configuration and reports |
@@ -27,7 +29,7 @@ Run `vibepro help --language en` for the exact commands in your installed versio
 VibePro can now operate Development Judgment as an explicit non-blocking loop rather than an optional report command:
 
 1. record applicability,
-2. prepare and explicitly adopt reviewed meaning,
+2. investigate and reconsider when needed, then review the input draft and explicitly adopt its meaning,
 3. evaluate the Development Judgment DAG,
 4. bind actionable guidance into Story planning,
 5. record disposition separately from later Outcome,

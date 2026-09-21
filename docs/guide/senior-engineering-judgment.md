@@ -4,7 +4,45 @@
 
 Use it when a change is material, hard to reverse, spans several components, or when the team needs to decide whether to add capability, simplify accumulated machinery, or validate an uncertain constraint first.
 
-観測から仮説や選択肢を作る初期段階には、[`専門判断ノード`](./expert-judgment-nodes.md)を任意の入力として `judgment prepare --expert-input` から取り込めます。`judgment suggest` による単独実行も残ります。Storyへ接続した専門判断は `prepare` のプレビューと `evaluate` の結果に現れますが、候補を自動採用しません。
+## Frame the questions and gather evidence first
+
+Before evaluation, the team may still need to discover what must be decided. `judgment investigate` prepares a `model_request` for the AI host from the request's goal, scope, and constraints, supporting questions, options, and recommendations that can be revised through investigation. Skip this optional investigation when observations are already sufficient.
+
+```text
+Request and expected outcome
+  -> AI host frames questions, hypotheses, and evidence needs
+  -> Inspect existing Graphify artifacts, source, and other evidence
+  -> Reinterpret questions, options, and recommendations with new evidence
+  -> Carry candidates into an input draft with prepare --investigation
+  -> Explicit adoption -> evaluate -> next checks and Story planning
+```
+
+This is not a fixed one-way sequence: inspecting structure first can change the questions. Newly acquired evidence invalidates earlier interpretations and recommendations and requires reinterpretation. Missing information is not treated as absence; it remains `unknown`, `partial`, or `unavailable`.
+
+Eight expert nodes cover outcome and scope, human/AI responsibility, change ownership, information sharing, execution and dependencies, structural simplification, runtime reachability, and the value of the next check. They contribute premises, candidates, and unresolved issues without replacing the existing development modes or adoption authority. See the [expert judgment DAG details (Japanese)](/guide/expert-judgment-nodes) for the nodes and a two-round example.
+
+### AI-host and CLI responsibilities
+
+- The AI host interprets evidence and creates questions, hypotheses, options, and recommendations, then supplies its response to the CLI.
+- The CLI reads explicitly supplied existing Graphify artifacts and bounded source excerpts, validates response schemas and reference consistency, and retains the state needed for reconsideration.
+- The CLI does not autonomously call models, generate Graphify artifacts, fetch evidence through external connectors, or execute commands. Graph edges are structural candidates, not proof of matching contracts, runtime success, or user value.
+- People, CI, and repository rules retain adoption and execution authority. Even `candidate_ready` remains `advisory: true` / `blocking: false`, not adopted or ready to execute.
+
+### Connect investigation to evaluation
+
+Provide `case_id`, `goal`, `scope.files`, and `constraints` in `raw-goal.json`. To connect a Story, make `case_id` match the Story ID. The detail page above provides the input format.
+
+```bash
+vibepro judgment investigate . --input raw-goal.json --json > round-1.json
+# The AI host reads model_request and its response schema, then responds using actual evidence.
+vibepro judgment investigate . --input round-1.json --response model-response.json --json > round-2.json
+# After any necessary investigation and reinterpretation, supply the latest result.
+vibepro judgment prepare . --id story-example --investigation round-2.json --json
+```
+
+`prepare` only attaches candidates and unresolved questions to an input draft. Read its `artifact`, inspect the problem frame, observations, and options, then explicitly adopt with `judgment input adopt`. Pass the returned `adoption.adopted_input` to `evaluate`. Attaching investigation results does not adopt, execute, or merge anything.
+
+For observations that are already organized, `judgment suggest` provides standalone advice and `judgment prepare --expert-input` provides optional integration. Expert nodes remain `proposed`; unresolved issues become next-check candidates such as `review_expert_judgment`.
 
 ## Decision order
 
@@ -49,7 +87,7 @@ vibepro judgment input adopt . \
   --input .vibepro/reviews/story-example/senior-judgment/input-draft.json \
   --reviewed-by <actor> \
   --authority <source> \
-  --summary "専門観測を確認した" \
+  --summary "Reviewed expert observations" \
   --json
 vibepro judgment evaluate . \
   --id story-example \
@@ -57,9 +95,9 @@ vibepro judgment evaluate . \
   --json
 ```
 
-上のパスは標準配置の例です。実際には `prepare` の `artifact` を使い、`evaluate` には `input adopt` が返す `adoption.adopted_input` を指定します。採択前に問題設定・選択肢と専門観測を確認してください。`prepare` だけでは問題設定は未確定のままで、専門観測を加えても自動で計画の実行可能状態にはなりません。
+The paths above illustrate the default layout. Use the actual `artifact` from `prepare` and pass `adoption.adopted_input` returned by `input adopt` to `evaluate`. Review the problem frame, options, and expert observations before adoption. Preparation alone leaves the problem frame unconfirmed; adding observations does not make the plan executable.
 
-`prepare` の結果には `expert_judgment` のプレビューが含まれ、入力ドラフトの `input.expert_input` に観測が埋め込まれます。`input adopt` はこの埋め込みを含む入力バイト列を既存手順で採択します。`evaluate` は採択済みの埋め込み観測から専門判断を再評価し、結果と development DAGへ反映します。
+`prepare` includes an `expert_judgment` preview and embeds observations in `input.expert_input`. Adoption includes those input bytes. Evaluation recomputes expert judgment from the adopted observations and includes it in the result and development DAG.
 
 The input records:
 
@@ -84,14 +122,14 @@ The command writes the current projection and immutable run history below:
 
 When new evidence changes the decision, use a new `run_id` and reference the previous run with `parent_run_id`. VibePro preserves the earlier run and reports the decision delta.
 
-専門判断を含む場合、`expert_judgment` はsenior judgmentの結果とprojectionに保持され、development DAGには `expert:<node-id>` の8ノードと依存関係が追加されます。専門ノードの状態はすべて `proposed` で、条件付きの分岐を採択済みとは扱いません。`next_actions` の `review_expert_judgment` は、人が次の作業で確認する候補です。運用上のStory planにも確認候補として渡りますが、実行許可や完了判定にはなりません。
+When expert judgment is present, the result retains `expert_judgment` and adds eight `expert:<node-id>` nodes and their dependencies to the development DAG. All remain `proposed`; conditional branches are not adopted decisions. `review_expert_judgment` next actions can enter Story planning as checks to consider, not execution permission or completion verdicts.
 
-`--expert-input` を付けない `prepare` と、`expert_input` を持たない従来の採択入力は従来互換です。専門判断の接続がない場合、既存のmode・推奨・権限の結果だけが生成されます。
+Preparation without `--expert-input` and older adopted inputs without `expert_input` remain compatible. Without this integration, the existing mode, recommendation, and authority results remain unchanged.
 
 ## Authority boundary
 
 Every result has `advisory: true` and `authority: human_ci_repository_rules`. The judgment DAG never emits `ready_for_pr_create`, `gate_status`, or `merge_allowed`, and it does not mutate verification, review status, or PR readiness. Humans, CI, and repository rules retain final authority.
 
-専門判断ノードもこの境界を継承し、`proposed` の候補として記録されます。`VALUE` / `SIMPLIFY` / `VALIDATE` のmode、seniorの推奨、採択権限を専門判断が変更することはありません。
+Expert nodes inherit this boundary as `proposed` candidates. They do not replace the `VALUE` / `SIMPLIFY` / `VALIDATE` mode, senior recommendation, or adoption authority.
 
 This distinction keeps the current minimal-core promise intact: the feature is a transparent reasoning aid, not a restored Gate DAG.
