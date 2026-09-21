@@ -668,3 +668,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:546:start -->
 - [PR #546](https://github.com/Unson-LLC/vibepro/pull/546) — [2026-09](/releases/2026-09): docs: 現行プロダクトに合わせて公開サイトを書き直す
 <!-- vibepro-release-index-pr:546:end -->
+
+<!-- vibepro-release-index-pr:547:start -->
+- [PR #547](https://github.com/Unson-LLC/vibepro/pull/547) — [2026-09](/releases/2026-09): fix: マニュアルのMermaid図を描画する
+<!-- vibepro-release-index-pr:547:end -->

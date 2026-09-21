@@ -668,3 +668,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:546:start -->
 - [PR #546](https://github.com/Unson-LLC/vibepro/pull/546) — [2026-09](/ja/releases/2026-09): docs: 現行プロダクトに合わせて公開サイトを書き直す
 <!-- vibepro-release-index-pr:546:end -->
+
+<!-- vibepro-release-index-pr:547:start -->
+- [PR #547](https://github.com/Unson-LLC/vibepro/pull/547) — [2026-09](/ja/releases/2026-09): fix: マニュアルのMermaid図を描画する
+<!-- vibepro-release-index-pr:547:end -->
