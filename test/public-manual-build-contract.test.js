@@ -48,6 +48,15 @@ test('built public surface rejects Mermaid fences left as highlighted code', asy
   assert.equal((await checkPublicManualBuild(dist)).status, 'pass');
 });
 
+test('built public surface rejects missing guide destinations including locale switches', async (t) => {
+  const dist = await createValidBuild(t);
+  await writeFile(path.join(dist, 'guide/feature-map.html'),
+    '<a href="/ja/guide/missing#details">日本語</a>');
+  await assert.rejects(checkPublicManualBuild(dist), /missing guide link destination.*ja\/guide\/missing/);
+  await writeFile(path.join(dist, 'ja/guide/missing.html'), '<h1>Details</h1>');
+  assert.equal((await checkPublicManualBuild(dist)).status, 'pass');
+});
+
 test('built public surface preserves the explicit compatibility route inventory', async (t) => {
   const dist = await createValidBuild(t);
   const missingRoute = REQUIRED_PUBLIC_ROUTES.find((route) => route === 'guide/control-loop.html');

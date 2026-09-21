@@ -11,7 +11,7 @@
 | 人間またはagentの判断保存 | `review`, `decision` | レビューと判断記録 |
 | 問いを立て、証拠で判断を見直す | `judgment investigate` | [ホストAI向け要求、調査の根拠、候補と未解決の問い](/ja/guide/senior-engineering-judgment) |
 | 調査を判断入力へ引き継ぐ | `judgment prepare --investigation` | 明示採択前の入力ドラフト |
-| 観測から専門判断を提案する | `judgment suggest` | [仮説、選択肢、次の確認](/guide/expert-judgment-nodes) |
+| 観測から専門判断を提案する | `judgment suggest` | [仮説、選択肢、次の確認](/ja/guide/expert-judgment-nodes) |
 | シニアエンジニア判断の評価 | `judgment evaluate` | 助言型の判断DAGと上書きしない実行履歴 |
 | command guardrailの追加 | `guard` | ローカルguard設定とreport |
 | PRへの引き渡し準備 | `pr prepare`, `pr create` | PR contextと人間向け本文 |

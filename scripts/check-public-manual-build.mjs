@@ -29,11 +29,13 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'cases/release-safety.html',
   'guide/agent-review.html',
   'guide/ai-pr-workflow.html',
+  'guide/brainbase-receiver.html',
   'guide/check-packs.html',
   'guide/checkpoints-and-execution.html',
   'guide/ci-integration.html',
   'guide/control-loop.html',
   'guide/core-concepts.html',
+  'guide/expert-judgment-nodes.html',
   'guide/feature-map.html',
   'guide/gate-tuning-ritual.html',
   'guide/gates-and-evidence.html',
@@ -58,11 +60,15 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'releases/2026-08.html',
   'ja/guide/agent-review.html',
   'ja/guide/ai-pr-workflow.html',
+  'ja/guide/brainbase-receiver.html',
   'ja/guide/check-packs.html',
   'ja/guide/checkpoints-and-execution.html',
+  'ja/guide/ci-integration.html',
   'ja/guide/control-loop.html',
   'ja/guide/core-concepts.html',
+  'ja/guide/expert-judgment-nodes.html',
   'ja/guide/feature-map.html',
+  'ja/guide/gate-tuning-ritual.html',
   'ja/guide/gates-and-evidence.html',
   'ja/guide/getting-started.html',
   'ja/guide/graphify-impact.html',
@@ -109,6 +115,7 @@ export async function checkPublicManualBuild(distDir) {
   }
 
   const files = await walk(distDir);
+  const outputFiles = new Set(files.map(normalize));
   for (const corpus of FORBIDDEN_PUBLIC_CORPORA) {
     const forbiddenOutput = files.find((file) => {
       const normalized = normalize(file);
@@ -128,6 +135,16 @@ export async function checkPublicManualBuild(distDir) {
   const searchableFiles = files.filter((file) => /\.(?:html|js|json|txt|xml)$/u.test(file));
   for (const file of searchableFiles) {
     const content = await readFile(path.join(distDir, file), 'utf8');
+    if (file.endsWith('.html')) {
+      for (const match of content.matchAll(/\bhref=["'](\/(?:ja\/)?guide\/[^"'#?]*)(?:[?#][^"']*)?["']/gu)) {
+        const route = decodeURIComponent(match[1]).slice(1);
+        const destination = route.endsWith('/') ? `${route}index.html`
+          : route.endsWith('.html') ? route : `${route}.html`;
+        if (!outputFiles.has(destination)) {
+          throw new Error(`Public build has missing guide link destination ${match[1]} in ${normalize(file)}`);
+        }
+      }
+    }
     if (file.endsWith('.html') && /class="[^"]*language-mermaid\b/u.test(content)) {
       throw new Error(`Public build contains an unrendered Mermaid code fence: ${normalize(file)}`);
     }
