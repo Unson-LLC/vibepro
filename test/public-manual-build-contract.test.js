@@ -38,6 +38,16 @@ test('built public surface requires discovery files, social asset, provenance, a
   );
 });
 
+test('built public surface rejects Mermaid fences left as highlighted code', async (t) => {
+  const dist = await createValidBuild(t);
+  await writeFile(path.join(dist, 'guide/expert-judgment-nodes.html'),
+    '<div class="language-mermaid vp-adaptive-theme"><pre>flowchart TD</pre></div>');
+  await assert.rejects(checkPublicManualBuild(dist), /unrendered Mermaid code fence/);
+  await writeFile(path.join(dist, 'guide/expert-judgment-nodes.html'),
+    '<div class="mermaid-diagram" data-mermaid-state="pending"><pre>flowchart TD</pre></div>');
+  assert.equal((await checkPublicManualBuild(dist)).status, 'pass');
+});
+
 test('built public surface preserves the explicit compatibility route inventory', async (t) => {
   const dist = await createValidBuild(t);
   const missingRoute = REQUIRED_PUBLIC_ROUTES.find((route) => route === 'guide/control-loop.html');

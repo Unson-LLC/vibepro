@@ -128,6 +128,9 @@ export async function checkPublicManualBuild(distDir) {
   const searchableFiles = files.filter((file) => /\.(?:html|js|json|txt|xml)$/u.test(file));
   for (const file of searchableFiles) {
     const content = await readFile(path.join(distDir, file), 'utf8');
+    if (file.endsWith('.html') && /class="[^"]*language-mermaid\b/u.test(content)) {
+      throw new Error(`Public build contains an unrendered Mermaid code fence: ${normalize(file)}`);
+    }
     for (const corpus of FORBIDDEN_PUBLIC_CORPORA) {
       const escapedCorpus = escapeRegExp(corpus);
       const publicLink = new RegExp(`(?:href|src)=["'](?:https://vibepro\\.pages\\.dev)?/?${escapedCorpus}/`, 'u');

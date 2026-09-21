@@ -1,10 +1,12 @@
 import { execFileSync } from 'node:child_process';
+import { mermaidPlugin } from '../../scripts/manual-mermaid.mjs';
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
 const productDescription = 'Investigate what should change with your AI host, then connect the reasoning to implementation and PR review.';
 
 export default {
+  markdown: { config: (md) => md.use(mermaidPlugin) },
   title: 'VibePro',
   description: productDescription,
   cleanUrls: true,

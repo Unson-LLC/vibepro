@@ -58,6 +58,7 @@
     "proof-ledger:check": "node scripts/check-proof-ledger.mjs"
   },
   "devDependencies": {
+    "mermaid": "11.17.2",
     "vitepress": "1.6.4"
   },
   "optionalDependencies": {
