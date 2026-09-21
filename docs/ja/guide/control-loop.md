@@ -93,4 +93,4 @@ vibepro decision status /path/to/repo --id story-example
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
 
-`.vibepro/pr/story-example/pr-prepare.json` と同じ場所の `pr-body.md` を確認します。変更の目的、実施した確認、未確認の点が伝わるかを読み返してから、普段のPR運用で使ってください。このコマンドはStory本文・Spec・検証・レビューがすべて揃わなくても出力できるため、出力されたことを作業の完了と取り違えないでください。具体的な問題を示す `needs_changes`・`block` のレビューがあれば、引き渡しが止まる場合があります。準備ができたことは、承認済み・マージ可能という意味ではありません。`pr create` は任意のGitHub CLI連携であり、安全性を認定するものではありません。
+`.vibepro/pr/story-example/pr-prepare.json` と同じ場所の `pr-body.md` を確認します。変更の目的、実施した確認、未確認の点が伝わるかを読み返してから、普段のPR運用で使ってください。このコマンドはStory本文・Spec・検証・レビューがすべて揃わなくても出力できるため、出力されたことを作業の完了と取り違えないでください。`needs_changes`・`block` の具体的な問題があっても、`pr prepare` はblocking状態と理由を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。準備ができたことは、承認済み・マージ可能という意味ではありません。`pr create` は任意のGitHub CLI連携であり、安全性を認定するものではありません。

@@ -3,6 +3,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import { validateSpec } from '../src/spec-validator.js';
+import { runCli } from '../src/cli.js';
+import { parseUsageCommands } from '../scripts/generate-cli-reference.mjs';
 
 const root = process.cwd();
 
@@ -133,6 +135,40 @@ test('public guides do not use retired command argument contracts', async () => 
       assert.doesNotMatch(block[1], /(?:vibepro|vibepro@beta)\s+(?:execute|gate|checkpoint|check-pack)\s/, file);
     }
   }
+});
+
+test('public PR command examples use supported flags and explicit creation destinations', async () => {
+  let help = '';
+  const result = await runCli(['help', '--language', 'en'], {
+    stdout: { write: (chunk) => { help += chunk; } }
+  });
+  assert.equal(result.exitCode, 0);
+  const usage = parseUsageCommands(help);
+  const files = await markdownFiles([
+    path.join(root, 'docs/guide'),
+    path.join(root, 'docs/ja/guide')
+  ]);
+  let checked = 0;
+  for (const file of files) {
+    const content = await readFile(file, 'utf8');
+    for (const block of content.matchAll(/```(?:bash|sh)\n([\s\S]*?)```/g)) {
+      const joined = block[1].replace(/\\\r?\n\s*/g, ' ');
+      for (const match of joined.matchAll(/^\s*vibepro pr (prepare|create)\b([^\n]*)/gm)) {
+        const [, action, args] = match;
+        const contract = usage.find((line) => line.startsWith(`  vibepro pr ${action} `));
+        assert.ok(contract, `missing CLI help contract: pr ${action}`);
+        const flags = new Set(contract.match(/--[a-z][a-z-]*/g));
+        for (const flag of args.match(/--[a-z][a-z-]*/g) ?? []) {
+          assert.ok(flags.has(flag), `${file}: unsupported pr ${action} flag ${flag}`);
+        }
+        if (action === 'create') {
+          assert.match(args, /--repo\s+\S+/, `${file}: pr create requires an explicit repository`);
+        }
+        checked += 1;
+      }
+    }
+  }
+  assert.ok(checked > 0, 'expected public PR command examples');
 });
 
 async function markdownFiles(directories) {

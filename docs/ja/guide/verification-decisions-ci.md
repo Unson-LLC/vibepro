@@ -30,8 +30,8 @@ PRのCI完了後:
 
 ```bash
 vibepro verify import-ci . --id <story-id> --pr <number>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
+vibepro pr prepare . --story-id <story-id> --base origin/main --json
+vibepro pr create . --story-id <story-id> --base origin/main --repo <owner/name>
 ```
 
 CIはreview対象commitに結びつき、importに成功した場合にだけ証跡です。認証失敗、check欠落、mapping不明は明示したままにし、空の成功結果へ変換しません。

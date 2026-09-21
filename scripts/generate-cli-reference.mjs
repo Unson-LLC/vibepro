@@ -70,8 +70,8 @@ function renderReference(language, sourceLanguage, commands) {
     ? 'Story・Specと検証結果を確認し、必要に応じて `review prepare` → `review record` → `review status` でレビューを記録します。`pr prepare` は変更と証拠を要約します。旧レビュー段階の設定は追加の出荷条件を作りません。'
     : 'Check the Story, Spec, and verification results. Use `review prepare` → `review record` → `review status` to record a review when needed. `pr prepare` summarizes changes and evidence; legacy review stage configuration creates no additional shipping requirements.';
   const strictHeadOrigin = japanese
-    ? '合格の記録には実在する `.vibepro` 外の `--inspection-input` が必要です。確認対象の内容が変わると記録は古い状態になります。未記録や古い記録だけではPR準備を止めません。具体的な未解決指摘（`needs_changes` / `block`）は解消するまで表示し、PR準備を止めます。'
-    : 'A passing record requires an existing `--inspection-input` outside `.vibepro`. Changes to inspected content make it stale. Missing or stale records alone do not block PR preparation. Concrete unresolved findings (`needs_changes` / `block`) remain visible and block preparation until resolved.';
+    ? '合格の記録には実在する `.vibepro` 外の `--inspection-input` が必要です。確認対象の内容が変わると記録は古い状態になります。未記録や古い記録だけでは `pr prepare` を止めません。具体的な未解決指摘（`needs_changes` / `block`）があっても、`pr prepare` は状態を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。'
+    : 'A passing record requires an existing `--inspection-input` outside `.vibepro`. Changes to inspected content make it stale. Missing or stale records alone do not block `pr prepare`. Even with concrete unresolved findings (`needs_changes` / `block`), `pr prepare` writes the status to its summary and exits successfully. `pr create` does not create a PR from a blocked preparation and stops until the findings are resolved.';
 
   return `# ${title}\n\n${notice}\n\n${intro}\n\n${workflow}\n\n${strictHeadOrigin}\n\n## ${japanese ? '現在のUsage' : 'Current Usage'}\n\n\`\`\`text\n${commands.join('\n')}\n\`\`\`\n\n## ${japanese ? 'ドリフト確認' : 'Drift Check'}\n\n\`\`\`bash\nnpm run docs:cli:check\n\`\`\`\n`;
 }

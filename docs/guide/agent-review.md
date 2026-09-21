@@ -28,7 +28,7 @@ vibepro review record . --id <story-id> --role reviewer \
 vibepro review status . --id <story-id>
 ```
 
-A passing record requires an existing inspection input outside `.vibepro`. Reviews become stale when inspected content changes. Missing or stale review records alone do not block PR preparation. Concrete unresolved findings recorded as `needs_changes` or `block` remain blocking until resolved.
+A passing record requires an existing inspection input outside `.vibepro`. Reviews become stale when inspected content changes. Missing or stale review records alone do not block `pr prepare`. Even with concrete unresolved findings recorded as `needs_changes` or `block`, `pr prepare` writes the status to its summary and exits successfully. `pr create` does not create a PR from a blocked preparation and stops until the findings are resolved.
 
 Older stage, lifecycle, cost, and strict-head settings are ignored by the lightweight review. PR preparation presents the Story, Spec, verification, and review records as evidence for human review.
 

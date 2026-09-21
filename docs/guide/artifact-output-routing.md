@@ -38,4 +38,6 @@ vibepro artifacts resolve . --id story-example --json
 vibepro artifacts migrate . --id story-example --dry-run --json
 ```
 
-The migration plan reports the old default, resolved destination, existence, required moves, and collisions. Move tracked artifacts only after reviewing that plan. To roll back routing, remove `artifact_routing`; VibePro resumes the legacy defaults. Move files back according to a fresh dry-run if the custom layout was already committed.
+The migration plan reports the old default, resolved destination, existence, required moves, and collisions. Move tracked artifacts only after reviewing that plan.
+
+Rollback is not a config-only operation. The migration plan compares the default source with the destination resolved from the current config. If you remove `artifact_routing` first, VibePro cannot infer the custom destination that was in use. Before removing the setting, save the dry-run `source`/`destination` mapping and review collisions and ownership. Move the custom artifacts back to the legacy defaults from that saved mapping, verify the result without overwriting existing files, and only then remove `artifact_routing`. If the setting was already removed, recover the mapping from the pre-change config or Git history; a fresh dry-run after removal cannot reconstruct the old custom layout.

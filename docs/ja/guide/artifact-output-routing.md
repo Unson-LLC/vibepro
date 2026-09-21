@@ -38,4 +38,6 @@ vibepro artifacts resolve . --id story-example --json
 vibepro artifacts migrate . --id story-example --dry-run --json
 ```
 
-plan は旧既定パス、解決後の destination、存在状態、必要な move、collision を報告します。内容を確認してから tracked artifact を移動してください。rollback は `artifact_routing` を削除すると既定パスへ戻ります。すでに custom layout を commit 済みなら、新しい dry-run に従ってファイルを戻します。
+plan は旧既定パス、解決後の destination、存在状態、必要な move、collision を報告します。内容を確認してから tracked artifact を移動してください。
+
+rollback は設定を削除するだけの操作ではありません。migration plan は、現在の設定から解決した destination と、既定の source を比較して作られます。そのため、先に `artifact_routing` を削除すると、custom destination を自動的に推測できません。戻すときは、設定を削除する前に dry-run の `source` と `destination` の対応を保存し、collision と ownership を確認します。その対応表に従って custom artifact を既定パスへ移動し、既存ファイルを上書きせずに確認してから `artifact_routing` を削除してください。すでに削除した場合は、削除前の設定または Git 履歴から対応表を復元します。削除後の新しい dry-run だけでは、元の custom layout を復元できません。

@@ -30,8 +30,8 @@ After the PR's CI finishes:
 
 ```bash
 vibepro verify import-ci . --id <story-id> --pr <number>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
+vibepro pr prepare . --story-id <story-id> --base origin/main --json
+vibepro pr create . --story-id <story-id> --base origin/main --repo <owner/name>
 ```
 
 CI is evidence only when it is tied to the reviewed commit and imported successfully. Authentication failure, missing checks, or an unknown mapping remains explicit and must not be converted to an empty successful result.

@@ -13,7 +13,7 @@ People still assess product behavior, security, and whether the checks are suffi
 
 ## Drafts, finalization, and findings
 
-The current CLI has validation rules; “not a safety gate” does not mean every command accepts every input. Spec finalization requires readiness, including Graphify and Story diagnosis. A passing review requires a summary and an existing inspection input outside `.vibepro/`. Concrete `needs_changes` or `block` review findings can block PR handoff.
+The current CLI has validation rules; “not a safety gate” does not mean every command accepts every input. Spec finalization requires readiness, including Graphify and Story diagnosis. A passing review requires a summary and an existing inspection input outside `.vibepro/`. Even with concrete `needs_changes` or `block` review findings, `pr prepare` writes the blocking status and reasons to its summary and exits successfully. `pr create` does not create a PR from a blocked preparation and stops until the findings are resolved.
 
 See [One Change Through PR Preparation](/guide/control-loop) for these distinctions. The former broad Gate DAG and mandatory review-lifecycle machinery are retired. The optional [engineering-judgment DAG](/guide/senior-engineering-judgment) is advisory, not merge authority.
 

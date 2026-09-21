@@ -13,7 +13,7 @@ VibeProは、確認できる文脈と結果をレビューに渡します。変�
 
 ## 下書き、確定、指摘の扱い
 
-「安全性を判定するゲートではない」とは、どんな入力でも受け付けるという意味ではありません。Specの確定には、GraphifyやStory診断を含むreadinessの条件があります。レビューを `pass` で記録するには、要約と `.vibepro/` 外に実在する確認対象が必要です。具体的な問題を示す `needs_changes`・`block` のレビューがあれば、PRへの引き渡しが止まる場合もあります。
+「安全性を判定するゲートではない」とは、どんな入力でも受け付けるという意味ではありません。Specの確定には、GraphifyやStory診断を含むreadinessの条件があります。レビューを `pass` で記録するには、要約と `.vibepro/` 外に実在する確認対象が必要です。具体的な問題を示す `needs_changes`・`block` のレビューがあっても、`pr prepare` はblocking状態と理由を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。
 
 違いは[ひとつの変更からPR準備まで](/ja/guide/control-loop)で説明しています。従来の広範なGate DAGや、必須のレビューライフサイクル管理は廃止しました。任意の[設計判断DAG](/ja/guide/senior-engineering-judgment)は助言であり、マージの許可を出すものではありません。
 

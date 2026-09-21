@@ -50,7 +50,7 @@ Draft Specs can be used while shaping a change. A final Spec has stronger readin
 
 VibePro can check structural facts such as whether a declared file, symbol, or test reference exists, whether a reference has the expected anchor, and what a recorded verification command returned. Those checks make evidence easier to inspect.
 
-The AI host also interprets evidence and generates questions and options. The CLI returns a `model_request` and validates responses, but does not autonomously call models, generate Graphify artifacts, or fetch through external connectors. New evidence requires reinterpretation rather than reuse of the old recommendation. Missing evidence remains `unknown`, `partial`, or `unavailable`.
+The AI host also interprets evidence and generates questions and options. `judgment investigate` returns a `model_request` and validates responses, but does not autonomously call models, generate Graphify artifacts, or fetch through external connectors. Generate Graphify separately with the explicit `vibepro graph . --run-graphify` command, or pass an existing artifact to the investigation. New evidence requires reinterpretation rather than reuse of the old recommendation. Missing evidence remains `unknown`, `partial`, or `unavailable`.
 
 This does not establish semantic correctness. Graphify edges are structural candidates, not proof of contracts or runtime success. A code reference may point to the wrong behavior, and a passing test may cover the wrong scenario. Human product and engineering review and adoption responsibility remain necessary.
 

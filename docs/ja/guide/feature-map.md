@@ -20,7 +20,9 @@
 
 ## 最小コアから廃止したもの
 
-過去のrelease noteには次の概念が登場しますが、現行機能ではありません。Gate DAG、check pack、checkpoint、managed execution/merge、自動adjudication、readiness/blocking判定、review lifecycle会計、delivery-efficiency budget、design modernization pipeline、usage/ROI report、自動audit bundle。
+過去のrelease noteには次の概念が登場しますが、現行機能ではありません。Gate DAG、check pack、checkpoint、managed execution/merge、自動adjudication、旧Gate DAGによるreadiness/blocking判定、review lifecycle会計、delivery-efficiency budget、design modernization pipeline、usage/ROI report、自動audit bundle。
+
+現行のSpec確定条件と、未解決のレビュー指摘の確認は残っています。`pr prepare` は `blocked` の結果も要約しますが、`pr create` はその状態でPRを作成しません。これはマージの承認ではありません。詳しくは[安全性の境界](/ja/guide/safety-model)を参照してください。
 
 installed versionの正確なcommandは `vibepro help --language ja` で確認してください。
 
@@ -35,4 +37,4 @@ Development Judgmentは任意レポートではなく、明示的な非blocking�
 5. 採否と後日のOutcomeを時間分離して記録する
 6. 観測Outcomeを次回判断へfeedbackする
 
-`pr prepare`はこのライフサイクルを投影するだけであり、PR readiness、merge、release権限は持ちません。
+`pr prepare`はこのライフサイクルを投影するだけです。Development JudgmentはPRのreadiness、merge、release権限を変更しません。

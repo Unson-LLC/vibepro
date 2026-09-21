@@ -20,7 +20,9 @@ For a first change, start with [Story, Spec, checks, review, and PR preparation]
 
 ## Removed from the minimal core
 
-The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, readiness/blocking verdicts, review-lifecycle accounting, delivery-efficiency budgets, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles.
+The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, readiness/blocking verdicts from the former Gate DAG, review-lifecycle accounting, delivery-efficiency budgets, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles.
+
+The current Spec finalization checks and unresolved-review checks remain. `pr prepare` can summarize a `blocked` result; `pr create` refuses to create the PR from that result. These checks are not merge approval. See the [Safety Model](/guide/safety-model).
 
 Run `vibepro help --language en` for the exact commands in your installed version.
 

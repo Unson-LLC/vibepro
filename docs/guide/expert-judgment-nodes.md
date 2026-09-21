@@ -39,7 +39,7 @@ flowchart TD
 
 ## 判断層が調査を起動する
 
-専門判断の責任は判断DAGに置きます。調査手段の責任をGraphifyに移すわけではありません。判断DAGは、依頼から仮の目的・範囲を置き、現状との差から「何を決める必要があるか」「どの証拠なら案を分けられるか」「次に誰へ何を確認するか」を組み立てます。Graphify adapterは、ホストが明示した `graphPath` の既存Graphify成果物を読み取って構造上の候補を返す、読み取り専用の証拠プロバイダーです。今回のCLIはGraphifyの実行・生成・再生成を行いません。成果物を作る責任は、既存のGraphify実行経路またはホストに残ります。
+専門判断の責任は判断DAGに置きます。調査手段の責任をGraphifyに移すわけではありません。判断DAGは、依頼から仮の目的・範囲を置き、現状との差から「何を決める必要があるか」「どの証拠なら案を分けられるか」「次に誰へ何を確認するか」を組み立てます。Graphify adapterは、ホストが明示した `graphPath` の既存Graphify成果物を読み取って構造上の候補を返す、読み取り専用の証拠プロバイダーです。`judgment investigate` はGraphifyの実行・生成・再生成を行いません。成果物が必要なら、既存のGraphify実行経路を使うか、別途 `vibepro graph . --run-graphify` を明示実行します。
 
 同じGraphifyの結果を、判断の前後で使うことがあります。
 
@@ -70,7 +70,7 @@ Graphifyのノードや辺は、構造上の候補です。そこから「同じ
 ホストは次の境界を守ります。
 
 - `model_request` の要求を、現在の証拠を読むための指示として扱う。過去の仮説や前回の回答を、現在の事実へ昇格させない。
-- Graphifyの要求は、明示された既存成果物を読む指示として扱う。Graphifyの実行・生成・再生成をCLIが代行したとは扱わない。
+- `judgment investigate` のGraphify要求は、明示された既存成果物を読む指示として扱う。Graphifyの実行・生成・再生成は別の明示コマンドまたは既存経路で行い、調査CLIが代行したとは扱わない。
 - Graphifyの辺を契約・因果・実行成功の証拠にしない。構造候補を、追加調査の範囲を決める材料として使う。
 - Source adapterを使う場合も、リポジトリ内の相対パスを範囲内で読み取るだけであり、変更やコマンド実行はしない。抜粋・行数・バイト数の上限と静的解析の限界を保持する。
 - グラフが欠けている、取得が失敗した、実行時の証拠がない、本人の選択が必要な場合は `unknown` / `partial` のまま返し、推測で埋めない。
@@ -144,15 +144,23 @@ Storyの評価へ接続した場合も、専門判断は候補として扱いま
 
 単独で確認する場合は、従来どおり `vibepro judgment suggest --input <観測.json> --json` を使えます。ワークスペース初期化やStory登録は不要です。
 
-Storyのsenior judgmentへ任意で接続する場合は、`observations.json` の `case_id` を対象Story ID（ここでは `story-example`）と一致させます。`prepare` は観測を `expert_input` として入力ドラフトへ埋め込み、`expert_judgment` のプレビューを返します。次の3コマンドは、既存の採択手順を通してから評価する例です。
+Storyのsenior judgmentへ任意で接続する場合は、`observations.json` の `case_id` を対象Story ID（ここでは `story-example`）と一致させます。`prepare` は観測を `expert_input` として入力ドラフトへ埋め込み、`expert_judgment` のプレビューを返します。次の例は、`prepare` と `input adopt` のJSON結果から実際の入力artifactを受け渡し、既存の採択手順を通してから評価します。
 
 ```sh
-vibepro judgment prepare . --id story-example --expert-input observations.json --json
-vibepro judgment input adopt . --id story-example --input .vibepro/reviews/story-example/senior-judgment/input-draft.json --reviewed-by <actor> --authority <source> --summary "専門観測を確認した" --json
-vibepro judgment evaluate . --id story-example --input .vibepro/reviews/story-example/senior-judgment/input-draft.json --json
+vibepro judgment prepare . --id story-example --expert-input observations.json --json > prepare-result.json
+draft_input="$(jq -r '.artifact' prepare-result.json)"
+adopt_result="$(vibepro judgment input adopt . \
+  --id story-example \
+  --input "$draft_input" \
+  --reviewed-by <actor> \
+  --authority <source> \
+  --summary "専門観測を確認した" \
+  --json)"
+adopted_input="$(printf '%s' "$adopt_result" | jq -r '.adoption.adopted_input')"
+vibepro judgment evaluate . --id story-example --input "$adopted_input" --json
 ```
 
-上のパスは標準配置の例です。実際には `prepare` の `artifact` を使い、`evaluate` には `input adopt` が返す `adoption.adopted_input` を指定します。採択前に問題設定・選択肢と専門観測を確認してください。`prepare` だけでは問題設定は未確定のままで、専門観測を加えても自動で計画の実行可能状態にはなりません。
+採択前に問題設定・選択肢と専門観測を確認してください。`prepare` だけでは問題設定は未確定のままで、専門観測を加えても自動で計画の実行可能状態にはなりません。
 
 `input adopt` はドラフトに埋め込まれた観測のバイト列も含めて採択します。`evaluate` は採択済み入力の観測から専門判断を毎回再評価します。`case_id` が `--id` と異なる入力は受け付けません。
 

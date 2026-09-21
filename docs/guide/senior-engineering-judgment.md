@@ -25,7 +25,7 @@ Eight expert nodes cover outcome and scope, human/AI responsibility, change owne
 
 - The AI host interprets evidence and creates questions, hypotheses, options, and recommendations, then supplies its response to the CLI.
 - The CLI reads explicitly supplied existing Graphify artifacts and bounded source excerpts, validates response schemas and reference consistency, and retains the state needed for reconsideration.
-- The CLI does not autonomously call models, generate Graphify artifacts, fetch evidence through external connectors, or execute commands. Graph edges are structural candidates, not proof of matching contracts, runtime success, or user value.
+- `judgment investigate` does not autonomously call models, generate Graphify artifacts, fetch evidence through external connectors, or execute commands. Generate Graphify separately with the explicit `vibepro graph . --run-graphify` command. Graph edges are structural candidates, not proof of matching contracts, runtime success, or user value.
 - People, CI, and repository rules retain adoption and execution authority. Even `candidate_ready` remains `advisory: true` / `blocking: false`, not adopted or ready to execute.
 
 ### Connect investigation to evaluation
@@ -81,21 +81,20 @@ Initialize the repository and prepare an input file using schema `0.3.0`. The ex
 
 ```bash
 vibepro init .
-vibepro judgment prepare . --id story-example --expert-input observations.json --json
-vibepro judgment input adopt . \
+vibepro judgment prepare . --id story-example --expert-input observations.json --json > prepare-result.json
+draft_input="$(jq -r '.artifact' prepare-result.json)"
+adopt_result="$(vibepro judgment input adopt . \
   --id story-example \
-  --input .vibepro/reviews/story-example/senior-judgment/input-draft.json \
+  --input "$draft_input" \
   --reviewed-by <actor> \
   --authority <source> \
   --summary "Reviewed expert observations" \
-  --json
-vibepro judgment evaluate . \
-  --id story-example \
-  --input .vibepro/reviews/story-example/senior-judgment/input-draft.json \
-  --json
+  --json)"
+adopted_input="$(printf '%s' "$adopt_result" | jq -r '.adoption.adopted_input')"
+vibepro judgment evaluate . --id story-example --input "$adopted_input" --json
 ```
 
-The paths above illustrate the default layout. Use the actual `artifact` from `prepare` and pass `adoption.adopted_input` returned by `input adopt` to `evaluate`. Review the problem frame, options, and expert observations before adoption. Preparation alone leaves the problem frame unconfirmed; adding observations does not make the plan executable.
+This example uses `jq` to pass the actual `artifact` from `prepare` and `adoption.adopted_input` from `input adopt` to the next command. Review the problem frame, options, and expert observations before adoption. Preparation alone leaves the problem frame unconfirmed; adding observations does not make the plan executable.
 
 `prepare` includes an `expert_judgment` preview and embeds observations in `input.expert_input`. Adoption includes those input bytes. Evaluation recomputes expert judgment from the adopted observations and includes it in the result and development DAG.
 
