@@ -14,7 +14,7 @@ vibepro verify record . \
   --observed "exit_code=0"
 ```
 
-`--kind` は必須で、`unit`、`integration`、`e2e`、`typecheck`、`build` を受け付けます。`--status` は `pass`、`fail`、`needs_setup` です。Gateが結果を利用する場合はdurable status artifactとstructured observationを残します。
+`--kind` は必須で、`unit`、`integration`、`e2e`、`typecheck`、`build` を受け付けます。`--status` は `pass`、`fail`、`needs_setup` です。`pass` は実際の成功を確認してから記録してください。レビューする人が根拠を確認できるよう、結果ファイルと観測した内容を残します。
 
 残リスクはfailをpassへ変換せず、帰属可能なdecisionとして記録します。
 

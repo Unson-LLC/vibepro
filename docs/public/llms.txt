@@ -1,6 +1,6 @@
 # VibePro
 
-VibePro is a repository-local control plane for evidence-backed, safe delivery by AI coding agents.
+VibePro is a repository-local CLI that brings a change's purpose, implementation references, and recorded checks into PR review. Its workflow uses structured Story and Spec records that require authoring and maintenance. Reference validation and recorded test results are review inputs, not proof of semantic correctness or safety. Approval and merge remain with people and repository policy.
 
 Canonical manual: https://vibepro.pages.dev/
 Source: https://github.com/Unson-LLC/vibepro
@@ -22,4 +22,4 @@ Japanese:
 - https://vibepro.pages.dev/ja/guide/release-and-audit
 - https://vibepro.pages.dev/ja/reference/cli
 
-The public manual intentionally excludes repository-internal Story, Architecture, Spec, contract, and runtime evidence corpora. The running CLI and current-head artifacts remain authoritative for command and gate decisions.
+The public manual intentionally excludes repository-internal Story, Architecture, Spec, contract, and runtime evidence corpora. Check the installed CLI's help for the command contract. Historical release notes can describe removed capabilities; the former broad Gate DAG is retired. Optional engineering-judgment support is advisory.

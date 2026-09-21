@@ -43,6 +43,6 @@ Install bundled VibePro skills if agents should use this context consistently:
 vibepro skills install .
 ```
 
-The `vibepro-codebase-memory` skill explains when to use `list_projects`, `index_repository`, `detect_changes`, `search_graph`, `trace_path`, and `get_code_snippet`, and how to map results back to VibePro Gate evidence.
+The `vibepro-codebase-memory` skill explains when to use `list_projects`, `index_repository`, `detect_changes`, `search_graph`, `trace_path`, and `get_code_snippet`, and how to use the results as implementation context for review.
 
 Do not use either lens as proof that the change works. Use them to decide which files, paths, tests, and reviewers matter.

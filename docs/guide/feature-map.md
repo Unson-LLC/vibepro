@@ -1,5 +1,7 @@
 # Feature Map
 
+For a first change, start with [Story, Spec, checks, review, and PR preparation](/guide/control-loop). The table below also includes optional analysis, judgment, and integration tools; it is not a checklist that every change must complete.
+
 | Need | Command family | Stored result |
 | --- | --- | --- |
 | Initialize and inspect a repository | `init`, `doctor`, `status` | `.vibepro/` config and health context |
@@ -7,7 +9,7 @@
 | Preserve product intent | `story`, `spec`, `trace` | Story, Spec, and trace records |
 | Preserve execution evidence | `verify` | Verification records tied to repository state |
 | Preserve human or agent judgment | `review`, `decision` | Review and decision records |
-| 観測から専門判断の候補を作る | `judgment suggest` | [仮説・選択肢・次の確認](./expert-judgment-nodes.md)を標準出力へ返す |
+| Suggest expert judgment from observations | `judgment suggest` | [Hypotheses, options, and next checks](./expert-judgment-nodes.md) on standard output |
 | Evaluate senior engineering choices | `judgment evaluate` | Advisory decision DAG and immutable run history |
 | Add command guardrails | `guard` | Local guard configuration and reports |
 | Prepare a PR handoff | `pr prepare`, `pr create` | PR context and human-readable body |

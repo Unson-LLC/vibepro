@@ -3,14 +3,14 @@ layout: home
 
 hero:
   name: VibePro
-  text: Ship what you meant to build
-  tagline: Keep the chain from product intent to Story, Spec, implementation, verification, decisions, and PR handoff explicit for AI-assisted development.
+  text: Bring the reason for a change into its PR.
+  tagline: A CLI for turning what a change is meant to achieve, where it is implemented, and what was checked into a PR-ready review summary.
   image:
     src: /assets/vibepro-header.png
     alt: VibePro
   actions:
     - theme: brand
-      text: Install the Beta
+      text: Try one change
       link: /guide/getting-started
     - theme: alt
       text: What VibePro Is
@@ -20,22 +20,26 @@ hero:
       link: /reference/cli
 
 features:
-  - title: Keep product intent attached to the work
-    details: Connect Stories and Specs to implementation and test references so technically valid code can still be checked against what the product was meant to become.
-  - title: Make intent drift inspectable
-    details: Record verification, review, trace, and explicit decisions so humans and coding agents can see where implementation diverges from the accepted Story or Spec.
-  - title: Hand off evidence, not an automatic verdict
-    details: Summarize intent-to-implementation evidence for PR review while leaving product meaning, approval, and merge authority with people and repository policy.
+  - title: Start with the user's need
+    details: Record the user problem and acceptance criteria in a Story, so an AI-assisted change has a product reason to return to.
+  - title: Connect behavior to evidence
+    details: Describe concrete behavior in a Spec and link it to the code and tests that should implement and verify it.
+  - title: Make the PR easier to review
+    details: Keep verification and review records with the change, then prepare a PR summary that shows how the implementation connects back to the Story and Spec.
 ---
 
-## Intent and traceability, not agent permissions
+## A PR should explain more than what changed
 
-VibePro is not primarily an agent sandbox or tool-permission system. Restricting whether an agent may use Bash, Edit, or deploy controls execution capability; VibePro addresses a different failure mode: a constrained agent can still build the wrong thing.
+AI coding agents can produce a clean diff while solving the wrong user problem. VibePro keeps the few links a reviewer needs to answer: what user need motivated this change, what behavior was agreed, where is it implemented, and what was actually checked?
 
-The current minimal core keeps the chain from Story to Spec, implementation references, verification, review, decisions, trace, and PR handoff repository-local and inspectable. It does not autonomously decide product meaning or certify that a change is safe.
+For example, a Story might say that a CSV export must preserve the active filters. The Spec can make that behavior concrete and name the code and test references. The verification record shows which test ran, and the PR summary brings those pieces back into the review conversation.
 
-## The minimal-core boundary
+VibePro can inspect whether declared implementation and test references are structurally present, but it cannot decide whether the behavior is semantically right. A reference can exist and a test can pass while the change still misses the user's need; people must read the Story, behavior, and result together.
 
-VibePro no longer provides the former broad Gate DAG, managed execution controller, review-lifecycle accounting, delivery-efficiency budget enforcement, or automatic audit bundles. That reduction is deliberate: the core focuses on preserving product intent and the evidence needed to review whether implementation still matches it.
+## A deliberate boundary
 
-[What VibePro Is](/guide/what-is-vibepro) explains the boundary. [Version History](/reference/version-history) separates the published package from development history.
+Story and Spec records are an additional maintenance cost. They are the machine-readable contract VibePro can inspect; they do not replace a README, an issue tracker, product discussion, or normal code review. README or issue context alone is not a supported replacement for these records. If an existing PR explanation is already sufficient, the additional maintenance may cost more than it returns.
+
+The former broad Gate DAG and its merge-blocking lifecycle machinery are retired from the minimal core. Optional Development Judgment tools can help compare approaches and record a disposition, but they are advisory context—not automatic intent-drift detection, safety certification, PR approval, or merge authority.
+
+The [getting-started guide](/guide/getting-started) walks through the smallest useful flow. [What VibePro Is](/guide/what-is-vibepro) explains the records and their boundaries in more detail.

@@ -1,41 +1,28 @@
-# Safety Model
+# Checks and Authority
 
-VibePro's safety model is based on bounded authority, current-head evidence, independent inspection, and fail-closed release operations.
+VibePro prepares inspectable context and evidence. It does not certify that a change is safe, implement a sandbox, or replace repository access controls.
 
-## Authority Boundaries
+## What a check establishes
 
-- **Human:** product intent, material trade-offs, waivers, and final release authority.
-- **Story / Architecture / Spec:** outcome, structural boundary, and testable contract.
-- **Code and runtime:** actual behavior; generated narratives cannot override them.
-- **Verification:** observed outcomes tied to a commit and durable artifact.
-- **Independent reviewer:** inspection and judgment from a separate execution identity.
-- **Gate DAG:** readiness synthesis; it reports missing proof but does not invent it.
+- A valid Spec reference establishes that the declared file and supported anchor can be found, not that the code fulfills the requirement.
+- A verification result records the command's outcome. Its meaning depends on what the command actually checked.
+- A review record describes an inspection and its findings. It is not a substitute for doing the inspection.
+- A generated PR body summarizes available records. Missing records do not become completed work because a summary was generated.
 
-Brainbase may supply upstream context. Graphify, codebase-memory, Journey packs, external design prompts, and generated screenshots are supporting evidence. None becomes implementation truth merely by being available.
+People still assess product behavior, security, and whether the checks are sufficient. CI and repository rules retain their own requirements.
 
-## Fail-Closed States
+## Drafts, finalization, and findings
 
-- Missing or stale evidence remains `needs_evidence`.
-- Required inspection that has not occurred remains `needs_review`.
-- A violated condition remains `blocked` until fixed or handled by an explicit, attributable decision.
-- A scanner that found no eligible targets is inconclusive, not proof of absence.
-- Review records must include the correct stage, role, status (`pass`, `needs_changes`, or `block`), agent identity, inspection inputs, and a closed lifecycle.
+The current CLI has validation rules; “not a safety gate” does not mean every command accepts every input. Spec finalization requires readiness, including Graphify and Story diagnosis. A passing review requires a summary and an existing inspection input outside `.vibepro/`. Concrete `needs_changes` or `block` review findings can block PR handoff.
 
-## Decisions and Waivers
+See [One Change Through PR Preparation](/guide/control-loop) for these distinctions. The former broad Gate DAG and mandatory review-lifecycle machinery are retired. The optional [engineering-judgment DAG](/guide/senior-engineering-judgment) is advisory, not merge authority.
 
-```bash
-vibepro decision record . \
-  --id <story-id> \
-  --type waiver \
-  --summary "<accepted residual risk>" \
-  --reason "<why this is acceptable>" \
-  --artifact <evidence-path> \
-  --reviewer <identity> \
-  --status accepted
-```
+## Decisions do not turn failures into successes
 
-A waiver is visible debt, not a passing test. Keep the source gate/finding, reason, evidence, owner, and status explicit.
+A decision record can preserve a choice, rationale, owner, and supporting evidence. Accepting a residual risk does not change a failed test into a passing test. Review the underlying evidence and apply your repository's policy.
 
-## Release Boundary
+## Normal PR and release workflow
 
-`guard check`, `pr prepare`, `pr create`, and `execute merge` are the standard release path. Raw GitHub PR or merge commands bypass VibePro's current-head and waiver audit and should not be the normal path.
+Use your normal Git and GitHub workflow for PR approval, merge, and release. `pr prepare` can supply a PR-body summary; `pr create` is an optional GitHub CLI handoff. Neither is a safety certification, and VibePro does not merge code.
+
+Older release notes describe mechanisms that no longer exist. Follow the installed CLI's help and the current [feature map](/guide/feature-map), not historical execution or gate workflows.

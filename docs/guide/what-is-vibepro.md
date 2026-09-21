@@ -1,43 +1,58 @@
 # What VibePro Is
 
-VibePro helps teams keep **what they intended to build** aligned with **what AI-assisted development actually produces**.
+VibePro brings the reason for a change into its pull request. It keeps the user need, agreed behavior, implementation references, checks, and review context close enough that a teammate can inspect the same story behind the diff.
 
-AI coding agents can write technically valid code and still solve the wrong problem. VibePro keeps the chain from Story to Spec, implementation references, verification, review, explicit decisions, trace, and PR handoff repository-local and inspectable so humans and coding agents can review the same product intent and the same evidence.
+AI coding agents can produce technically valid code while solving the wrong problem. VibePro addresses that product-intent gap with a small set of repository-local records:
 
 ```text
-Intent
-  -> Story
-    -> Spec
+User need
+  -> Story (need and acceptance criteria)
+    -> Spec (behavior, invariants, code/test references)
       -> Implementation
-        -> Verification
-          -> Review / Decision
-            -> PR handoff
+        -> Verification and review records
+          -> PR summary
 ```
 
-## The problem it addresses
+## What each record contributes
 
-Tool permissions and agent sandboxes answer questions such as whether an agent may call Bash, edit files, or deploy. Those controls are useful, but they do not answer whether the resulting product matches the intent that motivated the change.
+- **Story** states the user need and the acceptance criteria that make the change worth doing.
+- **Spec** turns that need into concrete behavior and invariants, with `code_refs` and `test_refs` pointing toward implementation and verification.
+- **Verification** records what was run or recorded against the repository state. It is evidence about a check, not a promise that the product is correct.
+- **Review** records the inspection performed by a person or reviewer role, including the inspected inputs and the result.
+- **PR preparation** projects the recorded Story, Spec, verification, review, trace, and decision context into a machine-readable summary and PR body.
 
-VibePro works at this intent/traceability boundary. Its purpose is to make intent drift visible before a change is accepted.
+The records are deliberately close to the repository. A later reviewer can follow the reason for the change without relying on an agent's private conversation or an unrecorded handoff.
 
 ## What the current core does
 
-- Initializes a repository-local workspace and output language.
-- Captures and diagnoses Stories.
-- Writes Specs with code and test references.
-- Keeps trace declarations from product intent toward implementation evidence.
-- Runs or records verification evidence tied to repository state.
-- Prepares and records role-based review evidence.
-- Records explicit decisions.
-- Summarizes intent-to-implementation evidence for PR handoff.
-- Installs optional agent instructions and integrates with external Graphify context.
+The current beta can:
 
-## What it does not do
+- initialize a repository-local `.vibepro/` workspace and choose an output language;
+- add, select, and diagnose Stories;
+- write draft or final Specs and check their structural references;
+- declare or inspect traces and explicit decisions when the change needs them;
+- run or record unit, integration, end-to-end, typecheck, or build verification;
+- prepare and record a lightweight review; and
+- prepare a PR summary and body for an ordinary pull-request workflow.
 
-VibePro does not implement application code, autonomously decide product meaning, certify that evidence is sufficient, approve a PR, or merge code. The minimal core has no broad Gate DAG, blocking readiness authority, managed execution controller, review-lifecycle accounting, delivery-efficiency budget enforcement, or automatic audit bundle.
+The installed binary's `vibepro help` output is the authoritative command contract. See [Install and First Run](/guide/getting-started) for a concrete sequence.
 
-That boundary is intentional. VibePro preserves product intent, inspectable facts, and review evidence while leaving execution capability controls to agent/runtime tooling and final judgment and authority to people, repository rules, and CI.
+Draft Specs can be used while shaping a change. A final Spec has stronger readiness preconditions: Graphify context, a Story diagnosis, and readiness evidence against the current `HEAD`. See the [control loop](/guide/control-loop) for the order of those checks.
 
-## Authority
+## What is checked, and what is not
 
-The installed binary's `vibepro help` output is the authoritative CLI contract. `package.json` is the version authority. The public manual describes the current beta and includes older release history, which may mention capabilities removed from the minimal core.
+VibePro can check structural facts such as whether a declared file, symbol, or test reference exists, whether a reference has the expected anchor, and what a recorded verification command returned. Those checks make evidence easier to inspect.
+
+They do not establish semantic correctness. A code reference may point to the wrong behavior, and a passing test may cover the wrong scenario. VibePro does not autonomously decide whether the implementation satisfies the user's need; human product and engineering review remain necessary.
+
+Likewise, VibePro does not implement application code, certify safety, approve a pull request, or merge code. Repository policy, CI, and people retain those authorities.
+
+## Cost and fit
+
+Story and Spec records are an explicit maintenance cost. Keep them when the connection between a product need and a code change is valuable; update them when the intended behavior changes. They complement README files, issues, design documents, and normal code review—they are not a claim that those forms of context can be replaced by one generated artifact.
+
+The minimal core also does not include the former broad Gate DAG, managed execution controller, review-lifecycle accounting, delivery-efficiency budgets, or automatic audit bundles. Optional Development Judgment tooling can help compare approaches and record a disposition. It is advisory context, separate from the retired broad Gate machinery, and does not become automatic intent-drift detection or merge authority.
+
+## Authority and history
+
+The public manual describes the current beta, while the [version history](/reference/version-history) may mention older releases. Treat the installed `vibepro help` output as the command authority and `package.json` as the version authority.

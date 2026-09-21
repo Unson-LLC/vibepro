@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
-const productDescription = 'Repository-local Story, Spec, verification, review, and PR evidence for AI coding agents';
+const productDescription = 'Bring a change’s purpose, implementation references, and check results into PR review with VibePro.';
 
 export default {
   title: 'VibePro',
@@ -26,11 +26,11 @@ export default {
   head: [
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'VibePro Manual' }],
-    ['meta', { property: 'og:title', content: 'VibePro — Traceable context for AI coding agents' }],
+    ['meta', { property: 'og:title', content: 'VibePro — Bring the reason for a change into its PR' }],
     ['meta', { property: 'og:description', content: productDescription }],
     ['meta', { property: 'og:image', content: `${siteUrl}/assets/vibepro-header.png` }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'VibePro — Traceable context for AI coding agents' }],
+    ['meta', { name: 'twitter:title', content: 'VibePro — Bring the reason for a change into its PR' }],
     ['meta', { name: 'twitter:description', content: productDescription }],
     ['meta', { name: 'twitter:image', content: `${siteUrl}/assets/vibepro-header.png` }],
     ['meta', { name: 'vibepro-source-commit', content: sourceCommit }],
@@ -103,7 +103,7 @@ export default {
       lang: 'ja-JP',
       link: '/ja/',
       title: 'VibePro',
-      description: 'AIコーディングエージェントのためのStory、Spec、検証、レビュー、PR証跡',
+      description: '変更の目的、実装の参照先、確認結果をPRレビューへ届けるCLI。AI支援開発のためのVibePro。',
       themeConfig: {
         siteTitle: 'VibeProマニュアル',
         nav: [
@@ -140,8 +140,8 @@ export default {
 function guideSidebar(locale) {
   const prefix = locale === 'ja' ? '/ja' : '';
   const labels = locale === 'ja'
-    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', '最小コアの流れ', 'シニアエンジニア判断', '機能マップ', 'リリース境界']
-    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'Minimal Core Flow', 'Senior Engineering Judgment', 'Feature Map', 'Release Boundary'];
+    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', 'ひとつの変更からPR準備まで', 'シニアエンジニア判断', '機能マップ', 'リリース境界']
+    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'One Change Through PR Preparation', 'Senior Engineering Judgment', 'Feature Map', 'Release Boundary'];
 
   return [
     {

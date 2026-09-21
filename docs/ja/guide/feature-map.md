@@ -1,6 +1,8 @@
 # 機能マップ
 
-| 目的 | Command family | 保存結果 |
+最初の変更は、[Story・Spec・検証・レビュー・PR準備](/ja/guide/control-loop)から始めてください。以下は任意の分析・判断支援・連携機能を含む一覧であり、すべての変更で完了するチェックリストではありません。
+
+| 目的 | コマンド群 | 保存結果 |
 | --- | --- | --- |
 | リポジトリの初期化と確認 | `init`, `doctor`, `status` | `.vibepro/` の設定とhealth context |
 | 影響範囲の文脈調査 | `graph`, `env graph`, `diagnose` | Graphとdiagnosis artifact |

@@ -43,6 +43,6 @@ VibeProは現在の `codebase-memory-mcp` CLI挙動に合わせて、providerに
 vibepro skills install .
 ```
 
-`vibepro-codebase-memory` skill は、`list_projects`、`index_repository`、`detect_changes`、`search_graph`、`trace_path`、`get_code_snippet` をいつ使い、結果をVibePro Gate evidenceへどう戻すかを説明します。
+`vibepro-codebase-memory` skill は、`list_projects`、`index_repository`、`detect_changes`、`search_graph`、`trace_path`、`get_code_snippet` をいつ使い、結果をレビュー用の実装情報としてどう活用するかを説明します。
 
 どちらのレンズも「変更が正しく動くこと」の証明には使いません。読むべきファイル、経路、テスト、reviewerを決める材料として使います。

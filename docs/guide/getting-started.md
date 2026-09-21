@@ -2,14 +2,16 @@
 
 VibePro requires Node.js 20 or newer. The public package is currently a beta.
 
+The following guide uses a global installation:
+
 ```bash
-npx vibepro@beta --help
-# or
 npm install -g vibepro@beta
 vibepro --help
 ```
 
-Initialize a target repository:
+To inspect the CLI without a global installation, use `npx vibepro@beta --help`. In the remaining examples, replace `vibepro` with `npx vibepro@beta` if you choose that route.
+
+Choose one change in a Git repository. Replace `/path/to/repo`, the Story ID, and the title with your own values. Initialize the workspace:
 
 ```bash
 vibepro init /path/to/repo \
@@ -18,7 +20,7 @@ vibepro init /path/to/repo \
   --language en
 ```
 
-This creates `.vibepro/` in the target repository. It is a context and evidence workspace, not application source.
+This creates `.vibepro/` in the target repository. It stores structured Story, Spec, and evidence records, not application source. Initialization alone does not describe the required behavior or verify your change.
 
 Check the installation and repository state:
 
@@ -28,4 +30,4 @@ vibepro status /path/to/repo --json
 vibepro story list /path/to/repo --all
 ```
 
-Then follow the [Minimal Core Flow](/guide/control-loop). Use `vibepro help --language en` whenever documentation and the installed package differ.
+Next, write the expected behavior and follow [One Change Through PR Preparation](/guide/control-loop). Use `vibepro help --language en` whenever documentation and the installed package differ.
