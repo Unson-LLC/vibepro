@@ -664,3 +664,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:545:start -->
 - [PR #545](https://github.com/Unson-LLC/vibepro/pull/545) — [2026-09](/ja/releases/2026-09): chore(release): publish 0.2.0-beta.28
 <!-- vibepro-release-index-pr:545:end -->
+
+<!-- vibepro-release-index-pr:546:start -->
+- [PR #546](https://github.com/Unson-LLC/vibepro/pull/546) — [2026-09](/ja/releases/2026-09): docs: 現行プロダクトに合わせて公開サイトを書き直す
+<!-- vibepro-release-index-pr:546:end -->
