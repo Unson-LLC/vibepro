@@ -6,7 +6,7 @@ The running binary is authoritative. Check its package version with `vibepro ver
 
 Check the Story, Spec, and verification results. Use `review prepare` → `review record` → `review status` to record a review when needed. `pr prepare` summarizes changes and evidence; legacy review stage configuration creates no additional shipping requirements.
 
-A passing record requires an existing `--inspection-input` outside `.vibepro`. Changes to inspected content make it stale. Missing or stale records alone do not block PR preparation. Concrete unresolved findings (`needs_changes` / `block`) remain visible and block preparation until resolved.
+A passing record requires an existing `--inspection-input` outside `.vibepro`. Changes to inspected content make it stale. Missing or stale records alone do not block `pr prepare`. Even with concrete unresolved findings (`needs_changes` / `block`), `pr prepare` writes the status to its summary and exits successfully. `pr create` does not create a PR from a blocked preparation and stops until the findings are resolved.
 
 ## Current Usage
 

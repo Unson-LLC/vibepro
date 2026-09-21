@@ -17,8 +17,10 @@ vibepro pr prepare . --base main
 
 `bug`、`bug_fix`、`regression_fix` のStoryでは、`pr prepare` が `fix_scope` を出力します。
 
-- 下流実行と正本側readbackを確認するまでは `status: partial_fix`
-- その境界が不明な間は `completion_claim: implementation_verified_external_outcome_unknown`
+- `internal_output`、`downstream_outcome`、`canonical_readback` のすべてが `verified` になるまでは `status: partial_fix`
+- 外部成果が未確認でも、`internal_output` が `verified` または verification evidence の信頼判定が `trusted` のときだけ `completion_claim: implementation_verified_external_outcome_unknown`
+- 外部成果が未確認で、`internal_output` も `verified` ではなく verification evidence の信頼判定も `trusted` ではないときは `completion_claim: implementation_unverified_external_outcome_unknown`
+- 上の3段階がすべて `verified` のときは `status: user_outcome_fix`、`completion_claim: user_outcome_verified`
 - 元の問題、影響するoutcome stage、確認済み・未確認の境界をPR証拠の近くに表示
 
 ローカルテストで確認できるのは実装段階までです。それだけでは、本番の同経路結果や受信側readbackを確定できません。外部フローでは [Issue #507](https://github.com/Unson-LLC/vibepro/issues/507) のterminal receipt契約を使います。

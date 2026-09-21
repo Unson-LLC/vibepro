@@ -1,5 +1,7 @@
 # Feature Map
 
+For a first change, start with [Story, Spec, checks, review, and PR preparation](/guide/control-loop). The table below also includes optional analysis, judgment, and integration tools; it is not a checklist that every change must complete.
+
 | Need | Command family | Stored result |
 | --- | --- | --- |
 | Initialize and inspect a repository | `init`, `doctor`, `status` | `.vibepro/` config and health context |
@@ -7,7 +9,9 @@
 | Preserve product intent | `story`, `spec`, `trace` | Story, Spec, and trace records |
 | Preserve execution evidence | `verify` | Verification records tied to repository state |
 | Preserve human or agent judgment | `review`, `decision` | Review and decision records |
-| 観測から専門判断の候補を作る | `judgment suggest` | [仮説・選択肢・次の確認](./expert-judgment-nodes.md)を標準出力へ返す |
+| Frame questions and reconsider with evidence | `judgment investigate` | [AI-host requests, investigation evidence, candidates, and unresolved questions](/guide/senior-engineering-judgment) |
+| Carry investigation into judgment input | `judgment prepare --investigation` | An input draft awaiting explicit adoption |
+| Suggest expert judgment from observations | `judgment suggest` | [Hypotheses, options, and next checks](./expert-judgment-nodes.md) on standard output |
 | Evaluate senior engineering choices | `judgment evaluate` | Advisory decision DAG and immutable run history |
 | Add command guardrails | `guard` | Local guard configuration and reports |
 | Prepare a PR handoff | `pr prepare`, `pr create` | PR context and human-readable body |
@@ -16,7 +20,9 @@
 
 ## Removed from the minimal core
 
-The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, readiness/blocking verdicts, review-lifecycle accounting, delivery-efficiency budgets, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles.
+The following concepts may appear in historical release notes but are not current features: Gate DAGs, check packs, checkpoints, managed execution and merge, automatic adjudication, readiness/blocking verdicts from the former Gate DAG, review-lifecycle accounting, delivery-efficiency budgets, design-modernization pipelines, usage/ROI reporting, and automatic audit bundles.
+
+The current Spec finalization checks and unresolved-review checks remain. `pr prepare` can summarize a `blocked` result; `pr create` refuses to create the PR from that result. These checks are not merge approval. See the [Safety Model](/guide/safety-model).
 
 Run `vibepro help --language en` for the exact commands in your installed version.
 
@@ -25,7 +31,7 @@ Run `vibepro help --language en` for the exact commands in your installed versio
 VibePro can now operate Development Judgment as an explicit non-blocking loop rather than an optional report command:
 
 1. record applicability,
-2. prepare and explicitly adopt reviewed meaning,
+2. investigate and reconsider when needed, then review the input draft and explicitly adopt its meaning,
 3. evaluate the Development Judgment DAG,
 4. bind actionable guidance into Story planning,
 5. record disposition separately from later Outcome,

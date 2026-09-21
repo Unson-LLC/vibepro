@@ -1,20 +1,5 @@
-# ゲートと証跡
+# Gateと証跡
 
-VibeProのGateは、PRを作成またはマージしてよいかを判断するための確認項目です。必要なのは「もっともらしい説明」ではなく、現在の変更に紐づいた証跡です。
+このページは、以前の広範なGate機構を説明していました。過去のリンクを維持するために残していますが、Gate DAG、マージをブロックするライフサイクル会計、以前のステータス体系は、現在のVibePro最小コアから廃止されています。
 
-よくあるstatus:
-
-- `passed`: 必要な証跡があり、現在の変更に一致している
-- `needs_evidence`: 必要な検証、artifact、review、decision記録が不足している
-- `needs_review`: 人間またはagent reviewがまだ必要
-- `blocked`: 修正または明示的なwaiveが必要
-- `waived`: 記録された判断により残リスクを受け入れている
-- `inconclusive`: scannerがeligible targetを検査できなかった。passではない
-
-## Impact Contextは補助証跡
-
-Graphifyと `codebase-memory-mcp` は、関連ファイル、route、symbol、call path、risk hintを見つける助けになります。VibeProはそれらのsignalを使って、`execution_topology`、`public_contract`、`security_boundary`、`data_state`、`scope_reviewability` などのEngineering Judgment軸を活性化できます。
-
-ただし、これらのsignalはruntime behavior、security correctness、rollback safety、UX、migration、release operationに必要な証跡を閉じません。次に何を読み、何を検証するかを決める材料として使います。
-
-commit後は、以前のverification、review、PR readinessをstale候補として扱い、current-head gateを再実行します。
+現在の機能は[コントロールループ](/ja/guide/control-loop)と[機能マップ](/ja/guide/feature-map)を参照してください。構造上の参照確認と記録された検証は変更を読み解く助けになりますが、意味の正しさ、安全性、PR承認、コードのマージを自動で決めるものではありません。

@@ -17,8 +17,10 @@ vibepro pr prepare . --base main
 
 For `bug`, `bug_fix`, and `regression_fix` Stories, `pr prepare` emits `fix_scope`:
 
-- `status: partial_fix` until downstream execution and canonical receiver readback are verified.
-- `completion_claim: implementation_verified_external_outcome_unknown` while those boundaries remain unknown.
+- `status: partial_fix` until `internal_output`, `downstream_outcome`, and `canonical_readback` are all `verified`.
+- When the external outcome remains unconfirmed, `completion_claim: implementation_verified_external_outcome_unknown` is used only if `internal_output` is `verified` or the verification evidence has a `trusted` status.
+- If the external outcome remains unconfirmed while `internal_output` is not `verified` and the verification evidence is not `trusted`, the claim is `implementation_unverified_external_outcome_unknown`.
+- Once all three stages are `verified`, the status is `user_outcome_fix` and the claim is `user_outcome_verified`.
 - `original_problem`, affected outcome stages, and confirmed/unconfirmed boundaries near the PR evidence.
 
 Local tests can verify an implementation stage. They cannot, by themselves, establish a production same-path result or a receiver-side readback. External flows should use the terminal receipt contract tracked in [Issue #507](https://github.com/Unson-LLC/vibepro/issues/507).

@@ -4,6 +4,46 @@
 
 変更の重要度が高い、元に戻しにくい、複数componentにまたがる場合や、機能を加えるべきか、累積した仕組みを小さくすべきか、不確かな制約を先に検証すべきかを判断したい場合に使います。
 
+## 判断するための問いと証拠をそろえる
+
+評価の前には、「そもそも何を決める必要があるか」を見つける仕事があります。`judgment investigate` は、依頼の目的・範囲・制約からホストAI向けの `model_request` を作り、問い・選択肢・推薦を追加調査で見直す入口です。既に十分な観測がある場合は、この調査を省略できます。
+
+```text
+依頼・期待する成果
+  → ホストAIが問い・仮説・必要な証拠を整理
+  → 既存Graphify成果物・ソースなどを調査
+  → 新しい証拠に合わせて問い・選択肢・推薦を再解釈
+  → prepare --investigation で入力ドラフトへ引き継ぐ
+  → 明示的な採択 → evaluate → 次の確認やStoryの計画へ
+```
+
+これは固定の一方向工程ではありません。先に構造を読むことで問いが変わることもあります。新しい証拠を取得した場合は、以前の解釈・推薦を無効化して再解釈を要求します。取得できなかった情報を「存在しない」に変えず、`unknown` / `partial` / `unavailable` として残します。
+
+専門判断の8ノードは、成果と範囲、本人とAIの分担、変更の所属、情報共有、実行と依存、構造の単純化、実行経路への到達、次の検証の価値を扱います。既存の開発モードや採択権限を置き換えるのではなく、前提・候補・未解決事項を判断へ渡す補助です。[専門判断DAGの詳細（日本語）](/guide/expert-judgment-nodes)に各ノードと二巡の例があります。
+
+### ホストAIとCLIの分担
+
+- ホストAIは、証拠を意味として読み、問い・仮説・選択肢・推薦を作り、CLIへ応答を渡します。
+- CLIは、明示された既存Graphify成果物と範囲を限定したソースを読み、応答スキーマや参照の整合性を検証し、再判断に必要な状態を保持します。
+- `judgment investigate` はモデルの自律呼び出し、Graphifyの生成、外部コネクタによる証拠取得、コマンド実行を代行しません。Graphifyを生成するときは、別の明示的な `vibepro graph . --run-graphify` を実行します。Graphifyの辺は構造候補であり、契約の一致・実行成功・利用者価値の証明ではありません。
+- 人間・CI・リポジトリのルールが採択と実行の権限を持ちます。`candidate_ready` でも `advisory: true` / `blocking: false` であり、採択済みや実行可能を意味しません。
+
+### 調査から評価へつなぐ
+
+`raw-goal.json` には `case_id`、`goal`、`scope.files`、`constraints` を置きます。Storyへ接続する場合は `case_id` を対象Story IDに合わせます。具体的な入力形式は上の詳細ページを参照してください。
+
+```bash
+vibepro judgment investigate . --input raw-goal.json --json > round-1.json
+# ホストAIが model_request と応答スキーマを読み、実際の証拠で応答を作る
+vibepro judgment investigate . --input round-1.json --response model-response.json --json > round-2.json
+# 必要な追加調査と再解釈を行った後、最新の結果を渡す
+vibepro judgment prepare . --id story-example --investigation round-2.json --json
+```
+
+`prepare` は候補と未解決の問いを入力ドラフトへ添付するだけです。出力の `artifact` を読み、問題設定・観測・選択肢を確認してから `judgment input adopt` で明示採択します。`evaluate` には採択結果の `adoption.adopted_input` を指定します。調査結果の添付だけでは、採択・実行・マージを行いません。
+
+観測が既に整理されている場合は、`judgment suggest` による単独提案、または `judgment prepare --expert-input` による任意の接続も使えます。専門ノードは `proposed` として残り、未解決事項は `review_expert_judgment` などの次の確認候補へ渡ります。
+
 ## 判断の順番
 
 各評価は、同じ最上位順序で進みます。

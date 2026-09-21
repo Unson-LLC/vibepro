@@ -1,23 +1,5 @@
 # チェックポイントと実行
 
-VibeProのcheckpointは、複数段階の作業を監査可能にします。
+このページは、以前のチェックポイントと管理実行の運用を説明していました。過去のリンクを維持するために残していますが、このオーケストレーション方式は現在のVibePro最小コアには含まれません。
 
-代表的なcheckpoint:
-
-- Storyを選択または作成した
-- ArchitectureとSpecの文脈を確認した
-- 実装が完了した
-- 検証を記録した
-- レビューを記録した
-- PR準備を行った
-- マージまたはリリース判断を記録した
-
-managed executionを使う場合は、停止または失敗したrunを再開する前に `.vibepro/executions/` とPR artifact directoryを確認します。
-
-```bash
-vibepro execute status . --story-id <story-id>
-vibepro execute next . --story-id <story-id>
-vibepro execute reconcile . --story-id <story-id>
-```
-
-reconcileは外部状態を読みますが、新しいrelease actionを許可するものではありません。詳細は[Managed Execution](/ja/guide/managed-execution)を参照してください。
+現在のStory、Spec、検証、レビュー、PR準備の流れは[コントロールループ](/ja/guide/control-loop)を参照してください。[機能マップ](/ja/guide/feature-map)では、現行コマンドと、廃止されたライフサイクル機構とは別の任意の助言的情報を整理しています。
