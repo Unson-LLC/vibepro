@@ -3475,3 +3475,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:547:end -->
+
+<!-- vibepro-release-pr:548:start -->
+## [#548](https://github.com/Unson-LLC/vibepro/pull/548) fix: マニュアルの日本語切替404を解消
+
+- Author: @sintariran
+- Merged: 2026-09-21T10:29:51Z
+- Commit: `ad14ae86c4b4a2eec2310b2557d7be22750b50db`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:548:end -->

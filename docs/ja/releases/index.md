@@ -672,3 +672,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:547:start -->
 - [PR #547](https://github.com/Unson-LLC/vibepro/pull/547) — [2026-09](/ja/releases/2026-09): fix: マニュアルのMermaid図を描画する
 <!-- vibepro-release-index-pr:547:end -->
+
+<!-- vibepro-release-index-pr:548:start -->
+- [PR #548](https://github.com/Unson-LLC/vibepro/pull/548) — [2026-09](/ja/releases/2026-09): fix: マニュアルの日本語切替404を解消
+<!-- vibepro-release-index-pr:548:end -->
