@@ -1,10 +1,12 @@
 import { execFileSync } from 'node:child_process';
+import { mermaidPlugin } from '../../scripts/manual-mermaid.mjs';
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
-const productDescription = 'Repository-local Story, Spec, verification, review, and PR evidence for AI coding agents';
+const productDescription = 'Investigate what should change with your AI host, then connect the reasoning to implementation and PR review.';
 
 export default {
+  markdown: { config: (md) => md.use(mermaidPlugin) },
   title: 'VibePro',
   description: productDescription,
   cleanUrls: true,
@@ -26,11 +28,11 @@ export default {
   head: [
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'VibePro Manual' }],
-    ['meta', { property: 'og:title', content: 'VibePro — Traceable context for AI coding agents' }],
+    ['meta', { property: 'og:title', content: 'VibePro — Bring the reason for a change into its PR' }],
     ['meta', { property: 'og:description', content: productDescription }],
     ['meta', { property: 'og:image', content: `${siteUrl}/assets/vibepro-header.png` }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'VibePro — Traceable context for AI coding agents' }],
+    ['meta', { name: 'twitter:title', content: 'VibePro — Bring the reason for a change into its PR' }],
     ['meta', { name: 'twitter:description', content: productDescription }],
     ['meta', { name: 'twitter:image', content: `${siteUrl}/assets/vibepro-header.png` }],
     ['meta', { name: 'vibepro-source-commit', content: sourceCommit }],
@@ -40,7 +42,7 @@ export default {
       name: 'VibePro',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Linux, Windows',
-      softwareVersion: '0.2.0-beta.27',
+      softwareVersion: '0.2.0-beta.28',
       url: siteUrl,
       codeRepository: 'https://github.com/Unson-LLC/vibepro',
       license: 'https://www.apache.org/licenses/LICENSE-2.0'
@@ -103,7 +105,7 @@ export default {
       lang: 'ja-JP',
       link: '/ja/',
       title: 'VibePro',
-      description: 'AIコーディングエージェントのためのStory、Spec、検証、レビュー、PR証跡',
+      description: 'AIと何を変えるべきかを調べて判断し、その理由を実装・PRレビューまでつなぐCLI。',
       themeConfig: {
         siteTitle: 'VibeProマニュアル',
         nav: [
@@ -140,8 +142,8 @@ export default {
 function guideSidebar(locale) {
   const prefix = locale === 'ja' ? '/ja' : '';
   const labels = locale === 'ja'
-    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', '最小コアの流れ', 'シニアエンジニア判断', '機能マップ', 'リリース境界']
-    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'Minimal Core Flow', 'Senior Engineering Judgment', 'Feature Map', 'Release Boundary'];
+    ? ['現行CLI', '概要', 'VibeProとは', 'インストールと初回実行', 'ひとつの変更からPR準備まで', 'シニアエンジニア判断', '機能マップ', 'リリース境界']
+    : ['Current CLI', 'Overview', 'What VibePro Is', 'Install and First Run', 'One Change Through PR Preparation', 'Senior Engineering Judgment', 'Feature Map', 'Release Boundary'];
 
   return [
     {

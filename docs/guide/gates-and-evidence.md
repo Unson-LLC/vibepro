@@ -1,20 +1,5 @@
 # Gates and Evidence
 
-VibePro gates decide whether a PR is ready to create or merge. They require current evidence, not just plausible explanations.
+This page describes the former broad Gate system. It is retained for older links, but Gate DAGs, merge-blocking lifecycle accounting, and the old status model are retired from VibePro's current minimal core.
 
-Common statuses:
-
-- `passed`: Required evidence exists and matches the current change.
-- `needs_evidence`: A required verification, artifact, review, or decision record is missing.
-- `needs_review`: Human or agent review is still required.
-- `blocked`: A condition must be fixed or explicitly waived.
-- `waived`: A recorded decision accepts the remaining risk.
-- `inconclusive`: The scanner could not inspect an eligible target; this is not a pass.
-
-## Impact Context Is Supporting Evidence
-
-Graphify and `codebase-memory-mcp` can reveal related files, routes, symbols, call paths, and risk hints. VibePro can use those signals to activate Engineering Judgment axes such as `execution_topology`, `public_contract`, `security_boundary`, `data_state`, and `scope_reviewability`.
-
-Those signals do not close the required evidence for runtime behavior, security correctness, rollback safety, user experience, migrations, or release operations. Use them to decide what to inspect and test next.
-
-After any commit, treat prior verification, review, and PR readiness as potentially stale and re-run the current-head gates.
+For the current product, read the [Control Loop](/guide/control-loop) and [Feature Map](/guide/feature-map). Structural reference checks and recorded verification help people inspect a change; they do not decide semantic correctness, certify safety, approve a pull request, or merge code.

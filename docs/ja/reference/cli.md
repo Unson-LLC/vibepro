@@ -6,7 +6,7 @@
 
 Story・Specと検証結果を確認し、必要に応じて `review prepare` → `review record` → `review status` でレビューを記録します。`pr prepare` は変更と証拠を要約します。旧レビュー段階の設定は追加の出荷条件を作りません。
 
-合格の記録には実在する `.vibepro` 外の `--inspection-input` が必要です。確認対象の内容が変わると記録は古い状態になります。未記録や古い記録だけではPR準備を止めません。具体的な未解決指摘（`needs_changes` / `block`）は解消するまで表示し、PR準備を止めます。
+合格の記録には実在する `.vibepro` 外の `--inspection-input` が必要です。確認対象の内容が変わると記録は古い状態になります。未記録や古い記録だけでは `pr prepare` を止めません。具体的な未解決指摘（`needs_changes` / `block`）があっても、`pr prepare` は状態を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。
 
 ## 現在のUsage
 

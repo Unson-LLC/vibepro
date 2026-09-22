@@ -28,7 +28,7 @@ vibepro review record . --id <story-id> --role reviewer \
 vibepro review status . --id <story-id>
 ```
 
-合格の記録には、実在する `.vibepro` 外の確認対象ファイルが必要です。確認したファイルの内容が変わると、記録は古い状態になります。未記録や古い記録だけではPR準備を止めません。具体的な未解決指摘を `needs_changes` または `block` で記録すると、解消するまでPR準備を止めます。
+合格の記録には、実在する `.vibepro` 外の確認対象ファイルが必要です。確認したファイルの内容が変わると、記録は古い状態になります。未記録や古い記録だけでは `pr prepare` を止めません。具体的な未解決指摘を `needs_changes` または `block` で記録しても、`pr prepare` はその状態を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。
 
 以前のレビュー段階や実行履歴・コスト・strict-headの設定は、軽量レビューでは参照せず無視します。PRの準備では、Story、Spec、検証、レビューの記録を人間が確認できる要約として扱います。
 

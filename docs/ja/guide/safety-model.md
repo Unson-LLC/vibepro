@@ -1,41 +1,28 @@
-# 安全モデル
+# 検査と判断の境界
 
-VibeProの安全モデルは、bounded authority、current-head evidence、独立検査、fail-closedなrelease operationで構成されます。
+VibeProは、確認できる文脈と結果をレビューに渡します。変更の安全性を認定する製品でも、サンドボックスやリポジトリのアクセス制御を置き換える製品でもありません。
 
-## Authority境界
+## 検査結果から分かること
 
-- **人間:** product intent、重大なtrade-off、waiver、最終release authority
-- **Story / Architecture / Spec:** 成果、構造境界、testable contract
-- **Code / runtime:** 実際の挙動。生成文はこれを上書きしない
-- **Verification:** commitとdurable artifactに紐づく観測結果
-- **Independent reviewer:** 別のexecution identityによる検査と裁定
-- **Gate DAG:** readinessの統合。不足証跡を示すが、証拠を創作しない
+- Specの参照検査で分かるのは、宣言したファイルや対応するアンカーが見つかることです。コードが要求を満たす証明ではありません。
+- 検証結果は、コマンドを実行した結果です。何を確かめたかは、そのコマンドやテストの内容によります。
+- レビュー記録は、確認内容と指摘を残すものです。記録するだけで、実際のレビューを代替することはできません。
+- PR本文は、利用できる記録の要約です。生成できたことは、不足している作業の完了を意味しません。
 
-Brainbaseはupstream contextを供給できます。Graphify、codebase-memory、Journey pack、外部design prompt、生成screenshotは補助証跡です。存在するだけでimplementation truthにはなりません。
+利用者にとって正しい振る舞いか、安全か、確認が十分かは人が判断します。CIやリポジトリのルールも引き続き適用してください。
 
-## Fail-closedな状態
+## 下書き、確定、指摘の扱い
 
-- 欠落・stale evidenceは `needs_evidence` のままにする
-- 必要なinspectionが未実施なら `needs_review` のままにする
-- 違反条件は、修正または明示的で帰属可能なdecisionまで `blocked` のままにする
-- eligible targetを発見できなかったscannerは、問題なしではなくinconclusiveとする
-- review recordには正しいstage、role、status（`pass` / `needs_changes` / `block`）、agent identity、inspection input、closed lifecycleが必要
+「安全性を判定するゲートではない」とは、どんな入力でも受け付けるという意味ではありません。Specの確定には、GraphifyやStory診断を含むreadinessの条件があります。レビューを `pass` で記録するには、要約と `.vibepro/` 外に実在する確認対象が必要です。具体的な問題を示す `needs_changes`・`block` のレビューがあっても、`pr prepare` はblocking状態と理由を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。
 
-## Decisionとwaiver
+違いは[ひとつの変更からPR準備まで](/ja/guide/control-loop)で説明しています。従来の広範なGate DAGや、必須のレビューライフサイクル管理は廃止しました。任意の[設計判断DAG](/ja/guide/senior-engineering-judgment)は助言であり、マージの許可を出すものではありません。
 
-```bash
-vibepro decision record . \
-  --id <story-id> \
-  --type waiver \
-  --summary "<accepted residual risk>" \
-  --reason "<why this is acceptable>" \
-  --artifact <evidence-path> \
-  --reviewer <identity> \
-  --status accepted
-```
+## 判断を記録しても、失敗が成功になるわけではない
 
-waiverは可視化された負債であり、passしたtestではありません。source gate / finding、reason、evidence、owner、statusを明示します。
+判断記録には、選択、理由、担当者、根拠を残せます。残るリスクを受け入れたとしても、失敗したテストが成功に変わることはありません。元の結果を確認し、リポジトリのルールに従って判断してください。
 
-## Release境界
+## 普段のPR・リリース運用を使う
 
-標準release pathは `guard check`、`pr prepare`、`pr create`、`execute merge` です。raw GitHub PR / merge commandはcurrent-head auditとwaiver auditを迂回するため、通常経路にしません。
+PRの承認、マージ、リリースには、通常のGit・GitHub運用を使います。`pr prepare` はPR本文用のサマリーを用意し、`pr create` は任意でGitHub CLIへ引き渡します。どちらも安全性の認定ではなく、VibeProがコードをマージすることもありません。
+
+過去のリリースノートには廃止済みの仕組みも登場します。古い実行・ゲート手順ではなく、インストールした版のヘルプと現行の[機能マップ](/ja/guide/feature-map)を確認してください。

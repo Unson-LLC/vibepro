@@ -3412,3 +3412,108 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:544:end -->
+
+<!-- vibepro-release-pr:545:start -->
+## [#545](https://github.com/Unson-LLC/vibepro/pull/545) chore(release): publish 0.2.0-beta.28
+
+- Author: @sintariran
+- Merged: 2026-09-20T11:11:54Z
+- Commit: `dea09e2ddea48693d0efb96eddb1959295767223`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:545:end -->
+
+<!-- vibepro-release-pr:546:start -->
+## [#546](https://github.com/Unson-LLC/vibepro/pull/546) docs: 現行プロダクトに合わせて公開サイトを書き直す
+
+- Author: @sintariran
+- Merged: 2026-09-21T09:40:58Z
+- Commit: `557c95ef7bc19c945f2c4e2b4fe51afa24469e25`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:546:end -->
+
+<!-- vibepro-release-pr:547:start -->
+## [#547](https://github.com/Unson-LLC/vibepro/pull/547) fix: マニュアルのMermaid図を描画する
+
+- Author: @sintariran
+- Merged: 2026-09-21T10:07:12Z
+- Commit: `f5de85d353151e041e04ba8c701908e28d51d314`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:547:end -->
+
+<!-- vibepro-release-pr:548:start -->
+## [#548](https://github.com/Unson-LLC/vibepro/pull/548) fix: マニュアルの日本語切替404を解消
+
+- Author: @sintariran
+- Merged: 2026-09-21T10:29:51Z
+- Commit: `ad14ae86c4b4a2eec2310b2557d7be22750b50db`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:548:end -->
+
+<!-- vibepro-release-pr:550:start -->
+## [#550](https://github.com/Unson-LLC/vibepro/pull/550) feat: UI変更の標準部品探索と視覚確認を促す
+
+- Author: @sintariran
+- Merged: 2026-09-21T23:54:06Z
+- Commit: `3539e0f691161d8a6343d14370bd858e6db9e695`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:550:end -->
