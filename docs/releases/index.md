@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-17 | [`0.2.0-beta.27`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.27) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-17 | [`0.2.0-beta.26`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.26) | npm `beta` / `latest` | Post-merge continuous release |
@@ -680,3 +681,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:550:start -->
 - [PR #550](https://github.com/Unson-LLC/vibepro/pull/550) — [2026-09](/releases/2026-09): feat: UI変更の標準部品探索と視覚確認を促す
 <!-- vibepro-release-index-pr:550:end -->
+
+<!-- vibepro-release-index-pr:551:start -->
+- [PR #551](https://github.com/Unson-LLC/vibepro/pull/551) — [2026-09](/releases/2026-09): chore(release): publish 0.2.0-beta.29
+<!-- vibepro-release-index-pr:551:end -->

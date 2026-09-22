@@ -3517,3 +3517,26 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:550:end -->
+
+<!-- vibepro-release-pr:551:start -->
+## [#551](https://github.com/Unson-LLC/vibepro/pull/551) chore(release): publish 0.2.0-beta.29
+
+- Author: @sintariran
+- Merged: 2026-09-22T00:06:56Z
+- Commit: `02934659e8a91a23c2ee8dc0b57ad768ae7c4b45`
+
+### Change Summary
+
+- UI変更時に、既存の標準primitiveと類似画面の探索結果をSpecへ残せます。
+- 対象viewportの修正前後スクリーンショットと目視評価を完了条件として記録できます。
+- DOM寸法やテスト成功だけで視覚品質を合格扱いせず、2回のCSS調整で未解決なら構造・標準部品を再検討します。
+
+### Compatibility
+
+破壊的変更なし。既存CLI契約は変更しません。
+
+### User Action
+
+`npm install vibepro@0.2.0-beta.29` で更新してください。
+
+<!-- vibepro-release-pr:551:end -->

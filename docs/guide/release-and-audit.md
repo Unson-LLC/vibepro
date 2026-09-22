@@ -13,6 +13,6 @@ Do not treat a merged version bump or a successful package workflow as npm publi
 
 VibePro keeps local evidence records, but it no longer generates a canonical audit bundle or decides whether those records are sufficient. Consumers own retention, access control, review policy, CI requirements, and final approval.
 
-## Upgrade to 0.2.0-beta.28
+## Upgrade to 0.2.0-beta.29
 
 This is a breaking beta cleanup. Automation calling removed commands must migrate to the command list shown by `vibepro help`. To retain the previous broad workflow temporarily, pin `vibepro@0.2.0-beta.2`.
