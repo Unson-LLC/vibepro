@@ -1,7 +1,7 @@
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -245,6 +245,166 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
   assert.equal(nextPrepared.result.feedback.outcome, 'confirmed');
   assert.equal(nextPrepared.result.input.development_cycle.history_boundary.kind, 'verified_external_outcome');
   assert.deepEqual(nextPrepared.result.input.development_cycle.adopted_batches, []);
+});
+
+test('unimproved adopted batches remain visible across successive judgment runs', async () => {
+  const root = await setupRepo('cumulative-feedback');
+  let previousAdoptedInput;
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root, '--id', STORY_ID,
+    '--applicable', 'yes', '--reason', 'External outcome is not yet improved', '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
+
+  for (const [runId, outcomeStatus] of [
+    ['cumulative-run-1', 'mixed'],
+    ['cumulative-run-2', 'unknown']
+  ]) {
+    const prepared = await runCli([
+      'judgment', 'prepare', root, '--id', STORY_ID, '--run-id', runId, '--json'
+    ], silentIo());
+    assert.equal(prepared.exitCode, 0);
+    const inputPath = await createActionableInput(root, prepared.result.artifact);
+    const adopted = await runCli([
+      'judgment', 'input', 'adopt', root, '--id', STORY_ID,
+      '--input', inputPath, '--reviewed-by', 'test-agent',
+      '--authority', 'story-and-repository-evidence', '--summary', 'Reviewed test input', '--json'
+    ], silentIo());
+    assert.equal(adopted.exitCode, 0);
+    previousAdoptedInput = adopted.result.adoption.adopted_input;
+    const evaluated = await runCli([
+      'judgment', 'evaluate', root, '--id', STORY_ID,
+      '--input', adopted.result.adoption.adopted_input, '--json'
+    ], silentIo());
+    assert.equal(evaluated.exitCode, 0);
+    assert.equal(evaluated.result.operational.development_mode, runId.endsWith('1') ? 'VALUE' : 'SIMPLIFY');
+    const disposition = await runCli([
+      'judgment', 'disposition', 'record', root, '--id', STORY_ID,
+      '--run', runId, '--human-decision', 'accepted', '--effect', 'changed_plan',
+      '--summary', 'Adopted in this test', '--json'
+    ], silentIo());
+    assert.equal(disposition.exitCode, 0);
+    const outcome = await runCli([
+      'judgment', 'outcome', 'record', root, '--id', STORY_ID,
+      '--run', runId, '--status', outcomeStatus,
+      '--summary', 'No verified external improvement', '--evidence', 'index.js', '--json'
+    ], silentIo());
+    assert.equal(outcome.exitCode, 0);
+  }
+
+  const third = await runCli([
+    'judgment', 'prepare', root, '--id', STORY_ID,
+    '--run-id', 'cumulative-run-3', '--json'
+  ], silentIo());
+  assert.equal(third.exitCode, 0);
+  assert.deepEqual(third.result.input.development_cycle.adopted_batches.map((batch) => batch.id), [
+    'batch-cumulative-run-1', 'batch-cumulative-run-2'
+  ]);
+  const inputPath = await createActionableInput(root, third.result.artifact);
+  const adopted = await runCli([
+    'judgment', 'input', 'adopt', root, '--id', STORY_ID,
+    '--input', inputPath, '--reviewed-by', 'test-agent',
+    '--authority', 'story-and-repository-evidence', '--summary', 'Reviewed third input', '--json'
+  ], silentIo());
+  assert.equal(adopted.exitCode, 0);
+  const evaluated = await runCli([
+    'judgment', 'evaluate', root, '--id', STORY_ID,
+    '--input', adopted.result.adoption.adopted_input, '--json'
+  ], silentIo());
+  assert.equal(evaluated.exitCode, 0);
+  assert.equal(evaluated.result.operational.development_mode, 'SIMPLIFY');
+
+  const disposition = await runCli([
+    'judgment', 'disposition', 'record', root, '--id', STORY_ID,
+    '--run', 'cumulative-run-3', '--human-decision', 'accepted',
+    '--effect', 'changed_plan', '--summary', 'Adopted simplification', '--json'
+  ], silentIo());
+  assert.equal(disposition.exitCode, 0);
+  const outcome = await runCli([
+    'judgment', 'outcome', 'record', root, '--id', STORY_ID,
+    '--run', 'cumulative-run-3', '--status', 'confirmed',
+    '--summary', 'External outcome verified', '--evidence', 'index.js', '--json'
+  ], silentIo());
+  assert.equal(outcome.exitCode, 0);
+  const fourth = await runCli([
+    'judgment', 'prepare', root, '--id', STORY_ID,
+    '--run-id', 'cumulative-run-4', '--json'
+  ], silentIo());
+  assert.equal(fourth.exitCode, 0);
+  assert.equal(fourth.result.input.development_cycle.history_boundary.kind, 'simplification_baseline');
+  assert.deepEqual(fourth.result.input.development_cycle.adopted_batches, []);
+
+  await writeFile(path.join(root, adopted.result.adoption.adopted_input), '{}\n');
+  const invalidIo = capturingIo();
+  const invalid = await runCli([
+    'judgment', 'prepare', root, '--id', STORY_ID,
+    '--run-id', 'cumulative-run-5', '--json'
+  ], invalidIo.io);
+  assert.notEqual(invalid.exitCode, 0);
+  assert.match(invalidIo.stderrText(), /changed after adoption/);
+});
+
+test('missing or inconsistent feedback never silently resets adopted history', async () => {
+  const root = await setupRepo('feedback-integrity');
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root, '--id', STORY_ID,
+    '--applicable', 'yes', '--reason', 'Feedback integrity', '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
+  const prepared = await runCli([
+    'judgment', 'prepare', root, '--id', STORY_ID,
+    '--run-id', 'integrity-run-1', '--json'
+  ], silentIo());
+  assert.equal(prepared.exitCode, 0);
+  const inputPath = await createActionableInput(root, prepared.result.artifact);
+  const adopted = await runCli([
+    'judgment', 'input', 'adopt', root, '--id', STORY_ID,
+    '--input', inputPath, '--reviewed-by', 'test-agent',
+    '--authority', 'story-and-repository-evidence', '--summary', 'Reviewed input', '--json'
+  ], silentIo());
+  assert.equal(adopted.exitCode, 0);
+  const evaluated = await runCli([
+    'judgment', 'evaluate', root, '--id', STORY_ID,
+    '--input', adopted.result.adoption.adopted_input, '--json'
+  ], silentIo());
+  assert.equal(evaluated.exitCode, 0);
+  const disposition = await runCli([
+    'judgment', 'disposition', 'record', root, '--id', STORY_ID,
+    '--run', 'integrity-run-1', '--human-decision', 'accepted',
+    '--effect', 'changed_plan', '--summary', 'Adopted', '--json'
+  ], silentIo());
+  assert.equal(disposition.exitCode, 0);
+  const developmentRoot = path.dirname(path.dirname(adopted.result.adoption.artifact));
+  const feedbackPath = path.join(root, developmentRoot, 'feedback', 'current.json');
+  const feedback = JSON.parse(await readFile(feedbackPath, 'utf8'));
+  let probe = 0;
+  async function expectPrepareFailure(pattern) {
+    const capture = capturingIo();
+    const result = await runCli([
+      'judgment', 'prepare', root, '--id', STORY_ID,
+      '--run-id', `integrity-probe-${++probe}`, '--json'
+    ], capture.io);
+    assert.notEqual(result.exitCode, 0);
+    assert.match(capture.stderrText(), pattern);
+  }
+  await rm(feedbackPath);
+  await expectPrepareFailure(/missing or stale/);
+  await writeFile(feedbackPath, `${JSON.stringify({ ...feedback, story_id: 'story-attacker' })}\n`);
+  await expectPrepareFailure(/does not match Story/);
+  await writeFile(feedbackPath, `${JSON.stringify({ ...feedback, disposition: { ...feedback.disposition, story_id: 'story-attacker' } })}\n`);
+  await expectPrepareFailure(/does not match Story/);
+  await writeFile(feedbackPath, `${JSON.stringify({ ...feedback, outcome: { status: 'mixed', story_id: 'story-attacker', run_id: feedback.run_id, artifact: 'other.json' } })}\n`);
+  await expectPrepareFailure(/does not match Story/);
+  await writeFile(feedbackPath, `${JSON.stringify({ ...feedback, outcome: { status: 'confirmed', story_id: STORY_ID, run_id: feedback.run_id } })}\n`);
+  await expectPrepareFailure(/has no outcome artifact/);
+  await writeFile(feedbackPath, `${JSON.stringify(feedback)}\n`);
+  const adoptedInputPath = path.join(root, adopted.result.adoption.adopted_input);
+  const adoptedBytes = await readFile(adoptedInputPath, 'utf8');
+  await rm(adoptedInputPath);
+  await expectPrepareFailure(/restore the adopted input/);
+  await writeFile(adoptedInputPath, '{}\n');
+  await expectPrepareFailure(/changed after adoption/);
+  await writeFile(adoptedInputPath, adoptedBytes);
 });
 
 test('story plan advances the judgment loop and persists explicit disposition and outcome', async () => {
