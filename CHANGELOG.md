@@ -3540,3 +3540,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 `npm install vibepro@0.2.0-beta.29` で更新してください。
 
 <!-- vibepro-release-pr:551:end -->
+
+<!-- vibepro-release-pr:558:start -->
+## [#558](https://github.com/Unson-LLC/vibepro/pull/558) docs: align judgment terminology with agreed concept model
+
+- Author: @sintariran
+- Merged: 2026-09-26T10:58:21Z
+- Commit: `51e56725171e173dabd307b977966b8fd6a2c5ac`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:558:end -->

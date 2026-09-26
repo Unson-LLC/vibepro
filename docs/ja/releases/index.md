@@ -685,3 +685,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:551:start -->
 - [PR #551](https://github.com/Unson-LLC/vibepro/pull/551) — [2026-09](/ja/releases/2026-09): chore(release): publish 0.2.0-beta.29
 <!-- vibepro-release-index-pr:551:end -->
+
+<!-- vibepro-release-index-pr:558:start -->
+- [PR #558](https://github.com/Unson-LLC/vibepro/pull/558) — [2026-09](/ja/releases/2026-09): docs: align judgment terminology with agreed concept model
+<!-- vibepro-release-index-pr:558:end -->
