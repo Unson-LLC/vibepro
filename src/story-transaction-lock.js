@@ -18,10 +18,33 @@ export async function withStoryTransactionLocks(repoRoots, storyId, action, opti
     'locks',
     `${sanitizeStoryId(storyId)}.delivery-reconciliation.lock`
   )))].sort();
+  return withDirectoryLocks(lockPaths, action, options);
+}
+
+/**
+ * Serialize writes to the repository-wide Brainbase binding ledger and its
+ * companion projections.  This uses the same generation/owner lock protocol
+ * as Story delivery reconciliation; the lock is repository-scoped because a
+ * single ledger is shared by every Story in the repository.
+ */
+export async function withBrainbaseBindingLock(repoRoot, action, options = {}) {
+  const lockPath = path.join(
+    getWorkspaceDir(path.resolve(repoRoot)),
+    'locks',
+    'brainbase-binding.lock'
+  );
+  return withDirectoryLocks([lockPath], action, options, {
+    lockLabel: 'Brainbase binding transaction',
+    timeoutCode: 'brainbase_binding_lock_timeout'
+  });
+}
+
+async function withDirectoryLocks(lockPaths, action, options = {}, descriptor = {}) {
   const acquired = [];
+  const lockOptions = { ...options, ...descriptor };
   try {
     for (const lockPath of lockPaths) {
-      acquired.push(await acquireDirectoryLock(lockPath, options));
+      acquired.push(await acquireDirectoryLock(lockPath, lockOptions));
     }
     return await action();
   } finally {
@@ -89,7 +112,12 @@ async function acquireDirectoryLock(lockPath, options = {}) {
       await rm(stagingPath, { recursive: true, force: true });
     }
   }
-  throw await createLockTimeoutError(lockPath, { staleMs, processAlive });
+  throw await createLockTimeoutError(lockPath, {
+    staleMs,
+    processAlive,
+    lockLabel: options.lockLabel,
+    timeoutCode: options.timeoutCode
+  });
 }
 
 function startLockHeartbeat(ownership, heartbeatMs) {
@@ -311,7 +339,12 @@ async function restoreMovedGeneration(quarantinePath, directoryPath) {
   }
 }
 
-async function createLockTimeoutError(lockPath, { staleMs, processAlive }) {
+async function createLockTimeoutError(lockPath, {
+  staleMs,
+  processAlive,
+  lockLabel = 'delivery reconciliation transaction',
+  timeoutCode = 'delivery_reconciliation_lock_timeout'
+}) {
   const transitionPath = path.join(lockPath, TRANSITION_DIR);
   const [lockOwner, transitionOwner] = await Promise.all([
     observeOwner(lockPath, { kind: 'lock', staleMs, processAlive }),
@@ -324,10 +357,10 @@ async function createLockTimeoutError(lockPath, { staleMs, processAlive }) {
     manual_recovery: 'Do not remove either path unconditionally. Only quarantine a generation after its hostname and pid are verified locally as confirmed dead and stale; treat remote-host or invalid metadata as unknown and fail closed.'
   };
   const error = new Error(
-    `timed out waiting for delivery reconciliation transaction lock: ${lockPath}; `
+    `timed out waiting for ${lockLabel} lock: ${lockPath}; `
     + `transition: ${transitionPath}; observed owners: ${summarizeOwner(observedOwner)}`
   );
-  error.code = 'delivery_reconciliation_lock_timeout';
+  error.code = timeoutCode;
   error.artifact_path = lockPath;
   error.lock_path = lockPath;
   error.transition_path = transitionPath;

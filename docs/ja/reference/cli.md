@@ -81,6 +81,7 @@ Story・Specと検証結果を確認し、必要に応じて `review prepare` �
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase rebind [repo] --id <story-id> --input <fresh-managed-handoff.json> --previous-digest <receipt-digest> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro integration brainbase status [repo] [--id <story-id>] [--json]
   vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]

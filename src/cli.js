@@ -30,6 +30,7 @@ import {
   doctorBrainbaseIntegration,
   getBrainbaseIntegrationStatus,
   reconcileBrainbaseOutbox,
+  rebindBrainbaseContext,
   renderBrainbaseContextBinding,
   renderBrainbaseDoctor,
   renderBrainbaseIntegrationStatus,
@@ -266,6 +267,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase rebind [repo] --id <story-id> --input <fresh-managed-handoff.json> --previous-digest <receipt-digest> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro integration brainbase status [repo] [--id <story-id>] [--json]
   vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
@@ -379,6 +381,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase rebind [repo] --id <story-id> --input <fresh-managed-handoff.json> --previous-digest <receipt-digest> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro integration brainbase status [repo] [--id <story-id>] [--json]
   vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
@@ -1532,6 +1535,18 @@ if (command === 'integration') {
     const result = await bindBrainbaseContext(repoRoot, {
       storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
       input: getOption(rest, '--input'),
+      env: io.env
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseContextBinding(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'rebind') {
+    const result = await rebindBrainbaseContext(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      input: getOption(rest, '--input'),
+      expectedPreviousDigest: getOption(rest, '--previous-digest'),
       env: io.env
     });
     write(stdout, hasFlag(rest, '--json')
