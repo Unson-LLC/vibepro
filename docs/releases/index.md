@@ -689,3 +689,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:558:start -->
 - [PR #558](https://github.com/Unson-LLC/vibepro/pull/558) — [2026-09](/releases/2026-09): docs: align judgment terminology with agreed concept model
 <!-- vibepro-release-index-pr:558:end -->
+
+<!-- vibepro-release-index-pr:559:start -->
+- [PR #559](https://github.com/Unson-LLC/vibepro/pull/559) — [2026-09](/releases/2026-09): feat: renew managed Brainbase bindings with receipt history
+<!-- vibepro-release-index-pr:559:end -->
