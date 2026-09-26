@@ -4,30 +4,19 @@
 
 VibePro treats software development as an accumulation of decisions made against changing context. The Development Judgment DAG records that causal history without restoring the former generic Gate DAG.
 
-This is a deliberately small knowledge/meaning primitive. It does not decide PR readiness, execute code, merge branches, or replace Guardrail / Execution DAGs.
+This is a deliberately small engineering judgment record. It does not decide PR readiness, execute code, merge branches, grant deployment authority, or restore the former Gate DAG.
 
 ## Position in the architecture
 
-VibePro already separates:
+The agreed [Brainbase × VibePro concept model](https://github.com/Unson-LLC/vibepro-project/blob/cf986112d707497ad55a159d8b2b39e6f65dfb4f/docs/architecture/brainbase-vibepro-concept-model.md) replaces the former Meaning / Knowledge / Control Plane framing in this development context. Brainbase is the PdM harness; VibePro is the Tech Lead harness. Harness responsibilities do not confer decision authority.
 
-- Meaning Plane: Frame, Story, Event
-- Knowledge Plane: repository facts, risks, templates, evaluations
-- Control Plane: Context / Diagnosis / Planning / Guardrail / Execution / Audit DAGs
+Philosophy applies across judgments. Objective (desired state and criteria) and World Model (facts, observations, and hypotheses) are distinct inputs; neither is derived from the other. The repository is an evidence source, not the Engineering World Model itself.
 
-Development Judgment DAG sits between an Event and the downstream control decisions as a durable explanation of engineering judgment:
+The design connects Problem Selection and a versioned JudgmentProblem through Delegation to Story and Engineering Judgment. Story references Objective rather than duplicating it. Technical Evaluation and Outcome Evaluation feed separate learning candidates, adoption, and impact review. New learning does not rewrite past runs.
 
-```text
-Frame -> Story -> Event
-                  |
-                  v
-           Judgment DAG
-             /       \
-            v         v
-     Knowledge       Guardrail / Execution / Audit
-     evidence         projections
-```
+The former Frame and four DAG-layer meanings are historical vocabulary, not current control instructions. This does not retire DAGs generally or remove authorization, CI, approval, or repository rules. Story completion, shipment, use, and value realization remain different outcomes; PR/merge support does not grant deployment authority.
 
-It is not a seventh control DAG. A Judgment DAG may be read by a later policy or reviewer, but the graph itself never emits `ready`, `blocked`, `allow`, `reject`, or merge authority.
+The node contract below describes the existing record shape. This documentation correction does not implement managed handoff v3, judgment schema 0.4.0, a persistent Engineering World Model, or a complete hierarchy of specialist DAGs. Graph glossary registration likewise does not activate new Graph entity types. A Judgment DAG remains advisory and never emits merge authority.
 
 ## Why this exists
 
