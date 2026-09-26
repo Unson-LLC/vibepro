@@ -79,6 +79,38 @@
         "test_refs": [{ "file": "test/brainbase-integration.test.js", "case": "managed v2はStory未作成時にcontextを書かず、v2からv1への再bindも拒否する" }, { "file": "test/brainbase-integration.test.js", "case": "signed managed v2の成果ケース参照はcaseとissuerに一致しなければならない" }]
       },
       "verifiable_by": { "test_pattern": [{ "file_glob": "test/brainbase-integration.test.js", "must_contain": "v2からv1への再bindも拒否する" }] }
+    },
+    {
+      "id": "AC-6",
+      "type": "invariant",
+      "statement": "managed rebindは、期限切れまたは旧HEADの前身receiptでも旧署名・identity・source・active bindingを検証し、明示されたprevious-digest CASに一致する場合だけ、fresh managed handoffの署名・TTL・current HEADを再検証して公開する。旧receiptを再利用せずsupersedes履歴とactive bindingを保持する。bind/rebind/ensureの全writeはrepo単位のlock内で全Storyのpending publication journalを先に回復し、複数pending journalは順序を推測せずfail closedする。",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "ac_id": "AC-6" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-brainbase-outcome-case-binding-v2.md" }],
+        "code_refs": [
+          { "file": "src/brainbase-integration.js", "anchor": "function nextHandoffRebind" },
+          { "file": "src/brainbase-integration.js", "anchor": "async function validateActiveManagedBindingForRebind" },
+          { "file": "src/brainbase-integration.js", "anchor": "async function refreshManagedBindingAfterLock" },
+          { "file": "src/brainbase-integration.js", "anchor": "async function recoverManagedPublication" },
+          { "file": "src/brainbase-integration.js", "anchor": "async function writeBrainbaseBinding" },
+          { "file": "src/story-transaction-lock.js", "anchor": "export async function withBrainbaseBindingLock" }
+        ],
+        "test_refs": [
+          { "file": "test/brainbase-integration.test.js", "case": "managed rebindは前身digest・署名・履歴を検証し、途中失敗後もactive bindingを一意に復旧する" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed rebindは独立プロセスの同時CASで一方だけを成功させ、履歴を保持する" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed rebindは旧active receiptまたはcommit markerの整合性が壊れていれば新規publishしない" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed publication recovery drains a pending Story journal before another bind and preserves it on retry" },
+          { "file": "test/brainbase-integration.test.js", "case": "managed publication recovery fails closed when multiple Story journals are unfinished" },
+          { "file": "test/brainbase-integration.test.js", "case": "CLI managed rebindは環境変数なしでもworkspaceの信頼設定ファイルを読む" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/brainbase-integration.test.js", "must_contain": "managed rebindは前身digest・署名・履歴を検証し、途中失敗後もactive bindingを一意に復旧する" },
+          { "file_glob": "test/brainbase-integration.test.js", "must_contain": "managed publication recovery drains a pending Story journal before another bind and preserves it on retry" },
+          { "file_glob": "test/brainbase-integration.test.js", "must_contain": "managed publication recovery fails closed when multiple Story journals are unfinished" }
+        ]
+      }
     }
   ]
 }

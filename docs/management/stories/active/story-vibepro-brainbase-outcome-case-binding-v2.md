@@ -21,6 +21,12 @@ Brainbaseから引き継がれた開発担当者として、成果ケースに�
 - AC-3: 有効なmanaged v2入力は、既存Storyを事前検査するか、標準 `vibepro story add` の完全なStory追加契約だけが内部の非export宣言capabilityを使って同一ジャーナル取引へ含める。公開されたStory追加契約は正規化済みCLI項目だけを受け、traceabilityも作成する。公開済みmanaged v2取引のtraceability書込みだけが失敗した場合は、commit済みStory・信頼済み投影・完全一致する正規化済み宣言・traceability欠落をすべて確認できる同じ標準Story追加だけが、公開を重複せずtraceabilityを冪等に再開する。不一致・未信頼v2・v1はfail closedする。一般のbind APIと任意の事前作成Story宣言はfail closedする。handoff sourceと消費ledgerの `source_artifact` は、正規のrepo相対パスであり、シンボリックリンク解決後もrepo root内に留まる場合だけ受理する。外部・traversal・encoded traversal・symlink escapeは、bindまたは回復による書込み前に拒否する。config、Context、bind receipt、消費ledger、commit markerを回復可能に公開してから、StoryとPR準備へ同じ成果ケース契約を保持する。非managed v2は権威あるStory/PRメタデータを投影できない。
 - AC-4: PR準備は保存済みの署名付きmanaged v2 handoffを信頼鍵で再検証し、消費ledgerが指すrepo内のcanonical source receiptを再読込してダイジェストを照合し、技術完了の判定と検証証跡だけを返す。外部・非正規・欠落・改ざん済みsourceはtrustedへ昇格させない。未連携の `none` と、未信頼・改ざん・期限切れ・commit marker欠落・partialの `unknown` / `untrusted` / `partial` を安全なreason codeと再bind/復旧判断とともに可視化する。`integration status`、`doctor`、Story診断レポートはこの信頼検証を実行しないため、`not_evaluated` と `pr prepare` の検証導線を表示する。OutcomeCaseの完了・close・外部更新を呼び出しも要求もしない。
 - AC-5: 不足、空値、重複ID、caseと一致しない参照、未知issuer、未信頼の検証証跡は技術完了として扱わない。v2からv1への再bindは既存v2投影を残したまま成功してはならず、markerのない部分投影は権威メタデータとして利用しない。
+- AC-6: managed rebindは、期限切れまたは旧HEADを指す前身receiptでも、旧署名・Story/project/repository/source/receipt・active bindingの整合性を検証し、明示した `previous-digest` と現在のactive bindingが一致する場合だけ、fresh managed handoffの署名・TTL・current HEAD・identityを再検証して公開する。旧receiptを再利用せず新receiptを履歴に `supersedes` として保持し、active bindingを新receiptへ切り替える。全てのbind/rebind/ensure writeはrepo単位のlock内で、全Storyのpending publication journalを先に回復する。複数の未完了journalがある場合は順序を推測せずfail closedし、完了marker一致journalだけを安全にcleanupする。
+
+## トレーサビリティ
+
+- 実装: `src/brainbase-integration.js` の `nextHandoffRebind`、`validateActiveManagedBindingForRebind`、`refreshManagedBindingAfterLock`、`recoverManagedPublication`、`writeBrainbaseBinding`。repo単位の排他は `src/story-transaction-lock.js` の `withBrainbaseBindingLock`。
+- 検証: `test/brainbase-integration.test.js` の前身digest・署名・履歴、同時CAS、旧active整合性、pending journal回復、複数pending fail closed、CLI信頼設定読込の各テスト。
 
 ## 対象外
 

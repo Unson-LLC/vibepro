@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { resolvePrArtifactFile } from '../src/artifact-routing.js';
 import {
@@ -21,6 +21,7 @@ import {
   getBrainbaseIntegrationStatus,
   inspectManagedV2OutcomeCaseProjection,
   reconcileBrainbaseOutbox,
+  rebindBrainbaseContext,
   renderBrainbaseDoctor,
   renderBrainbaseIntegrationStatus,
   sha256,
@@ -29,6 +30,7 @@ import { collectGitContext } from '../src/git-fingerprint.js';
 import { runCli } from '../src/cli.js';
 import { addStory, renderStoryReport, selectStory } from '../src/story-manager.js';
 import { preparePullRequest } from '../src/pr-manager.js';
+import { withBrainbaseBindingLock } from '../src/story-transaction-lock.js';
 import { initWorkspace } from '../src/workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -287,6 +289,57 @@ async function runCliCaptured(args, io = {}) {
   return { ...result, stdout, stderr };
 }
 
+function runRebindChild(sourceUrl, env) {
+  const script = `
+    import { writeFile } from 'node:fs/promises';
+    import { rebindBrainbaseContext } from ${JSON.stringify(sourceUrl)};
+
+    await writeFile(process.env.VIBEPRO_STARTED, String(process.pid));
+    try {
+      const result = await rebindBrainbaseContext(process.env.VIBEPRO_REPO, {
+        storyId: process.env.VIBEPRO_STORY,
+        input: process.env.VIBEPRO_INPUT,
+        expectedPreviousDigest: process.env.VIBEPRO_PREVIOUS,
+        env: process.env
+      });
+      await writeFile(process.env.VIBEPRO_RESULT, JSON.stringify({ ok: true, result }));
+    } catch (error) {
+      await writeFile(process.env.VIBEPRO_RESULT, JSON.stringify({
+        ok: false,
+        code: error?.code,
+        message: error?.message
+      }));
+    }
+  `;
+  return new Promise((resolve, reject) => {
+    const child = execFile(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: env.VIBEPRO_REPO,
+      env,
+      encoding: 'utf8'
+    }, (error, stdout, stderr) => {
+      resolve({ error, stdout, stderr });
+    });
+    child.once('error', reject);
+  });
+}
+
+async function waitForFiles(filePaths, timeoutMs = 10_000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const present = await Promise.all(filePaths.map(async (filePath) => {
+      try {
+        await readFile(filePath);
+        return true;
+      } catch {
+        return false;
+      }
+    }));
+    if (present.every(Boolean)) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error(`timed out waiting for child markers: ${filePaths.join(', ')}`);
+}
+
 async function managedBindingMutationSnapshot(root, storyId) {
   const relativePaths = [
     '.vibepro/config.json',
@@ -346,7 +399,9 @@ function managedHandoff({
   keyId = 'brainbase-vibepro-handoff-hmac-v1',
   hmacSecret = TEST_HANDOFF_HMAC_SECRET,
   schemaVersion = 'brainbase-vibepro-managed-handoff.v1',
-  managedOutcomeCase = null
+  managedOutcomeCase = null,
+  turnId = 'turn-test',
+  resolutionId = 'jr_test'
 } = {}) {
   const payload = {
     schema_version: schemaVersion,
@@ -356,8 +411,8 @@ function managedHandoff({
     base_sha: baseSha,
     issued_at: issuedAt,
     expires_at: expiresAt,
-    turn_id: 'turn-test',
-    resolution_id: 'jr_test',
+    turn_id: turnId,
+    resolution_id: resolutionId,
     story_id: storyId,
     authorized: false,
     graph_promotion_allowed: false,
@@ -942,6 +997,365 @@ test('managed v2 process recovery can fail closed and resume idempotently', asyn
   assert.equal(prepared.preparation.outcome_case.case_id, expectedOutcomeCase.case_id);
   assert.equal(prepared.preparation.outcome_case.user_observable_outcome, expectedOutcomeCase.user_observable_outcome);
   assert.equal(prepared.preparation.outcome_case.technical_complete, false);
+});
+
+test('managed publication recovery drains a pending Story journal before another bind and preserves it on retry', async () => {
+  const root = await makeRepo();
+  const storyA = 'story-brainbase-recovery-a';
+  const storyB = 'story-brainbase-recovery-b';
+  await addStory(root, { story_id: storyA, title: 'Pending publication A' });
+  await addStory(root, { story_id: storyB, title: 'Pending publication B' });
+  const { config, head } = await configureManagedBrainbase(root, {
+    receipt: { turnId: 'turn-recovery-a', resolutionId: 'jr_recovery_a' }
+  });
+  const aOptions = {
+    storyId: storyA,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  };
+  await assert.rejects(
+    bindBrainbaseContext(root, { ...aOptions, publishFailureAt: ['ledger', 'rollback'] }),
+    (error) => error?.code === 'BRAINBASE_BIND_PUBLICATION_INJECTED_FAILURE'
+  );
+  const journalAPath = path.join(root, '.vibepro/integrations/brainbase/publications', `${storyA}.json`);
+  assert.notEqual(await readFile(journalAPath, 'utf8').catch(() => null), null);
+
+  const handoffBPath = '.vibepro/integrations/brainbase/inbox/recovery-b-handoff.json';
+  await writeJson(path.join(root, handoffBPath), managedHandoff({
+    baseSha: head,
+    turnId: 'turn-recovery-b',
+    resolutionId: 'jr_recovery_b'
+  }));
+  const bOptions = {
+    storyId: storyB,
+    input: handoffBPath,
+    now: () => new Date('2026-09-03T00:00:03.000Z')
+  };
+  const boundB = await bindBrainbaseContext(root, bOptions);
+  assert.equal(boundB.status, 'bound');
+  assert.equal(await readFile(journalAPath, 'utf8').catch(() => null), null);
+  const ledgerAfterB = JSON.parse(await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8'));
+  assert.equal(ledgerAfterB.entries.length, 2);
+  assert.deepEqual(ledgerAfterB.entries.map((entry) => entry.story_id), [storyA, storyB]);
+  const bSnapshot = await managedBindingMutationSnapshot(root, storyB);
+
+  const retriedA = await bindBrainbaseContext(root, aOptions);
+  assert.equal(retriedA.status, 'bound');
+  assert.deepEqual(await managedBindingMutationSnapshot(root, storyB), bSnapshot);
+  const ledgerAfterRetry = JSON.parse(await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8'));
+  assert.deepEqual(ledgerAfterRetry, ledgerAfterB);
+});
+
+test('managed publication recovery fails closed when multiple Story journals are unfinished', async () => {
+  const root = await makeRepo();
+  const storyA = 'story-brainbase-ambiguous-a';
+  const storyB = 'story-brainbase-ambiguous-b';
+  await addStory(root, { story_id: storyA, title: 'Ambiguous publication A' });
+  await addStory(root, { story_id: storyB, title: 'Ambiguous publication B' });
+  const { config, head } = await configureManagedBrainbase(root, {
+    receipt: { turnId: 'turn-ambiguous-a', resolutionId: 'jr_ambiguous_a' }
+  });
+  const aOptions = {
+    storyId: storyA,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  };
+  await assert.rejects(
+    bindBrainbaseContext(root, { ...aOptions, publishFailureAt: ['ledger', 'rollback'] }),
+    (error) => error?.code === 'BRAINBASE_BIND_PUBLICATION_INJECTED_FAILURE'
+  );
+  const journalDirectory = path.join(root, '.vibepro/integrations/brainbase/publications');
+  const journalAPath = path.join(journalDirectory, `${storyA}.json`);
+  const journalBPath = path.join(journalDirectory, `${storyB}.json`);
+  const journalB = JSON.parse(await readFile(journalAPath, 'utf8'));
+  journalB.story_id = storyB;
+  journalB.transaction_id = 'transaction-ambiguous-b';
+  journalB.publication_digest = sha256(canonicalJson({
+    schema_version: journalB.schema_version,
+    transaction_id: journalB.transaction_id,
+    story_id: journalB.story_id,
+    documents: journalB.documents
+  }));
+  journalB.commit_marker = {
+    ...journalB.commit_marker,
+    transaction_id: journalB.transaction_id,
+    story_id: storyB,
+    publication_digest: journalB.publication_digest
+  };
+  await writeJson(journalBPath, journalB);
+  const handoffBPath = '.vibepro/integrations/brainbase/inbox/ambiguous-b-handoff.json';
+  await writeJson(path.join(root, handoffBPath), managedHandoff({
+    baseSha: head,
+    turnId: 'turn-ambiguous-b',
+    resolutionId: 'jr_ambiguous_b'
+  }));
+  const beforeConfig = await readFile(path.join(root, '.vibepro/config.json'), 'utf8');
+  const beforeLedger = await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8').catch(() => null);
+  await assert.rejects(
+    bindBrainbaseContext(root, {
+      storyId: storyB,
+      input: handoffBPath,
+      now: () => new Date('2026-09-03T00:00:03.000Z')
+    }),
+    (error) => error?.code === 'BRAINBASE_BIND_PUBLICATION_RECOVERY_AMBIGUOUS'
+  );
+  assert.equal(await readFile(path.join(root, '.vibepro/config.json'), 'utf8'), beforeConfig);
+  assert.equal(await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8').catch(() => null), beforeLedger);
+  assert.notEqual(await readFile(journalAPath, 'utf8').catch(() => null), null);
+  assert.notEqual(await readFile(journalBPath, 'utf8').catch(() => null), null);
+});
+
+test('managed rebindは前身digest・署名・履歴を検証し、途中失敗後もactive bindingを一意に復旧する', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'Managed rebind' });
+  const { config, head, receipt: initialReceipt } = await configureManagedBrainbase(root);
+  const initialBindOptions = {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date('2026-09-03T00:00:02.000Z')
+  };
+  await bindBrainbaseContext(root, initialBindOptions);
+  const oldDigest = initialReceipt.receipt_digest;
+  const freshPath = '.vibepro/integrations/brainbase/inbox/fresh-handoff.json';
+  const freshReceipt = managedHandoff({
+    baseSha: head,
+    issuedAt: '2026-09-03T00:01:00.000Z',
+    expiresAt: '2026-09-30T00:00:00.000Z',
+    turnId: 'turn-rebind',
+    resolutionId: 'jr_rebind'
+  });
+  await writeJson(path.join(root, freshPath), freshReceipt);
+  const rebindOptions = {
+    storyId: STORY_ID,
+    input: freshPath,
+    expectedPreviousDigest: oldDigest,
+    now: () => new Date('2026-09-03T00:02:00.000Z')
+  };
+
+  const beforeWrongPrevious = await managedBindingMutationSnapshot(root, STORY_ID);
+  await assert.rejects(
+    rebindBrainbaseContext(root, { ...rebindOptions, expectedPreviousDigest: '0'.repeat(64) }),
+    (error) => error?.code === 'BRAINBASE_HANDOFF_REBIND_PREVIOUS_MISMATCH'
+  );
+  assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), beforeWrongPrevious);
+
+  const tamperedReceipt = structuredClone(freshReceipt);
+  tamperedReceipt.signature.value = '0'.repeat(64);
+  await writeJson(path.join(root, freshPath), tamperedReceipt);
+  const beforeTampered = await managedBindingMutationSnapshot(root, STORY_ID);
+  await assert.rejects(
+    rebindBrainbaseContext(root, rebindOptions),
+    /HMAC signature does not match/
+  );
+  assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), beforeTampered);
+  await writeJson(path.join(root, freshPath), freshReceipt);
+
+  await assert.rejects(
+    rebindBrainbaseContext(root, { ...rebindOptions, publishFailureAt: 'receipt' }),
+    (error) => error?.code === 'BRAINBASE_BIND_PUBLICATION_INJECTED_FAILURE'
+  );
+  const journalPath = path.join(root, '.vibepro/integrations/brainbase/publications', `${STORY_ID}.json`);
+  assert.notEqual(await readFile(journalPath, 'utf8').catch(() => null), null);
+
+  const rebound = await rebindBrainbaseContext(root, rebindOptions);
+  assert.equal(rebound.status, 'bound');
+  const reboundContext = JSON.parse(await readFile(path.join(root, rebound.artifact), 'utf8'));
+  assert.equal(reboundContext.judgment.resolution_id, 'jr_rebind');
+  const ledger = JSON.parse(await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8'));
+  assert.equal(ledger.schema_version, 'vibepro-brainbase-handoff-consumption-ledger.v2');
+  assert.equal(ledger.entries.length, 2);
+  assert.equal(ledger.entries[0].receipt_digest, oldDigest);
+  assert.equal(ledger.entries[1].receipt_digest, freshReceipt.receipt_digest);
+  assert.equal(ledger.entries[1].supersedes_receipt_digest, oldDigest);
+  assert.deepEqual(ledger.active_bindings, [{
+    story_id: STORY_ID,
+    receipt_digest: freshReceipt.receipt_digest,
+    activated_at: ledger.active_bindings[0].activated_at
+  }]);
+  assert.equal(await readFile(journalPath, 'utf8').catch(() => null), null);
+
+  const idempotent = await rebindBrainbaseContext(root, rebindOptions);
+  assert.equal(idempotent.status, 'bound');
+  assert.equal(idempotent.context_digest, rebound.context_digest);
+  const afterIdempotent = JSON.parse(await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8'));
+  assert.deepEqual(afterIdempotent, ledger);
+
+  const markerPath = path.join(root, '.vibepro/integrations/brainbase', STORY_ID, 'bind-commit.json');
+  const markerBeforeTamper = JSON.parse(await readFile(markerPath, 'utf8'));
+  const tamperedContextPath = path.join(root, '.vibepro/integrations/brainbase', STORY_ID, 'context.json');
+  const tamperedContext = JSON.parse(await readFile(tamperedContextPath, 'utf8'));
+  tamperedContext.judgment.authority = 'forged-local-writer';
+  await writeJson(tamperedContextPath, tamperedContext);
+  const repaired = await rebindBrainbaseContext(root, rebindOptions);
+  const markerAfterRepair = JSON.parse(await readFile(markerPath, 'utf8'));
+  const repairedContext = JSON.parse(await readFile(tamperedContextPath, 'utf8'));
+  assert.notEqual(markerAfterRepair.transaction_id, markerBeforeTamper.transaction_id);
+  assert.notEqual(repaired.context_digest, rebound.context_digest);
+  assert.equal(repairedContext.judgment.authority, 'brainbase');
+
+  await assert.rejects(
+    bindBrainbaseContext(root, {
+      storyId: 'story-another-binding',
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      now: () => new Date('2026-09-03T00:02:00.000Z')
+    }),
+    (error) => error?.code === 'BRAINBASE_HANDOFF_ALREADY_CONSUMED'
+  );
+  await assert.rejects(
+    rebindBrainbaseContext(root, {
+      ...rebindOptions,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json'
+    }),
+    (error) => error?.code === 'BRAINBASE_HANDOFF_REBIND_HISTORY_REUSE'
+  );
+});
+
+test('managed rebindは独立プロセスの同時CASで一方だけを成功させ、履歴を保持する', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'Concurrent managed rebind' });
+  const issuedAt = new Date(Date.now() - 60_000).toISOString();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60_000).toISOString();
+  const { config, head, receipt: initialReceipt } = await configureManagedBrainbase(root, {
+    receipt: { issuedAt, expiresAt }
+  });
+  const bindOptions = {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    config,
+    now: () => new Date()
+  };
+  await bindBrainbaseContext(root, bindOptions);
+
+  const freshPaths = [1, 2].map((index) => `.vibepro/integrations/brainbase/inbox/concurrent-fresh-handoff-${index}.json`);
+  await Promise.all(freshPaths.map((freshPath, index) => writeJson(path.join(root, freshPath), managedHandoff({
+    baseSha: head,
+    issuedAt,
+    expiresAt,
+    turnId: `turn-concurrent-rebind-${index + 1}`,
+    resolutionId: `jr_concurrent_rebind_${index + 1}`
+  }))));
+  const previousDigest = initialReceipt.receipt_digest;
+  const sourceUrl = pathToFileURL(path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../src/brainbase-integration.js'
+  )).href;
+  const childDir = await mkdtemp(path.join(root, 'concurrent-rebind-'));
+  const childEnvs = [1, 2].map((index) => ({
+    ...process.env,
+    VIBEPRO_REPO: root,
+    VIBEPRO_STORY: STORY_ID,
+    VIBEPRO_PREVIOUS: previousDigest,
+    VIBEPRO_STARTED: path.join(childDir, `child-${index}.started`),
+    VIBEPRO_RESULT: path.join(childDir, `child-${index}.result`)
+  })).map((env, index) => ({ ...env, VIBEPRO_INPUT: freshPaths[index] }));
+  let childRuns;
+  await withBrainbaseBindingLock(root, async () => {
+    childRuns = childEnvs.map((env) => runRebindChild(sourceUrl, env));
+    await waitForFiles(childEnvs.map((env) => env.VIBEPRO_STARTED));
+  });
+  await Promise.all(childRuns);
+
+  const results = await Promise.all(childEnvs.map(async (env) => JSON.parse(await readFile(env.VIBEPRO_RESULT, 'utf8'))));
+  assert.equal(results.filter((result) => result.ok).length, 1);
+  assert.equal(results.filter((result) => result.code === 'BRAINBASE_HANDOFF_REBIND_PREVIOUS_MISMATCH').length, 1);
+
+  const ledger = JSON.parse(await readFile(path.join(root, '.vibepro/integrations/brainbase/handoff-consumption-ledger.json'), 'utf8'));
+  const freshReceipts = await Promise.all(freshPaths.map(async (freshPath) => JSON.parse(await readFile(path.join(root, freshPath), 'utf8'))));
+  assert.equal(ledger.entries.length, 2);
+  assert.equal(ledger.entries[0].receipt_digest, previousDigest);
+  assert.ok(freshReceipts.some((receipt) => receipt.receipt_digest === ledger.entries[1].receipt_digest));
+  assert.equal(ledger.entries[1].supersedes_receipt_digest, previousDigest);
+  assert.deepEqual(ledger.active_bindings, [{
+    story_id: STORY_ID,
+    receipt_digest: ledger.entries[1].receipt_digest,
+    activated_at: ledger.active_bindings[0].activated_at
+  }]);
+});
+
+test('managed rebindは旧active receiptまたはcommit markerの整合性が壊れていれば新規publishしない', async () => {
+  for (const tamper of ['receipt-signature', 'commit-marker']) {
+    const root = await makeRepo();
+    await addStory(root, { story_id: STORY_ID, title: `Reject stale active ${tamper}` });
+    const issuedAt = new Date(Date.now() - 60_000).toISOString();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60_000).toISOString();
+    const { config, head, receipt: initialReceipt } = await configureManagedBrainbase(root, {
+      receipt: { issuedAt, expiresAt }
+    });
+    const bindOptions = {
+      storyId: STORY_ID,
+      input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+      config,
+      now: () => new Date()
+    };
+    await bindBrainbaseContext(root, bindOptions);
+    const freshPath = '.vibepro/integrations/brainbase/inbox/integrity-fresh-handoff.json';
+    await writeJson(path.join(root, freshPath), managedHandoff({
+      baseSha: head,
+      issuedAt,
+      expiresAt,
+      turnId: `turn-integrity-${tamper}`,
+      resolutionId: `jr_integrity_${tamper}`
+    }));
+    const receiptPath = path.join(root, '.vibepro/integrations/brainbase', STORY_ID, 'bind-receipt.json');
+    const markerPath = path.join(root, '.vibepro/integrations/brainbase', STORY_ID, 'bind-commit.json');
+    if (tamper === 'receipt-signature') {
+      const receipt = JSON.parse(await readFile(receiptPath, 'utf8'));
+      receipt.managed_handoff.signature.value = '0'.repeat(64);
+      await writeJson(receiptPath, receipt);
+    } else {
+      const marker = JSON.parse(await readFile(markerPath, 'utf8'));
+      marker.transaction_id = 'tampered-transaction';
+      await writeJson(markerPath, marker);
+    }
+    const before = await managedBindingMutationSnapshot(root, STORY_ID);
+    await assert.rejects(
+      rebindBrainbaseContext(root, {
+        storyId: STORY_ID,
+        input: freshPath,
+        expectedPreviousDigest: initialReceipt.receipt_digest,
+        now: () => new Date()
+      }),
+      (error) => error?.code === 'BRAINBASE_HANDOFF_REBIND_ACTIVE_INTEGRITY'
+    );
+    assert.deepEqual(await managedBindingMutationSnapshot(root, STORY_ID), before, tamper);
+  }
+});
+
+test('CLI managed rebindは環境変数なしでもworkspaceの信頼設定ファイルを読む', async () => {
+  const root = await makeRepo();
+  await addStory(root, { story_id: STORY_ID, title: 'CLI managed rebind' });
+  const issuedAt = new Date(Date.now() - 60_000).toISOString();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60_000).toISOString();
+  const { head, receipt: initialReceipt } = await configureManagedBrainbase(root, {
+    receipt: { issuedAt, expiresAt }
+  });
+  await bindBrainbaseContext(root, {
+    storyId: STORY_ID,
+    input: '.vibepro/integrations/brainbase/inbox/handoff.json',
+    now: () => new Date()
+  });
+  const freshPath = '.vibepro/integrations/brainbase/inbox/cli-fresh-handoff.json';
+  await writeJson(path.join(root, freshPath), managedHandoff({
+    baseSha: head,
+    issuedAt,
+    expiresAt,
+    turnId: 'turn-cli-rebind',
+    resolutionId: 'jr_cli_rebind'
+  }));
+  const result = await runCliCaptured([
+    'integration', 'brainbase', 'rebind', root,
+    '--id', STORY_ID,
+    '--input', freshPath,
+    '--previous-digest', initialReceipt.receipt_digest,
+    '--json'
+  ], { env: {} });
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, '');
+  assert.equal(JSON.parse(result.stdout).status, 'bound');
 });
 
 test('managed handoff sourceは外部・traversal・encoded・symlinkを一切のbinding write前に拒否する', async () => {
