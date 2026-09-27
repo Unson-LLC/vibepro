@@ -86,6 +86,9 @@ export async function prepareOperationalJudgmentInput(repoRoot, options = {}) {
   const previousCycle = feedback
     ? await readAdoptedDevelopmentCycle(root, storyId, feedback)
     : null;
+  if (options.runId !== undefined && options.runId !== null) {
+    await assertDraftRunAvailable(root, storyId, options.runId);
+  }
   const prepared = await prepareJudgmentInput(root, options);
   const input = structuredClone(prepared.input);
   if (feedback) {
@@ -879,6 +882,18 @@ function summarizeFeedback(feedback) {
     outcome: feedback.outcome?.status ?? null,
     source: feedback.outcome?.artifact ?? feedback.disposition?.artifact ?? feedback.judgment_artifact
   };
+}
+
+async function assertDraftRunAvailable(root, storyId, runId) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const receiptPath = await safePath(root, path.join(developmentRoot, 'drafts', `${runId}.json`));
+  try {
+    await readFile(receiptPath);
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  throw new Error(`Judgment draft ${runId} already exists; use a new --run-id`);
 }
 
 async function writeDraftReceipt(root, storyId, { runId, artifact, sourceHeadSha, feedback }) {
