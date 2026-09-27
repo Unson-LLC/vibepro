@@ -74,7 +74,6 @@ export async function prepareOperationalJudgmentInput(repoRoot, options = {}) {
     throw new Error(`Development Judgment is recorded as not applicable for Story ${storyId}: ${applicability.reason}`);
   }
 
-  const prepared = await prepareJudgmentInput(root, options);
   const feedback = await readFeedbackPointer(root, storyId);
   const developmentRoot = await resolveDevelopmentRoot(root, storyId);
   const currentAdoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', 'current.json'));
@@ -84,9 +83,12 @@ export async function prepareOperationalJudgmentInput(repoRoot, options = {}) {
       + 'restore its feedback or record its disposition/outcome before preparing another run'
     );
   }
+  const previousCycle = feedback
+    ? await readAdoptedDevelopmentCycle(root, storyId, feedback)
+    : null;
+  const prepared = await prepareJudgmentInput(root, options);
   const input = structuredClone(prepared.input);
   if (feedback) {
-    const previousCycle = await readAdoptedDevelopmentCycle(root, storyId, feedback);
     applyFeedbackToInput(input, feedback, previousCycle);
   }
 

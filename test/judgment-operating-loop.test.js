@@ -377,6 +377,8 @@ test('missing or inconsistent feedback never silently resets adopted history', a
   const developmentRoot = path.dirname(path.dirname(adopted.result.adoption.artifact));
   const feedbackPath = path.join(root, developmentRoot, 'feedback', 'current.json');
   const feedback = JSON.parse(await readFile(feedbackPath, 'utf8'));
+  const draftPath = path.join(root, prepared.result.artifact);
+  const originalDraft = await readFile(draftPath, 'utf8');
   let probe = 0;
   async function expectPrepareFailure(pattern) {
     const capture = capturingIo();
@@ -386,6 +388,8 @@ test('missing or inconsistent feedback never silently resets adopted history', a
     ], capture.io);
     assert.notEqual(result.exitCode, 0);
     assert.match(capture.stderrText(), pattern);
+    assert.equal(await readFile(draftPath, 'utf8'), originalDraft,
+      'failed prepare must not overwrite the existing reviewed draft');
   }
   await rm(feedbackPath);
   await expectPrepareFailure(/missing or stale/);
