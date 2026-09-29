@@ -74,10 +74,23 @@ export async function prepareOperationalJudgmentInput(repoRoot, options = {}) {
     throw new Error(`Development Judgment is recorded as not applicable for Story ${storyId}: ${applicability.reason}`);
   }
 
-  const prepared = await prepareJudgmentInput(root, options);
   const feedback = await readFeedbackPointer(root, storyId);
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const currentAdoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', 'current.json'));
+  if (currentAdoption && (!feedback || feedback.run_id !== currentAdoption.run_id)) {
+    throw new Error(
+      `Feedback for latest adopted judgment ${currentAdoption.run_id} is missing or stale for Story ${storyId}; `
+      + 'restore its feedback or record its disposition/outcome before preparing another run'
+    );
+  }
+  const previousCycle = feedback
+    ? await readAdoptedDevelopmentCycle(root, storyId, feedback)
+    : null;
+  const prepared = await prepareJudgmentInput(root, options);
   const input = structuredClone(prepared.input);
-  if (feedback) applyFeedbackToInput(input, feedback);
+  if (feedback) {
+    applyFeedbackToInput(input, feedback, previousCycle);
+  }
 
   const absoluteArtifact = path.resolve(root, prepared.artifact);
   await writeFile(absoluteArtifact, `${JSON.stringify(input, null, 2)}\n`, 'utf8');
@@ -780,7 +793,45 @@ function buildJudgmentGuidanceTask(storyId, projection) {
   };
 }
 
-function applyFeedbackToInput(input, feedback) {
+async function readAdoptedDevelopmentCycle(root, storyId, feedback) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const runId = requireText(feedback.run_id, 'feedback requires a previous run_id');
+  const wrongStory = feedback.story_id !== storyId
+    || feedback.disposition?.story_id !== storyId
+    || feedback.disposition?.run_id !== runId
+    || (feedback.outcome && (
+      feedback.outcome.story_id !== storyId || feedback.outcome.run_id !== runId
+    ));
+  if (wrongStory) {
+    throw new Error(`Feedback ${runId} does not match Story ${storyId}; restore the matching feedback before preparing another run`);
+  }
+  if (feedback.outcome?.status === 'confirmed' && !normalizeText(feedback.outcome.artifact)) {
+    throw new Error(`Confirmed feedback ${runId} has no outcome artifact; restore the verified outcome before preparing another run`);
+  }
+  const adoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', `${runId}.json`));
+  if (!adoption || adoption.story_id !== storyId || adoption.run_id !== runId) {
+    throw new Error(`Adopted judgment input ${runId} is missing or does not match Story ${storyId}`);
+  }
+  const inputPath = await safePath(root, path.join(developmentRoot, 'inputs', `${runId}.json`));
+  let bytes;
+  try {
+    bytes = await readFile(inputPath, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    throw new Error(`Adopted judgment input ${runId} is missing; restore the adopted input before preparing another run`);
+  }
+  if (sha256(bytes) !== adoption.input_sha256) {
+    throw new Error(`Adopted judgment input ${runId} changed after adoption; cumulative history cannot be reused`);
+  }
+  const previousInput = parseJson(bytes, `Invalid adopted judgment input for ${runId}`);
+  if (previousInput.story_id !== storyId || previousInput.run_id !== runId) {
+    throw new Error(`Adopted judgment input ${runId} does not match its Story or run`);
+  }
+  validateSeniorJudgmentInput(previousInput);
+  return previousInput.development_cycle;
+}
+
+function applyFeedbackToInput(input, feedback, previousCycle) {
   const sourceRefs = uniqueStrings([
     feedback.judgment_artifact,
     feedback.disposition?.artifact,
@@ -799,6 +850,8 @@ function applyFeedbackToInput(input, feedback) {
       freshness: 'current'
     }
   ];
+  input.development_cycle.history_boundary = structuredClone(previousCycle.history_boundary);
+  input.development_cycle.adopted_batches = structuredClone(previousCycle.adopted_batches);
   if (feedback.outcome?.status === 'confirmed') {
     input.development_cycle.history_boundary = {
       kind: mode === 'SIMPLIFY' ? 'simplification_baseline' : 'verified_external_outcome',
@@ -806,14 +859,14 @@ function applyFeedbackToInput(input, feedback) {
     };
     input.development_cycle.adopted_batches = [];
   } else {
-    input.development_cycle.adopted_batches = [{
+    input.development_cycle.adopted_batches.push({
       id: `batch-${feedback.run_id}`,
       story_ids: [feedback.story_id],
       change_kind: modeToChangeKind(mode),
       structural_effect: modeToStructuralEffect(mode),
       external_outcome: outcomeToExternalOutcome(outcomeStatus),
       source_refs: sourceRefs.length ? sourceRefs : ['previous-judgment-outcome-unavailable']
-    }];
+    });
   }
 }
 
