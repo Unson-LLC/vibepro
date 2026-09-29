@@ -344,6 +344,32 @@ test('unimproved adopted batches remain visible across successive judgment runs'
   assert.match(invalidIo.stderrText(), /changed after adoption/);
 });
 
+test('reusing a judgment run id fails without overwriting its reviewed draft', async () => {
+  const root = await setupRepo('duplicate-run-draft');
+  const applicability = await runCli([
+    'judgment', 'applicability', 'record', root, '--id', STORY_ID,
+    '--applicable', 'yes', '--reason', 'Duplicate run protection', '--json'
+  ], silentIo());
+  assert.equal(applicability.exitCode, 0);
+  const prepared = await runCli([
+    'judgment', 'prepare', root, '--id', STORY_ID,
+    '--run-id', 'duplicate-run-1', '--json'
+  ], silentIo());
+  assert.equal(prepared.exitCode, 0);
+  const draftPath = await createActionableInput(root, prepared.result.artifact);
+  const reviewedDraft = await readFile(draftPath, 'utf8');
+
+  const capture = capturingIo();
+  const duplicate = await runCli([
+    'judgment', 'prepare', root, '--id', STORY_ID,
+    '--run-id', 'duplicate-run-1', '--json'
+  ], capture.io);
+  assert.notEqual(duplicate.exitCode, 0);
+  assert.match(capture.stderrText(), /already exists/);
+  assert.equal(await readFile(draftPath, 'utf8'), reviewedDraft,
+    'rejected duplicate run must not overwrite the existing reviewed draft');
+});
+
 test('missing or inconsistent feedback never silently resets adopted history', async () => {
   const root = await setupRepo('feedback-integrity');
   const applicability = await runCli([
