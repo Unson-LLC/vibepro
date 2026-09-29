@@ -693,3 +693,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:559:start -->
 - [PR #559](https://github.com/Unson-LLC/vibepro/pull/559) — [2026-09](/ja/releases/2026-09): feat: renew managed Brainbase bindings with receipt history
 <!-- vibepro-release-index-pr:559:end -->
+
+<!-- vibepro-release-index-pr:560:start -->
+- [PR #560](https://github.com/Unson-LLC/vibepro/pull/560) — [2026-09](/ja/releases/2026-09): fix: retain cumulative judgment feedback history
+<!-- vibepro-release-index-pr:560:end -->

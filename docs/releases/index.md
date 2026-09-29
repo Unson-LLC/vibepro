@@ -693,3 +693,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:559:start -->
 - [PR #559](https://github.com/Unson-LLC/vibepro/pull/559) — [2026-09](/releases/2026-09): feat: renew managed Brainbase bindings with receipt history
 <!-- vibepro-release-index-pr:559:end -->
+
+<!-- vibepro-release-index-pr:560:start -->
+- [PR #560](https://github.com/Unson-LLC/vibepro/pull/560) — [2026-09](/releases/2026-09): fix: retain cumulative judgment feedback history
+<!-- vibepro-release-index-pr:560:end -->
