@@ -697,3 +697,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:560:start -->
 - [PR #560](https://github.com/Unson-LLC/vibepro/pull/560) — [2026-09](/releases/2026-09): fix: retain cumulative judgment feedback history
 <!-- vibepro-release-index-pr:560:end -->
+
+<!-- vibepro-release-index-pr:561:start -->
+- [PR #561](https://github.com/Unson-LLC/vibepro/pull/561) — [2026-09](/releases/2026-09): fix: preserve judgment draft when feedback preflight fails
+<!-- vibepro-release-index-pr:561:end -->
