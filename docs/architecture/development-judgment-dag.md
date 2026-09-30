@@ -14,6 +14,21 @@ Philosophy applies across judgments. Objective (desired state and criteria) and 
 
 The design connects Problem Selection and a versioned JudgmentProblem through Delegation to Story and Engineering Judgment. Story references Objective rather than duplicating it. Technical Evaluation and Outcome Evaluation feed separate learning candidates, adoption, and impact review. New learning does not rewrite past runs.
 
+### Self as part of the observed world
+
+The same concept model applies when the thing being improved is our own role boundary, rule, capability, or connection. The [Brainbase company-OS design](https://github.com/Unson-LLC/brainbase-project/blob/main/docs/architecture/company-os-design.md) owns cross-repository meaning: Brainbase selects **what, why, and how far**, including Objective, constraints, authority, and problem selection; VibePro judges **how to implement** within that delegation. This section is a reference contract, not a second World Model store or a generic organization-improvement engine.
+
+| Step | Reference and evidence contract | Boundary |
+| --- | --- | --- |
+| Philosophy | Cite the applicable cross-cutting principle and its version; apply it to each choice. | Do not turn a Story into a new philosophy authority. |
+| Objective | Cite the desired state, evaluation criteria, owner, period, and version. | Story links to the Objective; it does not copy or independently revise its target. |
+| World Model | Cite scoped observations of the outside world **and** our own roles, rules, capabilities, and connections, with source/time and fact, hypothesis, or unknown status. | An observed value is not a target. A hypothesis is not a verified fact. Repository files are evidence, not the model itself. |
+| Problem selection | Compare the Objective with observations and uncertainty; fix the selected problem, scope, constraints, and source versions in JudgmentProblem. | Brainbase retains problem and authority decisions. |
+| Specialist judgment and change | Evaluate deletion, consolidation, redesign, and keeping the current state before addition; bind the chosen Story, Spec, alternatives, and expected outcome. | VibePro gives engineering advice and evidence; execution still needs its ordinary authorization. |
+| Evaluation and learning | Record technical evaluation of the change separately from Outcome Evaluation against the original Objective. Treat gaps as candidates; identify adoption authority, adopted version, and impact on dependent work before later use. | Tests, PR, or document distribution do not prove downstream outcome or learning adoption. Historical runs remain unchanged. |
+
+For example, if a harness rule is distributed but its use in the next natural run is unobserved, distribution is a **technical result** and continued use is an **unknown outcome**. A later observation may support a learning candidate about the rule or the connection. Only an authorized, versioned adoption and impact review can change the World Model used by future judgments; the earlier run is not rewritten. This is the concrete reference chain for [Story VP-SELF-MODEL-20260930-01](../stories/vp-self-model-20260930-01.md) and its [Spec](../specs/vp-self-model-20260930-01.md).
+
 The former Frame and four DAG-layer meanings are historical vocabulary, not current control instructions. This does not retire DAGs generally or remove authorization, CI, approval, or repository rules. Story completion, shipment, use, and value realization remain different outcomes; PR/merge support does not grant deployment authority.
 
 The node contract below describes the existing record shape. This documentation correction does not implement managed handoff v3, judgment schema 0.4.0, a persistent Engineering World Model, or a complete hierarchy of specialist DAGs. Graph glossary registration likewise does not activate new Graph entity types. A Judgment DAG remains advisory and never emits merge authority.
