@@ -19,13 +19,13 @@ architecture_ref: docs/architecture/development-judgment-dag.md
 
 | 役割 | 参照と状態 |
 | --- | --- |
-| 哲学・目的の文脈 | `HARNESS-CONTEXT.md` SHA-256 `f964959f9fc07fb73865d192c7cc0f6a26a14e85930a2e1153062144b49c334e` の「目指すこと」「判断のつながり」。これは現行運用の目的文脈であり、Brainbase Graphに登録されたObjective ID/版と同一とは主張しない。正式ObjectiveのID/版は未確認。 |
+| 哲学・目的の文脈 | `HARNESS-CONTEXT.md` SHA-256 `f964959f9fc07fb73865d192c7cc0f6a26a14e85930a2e1153062144b49c334e` の「目指すこと」「判断のつながり」。Brainbase GraphのVibePro向けObjective候補 `obj_vp_quality_preserving_delegation_20260928` はrevision `1`、`adoptionState=draft`、`criteria=[]` と読取確認した。この候補を採択済みの正式Objectiveや評価基準とは扱わない。 |
 | World Modelに入る観測 | `status/vp-harness-20260930-01.md` SHA-256 `3d321061cad5e6e129d0fce6490868966b4f23c89b48f8ade63079cee673e971` の「配布・Editor実読は確認、次の自然な定期実行は未確認」。ハーネス接続の実態に関する観測で、成果達成を意味しない。 |
 | 仮説と問題選択 | 「参照契約が曖昧だと改修完了と定着を混同する」は本Storyの未検証仮説。問題はその混同を防ぐこと。 |
 | 専門判断と変更 | 新基盤を設けず `docs/architecture/development-judgment-dag.md` と既存TEAM/4担当AGENTSを改訂する。 |
 | 技術評価と成果評価 | 文書差分、リンク、配布SHA、独立レビュー、PR CIを技術評価とする。次の自然な実行での参照・実結果を成果評価とし、本PR時点では未確認。 |
 | 学習 | 実運用結果が出た後の観測・改訂案は出典・版・検証状態付きの草案として記録できる。採択主体・版・影響確認が記録されるまで次の判断への採択済みとはしない。 |
 
-この具体例は参照の形を示し、未登録Objectiveや未観測成果を補完しない。
+この具体例は参照の形を示す。Objective候補のID/版は実在するが、採択と評価基準は未確認・未設定であり、本Storyの正式Objective参照の受入条件は未達。未観測成果も補完しない。
 
 影響検証: 文書リンクと用語の整合、配布先SHA、`git diff --check`、独立レビュー、PR CI。コード挙動や永続World Modelの実装を主張しない。
