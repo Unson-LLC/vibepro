@@ -3624,3 +3624,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:561:end -->
+
+<!-- vibepro-release-pr:563:start -->
+## [#563](https://github.com/Unson-LLC/vibepro/pull/563) docs: connect self-model to development judgment
+
+- Author: @sintariran
+- Merged: 2026-09-30T08:10:45Z
+- Commit: `6769c82c8fe263822e24309f5d5aed04caa9f431`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:563:end -->

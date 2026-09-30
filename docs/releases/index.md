@@ -701,3 +701,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:561:start -->
 - [PR #561](https://github.com/Unson-LLC/vibepro/pull/561) — [2026-09](/releases/2026-09): fix: preserve judgment draft when feedback preflight fails
 <!-- vibepro-release-index-pr:561:end -->
+
+<!-- vibepro-release-index-pr:563:start -->
+- [PR #563](https://github.com/Unson-LLC/vibepro/pull/563) — [2026-09](/releases/2026-09): docs: connect self-model to development judgment
+<!-- vibepro-release-index-pr:563:end -->
