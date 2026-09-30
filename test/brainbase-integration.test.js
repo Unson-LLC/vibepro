@@ -395,7 +395,7 @@ function managedHandoff({
   baseSha,
   repositoryRoot = '.',
   issuedAt = '2026-08-29T00:00:00.000Z',
-  expiresAt = '2026-09-30T00:00:00.000Z',
+  expiresAt = '2030-09-30T00:00:00.000Z',
   keyId = 'brainbase-vibepro-handoff-hmac-v1',
   hmacSecret = TEST_HANDOFF_HMAC_SECRET,
   schemaVersion = 'brainbase-vibepro-managed-handoff.v1',
