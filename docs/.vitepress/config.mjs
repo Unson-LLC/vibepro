@@ -26,6 +26,7 @@ export default {
     'stories/**'
   ],
   head: [
+    ['script', { src: '/marketing-analytics.js', defer: '' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'VibePro Manual' }],
     ['meta', { property: 'og:title', content: 'VibePro — Bring the reason for a change into its PR' }],
