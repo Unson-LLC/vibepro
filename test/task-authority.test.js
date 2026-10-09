@@ -40,6 +40,46 @@ async function trackedInput(root, name = 'authority.json', overrides = {}) {
   return name;
 }
 
+async function parallelTrackedInput(root, name = 'parallel-plan.json') {
+  const input = {
+    schema_version: '0.2.0',
+    repository: 'vibepro',
+    story_id: STORY_ID,
+    plan_version: 'plan-1',
+    intent: {
+      purpose: 'parallel implementation pilot',
+      priority: 'high',
+      delegated_scope: ['implementation'],
+      acceptance_criteria: ['each Task has an explicit boundary']
+    },
+    tasks: [{
+      task_id: 'TASK-001',
+      story_id: STORY_ID,
+      title: 'Implement',
+      allowed_paths: ['src/task.js', 'test/task.test.js'],
+      acceptance_criteria: ['the implementation is reviewable'],
+      depends_on: [],
+      status: 'in_progress',
+      purpose: 'implement the parallel Task',
+      out_of_scope: ['deployment'],
+      dependencies: [],
+      contracts: [],
+      assignment: {
+        capabilities: ['javascript'],
+        parallel_group: 'parallel',
+        adjustable_scope: ['tests']
+      },
+      integration: {
+        order: 1,
+        conflict_owner: 'codex-parent'
+      }
+    }]
+  };
+  await writeFile(path.join(root, name), `${JSON.stringify(input, null, 2)}\n`);
+  await execFileAsync('git', ['add', name], { cwd: root });
+  return name;
+}
+
 test('bind creates deterministic accepted authority with tracked provenance', async () => {
   const root = await repo();
   const input = await trackedInput(root);
@@ -61,6 +101,48 @@ test('bind creates deterministic accepted authority with tracked provenance', as
   assert.deepEqual(authorities.accepted.tasks.map((task) => task.id), ['TASK-001']);
   await assert.rejects(access(path.join(root, '.vibepro', 'stories', STORY_ID, 'spec')));
   await assert.rejects(access(path.join(root, '.vibepro', 'stories', STORY_ID, 'reviews')));
+});
+
+test('schema 0.2 bind and accepted read preserve the parallel plan contract', async () => {
+  const root = await repo();
+  const input = await parallelTrackedInput(root);
+  const bound = await bindTaskAuthority(root, { storyId: STORY_ID, inputPath: input });
+
+  assert.equal(bound.authority.schema_version, '0.2.0');
+  assert.equal(bound.authority.repository, 'vibepro');
+  assert.equal(bound.authority.plan_version, 'plan-1');
+  assert.deepEqual(bound.authority.intent.delegated_scope, ['implementation']);
+
+  const selected = await assertSelectedTaskAccepted(root, STORY_ID, 'TASK-001');
+  assert.equal(selected.selected.id, 'TASK-001');
+  assert.deepEqual(selected.selected.out_of_scope, ['deployment']);
+  assert.deepEqual(selected.selected.assignment, {
+    capabilities: ['javascript'],
+    parallel_group: 'parallel',
+    adjustable_scope: ['tests']
+  });
+
+  const authorities = await readTaskAuthorities(root, STORY_ID);
+  assert.equal(authorities.accepted.schema_version, '0.2.0');
+  assert.equal(authorities.accepted.plan_version, 'plan-1');
+  assert.deepEqual(authorities.accepted.tasks.map((task) => task.id), ['TASK-001']);
+  assert.deepEqual(authorities.accepted.tasks[0].contracts, []);
+});
+
+test('accepted authority validation tolerates the historical projected id field', async () => {
+  const root = await repo();
+  const input = await parallelTrackedInput(root);
+  const bound = await bindTaskAuthority(root, { storyId: STORY_ID, inputPath: input });
+  const canonical = JSON.parse(await readFile(bound.artifacts.canonical_json, 'utf8'));
+  canonical.tasks = canonical.tasks.map((task) => {
+    const projected = { ...task, id: task.task_id };
+    delete projected.task_id;
+    return projected;
+  });
+  await writeFile(bound.artifacts.canonical_json, `${JSON.stringify(canonical, null, 2)}\n`);
+
+  const selected = await assertSelectedTaskAccepted(root, STORY_ID, 'TASK-001');
+  assert.equal(selected.selected.id, 'TASK-001');
 });
 
 test('bind rejects untracked, wrong-story, duplicate, path escape, and diagnostic proposal inputs', async () => {

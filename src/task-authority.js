@@ -253,6 +253,15 @@ function validateLegacyAuthorityInput(document, storyId) {
 }
 
 function acceptedToInput(document) {
+  const tasks = (document.tasks ?? []).map((task) => {
+    // Accepted authority normally stores the normalized Task shape. Keep the
+    // projection shape readable as well because older artifact writers used
+    // `id` for the projected Task identifier. Preserve every other field so
+    // validation still rejects unknown or tampered fields.
+    const canonicalTask = { ...task, task_id: task.task_id ?? task.id };
+    delete canonicalTask.id;
+    return canonicalTask;
+  });
   return document.schema_version === TASK_PLAN_SCHEMA_VERSION
     ? {
         schema_version: document.schema_version,
@@ -260,18 +269,18 @@ function acceptedToInput(document) {
         story_id: document.story_id,
         plan_version: document.plan_version,
         intent: document.intent,
-        tasks: document.tasks
+        tasks
       }
     : {
         schema_version: document.schema_version,
         story_id: document.story_id,
-        tasks: document.tasks
+        tasks
       };
 }
 
 function projectAcceptedTask(task, schemaVersion = '0.1.0') {
   const projection = {
-    id: task.task_id ?? null,
+    id: task.task_id ?? task.id ?? null,
     story_id: task.story_id ?? null,
     status: task.status ?? 'accepted',
     allowed_paths: task.allowed_paths ?? [],
