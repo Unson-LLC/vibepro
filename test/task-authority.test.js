@@ -7,7 +7,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { assertSelectedTaskAccepted, assertSelectedTaskScope, bindTaskAuthority, readTaskAuthorities } from '../src/task-authority.js';
+import { assertSelectedTaskAccepted, assertSelectedTaskScope, bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from '../src/task-authority.js';
 import { createStoryTasks } from '../src/story-task-generator.js';
 
 const execFileAsync = promisify(execFile);
@@ -127,6 +127,24 @@ test('schema 0.2 bind and accepted read preserve the parallel plan contract', as
   assert.equal(authorities.accepted.plan_version, 'plan-1');
   assert.deepEqual(authorities.accepted.tasks.map((task) => task.id), ['TASK-001']);
   assert.deepEqual(authorities.accepted.tasks[0].contracts, []);
+});
+
+test('strict accepted plan reader validates provenance instead of trusting the shallow projection', async () => {
+  const root = await repo();
+  const input = await parallelTrackedInput(root);
+  const bound = await bindTaskAuthority(root, { storyId: STORY_ID, inputPath: input });
+  const canonical = JSON.parse(await readFile(bound.artifacts.canonical_json, 'utf8'));
+  canonical.provenance.input_sha256 = '0'.repeat(64);
+  await writeFile(bound.artifacts.canonical_json, `${JSON.stringify(canonical, null, 2)}\n`);
+
+  await assert.rejects(
+    readAcceptedTaskAuthorityStrict(root, STORY_ID),
+    /digest.*match/
+  );
+  await assert.rejects(
+    execFileAsync(process.execPath, [path.resolve('bin/vibepro.js'), 'task', 'plan', 'read', root, '--id', STORY_ID, '--json']),
+    /digest.*match/
+  );
 });
 
 test('accepted authority validation tolerates the historical projected id field', async () => {

@@ -105,7 +105,7 @@ import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
-import { bindTaskAuthority, readTaskAuthorities } from './task-authority.js';
+import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
 import { analyzeTaskPlan, readTrackedTaskObservations, readTrackedTaskPlan, validateTaskPlan } from './task-plan.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
@@ -1448,9 +1448,8 @@ ${renderHelp()}`);
         if (planCommand === 'read') {
           const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
           if (!storyId) throw new Error('task plan read requires --id <story-id>');
-          const authorities = await readTaskAuthorities(repoRoot, storyId);
-          if (!authorities.accepted.present) throw new Error(`accepted task plan not found for ${storyId}`);
-          const plan = acceptedAuthorityToPlan(authorities.accepted);
+          const accepted = await readAcceptedTaskAuthorityStrict(repoRoot, storyId);
+          const plan = acceptedAuthorityToPlan(accepted);
           const observationsInput = getOption(rest, '--observations');
           const observations = observationsInput
             ? await readTrackedTaskObservations(repoRoot, observationsInput)
@@ -1459,7 +1458,7 @@ ${renderHelp()}`);
             ? analyzeTaskPlan(plan, { observations: observations?.observations ?? [] })
             : null;
           const result = {
-            accepted: authorities.accepted,
+            accepted,
             ...(observations ? { observations_path: observations.path } : {}),
             analysis
           };

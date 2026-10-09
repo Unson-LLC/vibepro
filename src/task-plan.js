@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { assertArtifactWritePath } from './artifact-routing.js';
+
 const execFileAsync = promisify(execFile);
 
 export const TASK_PLAN_SCHEMA_VERSION = '0.2.0';
@@ -32,7 +34,7 @@ const TASK_FIELDS = new Set([
   'integration'
 ]);
 const DEPENDENCY_FIELDS = new Set(['kind', 'target', 'milestone', 'blocks', 'contract_ref']);
-const TARGET_FIELDS = new Set(['repository', 'story_id', 'task_id']);
+const TARGET_FIELDS = new Set(['repository', 'story_id', 'task_id', 'plan_version']);
 const CONTRACT_FIELDS = new Set(['id', 'version', 'description']);
 const ASSIGNMENT_FIELDS = new Set(['capabilities', 'parallel_group', 'adjustable_scope']);
 const INTEGRATION_FIELDS = new Set(['order', 'conflict_owner']);
@@ -82,7 +84,7 @@ export function validateTaskPlan(document, { storyId = null, repository = null }
     story_id: normalizedStoryId,
     plan_version: requiredString(document.plan_version, 'task plan plan_version'),
     intent: normalizeIntent(document.intent),
-    tasks: normalizeTasks(document.tasks, normalizedStoryId, normalizedRepository)
+    tasks: normalizeTasks(document.tasks, normalizedStoryId, normalizedRepository, document.plan_version)
   };
   if (plan.tasks.length === 0) throw new Error('task plan requires a nonempty tasks array');
   return plan;
@@ -116,12 +118,17 @@ export function analyzeTaskPlan(plan, { observations = [] } = {}) {
 
   for (const task of validated.tasks) {
     const explicitDependencies = task.dependencies.map((dependency) => ({ dependency, legacy: false }));
-    const explicitTaskIds = new Set(explicitDependencies
-      .filter(({ dependency }) => dependency.target.repository === validated.repository
-        && dependency.target.story_id === validated.story_id)
-      .map(({ dependency }) => dependency.target.task_id));
     for (const legacyTaskId of task.depends_on) {
-      if (!explicitTaskIds.has(legacyTaskId)) {
+      const hasEquivalentPrerequisite = explicitDependencies.some(({ dependency }) => (
+        dependency.kind === 'prerequisite'
+        && dependency.target.repository === validated.repository
+        && dependency.target.story_id === validated.story_id
+        && dependency.target.task_id === legacyTaskId
+        && dependency.milestone === 'returned'
+        && dependency.blocks.length === 1
+        && dependency.blocks[0] === 'start'
+      ));
+      if (!hasEquivalentPrerequisite) {
         explicitDependencies.push({
           legacy: true,
           dependency: {
@@ -138,6 +145,7 @@ export function analyzeTaskPlan(plan, { observations = [] } = {}) {
       const target = dependency.target;
       const local = target.repository === validated.repository && target.story_id === validated.story_id;
       const targetTask = local ? taskByKey.get(taskKey(target.repository, target.story_id, target.task_id)) : null;
+      const expectedPlanVersion = target.plan_version ?? (local ? validated.plan_version : null);
       const startBlock = dependency.kind === 'prerequisite' && dependency.blocks.includes('start');
       const contractRef = dependency.kind === 'interface' && dependency.contract_ref
         ? parseContractRef(dependency.contract_ref)
@@ -161,7 +169,8 @@ export function analyzeTaskPlan(plan, { observations = [] } = {}) {
         && observed.some((observation) => contractAgreementMatches(
           observation,
           dependency,
-          target
+          target,
+          expectedPlanVersion
         ));
 
       if (dependency.kind === 'interface') {
@@ -171,7 +180,7 @@ export function analyzeTaskPlan(plan, { observations = [] } = {}) {
         if (!contractResolved) {
           const external = !local && Boolean(dependency.contract_ref);
           const versionDetail = contractRef
-            ? ` (expected ${contractRef.id}@${contractRef.version}; consumer declares ${consumerContract?.id ? `${consumerContract.id}@${consumerContract.version}` : 'none'}${targetContract?.id ? `; target declares ${targetContract.id}@${targetContract.version}` : ''})`
+            ? ` (expected ${contractRef.id}@${contractRef.version}; consumer declares ${consumerContract?.id ? `${consumerContract.id}@${consumerContract.version}` : 'none'}${targetContract?.id ? `; target declares ${targetContract.id}@${targetContract.version}` : ''}${expectedPlanVersion ? `; expected plan ${expectedPlanVersion}` : ''})`
             : '';
           diagnostics.push({
             code: !dependency.contract_ref
@@ -326,6 +335,7 @@ export async function readTrackedTaskPlan(repoRoot, inputPath) {
     throw new Error('task plan input must be inside the repository');
   }
   if (!relativePath.toLowerCase().endsWith('.json')) throw new Error('task plan input must be a tracked JSON file');
+  const safeAbsolutePath = await assertArtifactWritePath(root, relativePath);
   try {
     await execFileAsync('git', ['ls-files', '--error-unmatch', '--', relativePath], { cwd: root });
   } catch {
@@ -333,7 +343,7 @@ export async function readTrackedTaskPlan(repoRoot, inputPath) {
   }
   let content;
   try {
-    content = await readFile(absolutePath, 'utf8');
+    content = await readFile(safeAbsolutePath, 'utf8');
   } catch (error) {
     throw new Error(`task plan input cannot be read: ${error.message}`);
   }
@@ -370,7 +380,7 @@ function normalizeIntent(intent) {
   };
 }
 
-function normalizeTasks(tasks, storyId, repository) {
+function normalizeTasks(tasks, storyId, repository, planVersion) {
   if (!Array.isArray(tasks)) throw new Error('task plan tasks must be an array');
   const ids = new Set();
   const normalized = tasks.map((task, index) => {
@@ -395,7 +405,7 @@ function normalizeTasks(tasks, storyId, repository) {
       ...(task.status == null ? {} : { status: requiredString(task.status, `${taskId} status`) }),
       purpose: requiredString(task.purpose, `${taskId} purpose`),
       out_of_scope: normalizeStringList(task.out_of_scope, `${taskId} out_of_scope`),
-      dependencies: normalizeDependencies(task.dependencies, taskId, repository, storyId),
+      dependencies: normalizeDependencies(task.dependencies, taskId, repository, storyId, planVersion),
       contracts: normalizeContracts(task.contracts, taskId),
       assignment: normalizeAssignment(task.assignment, taskId),
       integration: normalizeIntegration(task.integration, taskId)
@@ -404,7 +414,7 @@ function normalizeTasks(tasks, storyId, repository) {
   return normalized.sort((a, b) => a.task_id.localeCompare(b.task_id));
 }
 
-function normalizeDependencies(value, taskId, repository, storyId) {
+function normalizeDependencies(value, taskId, repository, storyId, planVersion) {
   if (!Array.isArray(value)) throw new Error(`${taskId} dependencies must be an array`);
   const seen = new Set();
   return value.map((dependency, index) => {
@@ -416,7 +426,14 @@ function normalizeDependencies(value, taskId, repository, storyId) {
     const milestone = requiredString(dependency.milestone, `${taskId} dependency ${index} milestone`);
     if (!MILESTONES.has(milestone)) throw new Error(`${taskId} dependency milestone must be returned, verified, or integrated`);
     const blocks = normalizeStringList(dependency.blocks, `${taskId} dependency ${index} blocks`);
+    if (blocks.length === 0) throw new Error(`${taskId} dependency ${index} blocks must be nonempty`);
     if (blocks.some((block) => !BLOCK_STAGES.has(block))) throw new Error(`${taskId} dependency blocks must contain start, verify, or integrate`);
+    if ((target.repository !== repository || target.story_id !== storyId) && target.plan_version == null) {
+      throw new Error(`${taskId} dependency ${index} external target plan_version must be declared`);
+    }
+    if (target.repository === repository && target.story_id === storyId && target.plan_version != null && target.plan_version !== planVersion) {
+      throw new Error(`${taskId} dependency ${index} target plan_version must match ${planVersion}`);
+    }
     const identity = `${dependency.kind}|${target.repository}|${target.story_id}|${target.task_id}|${milestone}|${blocks.join(',')}|${dependency.contract_ref ?? ''}`;
     if (seen.has(identity)) throw new Error(`duplicate ${taskId} dependency: ${identity}`);
     seen.add(identity);
@@ -434,10 +451,12 @@ function normalizeTarget(target, label) {
   if (!target || Array.isArray(target) || typeof target !== 'object') throw new Error(`${label} target must be an object`);
   const unknown = Object.keys(target).filter((key) => !TARGET_FIELDS.has(key));
   if (unknown.length > 0) throw new Error(`unknown ${label} target field: ${unknown.join(', ')}`);
+  const planVersion = target.plan_version == null ? null : requiredString(target.plan_version, `${label} target plan_version`);
   return {
     repository: requiredString(target.repository, `${label} target repository`),
     story_id: requiredString(target.story_id, `${label} target story_id`),
-    task_id: requiredString(target.task_id, `${label} target task_id`)
+    task_id: requiredString(target.task_id, `${label} target task_id`),
+    ...(planVersion == null ? {} : { plan_version: planVersion })
   };
 }
 
@@ -535,13 +554,13 @@ function normalizeObservations(observations) {
   });
 }
 
-function contractAgreementMatches(observation, dependency, target) {
+function contractAgreementMatches(observation, dependency, target, expectedPlanVersion) {
   return observation.kind === 'contract_agreement'
     && observation.contract_ref === dependency.contract_ref
     && observation.target.repository === target.repository
     && observation.target.story_id === target.story_id
     && observation.target.task_id === target.task_id
-    && Boolean(observation.plan_version)
+    && observation.plan_version === expectedPlanVersion
     && Boolean(observation.artifact_revision)
     && Boolean(observation.evidence_ref);
 }
@@ -550,9 +569,8 @@ function observationMatches(observation, target, planVersion, local) {
   if (observation.target.repository !== target.repository
     || observation.target.story_id !== target.story_id
     || observation.target.task_id !== target.task_id) return false;
-  return local
-    ? observation.plan_version === planVersion
-    : Boolean(observation.plan_version);
+  const expectedPlanVersion = target.plan_version ?? (local ? planVersion : null);
+  return expectedPlanVersion != null && observation.plan_version === expectedPlanVersion;
 }
 
 /**

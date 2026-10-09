@@ -102,6 +102,26 @@ export async function readTaskAuthorities(repoRoot, storyId, storySource = null)
   return { human, accepted, generated };
 }
 
+/**
+ * Read the accepted authority for plan commands with full provenance and
+ * source validation. The status/read surfaces intentionally use the
+ * fail-soft projection above, while a plan read must never analyze a stale or
+ * tampered accepted artifact.
+ */
+export async function readAcceptedTaskAuthorityStrict(repoRoot, storyId) {
+  const route = await resolveArtifactRoute(repoRoot, 'task_plan', { storyId });
+  const filePath = canonicalTaskJsonPath(repoRoot, route, storyId);
+  let document;
+  try {
+    document = JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') throw new Error(`accepted task plan not found for ${storyId}`);
+    if (error instanceof SyntaxError) throw new Error(`accepted task authority must be valid JSON: ${error.message}`);
+    throw error;
+  }
+  return validateAcceptedTaskAuthority(repoRoot, storyId, filePath, document);
+}
+
 export async function assertSelectedTaskAccepted(repoRoot, storyId, taskId) {
   if (!taskId) return null;
   const route = await resolveArtifactRoute(repoRoot, 'task_plan', { storyId });
