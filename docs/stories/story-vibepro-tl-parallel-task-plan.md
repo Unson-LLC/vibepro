@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-tl-parallel-task-plan
 title: VibeProのTLが単独利用で並列Task計画を作る
-status: draft
+status: in_progress
 view: dev
 created_at: 2026-10-09
 updated_at: 2026-10-09
@@ -54,6 +54,12 @@ TLは担当に必要な能力・並行する組合せ・調整可能な範囲を
 
 ## 対象外・依存
 
-経営管理、Problemの事業優先順位、Task状態のBrainbase同期、汎用実行engine、旧Gateの復活は対象外。Brainbase連携Storyの完成は受入の依存にしない。実並行・中断復旧・時間評価はStory 2が所有する。本Storyは未実装の草案である。
+経営管理、Problemの事業優先順位、Task状態のBrainbase同期、汎用実行engine、旧Gateの復活は対象外。Brainbase連携Storyの完成は受入の依存にしない。実並行・中断復旧・時間評価はStory 2が所有する。
+
+## 実装と検証の現在地
+
+計画契約0.2.0、受理済み計画の厳密な読取、段階別の依存解析、TLと外部実行の責務文書を実装した。対象の21テスト、typecheck、CLI文書の整合検査は成功した。親の統合用worktreeでも21テストが成功した。
+
+これはコードとローカル検証の結果であり、実利用者の入力からの計画作成、上流入力の同等性、実運用の再計画、公開と利用者成果は未確認である。受入条件はこれらを確認してから個別に確定する。
 
 [全体方針](./story-vibepro-tl-task-orchestration-codex-pilot.md) / [TL責務ADR](../architecture/ADR-vibepro-tl-planning-and-external-execution.md) / [既存Task契約](../../src/task-authority.js)
