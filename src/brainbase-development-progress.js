@@ -246,7 +246,7 @@ export function verifyDevelopmentProgressReadback(value, envelopeInput) {
   if (!value.execution || typeof value.execution !== 'object' || Array.isArray(value.execution)) {
     mismatch('execution', envelope.execution, value.execution);
   }
-  for (const field of ['dispatch_id', 'attempt', 'owner', 'session_ref', 'status']) {
+  for (const field of ['dispatch_id', 'attempt', 'owner', 'session_ref', 'status', 'worktree', 'base_sha', 'head_sha']) {
     if (value.execution[field] !== envelope.execution[field]) {
       mismatch(`execution.${field}`, envelope.execution[field], value.execution[field]);
     }

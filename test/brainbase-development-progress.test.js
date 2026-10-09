@@ -84,6 +84,20 @@ test('readback mismatch is a failed confirmation', () => {
     && error.field === 'latest_sequence');
 });
 
+test('readback must match every execution identity field', () => {
+  const value = envelope();
+  for (const field of ['dispatch_id', 'attempt', 'owner', 'session_ref', 'status', 'worktree', 'base_sha', 'head_sha']) {
+    const mismatched = structuredClone(confirmedReadback(value));
+    mismatched.execution[field] = field === 'attempt' ? value.execution.attempt + 1 : `${value.execution[field] ?? 'missing'}-other`;
+    assert.throws(
+      () => verifyDevelopmentProgressReadback(mismatched, value),
+      (error) => error.code === 'BRAINBASE_DEVELOPMENT_READBACK_MISMATCH'
+        && error.field === `execution.${field}`,
+      `expected execution.${field} mismatch to fail closed`,
+    );
+  }
+});
+
 test('sender validates readback from custom transports too', async () => {
   const value = envelope();
   const sender = createDevelopmentProgressSender({
