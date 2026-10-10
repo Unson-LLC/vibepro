@@ -709,3 +709,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:567:start -->
 - [PR #567](https://github.com/Unson-LLC/vibepro/pull/567) — [2026-10](/releases/2026-10): TLの並列Task計画と外部実行の責務を定義する
 <!-- vibepro-release-index-pr:567:end -->
+
+<!-- vibepro-release-index-pr:568:start -->
+- [PR #568](https://github.com/Unson-LLC/vibepro/pull/568) — [2026-10](/releases/2026-10): 外部実行の開発進捗をBrainbaseへ送り読み戻しを検証する
+<!-- vibepro-release-index-pr:568:end -->
