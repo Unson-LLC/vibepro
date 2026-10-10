@@ -57,6 +57,10 @@ async function main() {
     provider_session_id: observed.sessionId ?? null,
     ...(observed.usageAccounting ? { usage_accounting: observed.usageAccounting } : {})
   };
+  // Persist the provider session before exposing any event files. The host
+  // uses this value as the authoritative session_ref and must never substitute
+  // run_id or thread_id while the detached worker is being observed.
+  await writeJson(statePath, state);
   const output = JSON.parse(await readFile(outputPath, 'utf8'));
   const result = toCodexCompletionResult(request, state, output);
   const eventsDir = path.join(runDir, 'events');
