@@ -717,3 +717,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:569:start -->
 - [PR #569](https://github.com/Unson-LLC/vibepro/pull/569) — [2026-10](/releases/2026-10): feat: PR準備から配備引継ぎを任意出力する
 <!-- vibepro-release-index-pr:569:end -->
+
+<!-- vibepro-release-index-pr:570:start -->
+- [PR #570](https://github.com/Unson-LLC/vibepro/pull/570) — [2026-10](/releases/2026-10): CIをEVO-X2へ統一し、Codex進捗連携を任意で有効化
+<!-- vibepro-release-index-pr:570:end -->
