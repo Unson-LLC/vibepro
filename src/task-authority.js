@@ -5,12 +5,23 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { assertArtifactWritePath, preflightArtifactProjectionWrites, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
+import { TASK_PLAN_SCHEMA_VERSION, validateTaskPlan } from './task-plan.js';
 import { toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
-const DOCUMENT_FIELDS = new Set(['schema_version', 'story_id', 'tasks']);
-const ACCEPTED_DOCUMENT_FIELDS = new Set(['schema_version', 'story_id', 'authority', 'provenance', 'tasks']);
-const TASK_FIELDS = new Set(['task_id', 'story_id', 'title', 'allowed_paths', 'acceptance_criteria', 'depends_on', 'status']);
+const LEGACY_DOCUMENT_FIELDS = new Set(['schema_version', 'story_id', 'tasks']);
+const LEGACY_ACCEPTED_DOCUMENT_FIELDS = new Set(['schema_version', 'story_id', 'authority', 'provenance', 'tasks']);
+const PARALLEL_ACCEPTED_DOCUMENT_FIELDS = new Set([
+  'schema_version',
+  'repository',
+  'story_id',
+  'plan_version',
+  'intent',
+  'authority',
+  'provenance',
+  'tasks'
+]);
+const LEGACY_TASK_FIELDS = new Set(['task_id', 'story_id', 'title', 'allowed_paths', 'acceptance_criteria', 'depends_on', 'status']);
 
 export async function bindTaskAuthority(repoRoot, { storyId, inputPath }) {
   const root = path.resolve(repoRoot);
@@ -24,16 +35,21 @@ export async function bindTaskAuthority(repoRoot, { storyId, inputPath }) {
   } catch (error) {
     throw new Error(`task bind input must be valid JSON: ${error.message}`);
   }
-  const tasks = validateAuthorityInput(document, storyId);
+  const normalized = normalizeAuthorityDocument(document, storyId);
   const authority = {
-    schema_version: '0.1.0',
+    schema_version: normalized.schema_version,
+    ...(normalized.schema_version === TASK_PLAN_SCHEMA_VERSION ? {
+      repository: normalized.repository,
+      plan_version: normalized.plan_version,
+      intent: normalized.intent
+    } : {}),
     story_id: storyId,
     authority: { status: 'accepted', scope: 'story' },
     provenance: {
       input_path: input.relativePath,
       input_sha256: createHash('sha256').update(bytes).digest('hex')
     },
-    tasks
+    tasks: normalized.tasks
   };
   const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
   const canonicalJsonPath = canonicalTaskJsonPath(root, route, storyId);
@@ -84,6 +100,26 @@ export async function readTaskAuthorities(repoRoot, storyId, storySource = null)
     ? await readGeneratedTaskAuthority(repoRoot, proposalPath)
     : emptyAuthority('generated_proposal');
   return { human, accepted, generated };
+}
+
+/**
+ * Read the accepted authority for plan commands with full provenance and
+ * source validation. The status/read surfaces intentionally use the
+ * fail-soft projection above, while a plan read must never analyze a stale or
+ * tampered accepted artifact.
+ */
+export async function readAcceptedTaskAuthorityStrict(repoRoot, storyId) {
+  const route = await resolveArtifactRoute(repoRoot, 'task_plan', { storyId });
+  const filePath = canonicalTaskJsonPath(repoRoot, route, storyId);
+  let document;
+  try {
+    document = JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') throw new Error(`accepted task plan not found for ${storyId}`);
+    if (error instanceof SyntaxError) throw new Error(`accepted task authority must be valid JSON: ${error.message}`);
+    throw error;
+  }
+  return validateAcceptedTaskAuthority(repoRoot, storyId, filePath, document);
 }
 
 export async function assertSelectedTaskAccepted(repoRoot, storyId, taskId) {
@@ -184,18 +220,36 @@ async function resolveTrackedInput(repoRoot, inputPath) {
   return { absolutePath, relativePath };
 }
 
-function validateAuthorityInput(document, storyId) {
+function normalizeAuthorityDocument(document, storyId) {
   if (!document || Array.isArray(document) || typeof document !== 'object') throw new Error('task bind input must be an object');
   if (document.source_run || document.authority?.status === 'generated_proposal') throw new Error('diagnostic proposal cannot be bound as accepted authority');
-  const unknownDocumentFields = Object.keys(document).filter((key) => !DOCUMENT_FIELDS.has(key));
+  if (document.schema_version === TASK_PLAN_SCHEMA_VERSION) {
+    return validateTaskPlan(document, { storyId });
+  }
+  const legacy = validateLegacyAuthorityInput(document, storyId);
+  return {
+    schema_version: legacy.schema_version,
+    story_id: storyId,
+    tasks: legacy.tasks
+  };
+}
+
+function validateAuthorityInput(document, storyId) {
+  return normalizeAuthorityDocument(document, storyId).tasks;
+}
+
+function validateLegacyAuthorityInput(document, storyId) {
+  if (!document || Array.isArray(document) || typeof document !== 'object') throw new Error('task bind input must be an object');
+  if (document.source_run || document.authority?.status === 'generated_proposal') throw new Error('diagnostic proposal cannot be bound as accepted authority');
+  const unknownDocumentFields = Object.keys(document).filter((key) => !LEGACY_DOCUMENT_FIELDS.has(key));
   if (unknownDocumentFields.length > 0) throw new Error(`unknown task authority field: ${unknownDocumentFields.join(', ')}`);
   if (document.schema_version !== '0.1.0') throw new Error('task bind schema_version must be 0.1.0');
   if (document.story_id !== storyId) throw new Error(`task bind story_id must exactly match ${storyId}`);
   if (!Array.isArray(document.tasks) || document.tasks.length === 0) throw new Error('task bind requires a nonempty tasks array');
   const ids = new Set();
-  return document.tasks.map((task, index) => {
+  const tasks = document.tasks.map((task, index) => {
     if (!task || Array.isArray(task) || typeof task !== 'object') throw new Error(`task at index ${index} must be an object`);
-    const unknown = Object.keys(task).filter((key) => !TASK_FIELDS.has(key));
+    const unknown = Object.keys(task).filter((key) => !LEGACY_TASK_FIELDS.has(key));
     if (unknown.length > 0) throw new Error(`unknown task field: ${unknown.join(', ')}`);
     if (task.source_type) throw new Error('diagnostic proposal task cannot be bound as accepted authority');
     const taskId = String(task.task_id ?? '').trim();
@@ -215,13 +269,65 @@ function validateAuthorityInput(document, storyId) {
       ...(task.status == null ? {} : { status: String(task.status) })
     };
   }).sort((a, b) => a.task_id.localeCompare(b.task_id));
+  return { schema_version: '0.1.0', story_id: storyId, tasks };
+}
+
+function acceptedToInput(document) {
+  const tasks = (document.tasks ?? []).map((task) => {
+    // Accepted authority normally stores the normalized Task shape. Keep the
+    // projection shape readable as well because older artifact writers used
+    // `id` for the projected Task identifier. Preserve every other field so
+    // validation still rejects unknown or tampered fields.
+    const canonicalTask = { ...task, task_id: task.task_id ?? task.id };
+    delete canonicalTask.id;
+    return canonicalTask;
+  });
+  return document.schema_version === TASK_PLAN_SCHEMA_VERSION
+    ? {
+        schema_version: document.schema_version,
+        repository: document.repository,
+        story_id: document.story_id,
+        plan_version: document.plan_version,
+        intent: document.intent,
+        tasks
+      }
+    : {
+        schema_version: document.schema_version,
+        story_id: document.story_id,
+        tasks
+      };
+}
+
+function projectAcceptedTask(task, schemaVersion = '0.1.0') {
+  const projection = {
+    id: task.task_id ?? task.id ?? null,
+    story_id: task.story_id ?? null,
+    status: task.status ?? 'accepted',
+    allowed_paths: task.allowed_paths ?? [],
+    acceptance_criteria: task.acceptance_criteria ?? []
+  };
+  if (task.depends_on != null) projection.depends_on = task.depends_on;
+  if (schemaVersion === TASK_PLAN_SCHEMA_VERSION) {
+    projection.purpose = task.purpose ?? null;
+    projection.out_of_scope = task.out_of_scope ?? [];
+    projection.dependencies = task.dependencies ?? [];
+    projection.contracts = task.contracts ?? [];
+    projection.assignment = task.assignment ?? null;
+    projection.integration = task.integration ?? null;
+    if (task.title != null) projection.title = task.title;
+  }
+  return projection;
 }
 
 async function validateAcceptedTaskAuthority(repoRoot, storyId, filePath, document) {
   if (!document || Array.isArray(document) || typeof document !== 'object') throw new Error('accepted task authority must be an object');
-  const unknownFields = Object.keys(document).filter((key) => !ACCEPTED_DOCUMENT_FIELDS.has(key));
+  const schemaVersion = document.schema_version;
+  const acceptedFields = schemaVersion === TASK_PLAN_SCHEMA_VERSION
+    ? PARALLEL_ACCEPTED_DOCUMENT_FIELDS
+    : LEGACY_ACCEPTED_DOCUMENT_FIELDS;
+  const unknownFields = Object.keys(document).filter((key) => !acceptedFields.has(key));
   if (unknownFields.length > 0) throw new Error(`unknown accepted task authority field: ${unknownFields.join(', ')}`);
-  if (document.schema_version !== '0.1.0') throw new Error('accepted task authority schema_version must be 0.1.0');
+  if (!['0.1.0', TASK_PLAN_SCHEMA_VERSION].includes(schemaVersion)) throw new Error(`accepted task authority schema_version must be 0.1.0 or ${TASK_PLAN_SCHEMA_VERSION}`);
   if (document.story_id !== storyId) throw new Error(`accepted task authority story_id must exactly match ${storyId}`);
   if (!document.authority || Array.isArray(document.authority) || Object.keys(document.authority).some((key) => !['status', 'scope'].includes(key))) {
     throw new Error('accepted task authority authority schema is invalid');
@@ -247,15 +353,22 @@ async function validateAcceptedTaskAuthority(repoRoot, storyId, filePath, docume
   } catch (error) {
     throw new Error(`accepted task authority tracked input must remain valid JSON: ${error.message}`);
   }
-  const sourceTasks = validateAuthorityInput(source, storyId);
-  const canonicalTasks = validateAuthorityInput({ schema_version: document.schema_version, story_id: document.story_id, tasks: document.tasks }, storyId);
-  if (JSON.stringify(canonicalTasks) !== JSON.stringify(sourceTasks)) throw new Error('accepted task authority tasks must match current tracked input');
+  const sourceAuthority = normalizeAuthorityDocument(source, storyId);
+  const canonicalAuthority = normalizeAuthorityDocument(acceptedToInput(document), storyId);
+  if (JSON.stringify(canonicalAuthority) !== JSON.stringify(sourceAuthority)) throw new Error('accepted task authority tasks must match current tracked input');
   return {
     authority: 'accepted', path: toWorkspaceRelative(repoRoot, filePath), present: true,
-    task_count: canonicalTasks.length,
-    status_counts: countStatuses(canonicalTasks.map((task) => ({ status: task.status ?? 'accepted' }))),
+    schema_version: schemaVersion,
+    ...(schemaVersion === TASK_PLAN_SCHEMA_VERSION ? {
+      repository: canonicalAuthority.repository,
+      story_id: canonicalAuthority.story_id,
+      plan_version: canonicalAuthority.plan_version,
+      intent: canonicalAuthority.intent
+    } : {}),
+    task_count: canonicalAuthority.tasks.length,
+    status_counts: countStatuses(canonicalAuthority.tasks.map((task) => ({ status: task.status ?? 'accepted' }))),
     provenance: document.provenance,
-    tasks: canonicalTasks.map((task) => ({ id: task.task_id, story_id: task.story_id, status: task.status ?? 'accepted', allowed_paths: task.allowed_paths, acceptance_criteria: task.acceptance_criteria ?? [] }))
+    tasks: canonicalAuthority.tasks.map((task) => projectAcceptedTask(task, schemaVersion))
   };
 }
 
@@ -282,17 +395,19 @@ async function readAcceptedTaskAuthority(repoRoot, filePath) {
     throw error;
   }
   if (document.authority?.status !== 'accepted') return emptyAuthority('accepted');
-  const tasks = (document.tasks ?? []).map((task) => ({
-    id: task.task_id ?? null,
-    story_id: task.story_id ?? null,
-    status: task.status ?? 'accepted',
-    allowed_paths: task.allowed_paths ?? [],
-    acceptance_criteria: task.acceptance_criteria ?? []
-  }));
+  const schemaVersion = document.schema_version ?? '0.1.0';
+  const tasks = (document.tasks ?? []).map((task) => projectAcceptedTask(task, schemaVersion));
   return {
     authority: 'accepted',
     path: toWorkspaceRelative(repoRoot, filePath),
     present: true,
+    schema_version: schemaVersion,
+    ...(schemaVersion === TASK_PLAN_SCHEMA_VERSION ? {
+      repository: document.repository ?? null,
+      story_id: document.story_id ?? null,
+      plan_version: document.plan_version ?? null,
+      intent: document.intent ?? null
+    } : {}),
     task_count: tasks.length,
     status_counts: countStatuses(tasks),
     provenance: document.provenance ?? null,
@@ -322,7 +437,20 @@ async function findLatestDiagnosticProposal(repoRoot, storyId) {
 }
 
 function renderAcceptedAuthority(authority) {
-  return `# VibePro 受理済みTask Authority\n\n- Story ID: ${authority.story_id}\n- Authority: accepted\n- Input: ${authority.provenance.input_path}\n- SHA-256: ${authority.provenance.input_sha256}\n\n| Task ID | Allowed paths | Status |\n|---|---|---|\n${authority.tasks.map((task) => `| ${task.task_id} | ${task.allowed_paths.join(', ')} | ${task.status ?? 'accepted'} |`).join('\n')}\n`;
+  const planHeader = authority.schema_version === TASK_PLAN_SCHEMA_VERSION
+    ? `- Repository: ${authority.repository}\n- Plan version: ${authority.plan_version}\n- Purpose: ${authority.intent.purpose}\n`
+    : '';
+  const taskRows = authority.tasks.map((task) => {
+    const dependencies = task.dependencies?.map((dependency) => `${dependency.kind}:${dependency.target.task_id}`).join(', ') ?? task.depends_on?.join(', ') ?? '';
+    const integration = task.integration?.order ?? '';
+    return authority.schema_version === TASK_PLAN_SCHEMA_VERSION
+      ? `| ${task.id ?? task.task_id} | ${task.allowed_paths.join(', ')} | ${task.status ?? 'accepted'} | ${dependencies} | ${integration} |`
+      : `| ${task.task_id} | ${task.allowed_paths.join(', ')} | ${task.status ?? 'accepted'} |`;
+  }).join('\n');
+  const header = authority.schema_version === TASK_PLAN_SCHEMA_VERSION
+    ? '| Task ID | Allowed paths | Status | Dependencies | Integration order |\n|---|---|---|---|---|'
+    : '| Task ID | Allowed paths | Status |\n|---|---|---|';
+  return `# VibePro 受理済みTask Authority\n\n- Story ID: ${authority.story_id}\n- Authority: accepted\n- Input: ${authority.provenance.input_path}\n- SHA-256: ${authority.provenance.input_sha256}\n${planHeader}\n${header}\n${taskRows}\n`;
 }
 
 async function readHumanTaskAuthority(repoRoot, filePath) {

@@ -105,7 +105,8 @@ import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
-import { bindTaskAuthority } from './task-authority.js';
+import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
+import { analyzeTaskPlan, readTrackedTaskObservations, readTrackedTaskPlan, validateTaskPlan } from './task-plan.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
   assertPreSpecReadinessForFinalSpec,
@@ -260,6 +261,8 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
@@ -376,6 +379,8 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON input file>] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
@@ -1411,11 +1416,61 @@ ${renderHelp()}`);
 
     if (command === 'task') {
       const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
+      if (subcommand === 'plan') {
+        const planCommand = rest[1];
+        const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        if (planCommand === 'validate') {
+          const input = await readTrackedTaskPlan(repoRoot, getOption(rest, '--input'));
+          const plan = validateTaskPlan(input.document, {
+            storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+            repository: getOption(rest, '--repository')
+          });
+          const observationsInput = getOption(rest, '--observations');
+          const observations = observationsInput
+            ? await readTrackedTaskObservations(repoRoot, observationsInput)
+            : null;
+          const analysis = analyzeTaskPlan(plan, { observations: observations?.observations ?? [] });
+          const result = {
+            input_path: input.path,
+            ...(observations ? { observations_path: observations.path } : {}),
+            plan,
+            analysis
+          };
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderTaskPlanSummary('validate', result));
+          return { exitCode: 0, command, subcommand: 'plan validate', result };
+        }
+        if (planCommand === 'read') {
+          const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+          if (!storyId) throw new Error('task plan read requires --id <story-id>');
+          const accepted = await readAcceptedTaskAuthorityStrict(repoRoot, storyId);
+          const plan = acceptedAuthorityToPlan(accepted);
+          const observationsInput = getOption(rest, '--observations');
+          const observations = observationsInput
+            ? await readTrackedTaskObservations(repoRoot, observationsInput)
+            : null;
+          const analysis = plan
+            ? analyzeTaskPlan(plan, { observations: observations?.observations ?? [] })
+            : null;
+          const result = {
+            accepted,
+            ...(observations ? { observations_path: observations.path } : {}),
+            analysis
+          };
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderTaskPlanSummary('read', result));
+          return { exitCode: 0, command, subcommand: 'plan read', result };
+        }
+        write(stderr, `Unknown task plan command: ${planCommand ?? ''}\n\n${renderHelp()}`);
+        return { exitCode: 1, command, subcommand: 'plan' };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
       if (subcommand === 'bind') {
         const result = await bindTaskAuthority(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
@@ -2121,6 +2176,60 @@ function renderOutcomeHelp(subcommand = null, language = null) {
   return english
     ? `VibePro Outcome\n\nCommands:\n  vibepro outcome record   Record a downstream outcome observation.\n  vibepro outcome refresh  Rebuild and persist the canonical outcome revision.\n\nRun a command with --help for its exact options.\n`
     : `VibePro Outcome\n\nコマンド:\n  vibepro outcome record   downstream outcome observationを記録します。\n  vibepro outcome refresh  canonical outcome revisionを再構築して永続化します。\n\n各コマンドの正確なオプションは --help で確認できます。\n`;
+}
+
+function acceptedAuthorityToPlan(accepted) {
+  if (accepted.schema_version !== '0.2.0') return null;
+  return {
+    schema_version: accepted.schema_version,
+    repository: accepted.repository,
+    story_id: accepted.story_id,
+    plan_version: accepted.plan_version,
+    intent: accepted.intent,
+    tasks: accepted.tasks.map((task) => ({
+      task_id: task.id,
+      story_id: task.story_id,
+      ...(task.title == null ? {} : { title: task.title }),
+      allowed_paths: task.allowed_paths,
+      acceptance_criteria: task.acceptance_criteria,
+      ...(task.depends_on == null ? {} : { depends_on: task.depends_on }),
+      ...(task.status == null ? {} : { status: task.status }),
+      purpose: task.purpose,
+      out_of_scope: task.out_of_scope,
+      dependencies: task.dependencies,
+      contracts: task.contracts,
+      assignment: task.assignment,
+      integration: task.integration
+    }))
+  };
+}
+
+function renderTaskPlanSummary(command, result) {
+  const plan = result.plan ?? acceptedAuthorityToPlan(result.accepted);
+  const analysis = result.analysis;
+  const lines = [
+    `task plan ${command}: ${analysis?.status ?? 'accepted'}`,
+    `story: ${plan?.story_id ?? result.accepted?.story_id ?? 'unknown'}`,
+    `plan version: ${plan?.plan_version ?? result.accepted?.plan_version ?? 'legacy'}`,
+    `tasks: ${plan?.tasks.length ?? result.accepted?.task_count ?? 0}`
+  ];
+  if (analysis) {
+    lines.push(`dispatch ready: ${analysis.dispatch_ready ? 'yes' : 'no'}`);
+    const readyStages = analysis.ready_stages ?? { start: analysis.ready_task_ids ?? [], verify: [], integrate: [] };
+    lines.push(`startable: ${readyStages.start.join(', ') || 'none'}`);
+    lines.push(`verify-ready: ${readyStages.verify.join(', ') || 'none'}`);
+    lines.push(`integrate-ready: ${readyStages.integrate.join(', ') || 'none'}`);
+    // Keep the legacy label for operators/scripts that still scan the
+    // human-readable summary; it now explicitly means start candidates.
+    lines.push(`ready: ${analysis.ready_task_ids.join(', ') || 'none'}`);
+    lines.push(`blocked: ${analysis.blocked_task_ids.join(', ') || 'none'}`);
+    lines.push(`observations: ${analysis.observation_count}`);
+    if (analysis.diagnostics.length > 0) {
+      lines.push('diagnostics:');
+      for (const diagnostic of analysis.diagnostics) lines.push(`- ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
 }
 
 function resolveDiagnosisPhaseOption(args) {

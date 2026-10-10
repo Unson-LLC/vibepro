@@ -74,6 +74,8 @@ Story・Specと検証結果を確認し、必要に応じて `review prepare` �
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]

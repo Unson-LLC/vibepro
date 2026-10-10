@@ -3645,3 +3645,45 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:563:end -->
+
+<!-- vibepro-release-pr:567:start -->
+## [#567](https://github.com/Unson-LLC/vibepro/pull/567) TLの並列Task計画と外部実行の責務を定義する
+
+- Author: @sintariran
+- Merged: 2026-10-10T06:27:06Z
+- Commit: `88fa8911c6a0315922c675b0909874005a7c68a8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:567:end -->
+
+<!-- vibepro-release-pr:568:start -->
+## [#568](https://github.com/Unson-LLC/vibepro/pull/568) 外部実行の開発進捗をBrainbaseへ送り読み戻しを検証する
+
+- Author: @sintariran
+- Merged: 2026-10-10T06:27:53Z
+- Commit: `df3b4a49f27aed8012ca9537386ff30417a139a4`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:568:end -->
