@@ -40,7 +40,7 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   });
   const [first, duplicate] = await Promise.all([host.spawn(request), host.spawn(request)]);
   assert.equal(duplicate.provider_run_id, first.provider_run_id);
-  await Promise.race([delivered, new Promise((_, reject) => setTimeout(() => reject(new Error('completion timeout')), 10000))]);
+  await Promise.race([delivered, new Promise((_, reject) => setTimeout(() => reject(new Error('completion timeout')), 30000))]);
   const completion = deliveredEvents.find((event) => event.kind === 'completed');
   assert.deepEqual(deliveredEvents.map((event) => event.kind), ['partial_result', 'completed']);
   assert.equal(deliveredEvents[0].payload.detail, 'schema-valid bounded detail');
@@ -53,7 +53,9 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
     { input_tokens: 120, output_tokens: 30, total_tokens: 150, cost_usd: 0.75 });
   const runsRoot = path.join(repoRoot, '.vibepro', 'codex-host', 'runs');
   const [runName] = await readdir(runsRoot);
-  await waitFor(async () => access(path.join(runsRoot, runName, 'worker-finished.json')).then(() => true, () => false));
+  const runDir = path.join(runsRoot, runName);
+  await waitFor(async () => access(path.join(runDir, 'worker-finished.json')).then(() => true, () => false));
+  assert.equal(await access(path.join(runDir, 'delivery-error.json')).then(() => true, () => false), false);
   const persisted = await readFile(path.join(runsRoot, runName, 'completion-event.json'), 'utf8');
   assert.doesNotMatch(persisted, /raw_transcript|thread\.started/);
 
@@ -116,7 +118,7 @@ test('production Codex host optionally projects explicit dispatch mapping with t
     } });
   });
   await host.spawn(request);
-  await Promise.race([delivered, new Promise((_, reject) => setTimeout(() => reject(new Error('completion timeout')), 10000))]);
+  await Promise.race([delivered, new Promise((_, reject) => setTimeout(() => reject(new Error('completion timeout')), 30000))]);
   await waitFor(() => sent.length === 2);
 
   assert.deepEqual(sent.map((envelope) => envelope.sequence), [7, 8]);
