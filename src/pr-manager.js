@@ -15,8 +15,9 @@
 // Bug-fix scope and external outcome boundaries are reported separately so a
 // local implementation result cannot be presented as a verified user outcome.
 
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -37,6 +38,7 @@ import { readNarrative } from './report-store.js';
 import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
 import { inspectManagedV2OutcomeCaseProjection } from './brainbase-integration.js';
+import { buildDeployHandoff, validateDeployHandoffInput } from './deploy-handoff.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -48,6 +50,9 @@ const SCHEMA_VERSION = '0.2.0';
 export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'pr prepare');
+  const deployHandoffInput = options.deployHandoff === undefined
+    ? null
+    : validateDeployHandoffInput(options.deployHandoff);
   const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
@@ -65,6 +70,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
+  const deployHandoffPath = deployHandoffInput
+    ? await resolvePrArtifactFile(root, storyId, 'deploy-handoff.json')
+    : null;
 
   const storySource = await findStorySource(root, story).catch(() => null);
   const readiness = resolvePrReadiness({ review });
@@ -130,6 +138,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     gate_status: readiness.status,
     blocking_reasons: readiness.reasons,
     story_source: summarizeStorySource(storySource),
+    ...(deployHandoffPath ? { deploy_handoff_ref: toWorkspaceRelative(root, deployHandoffPath) } : {}),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
     traceability: summarizeClauseMapForPrepare(clauseMap)
@@ -154,12 +163,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
   // must fail instead of reporting success with contradictory artifacts.
   await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification, storySource, clauseMap });
 
+  if (deployHandoffInput) {
+    await writeDeployHandoffArtifact(root, {
+      input: deployHandoffInput,
+      preparation,
+      storySource,
+      verification,
+      prPreparePath: jsonPath,
+      outputPath: deployHandoffPath
+    });
+  }
+
   return {
     story,
     preparation,
     artifacts: {
       json: jsonPath,
-      pr_body: bodyPath
+      pr_body: bodyPath,
+      ...(deployHandoffPath ? { deploy_handoff: deployHandoffPath } : {})
     }
   };
 }
@@ -491,6 +512,71 @@ async function recordManifestPrPrepare(repoRoot, storyId, artifacts) {
     }
   };
   await writeManifest(repoRoot, manifest);
+}
+
+async function writeDeployHandoffArtifact(repoRoot, {
+  input,
+  preparation,
+  storySource,
+  verification,
+  prPreparePath,
+  outputPath
+}) {
+  const [storyRef, verificationRef, prPrepareRef] = await Promise.all([
+    createDeployHandoffReference(repoRoot, storySource?.path, 'Story'),
+    createDeployHandoffReference(repoRoot, verification?.artifact, 'verification'),
+    createDeployHandoffReference(repoRoot, prPreparePath, 'PR prepare')
+  ]);
+  const handoff = buildDeployHandoff({
+    storyId: preparation.story.story_id,
+    headSha: preparation.git.head_sha,
+    storyRef,
+    verificationRef,
+    prPrepareRef,
+    target: input.target,
+    acceptanceCriteria: input.acceptance_criteria,
+    mode: input.mode,
+    authorityRef: input.authority_ref,
+    externalRefs: input.external_refs,
+    createdAt: preparation.created_at
+  });
+  await writeFile(outputPath, `${JSON.stringify(handoff, null, 2)}\n`, 'utf8');
+  return outputPath;
+}
+
+async function createDeployHandoffReference(repoRoot, filePath, label) {
+  if (typeof filePath !== 'string' || filePath.trim() === '') {
+    throw new Error(`deploy handoff requires a repository-relative ${label} reference`);
+  }
+  const root = path.resolve(repoRoot);
+  const realRoot = await realpath(root);
+  const candidate = path.isAbsolute(filePath)
+    ? path.resolve(filePath)
+    : path.resolve(root, filePath);
+  const relative = path.relative(root, candidate);
+  if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`deploy handoff ${label} reference must remain inside the repository`);
+  }
+  let realCandidate;
+  try {
+    realCandidate = await realpath(candidate);
+  } catch (error) {
+    throw new Error(`deploy handoff ${label} reference is unavailable: ${relative}`, { cause: error });
+  }
+  const realRelative = path.relative(realRoot, realCandidate);
+  if (!realRelative || realRelative === '..' || realRelative.startsWith(`..${path.sep}`) || path.isAbsolute(realRelative)) {
+    throw new Error(`deploy handoff ${label} reference must resolve inside the repository`);
+  }
+  let content;
+  try {
+    content = await readFile(realCandidate);
+  } catch (error) {
+    throw new Error(`deploy handoff ${label} reference is unavailable: ${relative}`, { cause: error });
+  }
+  return {
+    path: relative.split(path.sep).join('/'),
+    sha256: createHash('sha256').update(content).digest('hex')
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -1276,6 +1362,7 @@ export function renderPrPrepareSummary(result) {
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,
     ...(preparation.fix_scope ? [`- fix scope: ${preparation.fix_scope.status} (${preparation.fix_scope.completion_claim})`] : []),
+    ...(result.artifacts.deploy_handoff ? [`- deploy handoff: ${result.artifacts.deploy_handoff}`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];

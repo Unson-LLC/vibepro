@@ -263,7 +263,7 @@ Usage:
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON入力ファイル>] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
@@ -377,7 +377,7 @@ Usage:
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON input file>] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
@@ -1472,6 +1472,9 @@ ${renderHelp()}`);
       if (subcommand === 'prepare') {
         const jsonOutput = hasFlag(rest, '--json');
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
+        const deployHandoff = hasFlag(rest, '--deploy-handoff')
+          ? await readDeployHandoffInput(getOption(rest, '--deploy-handoff'))
+          : undefined;
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
           commandName: 'pr prepare'
@@ -1484,7 +1487,8 @@ ${renderHelp()}`);
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           language: getOption(rest, '--language'),
-          env: io.env ?? process.env
+          env: io.env ?? process.env,
+          deployHandoff
         });
         write(stdout, jsonOutput
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
@@ -2128,6 +2132,24 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
+}
+
+async function readDeployHandoffInput(inputPath) {
+  if (!inputPath || inputPath.startsWith('--')) {
+    throw new Error('pr prepare --deploy-handoff requires a JSON input file');
+  }
+  const resolvedPath = path.resolve(inputPath);
+  let raw;
+  try {
+    raw = await readFile(resolvedPath, 'utf8');
+  } catch (error) {
+    throw new Error(`Unable to read deploy handoff input: ${resolvedPath}`, { cause: error });
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`Deploy handoff input must be valid JSON: ${resolvedPath}`, { cause: error });
+  }
 }
 
 function renderProcessRecordStoreResult(subcommand, result) {
