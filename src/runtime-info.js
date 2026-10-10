@@ -89,17 +89,21 @@ export function evaluateRuntimeIntegrity(runtime, options = {}) {
   const reasons = [];
   const relation = runtime.source_git?.origin_main_relation;
 
-  if (runtime.source_git?.is_git_repo && ['behind', 'diverged'].includes(relation)) {
-    reasons.push(`Git runtime is ${relation} relative to origin/main`);
-    if (runtime.source_git.dirty) reasons.push('Git runtime is dirty');
-    return blocked('stale_runtime', reasons, purpose);
-  }
-
+  // A verified Node test runtime is intentionally allowed to run from a PR
+  // checkout. The checkout may be dirty or diverged while the test runner is
+  // exercising the source under test; stale-runtime blocking still applies to
+  // normal and development runtime paths below.
   if (runtime.mode === 'test') {
     if (!isInternalNodeTestRuntime(runtime)) {
       return blocked('runtime_mismatch', ['test mode is restricted to the Node test runner in the VibePro source checkout'], purpose);
     }
     return trusted(purpose, ['internal Node test runtime']);
+  }
+
+  if (runtime.source_git?.is_git_repo && ['behind', 'diverged'].includes(relation)) {
+    reasons.push(`Git runtime is ${relation} relative to origin/main`);
+    if (runtime.source_git.dirty) reasons.push('Git runtime is dirty');
+    return blocked('stale_runtime', reasons, purpose);
   }
 
   if (runtime.mode === 'development') {
