@@ -12,7 +12,7 @@ concurrency:
 jobs:
   validation:
     if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     permissions:
       actions: read
       checks: read
@@ -55,7 +55,7 @@ jobs:
   release:
     needs: validation
     if: ${{ always() && needs.validation.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     timeout-minutes: 90
     permissions:
       contents: write
