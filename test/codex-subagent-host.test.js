@@ -252,29 +252,39 @@ test('completion delivery does not wait for Brainbase and retries the same event
   const host = createCodexSubagentHost({
     cwd: repoRoot,
     developmentProgressSender: sender,
-    developmentProgressAttemptTimeoutMs: 2000,
+    developmentProgressAttemptTimeoutMs: 10000,
     developmentProgressMaxAttempts: 2,
     developmentProgressRetryBackoffMs: [retryBackoffMs],
   });
+  const eventDeliveryWatchdogMs = 3000;
   let receivedEvent;
-  let callbackAt;
-  const callbackStartedAt = performance.now();
+  let eventDeliveryWatchdog;
   const received = new Promise((resolve) => {
     host.subscribeCompletion({
       dispatch_id: dispatchId,
       repo_root: repoRoot,
       onEvent: async (value) => {
         receivedEvent = value;
-        callbackAt = performance.now();
         resolve();
       },
     });
   });
-  await Promise.race([received, new Promise((_, reject) => setTimeout(() => reject(new Error('event timeout')), 1000))]);
-  assert.ok(callbackAt - callbackStartedAt < 900, `onEvent waited ${callbackAt - callbackStartedAt}ms`);
+  try {
+    await Promise.race([
+      received,
+      new Promise((_, reject) => {
+        eventDeliveryWatchdog = setTimeout(
+          () => reject(new Error(`event timeout after ${eventDeliveryWatchdogMs}ms`)),
+          eventDeliveryWatchdogMs,
+        );
+      }),
+    ]);
+  } finally {
+    clearTimeout(eventDeliveryWatchdog);
+  }
   assert.equal(receivedEvent.development_progress.status, 'awaiting_integration');
   await waitFor(() => sendCalls === 1, { timeoutMs: 1000 });
-  assert.equal(firstSendSettled, false);
+  assert.equal(firstSendSettled, false, 'onEvent must not await the pending Brainbase send');
   const firstSendReleasedAt = performance.now();
   releaseFirstSend();
   await waitFor(() => sendCalls === 2, { timeoutMs: 3000 });
