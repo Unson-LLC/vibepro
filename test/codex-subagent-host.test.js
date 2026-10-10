@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { access, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { performance } from 'node:perf_hooks';
 import test from 'node:test';
 
 import { createCodexSubagentHost, publishDevelopmentProgress } from '../src/codex-subagent-host.js';
@@ -224,11 +225,18 @@ test('completion delivery does not wait for Brainbase and retries the same event
 
   let sendCalls = 0;
   const sendStartedAt = [];
+  let releaseFirstSend;
+  const firstSendReleased = new Promise((resolve) => { releaseFirstSend = resolve; });
+  let firstSendSettled = false;
+  const retryBackoffMs = 100;
   const sender = {
     async send() {
       sendCalls += 1;
-      sendStartedAt.push(Date.now());
-      if (sendCalls === 1) await new Promise((resolve) => setTimeout(resolve, 1200));
+      sendStartedAt.push(performance.now());
+      if (sendCalls === 1) {
+        await firstSendReleased;
+        firstSendSettled = true;
+      }
       return sendCalls === 1 ? false : undefined;
     },
     async readback(envelope) {
@@ -244,29 +252,44 @@ test('completion delivery does not wait for Brainbase and retries the same event
   const host = createCodexSubagentHost({
     cwd: repoRoot,
     developmentProgressSender: sender,
-    developmentProgressAttemptTimeoutMs: 2000,
+    developmentProgressAttemptTimeoutMs: 10000,
     developmentProgressMaxAttempts: 2,
-    developmentProgressRetryBackoffMs: [25],
+    developmentProgressRetryBackoffMs: [retryBackoffMs],
   });
+  const eventDeliveryWatchdogMs = 3000;
   let receivedEvent;
-  let callbackAt;
-  const callbackStartedAt = Date.now();
+  let eventDeliveryWatchdog;
   const received = new Promise((resolve) => {
     host.subscribeCompletion({
       dispatch_id: dispatchId,
       repo_root: repoRoot,
       onEvent: async (value) => {
         receivedEvent = value;
-        callbackAt = Date.now();
         resolve();
       },
     });
   });
-  await Promise.race([received, new Promise((_, reject) => setTimeout(() => reject(new Error('event timeout')), 1000))]);
-  assert.ok(callbackAt - callbackStartedAt < 900, `onEvent waited ${callbackAt - callbackStartedAt}ms`);
+  try {
+    await Promise.race([
+      received,
+      new Promise((_, reject) => {
+        eventDeliveryWatchdog = setTimeout(
+          () => reject(new Error(`event timeout after ${eventDeliveryWatchdogMs}ms`)),
+          eventDeliveryWatchdogMs,
+        );
+      }),
+    ]);
+  } finally {
+    clearTimeout(eventDeliveryWatchdog);
+  }
   assert.equal(receivedEvent.development_progress.status, 'awaiting_integration');
+  await waitFor(() => sendCalls === 1, { timeoutMs: 1000 });
+  assert.equal(firstSendSettled, false, 'onEvent must not await the pending Brainbase send');
+  const firstSendReleasedAt = performance.now();
+  releaseFirstSend();
   await waitFor(() => sendCalls === 2, { timeoutMs: 3000 });
-  assert.ok(sendStartedAt[1] - sendStartedAt[0] >= 1200);
+  // Allow timer scheduling jitter while still proving that the configured backoff was used.
+  assert.ok(sendStartedAt[1] - firstSendReleasedAt >= retryBackoffMs - 20);
   assert.equal(receivedEvent.development_progress.status, 'confirmed');
 });
 
