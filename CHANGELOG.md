@@ -3687,3 +3687,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:568:end -->
+
+<!-- vibepro-release-pr:569:start -->
+## [#569](https://github.com/Unson-LLC/vibepro/pull/569) feat: PR準備から配備引継ぎを任意出力する
+
+- Author: @sintariran
+- Merged: 2026-10-10T10:28:47Z
+- Commit: `1765ad3be8cd8ae184ce4d13d10a2d0ee46cb998`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:569:end -->

@@ -713,3 +713,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:568:start -->
 - [PR #568](https://github.com/Unson-LLC/vibepro/pull/568) — [2026-10](/ja/releases/2026-10): 外部実行の開発進捗をBrainbaseへ送り読み戻しを検証する
 <!-- vibepro-release-index-pr:568:end -->
+
+<!-- vibepro-release-index-pr:569:start -->
+- [PR #569](https://github.com/Unson-LLC/vibepro/pull/569) — [2026-10](/ja/releases/2026-10): feat: PR準備から配備引継ぎを任意出力する
+<!-- vibepro-release-index-pr:569:end -->
