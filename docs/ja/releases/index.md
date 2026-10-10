@@ -721,3 +721,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:570:start -->
 - [PR #570](https://github.com/Unson-LLC/vibepro/pull/570) — [2026-10](/ja/releases/2026-10): CIをEVO-X2へ統一し、Codex進捗連携を任意で有効化
 <!-- vibepro-release-index-pr:570:end -->
+
+<!-- vibepro-release-index-pr:571:start -->
+- [PR #571](https://github.com/Unson-LLC/vibepro/pull/571) — [2026-10](/ja/releases/2026-10): fix: restore PR test validation and add optional progress dispatch
+<!-- vibepro-release-index-pr:571:end -->
