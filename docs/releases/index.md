@@ -705,3 +705,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:563:start -->
 - [PR #563](https://github.com/Unson-LLC/vibepro/pull/563) — [2026-09](/releases/2026-09): docs: connect self-model to development judgment
 <!-- vibepro-release-index-pr:563:end -->
+
+<!-- vibepro-release-index-pr:567:start -->
+- [PR #567](https://github.com/Unson-LLC/vibepro/pull/567) — [2026-10](/releases/2026-10): TLの並列Task計画と外部実行の責務を定義する
+<!-- vibepro-release-index-pr:567:end -->
