@@ -1,0 +1,226 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-disposition-reviewed-by",
+  "generated_by": {
+    "caller": "cursor-cloud-agent",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "judgment disposition record は、非空の --reviewed-by を trim して disposition JSON の reviewed_by に保存する。",
+      "rationale": "DRB-AC-001。src/judgment-operations.js の recordJudgmentDisposition が reviewed_by を書く。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "DRB-AC-001"
+          }
+        ],
+        "architecture_refs": [],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "reviewed_by: normalizeText(options.reviewedBy)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-disposition-reviewed-by.test.js",
+            "case": "disposition record stores Japanese --reviewed-by text unchanged"
+          }
+        ]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/judgment-operations.js",
+            "must_contain": "reviewed_by: normalizeText(options.reviewedBy)"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-disposition-reviewed-by.test.js",
+            "must_cover": "レビュー担当"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T05:01:36.243Z",
+      "last_revised_at": "2026-10-14T05:04:15.692Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "--reviewed-by が無いとき、disposition record は成功し reviewed_by は null、--recorded-by で渡した recorded_by は残る。",
+      "rationale": "DRB-AC-002。欠落は担当者なしであり、recorded_by の意味は変えない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "DRB-AC-002"
+          }
+        ],
+        "architecture_refs": [],
+        "code_refs": [
+          {
+            "file": "src/cli.js",
+            "anchor": "reviewedBy: getOption(rest, '--reviewed-by')"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-disposition-reviewed-by.test.js",
+            "case": "disposition record leaves reviewed_by null when --reviewed-by is omitted"
+          }
+        ]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/cli.js",
+            "must_contain": "reviewedBy: getOption(rest, '--reviewed-by')"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-disposition-reviewed-by.test.js",
+            "must_cover": "reviewed_by null when --reviewed-by is omitted"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T05:01:36.243Z",
+      "last_revised_at": "2026-10-14T05:04:15.692Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "--reviewed-by が空文字または空白のみのとき、disposition record は成功し reviewed_by は null になる。",
+      "rationale": "DRB-AC-002。normalizeText は空文字と空白を null にする。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "DRB-AC-002"
+          }
+        ],
+        "architecture_refs": [],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "function normalizeText"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-disposition-reviewed-by.test.js",
+            "case": "disposition record stores null reviewed_by for an empty --reviewed-by"
+          }
+        ]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-disposition-reviewed-by.test.js",
+            "must_cover": "empty --reviewed-by"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T05:01:36.243Z",
+      "last_revised_at": "2026-10-14T05:04:15.692Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "reviewed_by キーを持たない既存 disposition JSON は judgment status と judgment outcome record が読め、そのファイルは reviewed_by を補完されない。",
+      "rationale": "DRB-AC-003。既存レコードの形を維持する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "DRB-AC-003"
+          }
+        ],
+        "architecture_refs": [],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "recordOperationalJudgmentOutcome"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-disposition-reviewed-by.test.js",
+            "case": "existing disposition records without reviewed_by stay readable"
+          }
+        ]
+      },
+      "confidence": 0.86,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-disposition-reviewed-by.test.js",
+            "must_cover": "without reviewed_by stay readable"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T05:01:36.243Z",
+      "last_revised_at": "2026-10-14T05:04:15.692Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "disposition の保存先は既存の JSON ファイルのままで、新たな永続ストアは追加しない。",
+      "rationale": "DRB-AC-004。recordJudgmentDisposition は development-judgment/dispositions 配下の JSON を書く。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "DRB-AC-004"
+          }
+        ],
+        "architecture_refs": [],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "dispositions"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-disposition-reviewed-by.test.js",
+            "case": "disposition record leaves reviewed_by null when --reviewed-by is omitted"
+          }
+        ]
+      },
+      "confidence": 0.8,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/judgment-operations.js",
+            "must_contain": "dispositions"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-disposition-reviewed-by.test.js",
+            "must_cover": "schema_version"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T05:01:36.243Z",
+      "last_revised_at": "2026-10-14T05:04:15.692Z"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-LEDGER-263f2678",
+      "question": "台帳要件 263f2678 の本文は未取得である。受け入れ条件は依頼文の不具合と境界だけを根拠にしている。"
+    }
+  ],
+  "generated_at": "2026-10-14T05:04:15.692Z",
+  "previous_spec_id": "2026-10-14T05:01:36.243Z"
+}
