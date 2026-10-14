@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-disposition-reviewed-by",
+  "run_id": "judgment-disposition-reviewed-by-1",
+  "source_input": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/senior-judgment/input-draft.json",
+  "adopted_input": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/development-judgment/inputs/judgment-disposition-reviewed-by-1.json",
+  "input_sha256": "1a18f34fe9dc2e4b03a52a0b0dd86bba6f460620c839d868674235632b5d2cf6",
+  "reviewed_by": "cursor-cloud-agent",
+  "authority": "repository-source",
+  "review_summary": "src/cli.js と src/judgment-operations.js を読み、--reviewed-by が disposition record に渡っていないことを確認した。欠落を許容する任意フィールドが受け入れ条件に合う。",
+  "source_head_sha": "8683f9987445bec9215e615457b6f911cefa8a26",
+  "problem_frame_status": "valid",
+  "active_axes": [],
+  "option_count": 3,
+  "adopted_at": "2026-10-14T04:55:25.776Z",
+  "artifact": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/development-judgment/adoptions/judgment-disposition-reviewed-by-1.json",
+  "advisory": true,
+  "blocking": false
+}

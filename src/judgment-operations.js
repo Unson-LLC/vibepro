@@ -269,6 +269,7 @@ export async function recordJudgmentDisposition(repoRoot, options = {}) {
     summary,
     evidence_refs: uniqueStrings(options.evidenceRefs),
     recorded_by: normalizeText(options.recordedBy) ?? 'unknown',
+    reviewed_by: normalizeText(options.reviewedBy),
     recorded_at: recordedAt,
     artifact: toWorkspaceRelative(root, historyPath),
     advisory: true,
@@ -644,6 +645,7 @@ export function renderJudgmentDispositionSummary(result) {
     `Run: ${result.disposition.run_id}`,
     `Human decision: ${result.disposition.human_decision}`,
     `Effect: ${result.disposition.effect}`,
+    `Reviewed by: ${result.disposition.reviewed_by ?? '-'}`,
     `Lifecycle: ${result.status.lifecycle}`,
     ''
   ].join('\n');
@@ -720,7 +722,7 @@ function buildLifecycleNextActions(storyId, lifecycle, state) {
     evaluated_unactionable: [`Resolve the recorded problem-frame or evidence gaps, then prepare a new judgment run for ${storyId}`],
     evaluated_actionable: ['vibepro story plan .'],
     consumed_by_plan: [
-      `vibepro judgment disposition record . --id ${storyId} --run ${runId} --human-decision accepted|modified|rejected --effect changed_plan|changed_review_focus|escalated_to_human|no_effect --summary <text>`
+      `vibepro judgment disposition record . --id ${storyId} --run ${runId} --human-decision accepted|modified|rejected --effect changed_plan|changed_review_focus|escalated_to_human|no_effect --summary <text> [--reviewed-by <actor>]`
     ],
     outcome_pending: [
       `vibepro judgment outcome record . --id ${storyId} --run ${runId} --status confirmed|mixed|falsified|unknown --summary <text> --evidence <ref>`
