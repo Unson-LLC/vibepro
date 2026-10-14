@@ -3750,3 +3750,24 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:571:end -->
+
+<!-- vibepro-release-pr:572:start -->
+## [#572](https://github.com/Unson-LLC/vibepro/pull/572) fix: persist optional --reviewed-by on judgment disposition records
+
+- Author: @sintariran
+- Merged: 2026-10-14T07:54:50Z
+- Commit: `975b3986e2b9ebbc17b2e2393ea7f079c9e0b67d`
+
+### Change Summary
+
+`vibepro judgment disposition record` と、運用経路の `judgment outcome record` が disposition を書くときに、任意の `--reviewed-by &lt;actor&gt;` を読む。保存先は disposition JSON の `reviewed_by`。値なしの末尾 `--reviewed-by` はエラーにしない。
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:572:end -->

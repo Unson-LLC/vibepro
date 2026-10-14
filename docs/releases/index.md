@@ -725,3 +725,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:571:start -->
 - [PR #571](https://github.com/Unson-LLC/vibepro/pull/571) — [2026-10](/releases/2026-10): fix: restore PR test validation and add optional progress dispatch
 <!-- vibepro-release-index-pr:571:end -->
+
+<!-- vibepro-release-index-pr:572:start -->
+- [PR #572](https://github.com/Unson-LLC/vibepro/pull/572) — [2026-10](/releases/2026-10): fix: persist optional --reviewed-by on judgment disposition records
+<!-- vibepro-release-index-pr:572:end -->
