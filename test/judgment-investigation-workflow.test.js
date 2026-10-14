@@ -16,7 +16,8 @@ const STORY_ID = 'story-judgment-investigation-workflow';
 function silentIo() {
   return {
     stdout: { write() {} },
-    stderr: { write() {} }
+    stderr: { write() {} },
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1' }
   };
 }
 
@@ -189,7 +190,7 @@ test('investigation survives prepare, adoption, evaluation, and plan consumption
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-investigation-run-1',
+    '--run-id', 'judgment-20260303030303-0c0c0c01',
     '--investigation', investigationPath,
     '--json'
   ], silentIo());

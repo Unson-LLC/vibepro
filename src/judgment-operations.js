@@ -1,7 +1,7 @@
 import { countExpertUnresolvedNodes, renderExpertJudgmentSummary } from './expert-judgment.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -12,6 +12,14 @@ import {
   readDevelopmentJudgmentProjection,
   recordJudgmentOutcome
 } from './judgment-workflow.js';
+import {
+  assertGenuineJudgmentRunId,
+  assertJudgmentSourceInsideVibepro,
+  JUDGMENT_RUN_ID_PATTERN,
+  judgmentLineageSha256,
+  normalizeWorkspaceRelative,
+  sourceInputStaysInsideVibepro
+} from './judgment-run-authenticity.js';
 import { validateSeniorJudgmentInput } from './senior-judgment-dag.js';
 import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
 
@@ -96,12 +104,15 @@ export async function prepareOperationalJudgmentInput(repoRoot, options = {}) {
   }
 
   const absoluteArtifact = path.resolve(root, prepared.artifact);
-  await writeFile(absoluteArtifact, `${JSON.stringify(input, null, 2)}\n`, 'utf8');
+  const payload = `${JSON.stringify(input, null, 2)}\n`;
+  await writeFile(absoluteArtifact, payload, 'utf8');
   const draftReceiptPath = await writeDraftReceipt(root, storyId, {
     runId: prepared.run_id,
     artifact: prepared.artifact,
     sourceHeadSha: prepared.source_head_sha,
-    feedback
+    feedback,
+    inputSha256: sha256(payload),
+    lineageSha256: judgmentLineageSha256(input)
   });
 
   return {
@@ -126,8 +137,12 @@ export async function adoptJudgmentInput(repoRoot, options = {}) {
   if (input.story_id !== storyId) {
     throw new Error(`judgment input adopt --id ${storyId} does not match input story_id ${String(input.story_id)}`);
   }
-  validateSeniorJudgmentInput(input);
   const runId = requireText(input.run_id, 'judgment input requires run_id');
+  const sourceInput = await assertJudgmentSourceInsideVibepro(root, resolvedInputPath);
+  const receipt = await assertDraftReceipt(root, storyId, runId);
+  assertDraftLineage(receipt, input, runId);
+  assertDraftArtifact(receipt, sourceInput);
+  validateSeniorJudgmentInput(input);
   const digest = sha256(bytes);
   const developmentRoot = await resolveDevelopmentRoot(root, storyId);
   const adoptedInputPath = await safePath(root, path.join(developmentRoot, 'inputs', `${runId}.json`));
@@ -144,6 +159,9 @@ export async function adoptJudgmentInput(repoRoot, options = {}) {
       idempotent: true
     };
   }
+  if (receipt.input_sha256 !== digest) {
+    await sealDraftReceipt(root, storyId, receipt, digest);
+  }
 
   await mkdir(path.dirname(adoptedInputPath), { recursive: true });
   await writeFile(adoptedInputPath, bytes, { flag: 'wx' });
@@ -152,7 +170,7 @@ export async function adoptJudgmentInput(repoRoot, options = {}) {
     schema_version: '0.1.0',
     story_id: storyId,
     run_id: runId,
-    source_input: toWorkspaceRelative(root, resolvedInputPath),
+    source_input: sourceInput,
     adopted_input: toWorkspaceRelative(root, adoptedInputPath),
     input_sha256: digest,
     reviewed_by: reviewedBy,
@@ -188,9 +206,15 @@ export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}
     throw new Error(`judgment evaluate --id ${storyId} does not match input story_id ${String(input.story_id)}`);
   }
   const runId = requireText(input.run_id, 'judgment input requires run_id');
+  const sourceInput = await assertJudgmentSourceInsideVibepro(root, resolvedInputPath);
+  const draftReceipt = await assertDraftReceipt(root, storyId, runId);
+  assertDraftLineage(draftReceipt, input, runId);
   const developmentRoot = await resolveDevelopmentRoot(root, storyId);
   const adoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', `${runId}.json`));
   if (!adoption) {
+    if (normalizeWorkspaceRelative(draftReceipt.artifact) !== sourceInput) {
+      assertDraftArtifact(draftReceipt, sourceInput);
+    }
     throw new Error(
       `Judgment input ${runId} has not been adopted. `
       + `Run \`vibepro judgment input adopt . --id ${storyId} --input ${inputPath} --reviewed-by <actor> --authority <source> --summary <text>\` first.`
@@ -200,6 +224,7 @@ export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}
   if (adoption.input_sha256 !== digest) {
     throw new Error(`Judgment input ${runId} changed after adoption; prepare and adopt a new run instead`);
   }
+  assertEvaluatedInputBinding(draftReceipt, adoption, sourceInput, digest, runId);
 
   const result = await evaluateJudgmentWorkflow(root, {
     storyId,
@@ -898,15 +923,18 @@ async function assertDraftRunAvailable(root, storyId, runId) {
   throw new Error(`Judgment draft ${runId} already exists; use a new --run-id`);
 }
 
-async function writeDraftReceipt(root, storyId, { runId, artifact, sourceHeadSha, feedback }) {
+async function writeDraftReceipt(root, storyId, { runId, artifact, sourceHeadSha, feedback, inputSha256, lineageSha256 }) {
   const developmentRoot = await resolveDevelopmentRoot(root, storyId);
   const receiptPath = await safePath(root, path.join(developmentRoot, 'drafts', `${runId}.json`));
   const currentPath = await safePath(root, path.join(developmentRoot, 'drafts', 'current.json'));
+  await markSupersededDraft(root, developmentRoot, runId);
   const record = {
     schema_version: '0.1.0',
     story_id: storyId,
     run_id: runId,
     artifact,
+    input_sha256: inputSha256,
+    lineage_sha256: lineageSha256,
     source_head_sha: sourceHeadSha,
     feedback: feedback ? summarizeFeedback(feedback) : null,
     prepared_at: new Date().toISOString(),
@@ -917,6 +945,238 @@ async function writeDraftReceipt(root, storyId, { runId, artifact, sourceHeadSha
   await writeFile(receiptPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
   await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
   return receiptPath;
+}
+
+async function markSupersededDraft(root, developmentRoot, runId) {
+  const currentPath = path.join(developmentRoot, 'drafts', 'current.json');
+  const current = await readJsonIfExists(currentPath);
+  if (!current?.run_id || current.run_id === runId || current.superseded_at) return;
+  const previousPath = path.join(developmentRoot, 'drafts', `${current.run_id}.json`);
+  const previous = await readJsonIfExists(previousPath);
+  if (!previous || previous.superseded_at) return;
+  const marked = {
+    ...previous,
+    superseded_at: new Date().toISOString(),
+    superseded_by: runId
+  };
+  await writeFile(await safePath(root, previousPath), `${JSON.stringify(marked, null, 2)}\n`, 'utf8');
+}
+
+async function assertDraftReceipt(root, storyId, runId) {
+  assertGenuineJudgmentRunId(runId);
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const receipt = await readJsonIfExists(path.join(developmentRoot, 'drafts', `${runId}.json`));
+  if (!receipt) {
+    throw new Error(
+      `Judgment draft receipt drafts/${runId}.json is missing for Story ${storyId}. `
+      + `Run \`vibepro judgment prepare . --id ${storyId}\` and adopt that prepared artifact. `
+      + 'Hand-made judgment input is refused.'
+    );
+  }
+  if (receipt.story_id !== storyId || receipt.run_id !== runId) {
+    throw new Error(
+      `Judgment draft receipt drafts/${runId}.json does not match Story ${storyId} or run_id ${runId}.`
+    );
+  }
+  return receipt;
+}
+
+function assertDraftLineage(receipt, input, runId) {
+  const lineage = judgmentLineageSha256(input);
+  if (!receipt.lineage_sha256 || receipt.lineage_sha256 !== lineage || !receipt.input_sha256) {
+    throw new Error(
+      `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+      + `receipt lineage ${receipt.lineage_sha256 ?? 'missing'} != adopted lineage ${lineage}. `
+      + 'Keep the prepared story, run, and goal, and adopt the prepared artifact.'
+    );
+  }
+}
+
+function assertDraftArtifact(receipt, sourceInput) {
+  const artifact = normalizeWorkspaceRelative(receipt.artifact);
+  if (!artifact || artifact !== sourceInput) {
+    throw new Error(
+      `Judgment draft receipt artifact ${receipt.artifact ?? 'missing'} does not match the adopted input ${sourceInput}. `
+      + 'Adopt the prepared artifact inside .vibepro/.'
+    );
+  }
+}
+
+function assertEvaluatedInputBinding(receipt, adoption, sourceInput, digest, runId) {
+  const allowed = new Set([
+    normalizeWorkspaceRelative(receipt.artifact),
+    normalizeWorkspaceRelative(adoption.adopted_input),
+    normalizeWorkspaceRelative(adoption.source_input)
+  ].filter(Boolean));
+  if (!allowed.has(sourceInput)) {
+    throw new Error(
+      `Judgment draft receipt artifact ${receipt.artifact ?? 'missing'} does not match the adopted input ${sourceInput}. `
+      + 'Evaluate the prepared artifact or the adopted snapshot inside .vibepro/.'
+    );
+  }
+  if (receipt.input_sha256 !== digest) {
+    throw new Error(
+      `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+      + `receipt ${receipt.input_sha256 ?? 'missing'} != ${digest}.`
+    );
+  }
+}
+
+async function sealDraftReceipt(root, storyId, receipt, digest) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const sealed = {
+    ...receipt,
+    input_sha256: digest,
+    evidence_sealed_at: new Date().toISOString()
+  };
+  const receiptPath = await safePath(root, path.join(developmentRoot, 'drafts', `${receipt.run_id}.json`));
+  await writeFile(receiptPath, `${JSON.stringify(sealed, null, 2)}\n`, 'utf8');
+  const currentPath = path.join(developmentRoot, 'drafts', 'current.json');
+  const current = await readJsonIfExists(currentPath);
+  if (current?.run_id === receipt.run_id) {
+    await writeFile(await safePath(root, currentPath), `${JSON.stringify(sealed, null, 2)}\n`, 'utf8');
+  }
+  receipt.input_sha256 = digest;
+  receipt.evidence_sealed_at = sealed.evidence_sealed_at;
+}
+
+export async function auditJudgmentAdoptions(repoRoot) {
+  const root = path.resolve(repoRoot);
+  const reviewsRoot = path.join(getWorkspaceDir(root), 'reviews');
+  const files = await findAdoptionCurrents(reviewsRoot);
+  const findings = [];
+  for (const filePath of files) {
+    const relative = toWorkspaceRelative(root, filePath);
+    let record;
+    try {
+      record = JSON.parse(await readFile(filePath, 'utf8'));
+    } catch (error) {
+      findings.push({
+        artifact: relative,
+        issues: [{ code: 'adoption_unreadable', message: `Adoption ${relative} is not valid JSON: ${error.message}` }]
+      });
+      continue;
+    }
+    const issues = await inspectAdoptionRecord(root, record);
+    if (issues.length > 0) {
+      findings.push({
+        artifact: relative,
+        story_id: record?.story_id ?? null,
+        run_id: record?.run_id ?? null,
+        issues
+      });
+    }
+  }
+  return {
+    schema_version: '0.1.0',
+    ok: findings.length === 0,
+    scanned: files.length,
+    finding_count: findings.length,
+    findings,
+    advisory: true,
+    blocking: false
+  };
+}
+
+export function renderJudgmentAuditSummary(result) {
+  const lines = [
+    `Judgment audit: ${result.ok ? 'ok' : 'failed'}`,
+    `Scanned adoptions: ${result.scanned}`,
+    `Findings: ${result.finding_count}`
+  ];
+  for (const finding of result.findings ?? []) {
+    lines.push(`- ${finding.artifact} story=${finding.story_id ?? '-'} run=${finding.run_id ?? '-'}`);
+    for (const issue of finding.issues ?? []) lines.push(`  ${issue.code}: ${issue.message}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+async function inspectAdoptionRecord(root, record) {
+  const issues = [];
+  const runId = typeof record?.run_id === 'string' ? record.run_id : '';
+  const storyId = typeof record?.story_id === 'string' ? record.story_id : '';
+  if (!JUDGMENT_RUN_ID_SAFE(runId)) {
+    issues.push({
+      code: 'run_id_format',
+      message: `Judgment run_id ${runId || 'missing'} is not genuine. Expected ${JUDGMENT_RUN_ID_PATTERN_TEXT()}.`
+    });
+  }
+  const sourceInput = normalizeWorkspaceRelative(record?.source_input);
+  if (!sourceInputStaysInsideVibepro(sourceInput)) {
+    issues.push({
+      code: 'source_input_outside_vibepro',
+      message: `Judgment source_input must stay inside .vibepro/. Refusing ${record?.source_input ?? 'missing'}.`
+    });
+  }
+  if (!storyId || !runId) return issues;
+  let receipt = null;
+  try {
+    const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+    receipt = await readJsonIfExists(path.join(developmentRoot, 'drafts', `${runId}.json`));
+  } catch (error) {
+    issues.push({
+      code: 'receipt_missing',
+      message: `Judgment draft receipt drafts/${runId}.json could not be read: ${error.message}`
+    });
+    return issues;
+  }
+  if (!receipt) {
+    issues.push({
+      code: 'receipt_missing',
+      message: `Judgment draft receipt drafts/${runId}.json is missing for Story ${storyId}.`
+    });
+    return issues;
+  }
+  const artifact = normalizeWorkspaceRelative(receipt.artifact);
+  if (!artifact || artifact !== sourceInput) {
+    issues.push({
+      code: 'artifact_mismatch',
+      message: `Judgment draft receipt artifact ${receipt.artifact ?? 'missing'} does not match the adopted input ${sourceInput || 'missing'}.`
+    });
+  }
+  if (!receipt.input_sha256 || receipt.input_sha256 !== record.input_sha256) {
+    issues.push({
+      code: 'input_hash_mismatch',
+      message: `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+        + `receipt ${receipt.input_sha256 ?? 'missing'} != adoption ${record.input_sha256 ?? 'missing'}.`
+    });
+  }
+  return issues;
+}
+
+function JUDGMENT_RUN_ID_SAFE(runId) {
+  return JUDGMENT_RUN_ID_PATTERN.test(runId);
+}
+
+function JUDGMENT_RUN_ID_PATTERN_TEXT() {
+  return String(JUDGMENT_RUN_ID_PATTERN);
+}
+
+async function findAdoptionCurrents(reviewsRoot) {
+  const found = [];
+  await walkAdoptionCurrents(reviewsRoot, found);
+  return found;
+}
+
+async function walkAdoptionCurrents(directory, found) {
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  for (const entry of entries) {
+    if (entry.isSymbolicLink()) continue;
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await walkAdoptionCurrents(fullPath, found);
+      continue;
+    }
+    if (entry.isFile() && entry.name === 'current.json' && path.basename(directory) === 'adoptions') {
+      found.push(fullPath);
+    }
+  }
 }
 
 async function writeFeedbackPointer(root, storyId, feedback) {

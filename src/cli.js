@@ -67,6 +67,7 @@ import { renderVerificationRunSummary, runVerificationCommand } from './verifica
 import {
   adoptJudgmentInput,
   evaluateOperationalJudgmentWorkflow,
+  auditJudgmentAdoptions,
   getJudgmentOperationalStatus,
   listPendingJudgmentWork,
   prepareOperationalJudgmentInput,
@@ -75,6 +76,7 @@ import {
   recordOperationalJudgmentOutcome,
   renderJudgmentAdoptionSummary,
   renderJudgmentApplicabilitySummary,
+  renderJudgmentAuditSummary,
   renderJudgmentDispositionSummary,
   renderJudgmentOperationalEvaluationSummary,
   renderJudgmentOperationalStatus,
@@ -233,13 +235,14 @@ Usage:
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro judgment suggest --input <json> [--json]
   vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]  # --run-id is refused unless VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
   vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
+  vibepro judgment audit [repo] [--json]
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
@@ -358,13 +361,14 @@ Usage:
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro judgment suggest --input <json> [--json]
   vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]  # --run-id は VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1 のときだけ使える
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
   vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
+  vibepro judgment audit [repo] [--json]
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
@@ -1019,7 +1023,8 @@ async function dispatchCli(argv, io = {}) {
           runId: getOption(rest, '--run-id'),
           outputPath: getOption(rest, '--output'),
           expertInputPath: expertInputPath ?? undefined,
-          investigationInputPath: investigationInputPath ?? undefined
+          investigationInputPath: investigationInputPath ?? undefined,
+          env: io.env ?? process.env
         };
         const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
         const result = status.applicable === null
@@ -1063,6 +1068,14 @@ async function dispatchCli(argv, io = {}) {
             ? renderJudgmentEvaluationSummary(result)
             : renderJudgmentOperationalEvaluationSummary(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'audit') {
+        const result = await auditJudgmentAdoptions(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderJudgmentAuditSummary(result));
+        return { exitCode: result.ok ? 0 : 1, command, subcommand, result };
       }
       if (subcommand === 'status') {
         const result = await getJudgmentOperationalStatus(

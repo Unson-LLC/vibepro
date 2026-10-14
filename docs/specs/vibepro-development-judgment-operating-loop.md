@@ -12,6 +12,7 @@ status: accepted
 ```bash
 vibepro judgment applicability record [repo] --id <story-id> --applicable yes|no --reason <text> [--recorded-by <actor>] [--json]
 vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
+vibepro judgment audit [repo] [--json]
 vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
 vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
 vibepro judgment status [repo] --id <story-id> [--json]
@@ -28,7 +29,11 @@ vibepro judgment pending [repo] [--json]
 
 `judgment input adopt`はSenior Judgment schema `0.3.0`を検証し、入力byte列のSHA-256、reviewer、authority、summary、source HEADを保存する。同じrun IDを異なる入力で再採択できない。
 
-`judgment evaluate`は採択済みinputとhashが一致する場合だけ実行する。
+`judgment prepare`の公開CLIは`--run-id`を拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1`のテストだけが`--run-id`を渡せ、その値は`^judgment-\d{14}-[0-9a-f]{8}$`に一致しなければならない。`judgment input adopt`と`judgment evaluate`は、この形式でないrun ID、`.vibepro/`の外の`source_input`、欠落した`drafts/<runId>.json`、draft receiptのlineage hashまたはartifact pathが採択入力と一致しない場合を拒否する。意味のレビューでproblem frameやoptionsを同じartifactへ足す場合、story、run、goalのlineageが一致するときだけreceiptの`input_sha256`を採択byte列へ更新する。
+
+`judgment evaluate`は採択済みinputとhashが一致し、かつdraft receiptの`input_sha256`と一致する場合だけ実行する。
+
+`judgment audit`は`.vibepro/reviews/**/adoptions/current.json`を読み、run ID形式、`.vibepro/`外の`source_input`、draft receiptの欠落、input hashまたはartifactの不一致が一つでもあれば終了コード1で返す。不一致がなければ0で返す。
 
 ## Actionability
 

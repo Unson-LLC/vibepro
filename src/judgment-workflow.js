@@ -23,6 +23,7 @@ import {
   buildJudgmentInvestigationContext,
   validateJudgmentInvestigationResult
 } from './judgment-investigation.js';
+import { resolveJudgmentPrepareRunId } from './judgment-run-authenticity.js';
 import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -49,7 +50,7 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     ? extractMarkdownAcceptanceCriteria(storySource.content).map((item) => item.text)
     : [];
   const git = await collectGitContext(root);
-  const runId = options.runId ?? buildRunId();
+  const runId = resolveJudgmentPrepareRunId(options.runId, options.env, buildRunId);
   const sourceRefs = uniqueStrings([
     storySource.path ?? '.vibepro/config.json',
     ...git.changed_files

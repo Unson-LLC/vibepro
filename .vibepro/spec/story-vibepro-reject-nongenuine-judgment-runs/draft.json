@@ -1,0 +1,180 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-reject-nongenuine-judgment-runs",
+  "generated_by": {
+    "caller": "cursor-cloud-agent",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "judgment input adopt と judgment evaluate は、drafts/<runId>.json が無い、または receipt の input hash か artifact が採択入力と一致しないとき拒否する。",
+      "rationale": "NGJ-AC-001。adoptJudgmentInput は drafts/<runId>.json と lineage hash、artifact path を確認する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-001"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "Judgment draft receipt drafts/"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-run-authenticity.test.js",
+            "case": "adopt and evaluate refuse a missing receipt, a bad run id, an outside source, a hash mismatch, and an artifact mismatch"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:33:46.888Z",
+      "last_revised_at": "2026-10-14T09:33:46.888Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "run ID が ^judgment-\\d{14}-[0-9a-f]{8}$ に一致しない判断入力は採択も評価もできない。",
+      "rationale": "NGJ-AC-002。assertGenuineJudgmentRunId が手作りIDを拒否する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-002"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/judgment-run-authenticity.js",
+            "anchor": "Judgment run_id"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-run-authenticity.test.js",
+            "case": "judgment-20261014080730-operator"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:33:46.888Z",
+      "last_revised_at": "2026-10-14T09:33:46.888Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "source_input が .vibepro/ の外、またはその外へ解決される symlink のとき、採択と評価は拒否する。",
+      "rationale": "NGJ-AC-003。assertJudgmentSourceInsideVibepro がリポジトリ外と symlink 脱出を拒否する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-003"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/judgment-run-authenticity.js",
+            "anchor": "Judgment source_input must stay inside .vibepro/"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-run-authenticity.test.js",
+            "case": "must stay inside .vibepro"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:33:46.888Z",
+      "last_revised_at": "2026-10-14T09:33:46.888Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "公開の judgment prepare は --run-id を拒否し、VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1 のテストだけが形式を満たす ID を渡せる。",
+      "rationale": "NGJ-AC-004。resolveJudgmentPrepareRunId が公開上書きを止める。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-004"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/judgment-run-authenticity.js",
+            "anchor": "VIBEPRO_ALLOW_JUDGMENT_RUN_ID"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-run-authenticity.test.js",
+            "case": "judgment prepare refuses public --run-id and accepts a generated genuine id"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:33:46.888Z",
+      "last_revised_at": "2026-10-14T09:33:46.888Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "vibepro judgment audit は .vibepro/reviews/**/adoptions/current.json を走査し、不正な採択があれば終了コード1、無ければ0で終わる。",
+      "rationale": "NGJ-AC-005。auditJudgmentAdoptions が消費者リポジトリのCIから呼べる。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-005"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "export async function auditJudgmentAdoptions"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-run-authenticity.test.js",
+            "case": "a genuine prepare, evidence edit, adopt, and evaluate passes judgment audit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:33:46.888Z",
+      "last_revised_at": "2026-10-14T09:33:46.888Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "正当な prepare のあと、同じ artifact に証拠を足して adopt と evaluate すると actionable な判断になる。",
+      "rationale": "NGJ-AC-006。lineage が一致する証拠追加は receipt の input_sha256 を採択byte列へ更新する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-006"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/judgment-operations.js",
+            "anchor": "async function sealDraftReceipt"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-run-authenticity.test.js",
+            "case": "a genuine prepare, evidence edit, adopt, and evaluate passes judgment audit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:33:46.888Z",
+      "last_revised_at": "2026-10-14T09:33:46.888Z"
+    }
+  ],
+  "generated_at": "2026-10-14T09:33:46.888Z",
+  "previous_spec_id": null
+}
