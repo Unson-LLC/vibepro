@@ -23,7 +23,7 @@ The draft MUST:
 - set `problem_frame.status=uncertain`
 - state that semantic framing has not been adopted
 
-The command MAY accept `--output` and `--run-id`.
+The command MAY accept `--output`. `--run-id` is refused unless `VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1`, and a supplied id MUST match `^judgment-\d{14}-[0-9a-f]{8}$`.
 
 ### DJW-002 Evaluate and compile
 

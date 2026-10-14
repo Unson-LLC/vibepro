@@ -4,6 +4,7 @@
 .vibepro/**/*.log
 .vibepro/*
 !.vibepro/config.json
+!.vibepro/reviews/
 .worktrees/vibepro/
 node_modules/
 docs/.vitepress/dist/

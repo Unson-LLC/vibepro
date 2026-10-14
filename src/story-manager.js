@@ -418,7 +418,7 @@ async function advanceJudgmentBeforePlan(root, storyId, options) {
     status = applicability.status;
   }
   if (status.lifecycle === 'applicable_not_prepared') {
-    const prepared = await prepareOperationalJudgmentInput(root, { storyId });
+    const prepared = await prepareOperationalJudgmentInput(root, { storyId, env: options.env });
     progress.push({ action: 'input_prepared', artifact: prepared.artifact });
     status = await getJudgmentOperationalStatus(root, storyId);
   }
@@ -428,7 +428,8 @@ async function advanceJudgmentBeforePlan(root, storyId, options) {
       inputPath: options.judgmentInput,
       reviewedBy: options.judgmentReviewedBy,
       authority: options.judgmentAuthority,
-      summary: options.judgmentReviewSummary
+      summary: options.judgmentReviewSummary,
+      env: options.env
     });
     progress.push({ action: 'input_adopted', artifact: adopted.adoption.artifact });
     status = adopted.status;
@@ -436,7 +437,8 @@ async function advanceJudgmentBeforePlan(root, storyId, options) {
   if (status.lifecycle === 'input_reviewed') {
     const evaluated = await evaluateOperationalJudgmentWorkflow(root, {
       storyId,
-      inputPath: status.adoption.adopted_input
+      inputPath: status.adoption.adopted_input,
+      env: options.env
     });
     progress.push({ action: 'judgment_evaluated', artifact: evaluated.operational.artifact });
   }

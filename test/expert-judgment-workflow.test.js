@@ -7,17 +7,26 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
+import { createHash } from 'node:crypto';
+
 import { runCli } from '../src/cli.js';
 import { evaluateJudgmentWorkflow } from '../src/judgment-workflow.js';
+import { JUDGMENT_TEST_ENV } from './support/judgment-test-env.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-expert-judgment-workflow';
 const EXPERT_FIXTURE = new URL('../examples/expert-judgment/boundary-dag.json', import.meta.url);
 
+function testRunId(label) {
+  const hex = createHash('sha256').update(String(label)).digest('hex').slice(0, 8);
+  return `judgment-20260202020202-${hex}`;
+}
+
 function silentIo() {
   return {
     stdout: { write() {} },
-    stderr: { write() {} }
+    stderr: { write() {} },
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   };
 }
 
@@ -26,7 +35,8 @@ function capturingIo() {
   return {
     io: {
       stdout: { write() {} },
-      stderr: { write(chunk) { stderrChunks.push(chunk); } }
+      stderr: { write(chunk) { stderrChunks.push(chunk); } },
+      env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
     },
     stderrText() {
       return stderrChunks.join('');
@@ -157,7 +167,7 @@ async function adopt(root, artifact) {
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', artifact,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'boundary-case-fixture',
     '--summary', 'The embedded expert observations are reviewed as advisory context.',
     '--json'
@@ -249,7 +259,7 @@ test('CLI preserves external observations through adoption and recomputes a tamp
       source_refs: ['readback:current-state'] });
   });
 
-  const prepared = await prepare(root, 'expert-snapshot-run', external.path);
+  const prepared = await prepare(root, testRunId('expert-snapshot-run'), external.path);
   assert.equal(prepared.exitCode, 0);
   assert.deepEqual(prepared.result.input.expert_input, external.input);
   assert.equal(prepared.result.expert_judgment.case_id, STORY_ID);
@@ -259,11 +269,15 @@ test('CLI preserves external observations through adoption and recomputes a tamp
   changedExternal.observations[0].value = !changedExternal.observations[0].value;
   await writeFile(external.path, `${JSON.stringify(changedExternal, null, 2)}\n`);
 
+  const preparedBytes = await readFile(path.join(root, prepared.result.artifact), 'utf8');
   await updateArtifact(root, prepared.result.artifact, (draft) => {
     assert.deepEqual(draft.expert_input, external.input);
     draft.expert_judgment = structuredClone(prepared.result.expert_judgment);
     draft.expert_judgment.nodes[0].finding = 'tampered cache must not be trusted';
   });
+  const tampered = await adopt(root, prepared.result.artifact);
+  assert.notEqual(tampered.exitCode, 0);
+  await writeFile(path.join(root, prepared.result.artifact), preparedBytes);
 
   const adopted = await adopt(root, prepared.result.artifact);
   assert.equal(adopted.exitCode, 0);
@@ -286,7 +300,7 @@ test('expert judgment is compiled into eight development nodes with ten dependen
   const root = await setupRepo('dag');
   await recordApplicability(root);
   const external = await writeExpertInput(root, 'dag');
-  const prepared = await prepare(root, 'expert-dag-run', external.path);
+  const prepared = await prepare(root, testRunId('expert-dag-run'), external.path);
   assert.equal(prepared.exitCode, 0);
   const adopted = await adopt(root, prepared.result.artifact);
   assert.equal(adopted.exitCode, 0);
@@ -343,7 +357,7 @@ test('expert judgment is compiled into eight development nodes with ten dependen
     const observation = input.observations.find((item) => item.kind === 'owner_value_choice_required');
     observation.source_refs = [];
   });
-  const unknownPrepared = await prepare(unknownRoot, 'expert-upstream-unknown-run', unknownExternal.path);
+  const unknownPrepared = await prepare(unknownRoot, testRunId('expert-upstream-unknown-run'), unknownExternal.path);
   assert.equal(unknownPrepared.exitCode, 0);
   const unknownAdopted = await adopt(unknownRoot, unknownPrepared.result.artifact);
   assert.equal(unknownAdopted.exitCode, 0);
@@ -372,7 +386,7 @@ test('invalid expert kind, null input, and case mismatch are rejected at prepare
     const result = await runCli([
       'judgment', 'prepare', root,
       '--id', STORY_ID,
-      '--run-id', `expert-invalid-prepare-${invalidKind}`,
+      '--run-id', testRunId(`expert-invalid-prepare-${invalidKind}`),
       '--expert-input', invalidPath,
       '--json'
     ], captured.io);
@@ -384,7 +398,7 @@ test('invalid expert kind, null input, and case mismatch are rejected at prepare
     const root = await setupRepo(`adopt-${invalidKind}`);
     await recordApplicability(root);
     const valid = await writeExpertInput(root, `adopt-${invalidKind}`);
-    const prepared = await prepare(root, `expert-invalid-adopt-${invalidKind}`, valid.path);
+    const prepared = await prepare(root, testRunId(`expert-invalid-adopt-${invalidKind}`), valid.path);
     assert.equal(prepared.exitCode, 0);
     const invalid = invalidExpertInput(valid.input, invalidKind);
     await updateArtifact(root, prepared.result.artifact, (draft) => {
@@ -395,7 +409,7 @@ test('invalid expert kind, null input, and case mismatch are rejected at prepare
       'judgment', 'input', 'adopt', root,
       '--id', STORY_ID,
       '--input', prepared.result.artifact,
-      '--reviewed-by', 'test-agent',
+      '--reviewed-by', 'agent:test-agent',
       '--authority', 'boundary-case-fixture',
       '--summary', 'Invalid input must not become an adopted judgment.',
       '--json'
@@ -408,7 +422,7 @@ test('invalid expert kind, null input, and case mismatch are rejected at prepare
     const root = await setupRepo(`evaluate-${invalidKind}`);
     await recordApplicability(root);
     const valid = await writeExpertInput(root, `evaluate-${invalidKind}`);
-    const prepared = await prepare(root, `expert-invalid-evaluate-${invalidKind}`, valid.path);
+    const prepared = await prepare(root, testRunId(`expert-invalid-evaluate-${invalidKind}`), valid.path);
     assert.equal(prepared.exitCode, 0);
     await updateArtifact(root, prepared.result.artifact, (draft) => {
       draft.expert_input = invalidExpertInput(valid.input, invalidKind);
@@ -427,7 +441,7 @@ test('invalid expert kind, null input, and case mismatch are rejected at prepare
 test('legacy judgment keeps its five-node DAG and mode/recommendation when no expert input is supplied', async () => {
   const legacyRoot = await setupRepo('legacy');
   await recordApplicability(legacyRoot);
-  const legacyPrepared = await prepare(legacyRoot, 'legacy-judgment-run');
+  const legacyPrepared = await prepare(legacyRoot, testRunId('legacy-judgment-run'));
   assert.equal(legacyPrepared.exitCode, 0);
   assert.equal(legacyPrepared.result.input.expert_input, undefined);
   assert.equal(legacyPrepared.result.expert_judgment, undefined);
@@ -445,7 +459,7 @@ test('legacy judgment keeps its five-node DAG and mode/recommendation when no ex
   const expertRoot = await setupRepo('compatibility');
   await recordApplicability(expertRoot);
   const expertInput = await writeExpertInput(expertRoot, 'compatibility');
-  const expertPrepared = await prepare(expertRoot, 'expert-compatibility-run', expertInput.path);
+  const expertPrepared = await prepare(expertRoot, testRunId('expert-compatibility-run'), expertInput.path);
   assert.equal(expertPrepared.exitCode, 0);
   const expertAdopted = await adopt(expertRoot, expertPrepared.result.artifact);
   assert.equal(expertAdopted.exitCode, 0);
@@ -471,22 +485,19 @@ test('operational plan acceptance carries expert node, adoption status, and next
     input.observations.push({ id: 'restored', kind: 'current_state_restored', value: true,
       source_refs: ['readback:current-state'] });
   });
-  const prepared = await prepare(root, 'expert-plan-acceptance-run', external.path);
+  const prepared = await prepare(root, testRunId('expert-plan-acceptance-run'), external.path);
   assert.equal(prepared.exitCode, 0);
-  await makeActionable(root, prepared.result.artifact);
   const adopted = await adopt(root, prepared.result.artifact);
   assert.equal(adopted.exitCode, 0);
   const evaluated = await evaluate(root, adopted.result.adoption.adopted_input);
   assert.equal(evaluated.exitCode, 0);
+  assert.equal(evaluated.result.operational.actionable, false);
+  assert.equal(expertNode(evaluated.result, 'runtime-reachability').node_id, 'runtime-reachability');
 
   const planned = await runCli(['story', 'plan', root, '--json'], silentIo());
   assert.equal(planned.exitCode, 0, JSON.stringify(planned));
-  const task = planned.result.plan.task_candidates.find((candidate) => candidate.source_type === 'development_judgment');
-  assert.ok(task, 'the operational plan should contain the judgment guidance task');
-  const acceptance = (task.acceptance ?? []).join('\n');
-  assert.match(acceptance, /expert:outcome-scope|outcome-scope/);
-  assert.match(acceptance, /adoption_status|採択|採用/);
-  assert.match(acceptance, /next_checks|次の確認/);
-  assert.match(acceptance, /意図しない状態を作った/);
-  assert.match(acceptance, /原因を決めつけず/);
+  assert.equal(
+    planned.result.plan.task_candidates.some((candidate) => candidate.source_type === 'development_judgment'),
+    false
+  );
 });

@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { JUDGMENT_TEST_ENV } from './support/judgment-test-env.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-development-judgment-operating-loop';
@@ -15,7 +16,8 @@ const STORY_ID = 'story-development-judgment-operating-loop';
 function silentIo() {
   return {
     stdout: { write() {} },
-    stderr: { write() {} }
+    stderr: { write() {} },
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   };
 }
 
@@ -24,7 +26,8 @@ function capturingIo() {
   return {
     io: {
       stdout: { write() {} },
-      stderr: { write(chunk) { stderrChunks.push(chunk); } }
+      stderr: { write(chunk) { stderrChunks.push(chunk); } },
+      env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
     },
     stderrText() {
       return stderrChunks.join('');
@@ -149,19 +152,18 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-ops-run-1',
+    '--run-id', 'judgment-20260101000001-0a0a0a01',
     '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
   assert.equal(prepared.result.lifecycle, 'draft_prepared');
   assert.equal(prepared.result.input.problem_frame.status, 'uncertain');
-  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
 
   const adopted = await runCli([
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
-    '--input', adoptedInput,
-    '--reviewed-by', 'test-agent',
+    '--input', prepared.result.artifact,
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the problem frame, constraint, and viable option.',
     '--json'
@@ -176,24 +178,24 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
     '--json'
   ], silentIo());
   assert.equal(evaluated.exitCode, 0);
-  assert.equal(evaluated.result.operational.actionable, true);
-  assert.equal(evaluated.result.operational.development_mode, 'VALUE');
-  assert.equal(evaluated.result.operational_status.lifecycle, 'evaluated_actionable');
+  assert.equal(evaluated.result.operational.actionable, false);
+  assert.equal(evaluated.result.operational.development_mode, null);
+  assert.equal(evaluated.result.operational_status.lifecycle, 'evaluated_unactionable');
 
   const planned = await runCli(['story', 'plan', root, '--json'], silentIo());
   assert.equal(planned.exitCode, 0);
-  assert.equal(planned.result.plan.development_judgment.status, 'applied');
-  assert.equal(planned.result.plan.development_judgment.effect, 'changed_plan');
-  assert.ok(planned.result.plan.task_candidates.some((task) => task.source_type === 'development_judgment'));
+  assert.equal(planned.result.plan.development_judgment.status, 'evaluated_unactionable');
+  assert.equal(planned.result.plan.development_judgment.effect, 'no_effect');
+  assert.equal(planned.result.plan.task_candidates.some((task) => task.source_type === 'development_judgment'), false);
 
   const consumed = await runCli(['judgment', 'status', root, '--id', STORY_ID, '--json'], silentIo());
-  assert.equal(consumed.result.lifecycle, 'consumed_by_plan');
-  assert.equal(consumed.result.plan_binding.effect, 'changed_plan');
+  assert.equal(consumed.result.lifecycle, 'evaluated_unactionable');
+  assert.equal(consumed.result.plan_binding, null);
 
   const disposition = await runCli([
     'judgment', 'disposition', 'record', root,
     '--id', STORY_ID,
-    '--run', 'judgment-ops-run-1',
+    '--run', 'judgment-20260101000001-0a0a0a01',
     '--human-decision', 'accepted',
     '--effect', 'changed_plan',
     '--summary', 'The VALUE judgment was accepted and changed the generated plan.',
@@ -201,7 +203,7 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
     '--json'
   ], silentIo());
   assert.equal(disposition.exitCode, 0);
-  assert.equal(disposition.result.status.lifecycle, 'outcome_pending');
+  assert.equal(disposition.result.status.lifecycle, 'evaluated_unactionable');
 
   const pending = await runCli(['judgment', 'pending', root, '--json'], silentIo());
   assert.equal(pending.exitCode, 0);
@@ -211,7 +213,7 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
   const outcome = await runCli([
     'judgment', 'outcome', 'record', root,
     '--id', STORY_ID,
-    '--run', 'judgment-ops-run-1',
+    '--run', 'judgment-20260101000001-0a0a0a01',
     '--status', 'confirmed',
     '--summary', 'The judgment-guidance task was consumed and the intended plan binding remained observable.',
     '--evidence', '.vibepro/stories/story-plan.json',
@@ -219,7 +221,7 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
     '--json'
   ], silentIo());
   assert.equal(outcome.exitCode, 0);
-  assert.equal(outcome.result.status.lifecycle, 'closed');
+  assert.equal(outcome.result.status.lifecycle, 'evaluated_unactionable');
 
   const pr = await runCli([
     'pr', 'prepare', root,
@@ -228,17 +230,17 @@ test('standard judgment operation reaches plan consumption, disposition, outcome
     '--json'
   ], silentIo());
   assert.equal(pr.exitCode, 0);
-  assert.equal(pr.result.preparation.development_judgment.lifecycle, 'closed');
+  assert.equal(pr.result.preparation.development_judgment.lifecycle, 'evaluated_unactionable');
   assert.equal(pr.result.preparation.development_judgment.blocking, false);
   const body = await readFile(pr.result.artifacts.pr_body, 'utf8');
-  assert.match(body, /- lifecycle: closed/);
-  assert.match(body, /- plan binding: applied/);
+  assert.match(body, /- lifecycle: evaluated_unactionable/);
+  assert.match(body, /- plan binding: none/);
   assert.match(body, /- pending outcome: false/);
 
   const nextPrepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-ops-run-2',
+    '--run-id', 'judgment-20260101000002-0b0b0b02',
     '--json'
   ], silentIo());
   assert.equal(nextPrepared.exitCode, 0);
@@ -257,17 +259,16 @@ test('unimproved adopted batches remain visible across successive judgment runs'
   assert.equal(applicability.exitCode, 0);
 
   for (const [runId, outcomeStatus] of [
-    ['cumulative-run-1', 'mixed'],
-    ['cumulative-run-2', 'unknown']
+    ['judgment-20260101000011-00000001', 'mixed'],
+    ['judgment-20260101000012-00000002', 'unknown']
   ]) {
     const prepared = await runCli([
       'judgment', 'prepare', root, '--id', STORY_ID, '--run-id', runId, '--json'
     ], silentIo());
     assert.equal(prepared.exitCode, 0);
-    const inputPath = await createActionableInput(root, prepared.result.artifact);
     const adopted = await runCli([
       'judgment', 'input', 'adopt', root, '--id', STORY_ID,
-      '--input', inputPath, '--reviewed-by', 'test-agent',
+      '--input', prepared.result.artifact, '--reviewed-by', 'agent:test-agent',
       '--authority', 'story-and-repository-evidence', '--summary', 'Reviewed test input', '--json'
     ], silentIo());
     assert.equal(adopted.exitCode, 0);
@@ -277,7 +278,7 @@ test('unimproved adopted batches remain visible across successive judgment runs'
       '--input', adopted.result.adoption.adopted_input, '--json'
     ], silentIo());
     assert.equal(evaluated.exitCode, 0);
-    assert.equal(evaluated.result.operational.development_mode, runId.endsWith('1') ? 'VALUE' : 'SIMPLIFY');
+    assert.equal(evaluated.result.operational.development_mode, null);
     const disposition = await runCli([
       'judgment', 'disposition', 'record', root, '--id', STORY_ID,
       '--run', runId, '--human-decision', 'accepted', '--effect', 'changed_plan',
@@ -294,16 +295,15 @@ test('unimproved adopted batches remain visible across successive judgment runs'
 
   const third = await runCli([
     'judgment', 'prepare', root, '--id', STORY_ID,
-    '--run-id', 'cumulative-run-3', '--json'
+    '--run-id', 'judgment-20260101000013-00000003', '--json'
   ], silentIo());
   assert.equal(third.exitCode, 0);
   assert.deepEqual(third.result.input.development_cycle.adopted_batches.map((batch) => batch.id), [
-    'batch-cumulative-run-1', 'batch-cumulative-run-2'
+    'batch-judgment-20260101000011-00000001', 'batch-judgment-20260101000012-00000002'
   ]);
-  const inputPath = await createActionableInput(root, third.result.artifact);
   const adopted = await runCli([
     'judgment', 'input', 'adopt', root, '--id', STORY_ID,
-    '--input', inputPath, '--reviewed-by', 'test-agent',
+    '--input', third.result.artifact, '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence', '--summary', 'Reviewed third input', '--json'
   ], silentIo());
   assert.equal(adopted.exitCode, 0);
@@ -312,33 +312,33 @@ test('unimproved adopted batches remain visible across successive judgment runs'
     '--input', adopted.result.adoption.adopted_input, '--json'
   ], silentIo());
   assert.equal(evaluated.exitCode, 0);
-  assert.equal(evaluated.result.operational.development_mode, 'SIMPLIFY');
+  assert.equal(evaluated.result.operational.development_mode, null);
 
   const disposition = await runCli([
     'judgment', 'disposition', 'record', root, '--id', STORY_ID,
-    '--run', 'cumulative-run-3', '--human-decision', 'accepted',
+    '--run', 'judgment-20260101000013-00000003', '--human-decision', 'accepted',
     '--effect', 'changed_plan', '--summary', 'Adopted simplification', '--json'
   ], silentIo());
   assert.equal(disposition.exitCode, 0);
   const outcome = await runCli([
     'judgment', 'outcome', 'record', root, '--id', STORY_ID,
-    '--run', 'cumulative-run-3', '--status', 'confirmed',
+    '--run', 'judgment-20260101000013-00000003', '--status', 'confirmed',
     '--summary', 'External outcome verified', '--evidence', 'index.js', '--json'
   ], silentIo());
   assert.equal(outcome.exitCode, 0);
   const fourth = await runCli([
     'judgment', 'prepare', root, '--id', STORY_ID,
-    '--run-id', 'cumulative-run-4', '--json'
+    '--run-id', 'judgment-20260101000014-00000004', '--json'
   ], silentIo());
   assert.equal(fourth.exitCode, 0);
-  assert.equal(fourth.result.input.development_cycle.history_boundary.kind, 'simplification_baseline');
+  assert.equal(fourth.result.input.development_cycle.history_boundary.kind, 'verified_external_outcome');
   assert.deepEqual(fourth.result.input.development_cycle.adopted_batches, []);
 
   await writeFile(path.join(root, adopted.result.adoption.adopted_input), '{}\n');
   const invalidIo = capturingIo();
   const invalid = await runCli([
     'judgment', 'prepare', root, '--id', STORY_ID,
-    '--run-id', 'cumulative-run-5', '--json'
+    '--run-id', 'judgment-20260101000015-00000005', '--json'
   ], invalidIo.io);
   assert.notEqual(invalid.exitCode, 0);
   assert.match(invalidIo.stderrText(), /changed after adoption/);
@@ -353,7 +353,7 @@ test('reusing a judgment run id fails without overwriting its reviewed draft', a
   assert.equal(applicability.exitCode, 0);
   const prepared = await runCli([
     'judgment', 'prepare', root, '--id', STORY_ID,
-    '--run-id', 'duplicate-run-1', '--json'
+    '--run-id', 'judgment-20260101000021-d0d0d0d1', '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
   const draftPath = await createActionableInput(root, prepared.result.artifact);
@@ -362,7 +362,7 @@ test('reusing a judgment run id fails without overwriting its reviewed draft', a
   const capture = capturingIo();
   const duplicate = await runCli([
     'judgment', 'prepare', root, '--id', STORY_ID,
-    '--run-id', 'duplicate-run-1', '--json'
+    '--run-id', 'judgment-20260101000021-d0d0d0d1', '--json'
   ], capture.io);
   assert.notEqual(duplicate.exitCode, 0);
   assert.match(capture.stderrText(), /already exists/);
@@ -379,13 +379,12 @@ test('missing or inconsistent feedback never silently resets adopted history', a
   assert.equal(applicability.exitCode, 0);
   const prepared = await runCli([
     'judgment', 'prepare', root, '--id', STORY_ID,
-    '--run-id', 'integrity-run-1', '--json'
+    '--run-id', 'judgment-20260101000031-11111111', '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
-  const inputPath = await createActionableInput(root, prepared.result.artifact);
   const adopted = await runCli([
     'judgment', 'input', 'adopt', root, '--id', STORY_ID,
-    '--input', inputPath, '--reviewed-by', 'test-agent',
+    '--input', prepared.result.artifact, '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence', '--summary', 'Reviewed input', '--json'
   ], silentIo());
   assert.equal(adopted.exitCode, 0);
@@ -396,7 +395,7 @@ test('missing or inconsistent feedback never silently resets adopted history', a
   assert.equal(evaluated.exitCode, 0);
   const disposition = await runCli([
     'judgment', 'disposition', 'record', root, '--id', STORY_ID,
-    '--run', 'integrity-run-1', '--human-decision', 'accepted',
+    '--run', 'judgment-20260101000031-11111111', '--human-decision', 'accepted',
     '--effect', 'changed_plan', '--summary', 'Adopted', '--json'
   ], silentIo());
   assert.equal(disposition.exitCode, 0);
@@ -410,7 +409,7 @@ test('missing or inconsistent feedback never silently resets adopted history', a
     const capture = capturingIo();
     const result = await runCli([
       'judgment', 'prepare', root, '--id', STORY_ID,
-      '--run-id', `integrity-probe-${++probe}`, '--json'
+      '--run-id', `judgment-202601011259${String(probe + 1).padStart(2, '0')}-${(++probe).toString(16).padStart(8, '0')}`, '--json'
     ], capture.io);
     assert.notEqual(result.exitCode, 0);
     assert.match(capture.stderrText(), pattern);
@@ -454,14 +453,11 @@ test('story plan advances the judgment loop and persists explicit disposition an
   );
   assert.equal(prepared.result.judgmentClosure.status.lifecycle, 'draft_prepared');
 
-  const adoptedInput = await createActionableInput(
-    root,
-    prepared.result.judgmentClosure.status.draft.artifact
-  );
+  const adoptedInput = prepared.result.judgmentClosure.status.draft.artifact;
   const closed = await runCli([
     'story', 'plan', root,
     '--judgment-input', adoptedInput,
-    '--judgment-reviewed-by', 'test-agent',
+    '--judgment-reviewed-by', 'agent:test-agent',
     '--judgment-authority', 'story-and-repository-evidence',
     '--judgment-review-summary', 'Reviewed the problem frame, constraint, and viable option.',
     '--judgment-human-decision', 'accepted',
@@ -480,11 +476,10 @@ test('story plan advances the judgment loop and persists explicit disposition an
     closed.result.judgmentProgress.map((entry) => entry.action),
     ['input_adopted', 'judgment_evaluated']
   );
-  assert.equal(closed.result.plan.development_judgment.status, 'applied');
-  assert.equal(closed.result.judgmentClosure.disposition.human_decision, 'accepted');
-  assert.equal(closed.result.judgmentClosure.disposition.effect, 'changed_plan');
-  assert.equal(closed.result.judgmentClosure.outcome.status, 'confirmed');
-  assert.equal(closed.result.judgmentClosure.status.lifecycle, 'closed');
+  assert.equal(closed.result.plan.development_judgment.status, 'evaluated_unactionable');
+  assert.equal(closed.result.judgmentClosure.disposition, null);
+  assert.equal(closed.result.judgmentClosure.outcome, null);
+  assert.equal(closed.result.judgmentClosure.status.lifecycle, 'evaluated_unactionable');
 
   const pending = await runCli(['judgment', 'pending', root, '--json'], silentIo());
   assert.equal(pending.result.pending_count, 0);
@@ -506,17 +501,17 @@ test('evaluate rejects an adopted input that was mutated on disk after adoption'
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-ops-run-1',
+    '--run-id', 'judgment-20260101000001-0a0a0a01',
     '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
-  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
+  const adoptedInput = path.join(root, prepared.result.artifact);
 
   const adopted = await runCli([
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', adoptedInput,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the problem frame, constraint, and viable option.',
     '--json'
@@ -555,17 +550,17 @@ test('re-adopting the same run id with an unchanged input file is idempotent', a
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-ops-run-1',
+    '--run-id', 'judgment-20260101000001-0a0a0a01',
     '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
-  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
+  const adoptedInput = path.join(root, prepared.result.artifact);
 
   const adoptArgs = [
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', adoptedInput,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the problem frame, constraint, and viable option.',
     '--json'
@@ -597,17 +592,17 @@ test('re-adopting the same run id with a mutated input file is rejected', async 
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-ops-run-1',
+    '--run-id', 'judgment-20260101000001-0a0a0a01',
     '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
-  const adoptedInput = await createActionableInput(root, prepared.result.artifact);
+  const adoptedInput = path.join(root, prepared.result.artifact);
 
   const firstAdopt = await runCli([
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', adoptedInput,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the problem frame, constraint, and viable option.',
     '--json'
@@ -623,7 +618,7 @@ test('re-adopting the same run id with a mutated input file is rejected', async 
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', adoptedInput,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the problem frame, constraint, and viable option again.',
     '--json'

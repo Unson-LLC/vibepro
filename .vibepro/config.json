@@ -1456,6 +1456,18 @@
         "started_at": "2026-10-14",
         "due_at": null,
         "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-reject-nongenuine-judgment-runs",
+        "title": "手作りの判断runを採択できないようにする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
       }
     ],
     "current_story_id": "story-vibepro-disposition-reviewed-by"
