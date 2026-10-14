@@ -1,0 +1,721 @@
+{
+  "schema_version": "0.3.0",
+  "model": "vibepro-senior-engineering-judgment-dag",
+  "story_id": "story-vibepro-disposition-reviewed-by",
+  "run_id": "judgment-disposition-reviewed-by-1",
+  "parent_run_id": null,
+  "development_mode": "VALUE",
+  "development_mode_reasons": [
+    "Sufficient decision evidence identifies the verified current constraint as a value constraint."
+  ],
+  "allowed_option_actions": [
+    "build",
+    "fix",
+    "delete",
+    "consolidate",
+    "redesign",
+    "retire"
+  ],
+  "analysis_depth": "light",
+  "nodes": [
+    {
+      "id": "input_integrity",
+      "type": "common_spine",
+      "state": "satisfied"
+    },
+    {
+      "id": "goal_contract",
+      "type": "common_spine",
+      "state": "satisfied"
+    },
+    {
+      "id": "portfolio_history",
+      "type": "common_spine",
+      "state": "satisfied",
+      "boundary_kind": "initial",
+      "boundary_source_ref": "docs/management/stories/active/story-vibepro-disposition-reviewed-by.md",
+      "adopted_batch_count": 0,
+      "adopted_story_count": 0
+    },
+    {
+      "id": "contradiction_scan",
+      "type": "common_spine",
+      "state": "satisfied",
+      "contradiction_count": 0
+    },
+    {
+      "id": "problem_frame",
+      "type": "common_spine",
+      "state": "satisfied"
+    },
+    {
+      "id": "development_mode_route",
+      "type": "mode_route",
+      "state": "satisfied",
+      "development_mode": "VALUE",
+      "reasons": [
+        "Sufficient decision evidence identifies the verified current constraint as a value constraint."
+      ]
+    },
+    {
+      "id": "mode:value",
+      "type": "development_mode",
+      "state": "active"
+    },
+    {
+      "id": "mode:simplify",
+      "type": "development_mode",
+      "state": "not_reached"
+    },
+    {
+      "id": "mode:validate",
+      "type": "development_mode",
+      "state": "not_reached"
+    },
+    {
+      "id": "decision_profile",
+      "type": "common_spine",
+      "state": "satisfied"
+    },
+    {
+      "id": "depth_route",
+      "type": "common_spine",
+      "state": "satisfied",
+      "depth": "light"
+    },
+    {
+      "id": "active_branch_fan_in",
+      "type": "fan_in",
+      "state": "satisfied"
+    },
+    {
+      "id": "option_pruning",
+      "type": "constraint_pruning",
+      "state": "satisfied",
+      "development_mode": "VALUE",
+      "allowed_actions": [
+        "build",
+        "fix",
+        "delete",
+        "consolidate",
+        "redesign",
+        "retire"
+      ]
+    },
+    {
+      "id": "recommendation",
+      "type": "terminal",
+      "state": "satisfied",
+      "recommendation": "proceed",
+      "advisory": true
+    },
+    {
+      "id": "axis:public_contract",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "追加する --reviewed-by は任意であり、既存の disposition record コマンド呼び出しはフラグ無しで成功し続ける。"
+    },
+    {
+      "id": "axis:public_contract:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:rollback_sensitive",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "追加フィールドと CLI 引数の読み取りだけであり、保存済み JSON の移行や巻き戻し手順を必要としない。"
+    },
+    {
+      "id": "axis:rollback_sensitive:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:security_boundary",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "reviewed_by は既存の recorded_by と同じ自由テキストであり、認証・認可・秘密情報の境界は変わらない。"
+    },
+    {
+      "id": "axis:security_boundary:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:data_state",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "データベースは無く、disposition は JSON ファイルのままである。reviewed_by が無い既存ファイルは読み取り時に補完しない。"
+    },
+    {
+      "id": "axis:data_state:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:execution_topology",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "コマンドの実行経路、プロセス、外部送信は増えない。"
+    },
+    {
+      "id": "axis:execution_topology:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:ux_surface",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "この変更は CLI の記録フィールドであり、画面や対話フローは無い。"
+    },
+    {
+      "id": "axis:ux_surface:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:performance_semantic",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "1 文字列の保存であり、性能や意味的な実行時間の仮説は立てない。"
+    },
+    {
+      "id": "axis:performance_semantic:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:scope_reviewability",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "変更は disposition record の入出力と境界テストに収まり、別 Story の判断 DAG へ広げない。"
+    },
+    {
+      "id": "axis:scope_reviewability:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    },
+    {
+      "id": "axis:release_ops",
+      "type": "judgment_axis",
+      "state": "not_reached",
+      "activation_reason": "npm publish、reconcile、release 操作はこの修正に含めない。"
+    },
+    {
+      "id": "axis:release_ops:fan_in",
+      "type": "fan_in",
+      "state": "not_reached"
+    }
+  ],
+  "edges": [
+    {
+      "from": "input_integrity",
+      "to": "goal_contract",
+      "condition": "valid_input",
+      "traversed": true
+    },
+    {
+      "from": "goal_contract",
+      "to": "portfolio_history",
+      "condition": "goal_fixed",
+      "traversed": true
+    },
+    {
+      "from": "portfolio_history",
+      "to": "contradiction_scan",
+      "condition": "causal_history_boundary_fixed",
+      "traversed": true
+    },
+    {
+      "from": "contradiction_scan",
+      "to": "problem_frame",
+      "condition": "observations_recorded",
+      "traversed": true
+    },
+    {
+      "from": "problem_frame",
+      "to": "development_mode_route",
+      "condition": "problem_frame == valid",
+      "traversed": true
+    },
+    {
+      "from": "problem_frame",
+      "to": "recommendation",
+      "condition": "problem_frame != valid",
+      "traversed": false
+    },
+    {
+      "from": "development_mode_route",
+      "to": "mode:value",
+      "condition": "development_mode == VALUE",
+      "traversed": true
+    },
+    {
+      "from": "mode:value",
+      "to": "decision_profile",
+      "condition": "selected_mode_enters_story_judgment",
+      "traversed": true
+    },
+    {
+      "from": "development_mode_route",
+      "to": "mode:simplify",
+      "condition": "development_mode == SIMPLIFY",
+      "traversed": false
+    },
+    {
+      "from": "mode:simplify",
+      "to": "decision_profile",
+      "condition": "selected_mode_enters_story_judgment",
+      "traversed": false
+    },
+    {
+      "from": "development_mode_route",
+      "to": "mode:validate",
+      "condition": "development_mode == VALIDATE",
+      "traversed": false
+    },
+    {
+      "from": "mode:validate",
+      "to": "decision_profile",
+      "condition": "selected_mode_enters_story_judgment",
+      "traversed": false
+    },
+    {
+      "from": "decision_profile",
+      "to": "depth_route",
+      "condition": "development_mode_selected",
+      "traversed": true
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:public_contract",
+      "condition": "axis public_contract is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:public_contract:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:rollback_sensitive",
+      "condition": "axis rollback_sensitive is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:rollback_sensitive:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:security_boundary",
+      "condition": "axis security_boundary is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:security_boundary:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:data_state",
+      "condition": "axis data_state is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:data_state:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:execution_topology",
+      "condition": "axis execution_topology is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:execution_topology:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:ux_surface",
+      "condition": "axis ux_surface is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:ux_surface:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:performance_semantic",
+      "condition": "axis performance_semantic is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:performance_semantic:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:scope_reviewability",
+      "condition": "axis scope_reviewability is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:scope_reviewability:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "axis:release_ops",
+      "condition": "axis release_ops is active",
+      "traversed": false
+    },
+    {
+      "from": "axis:release_ops:fan_in",
+      "to": "active_branch_fan_in",
+      "condition": "reachable_axis_completed",
+      "traversed": false
+    },
+    {
+      "from": "depth_route",
+      "to": "active_branch_fan_in",
+      "condition": "no_active_axes",
+      "traversed": true
+    },
+    {
+      "from": "active_branch_fan_in",
+      "to": "option_pruning",
+      "condition": "reachable_branches_completed",
+      "traversed": true
+    },
+    {
+      "from": "option_pruning",
+      "to": "recommendation",
+      "condition": "constraints_applied",
+      "traversed": true
+    }
+  ],
+  "topological_order": [
+    "axis:data_state:fan_in",
+    "axis:execution_topology:fan_in",
+    "axis:performance_semantic:fan_in",
+    "axis:public_contract:fan_in",
+    "axis:release_ops:fan_in",
+    "axis:rollback_sensitive:fan_in",
+    "axis:scope_reviewability:fan_in",
+    "axis:security_boundary:fan_in",
+    "axis:ux_surface:fan_in",
+    "input_integrity",
+    "goal_contract",
+    "portfolio_history",
+    "contradiction_scan",
+    "problem_frame",
+    "development_mode_route",
+    "mode:simplify",
+    "mode:validate",
+    "mode:value",
+    "decision_profile",
+    "depth_route",
+    "active_branch_fan_in",
+    "axis:data_state",
+    "axis:execution_topology",
+    "axis:performance_semantic",
+    "axis:public_contract",
+    "axis:release_ops",
+    "axis:rollback_sensitive",
+    "axis:scope_reviewability",
+    "axis:security_boundary",
+    "axis:ux_surface",
+    "option_pruning",
+    "recommendation"
+  ],
+  "active_axes": [],
+  "inactive_axes": [
+    "public_contract",
+    "rollback_sensitive",
+    "security_boundary",
+    "data_state",
+    "execution_topology",
+    "ux_surface",
+    "performance_semantic",
+    "scope_reviewability",
+    "release_ops"
+  ],
+  "unreachable_axes": [
+    "public_contract",
+    "rollback_sensitive",
+    "security_boundary",
+    "data_state",
+    "execution_topology",
+    "ux_surface",
+    "performance_semantic",
+    "scope_reviewability",
+    "release_ops"
+  ],
+  "hypothesis_outcomes": [],
+  "viable_options": [
+    {
+      "id": "option-persist-optional-reviewed-by",
+      "summary": "disposition record に任意の reviewed_by を追加し、非空の --reviewed-by だけを trim して保存する。",
+      "action": "fix",
+      "addresses": [],
+      "violates": [],
+      "residual_risk": "low",
+      "preference_tradeoffs": []
+    }
+  ],
+  "pruned_options": [
+    {
+      "id": "option-require-reviewed-by",
+      "summary": "--reviewed-by を必須にして欠落時は失敗させる。",
+      "action": "redesign",
+      "addresses": [],
+      "violates": [
+        "constraint-optional-reviewed-by"
+      ],
+      "residual_risk": "medium",
+      "pruned_by": [
+        "constraint-optional-reviewed-by"
+      ],
+      "reason": "violates_invariant"
+    },
+    {
+      "id": "option-alias-recorded-by",
+      "summary": "--reviewed-by を recorded_by の別名として上書きする。",
+      "action": "consolidate",
+      "addresses": [],
+      "violates": [
+        "constraint-optional-reviewed-by"
+      ],
+      "residual_risk": "medium",
+      "pruned_by": [
+        "constraint-optional-reviewed-by"
+      ],
+      "reason": "violates_invariant"
+    }
+  ],
+  "recommendation": "proceed",
+  "reasons": [
+    "Development mode: VALUE.",
+    "Sufficient decision evidence identifies the verified current constraint as a value constraint.",
+    "Reachable hypotheses: 0.",
+    "Outcomes: none.",
+    "Viable mitigation options: 1.",
+    "Advisory recommendation: proceed."
+  ],
+  "unknowns": [],
+  "unknown_count": 0,
+  "next_actions": [
+    {
+      "type": "hand_off_to_human_ci",
+      "reason": "All reachable hypotheses were refuted or no risk axis was active."
+    }
+  ],
+  "advisory": true,
+  "authority": "human_ci_repository_rules",
+  "recorded_at": "2026-10-14T04:55:31.286Z",
+  "input_sha256": "1a18f34fe9dc2e4b03a52a0b0dd86bba6f460620c839d868674235632b5d2cf6",
+  "decision_context": {
+    "goal": {
+      "statement": "judgment disposition record が --reviewed-by を保存しない",
+      "success_criteria": [
+        "DRB-AC-001: `--reviewed-by` に非空の文字列を渡すと、disposition record の `reviewed_by` に trim 後の値を保存する。日本語を含む値もそのまま保存する。",
+        "DRB-AC-002: `--reviewed-by` が無い、空文字、または空白のみのとき、コマンドは成功し、`reviewed_by` は null になる。`--recorded-by` が無いときの `recorded_by: \"unknown\"` は維持する。",
+        "DRB-AC-003: `reviewed_by` キーを持たない既存 disposition record を、`judgment status` と `judgment outcome record` がエラーにせず読める。",
+        "DRB-AC-004: この変更は disposition JSON へのフィールド追加に限り、データベースは追加しない。"
+      ]
+    },
+    "observations": [
+      {
+        "id": "obs-cli-ignores-reviewed-by",
+        "statement": "judgment disposition record の CLI は --recorded-by だけを recordJudgmentDisposition へ渡し、--reviewed-by は読まない。",
+        "source_ref": "src/cli.js",
+        "freshness": "current"
+      },
+      {
+        "id": "obs-record-has-recorded-by-only",
+        "statement": "recordJudgmentDisposition が書く disposition JSON は recorded_by を持ち、reviewed_by を持たない。",
+        "source_ref": "src/judgment-operations.js",
+        "freshness": "current"
+      },
+      {
+        "id": "obs-help-omits-reviewed-by",
+        "statement": "CLI help の disposition record は --recorded-by を示し、--reviewed-by を示さない。",
+        "source_ref": "src/cli.js",
+        "freshness": "current"
+      }
+    ],
+    "contradictions": [],
+    "problem_frame": {
+      "status": "valid",
+      "statement": "人の判断を記録する disposition record が --reviewed-by の値を残さない。",
+      "reason": "src/cli.js は disposition record で --reviewed-by を読まず、src/judgment-operations.js の record は recorded_by のみを保存する。依頼の境界は、欠落・空文字・日本語・既存レコード互換である。"
+    },
+    "development_cycle": {
+      "history_boundary": {
+        "kind": "initial",
+        "source_ref": "docs/management/stories/active/story-vibepro-disposition-reviewed-by.md"
+      },
+      "adopted_batches": [],
+      "current_constraint": {
+        "kind": "value_constraint",
+        "status": "verified",
+        "statement": "disposition record は、渡された --reviewed-by を reviewed_by として残す必要がある。未指定と空文字は担当者として保存せず、既存レコードは reviewed_by 無しのまま読める必要がある。",
+        "source_refs": [
+          "src/cli.js",
+          "src/judgment-operations.js",
+          "docs/management/stories/active/story-vibepro-disposition-reviewed-by.md"
+        ],
+        "decision_evidence": {
+          "status": "sufficient",
+          "reason": "保存漏れは CLI の引数受け渡しと record オブジェクトの両方で確認でき、受け入れ条件が保存方法を一意にしている。必須化や recorded_by への別名は、欠落時の成功と既存レコード互換に反する。",
+          "source_refs": [
+            "src/cli.js",
+            "src/judgment-operations.js",
+            "docs/management/stories/active/story-vibepro-disposition-reviewed-by.md"
+          ]
+        }
+      },
+      "proposed_batch": {
+        "id": "batch-judgment-disposition-reviewed-by-1",
+        "story_ids": [
+          "story-vibepro-disposition-reviewed-by"
+        ],
+        "source_refs": [
+          "docs/management/stories/active/story-vibepro-disposition-reviewed-by.md",
+          ".vibepro/config.json"
+        ]
+      }
+    },
+    "decision_profile": {
+      "materiality": "medium",
+      "reversibility": "easy",
+      "blast_radius": "local"
+    },
+    "axes": [
+      {
+        "id": "public_contract",
+        "activation": "inactive",
+        "activation_reason": "追加する --reviewed-by は任意であり、既存の disposition record コマンド呼び出しはフラグ無しで成功し続ける。",
+        "hypotheses": []
+      },
+      {
+        "id": "rollback_sensitive",
+        "activation": "inactive",
+        "activation_reason": "追加フィールドと CLI 引数の読み取りだけであり、保存済み JSON の移行や巻き戻し手順を必要としない。",
+        "hypotheses": []
+      },
+      {
+        "id": "security_boundary",
+        "activation": "inactive",
+        "activation_reason": "reviewed_by は既存の recorded_by と同じ自由テキストであり、認証・認可・秘密情報の境界は変わらない。",
+        "hypotheses": []
+      },
+      {
+        "id": "data_state",
+        "activation": "inactive",
+        "activation_reason": "データベースは無く、disposition は JSON ファイルのままである。reviewed_by が無い既存ファイルは読み取り時に補完しない。",
+        "hypotheses": []
+      },
+      {
+        "id": "execution_topology",
+        "activation": "inactive",
+        "activation_reason": "コマンドの実行経路、プロセス、外部送信は増えない。",
+        "hypotheses": []
+      },
+      {
+        "id": "ux_surface",
+        "activation": "inactive",
+        "activation_reason": "この変更は CLI の記録フィールドであり、画面や対話フローは無い。",
+        "hypotheses": []
+      },
+      {
+        "id": "performance_semantic",
+        "activation": "inactive",
+        "activation_reason": "1 文字列の保存であり、性能や意味的な実行時間の仮説は立てない。",
+        "hypotheses": []
+      },
+      {
+        "id": "scope_reviewability",
+        "activation": "inactive",
+        "activation_reason": "変更は disposition record の入出力と境界テストに収まり、別 Story の判断 DAG へ広げない。",
+        "hypotheses": []
+      },
+      {
+        "id": "release_ops",
+        "activation": "inactive",
+        "activation_reason": "npm publish、reconcile、release 操作はこの修正に含めない。",
+        "hypotheses": []
+      }
+    ],
+    "constraints": [
+      {
+        "id": "constraint-optional-reviewed-by",
+        "kind": "invariant",
+        "statement": "--reviewed-by が無い、空文字、または空白のみのときコマンドは成功し、既存の recorded_by の意味を変えない。"
+      },
+      {
+        "id": "constraint-no-db",
+        "kind": "invariant",
+        "statement": "disposition の保存先をデータベースへ移さない。"
+      }
+    ],
+    "options": [
+      {
+        "id": "option-persist-optional-reviewed-by",
+        "summary": "disposition record に任意の reviewed_by を追加し、非空の --reviewed-by だけを trim して保存する。",
+        "action": "fix",
+        "addresses": [],
+        "violates": [],
+        "residual_risk": "low"
+      },
+      {
+        "id": "option-require-reviewed-by",
+        "summary": "--reviewed-by を必須にして欠落時は失敗させる。",
+        "action": "redesign",
+        "addresses": [],
+        "violates": [
+          "constraint-optional-reviewed-by"
+        ],
+        "residual_risk": "medium"
+      },
+      {
+        "id": "option-alias-recorded-by",
+        "summary": "--reviewed-by を recorded_by の別名として上書きする。",
+        "action": "consolidate",
+        "addresses": [],
+        "violates": [
+          "constraint-optional-reviewed-by"
+        ],
+        "residual_risk": "medium"
+      }
+    ]
+  },
+  "decision_delta": null,
+  "artifacts": {
+    "run_json": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/senior-judgment/runs/judgment-disposition-reviewed-by-1.json",
+    "run_markdown": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/senior-judgment/runs/judgment-disposition-reviewed-by-1.md",
+    "current_json": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/senior-judgment.json",
+    "current_markdown": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/senior-judgment.md"
+  }
+}

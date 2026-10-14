@@ -15,7 +15,7 @@ vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>
 vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
 vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
 vibepro judgment status [repo] --id <story-id> [--json]
-vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
 vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
 vibepro judgment pending [repo] [--json]
 ```
@@ -53,7 +53,7 @@ actionable時はmode別の`development_judgment` task candidateを先頭へ追�
 
 ## Disposition and Outcome
 
-Dispositionは人間の採否とdeliveryへの影響を記録する。Outcomeは後日の観測結果を記録する。Outcome未記録または`unknown`は`outcome_pending`として`judgment pending`へ表示する。
+Dispositionは人間の採否とdeliveryへの影響を記録する。`--reviewed-by` が非空なら前後の空白を trim した値を `reviewed_by` に保存する。フラグが無い、空文字、空白のみ、または値なしで引数の末尾にあるときはエラーにせず `reviewed_by` を null にする。値なしの末尾フラグは無視する。`--recorded-by` の意味は変えない。`reviewed_by` を持たない既存レコードは読み取り時に補完しない。applicability が記録済みの `judgment outcome record` が `--human-decision` または `--effect` とともに disposition を書くときも、同じ規則で `reviewed_by` を保存する。Outcomeは後日の観測結果を記録する。Outcome未記録または`unknown`は`outcome_pending`として`judgment pending`へ表示する。
 
 ## Feedback
 

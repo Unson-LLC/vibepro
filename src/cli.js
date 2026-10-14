@@ -237,7 +237,7 @@ Usage:
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
-  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
   vibepro guard target [repo] --push-url <URL> [--json]
@@ -362,7 +362,7 @@ Usage:
   vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
-  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
   vibepro guard target [repo] --push-url <URL> [--json]
@@ -1083,7 +1083,8 @@ async function dispatchCli(argv, io = {}) {
           effect: getOption(rest, '--effect'),
           summary: getOption(rest, '--summary'),
           evidenceRefs: getOptions(rest, '--evidence'),
-          recordedBy: getOption(rest, '--recorded-by')
+          recordedBy: getOption(rest, '--recorded-by'),
+          reviewedBy: getOption(rest, '--reviewed-by')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
@@ -1119,7 +1120,8 @@ async function dispatchCli(argv, io = {}) {
             effect: getOption(rest, '--effect'),
             summary: getOption(rest, '--summary'),
             evidenceRefs: getOptions(rest, '--evidence'),
-            recordedBy: getOption(rest, '--recorded-by')
+            recordedBy: getOption(rest, '--recorded-by'),
+            reviewedBy: getOption(rest, '--reviewed-by')
           });
         }
         const result = await recordOperationalJudgmentOutcome(repoRoot, {
