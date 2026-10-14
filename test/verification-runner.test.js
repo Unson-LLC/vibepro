@@ -584,9 +584,14 @@ test('verify run kills a silent process on the no-progress deadline well before 
   const elapsedMs = Date.now() - startedAt;
   assert.equal(result.result.status, 'fail');
   assert.equal(result.result.timed_out, true);
-  // The no-progress deadline (300ms), not the wall-clock cap (5000ms), is what killed this:
-  // proven by finishing far short of the wall clock, not merely by the boolean outcome.
-  assert.ok(elapsedMs < 3000, `expected the no-progress deadline to kill well under the 5000ms wall clock, took ${elapsedMs}ms`);
+  // duration_ms is only the executeCommand span. `sleep` ignores SIGTERM, so a
+  // wall-clock kill cannot return before --timeout-ms (5000) plus the 2000ms
+  // grace period. Finishing before 5000ms means the 300ms no-progress deadline
+  // fired. The outer elapsed time also includes tree sampling and is not that clock.
+  assert.ok(
+    result.result.duration_ms < 5000,
+    `expected the no-progress deadline to kill before the 5000ms wall clock, command took ${result.result.duration_ms}ms (outer ${elapsedMs}ms)`
+  );
   const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
   assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
 });
