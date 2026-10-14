@@ -2,12 +2,26 @@ import { STANDARD_JUDGMENT_AXES } from './senior-judgment-dag.js';
 
 const SECTION_TITLES = Object.freeze({
   'Problem Frame': 'problem_frame',
+  '問題の枠組み': 'problem_frame',
   'Constraints': 'constraints',
+  '制約': 'constraints',
   'Options': 'options',
+  '選択肢': 'options',
   'Current Constraint': 'current_constraint',
   'Observations': 'observations',
   'Axes': 'axes'
 });
+
+const SECTION_KEYS = Object.freeze([
+  'problem_frame',
+  'constraints',
+  'options',
+  'current_constraint',
+  'observations',
+  'axes'
+]);
+
+const NO_SECTION_WARNING = 'Judgment prepare found no Story judgment sections. problem_frame, constraints, and options stay uncertain or empty. Recognized headings are ## Problem Frame (## 問題の枠組み), ## Constraints (## 制約), ## Options (## 選択肢), ## Current Constraint, ## Observations, and ## Axes.';
 
 const FRAME_STATUS = new Set(['valid', 'invalid', 'uncertain']);
 const CONSTRAINT_KIND = new Set(['invariant', 'preference']);
@@ -24,13 +38,18 @@ const ID_PATTERN = /^[a-z][a-z0-9_-]*$/;
 
 export function parseJudgmentStorySections(markdown) {
   const sections = collectSections(markdown);
-  return {
+  const parsed = {
     problem_frame: readProblemFrame(sections.get('problem_frame')),
     constraints: readNamedRecords(sections.get('constraints'), 'Constraints', readConstraint),
     options: readNamedRecords(sections.get('options'), 'Options', readOption),
     current_constraint: readCurrentConstraint(sections.get('current_constraint')),
     observations: readNamedRecords(sections.get('observations'), 'Observations', readObservation),
     axes: readAxes(sections.get('axes'))
+  };
+  const readable = SECTION_KEYS.filter((key) => parsed[key]);
+  return {
+    ...parsed,
+    warnings: readable.length === 0 ? [NO_SECTION_WARNING] : []
   };
 }
 
@@ -54,7 +73,16 @@ function collectSections(markdown) {
   const lines = String(markdown ?? '').replace(/\r\n/g, '\n').split('\n');
   const sections = new Map();
   let current = null;
+  let fence = null;
   for (let index = 0; index < lines.length; index += 1) {
+    const fenceMarker = fenceMarkerAt(lines[index]);
+    if (fenceMarker) {
+      fence = fence && fence.marker === fenceMarker.marker && fenceMarker.length >= fence.length
+        ? null
+        : (fence ?? { marker: fenceMarker.marker, length: fenceMarker.length });
+      continue;
+    }
+    if (fence) continue;
     const heading = lines[index].match(/^(#{2,5})[ \t]+(.+?)[ \t]*$/);
     if (heading && heading[1].length === 2) {
       current = null;
@@ -349,6 +377,12 @@ function overlayAxes(existing, declared, standardAxes) {
       hypotheses: []
     }));
   return base.map((axis) => byId.get(axis.id) ?? axis);
+}
+
+function fenceMarkerAt(text) {
+  const match = String(text).match(/^[ \t]{0,3}(`{3,}|~{3,})[^`~]*$/);
+  if (!match) return null;
+  return { marker: match[1][0], length: match[1].length };
 }
 
 function headingAt(line) {

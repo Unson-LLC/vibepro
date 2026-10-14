@@ -27,7 +27,7 @@ The draft MUST:
 
 ### Story judgment headings
 
-`judgment prepare` reads only these exact level-2 headings. Other headings are ordinary Story prose and are ignored. A heading with no fields and no items leaves that part of the draft at the uncertain or empty default. A heading that contains fields must use the field lines below. Anything else is an invalid format and prepare fails without guessing a value.
+`judgment prepare` reads only these exact level-2 headings. `## 問題の枠組み`, `## 制約`, and `## 選択肢` are the same sections as `## Problem Frame`, `## Constraints`, and `## Options`. Other headings are ordinary Story prose and are ignored. Headings inside fenced code blocks (lines opening and closing with `` ``` `` or `~~~`) are not read. A heading with no fields and no items leaves that part of the draft at the uncertain or empty default. When no heading yields a field or item, prepare warns and leaves every section at that default. A heading that contains fields must use the field lines below. Anything else is an invalid format and prepare fails without guessing a value.
 
 ```markdown
 ## Problem Frame

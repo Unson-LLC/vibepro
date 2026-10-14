@@ -29,7 +29,7 @@ vibepro judgment pending [repo] [--json]
 
 `judgment input adopt`はSenior Judgment schema `0.3.0`を検証し、入力byte列のSHA-256、reviewer、authority、summary、source HEADを保存する。同じrun IDを異なる入力で再採択できない。
 
-`judgment prepare`はStoryの `## Problem Frame`、`## Constraints`、`## Options`、`## Current Constraint`、`## Observations`、`## Axes` を判断入力へ写す。見出しが無い項目はuncertainまたは空のままで、本文から推論しない。形式は `docs/specs/vibepro-development-judgment-workflow.md` の Story judgment headings に従う。
+`judgment prepare`はStoryの `## Problem Frame`（`## 問題の枠組み`）、`## Constraints`（`## 制約`）、`## Options`（`## 選択肢`）、`## Current Constraint`、`## Observations`、`## Axes` を判断入力へ写す。コードブロックの中の見出しは読まない。読める節が1つも無いときは警告し、見出しが無い項目はuncertainまたは空のままで、本文から推論しない。形式は `docs/specs/vibepro-development-judgment-workflow.md` の Story judgment headings に従う。
 
 `judgment prepare`の公開CLIは`--run-id`を拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1`のテストだけが`--run-id`を渡せ、その値は`^judgment-\d{14}-[0-9a-f]{8}$`に一致しなければならない。`judgment input adopt`と`judgment evaluate`は、この形式でないrun ID、`.vibepro/`の外の`source_input`、欠落した`drafts/<runId>.json`、draft receiptのlineage hashまたはartifact pathが採択入力と一致しない場合を拒否する。意味のレビューでproblem frameやoptionsを同じartifactへ足す場合、story、run、goalのlineageが一致するときだけreceiptの`input_sha256`を採択byte列へ更新する。
 

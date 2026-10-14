@@ -122,6 +122,8 @@ test('omitted Story judgment headings stay uncertain and empty', async () => {
     runId: 'judgment-20261014182401-b2c3d4e5',
     env: silentIo().env
   });
+  assert.equal(prepared.section_warnings.length, 1);
+  assert.match(prepared.section_warnings[0], /no Story judgment sections/);
   assert.equal(prepared.input.problem_frame.status, 'uncertain');
   assert.match(prepared.input.problem_frame.reason, /does not infer/);
   assert.equal(prepared.input.development_cycle.current_constraint.status, 'unknown');
@@ -135,6 +137,93 @@ test('omitted Story judgment headings stay uncertain and empty', async () => {
 test('an empty Problem Frame heading stays uncertain', () => {
   const parsed = parseJudgmentStorySections('## Problem Frame\n\n## Story\n\nprose\n');
   assert.equal(parsed.problem_frame, null);
+  assert.equal(parsed.warnings.length, 1);
+});
+
+test('headings inside fenced code blocks are not judgment sections', () => {
+  const onlyFence = [
+    '```markdown',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: hidden',
+    '- reason: hidden',
+    '```',
+    '',
+    '~~~',
+    '## Constraints',
+    '',
+    '### keep-receipt',
+    '- kind: invariant',
+    '- statement: hidden',
+    '~~~'
+  ].join('\n');
+  const ignored = parseJudgmentStorySections(onlyFence);
+  assert.equal(ignored.problem_frame, null);
+  assert.equal(ignored.constraints, null);
+  assert.equal(ignored.warnings.length, 1);
+
+  const mixed = [
+    onlyFence,
+    '',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: visible',
+    '- reason: outside the fence'
+  ].join('\n');
+  const parsed = parseJudgmentStorySections(mixed);
+  assert.equal(parsed.problem_frame.statement, 'visible');
+  assert.equal(parsed.constraints, null);
+  assert.deepEqual(parsed.warnings, []);
+});
+
+test('Japanese judgment headings fill the same sections as the English headings', () => {
+  const parsed = parseJudgmentStorySections([
+    '## 問題の枠組み',
+    '',
+    '- status: valid',
+    '- statement: 受領証が入力と結び付いていない。',
+    '- reason: 手作りの run が採択された。',
+    '',
+    '## 制約',
+    '',
+    '### keep-receipt',
+    '- kind: invariant',
+    '- statement: 採択には受領証が要る。',
+    '',
+    '## 選択肢',
+    '',
+    '### option-bind-receipt',
+    '- summary: 受領証が一致しない採択を拒否する。',
+    '- action: fix',
+    '- addresses:',
+    '- violates:',
+    '- residual_risk: low'
+  ].join('\n'));
+  assert.equal(parsed.problem_frame.status, 'valid');
+  assert.equal(parsed.problem_frame.statement, '受領証が入力と結び付いていない。');
+  assert.equal(parsed.constraints[0].id, 'keep-receipt');
+  assert.equal(parsed.constraints[0].kind, 'invariant');
+  assert.equal(parsed.options[0].id, 'option-bind-receipt');
+  assert.equal(parsed.options[0].action, 'fix');
+  assert.deepEqual(parsed.warnings, []);
+  assert.throws(
+    () => parseJudgmentStorySections([
+      '## Problem Frame',
+      '',
+      '- status: valid',
+      '- statement: a',
+      '- reason: b',
+      '',
+      '## 問題の枠組み',
+      '',
+      '- status: invalid',
+      '- statement: c',
+      '- reason: d'
+    ].join('\n')),
+    /duplicated/
+  );
 });
 
 test('invalid judgment heading fields are rejected without guessing', () => {
