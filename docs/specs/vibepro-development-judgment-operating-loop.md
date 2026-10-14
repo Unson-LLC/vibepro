@@ -29,6 +29,8 @@ vibepro judgment pending [repo] [--json]
 
 `judgment input adopt`はSenior Judgment schema `0.3.0`を検証し、入力byte列のSHA-256、reviewer、authority、summary、source HEAD、PR番号を保存する。同じrun IDを異なる入力で再採択できない。`--reviewed-by` は `human:<id>` または `agent:<id>` だけを受け、kind を機械的に判定できる形で保存する。採用記録にも同じ鍵で HMAC を付け、`reviewed_by` を署名対象に含める。audit は採用記録の署名を検証し、`reviewed_by` を書き換えた記録を拒否する。
 
+`judgment prepare`はStoryの `## Problem Frame`（`## 問題の枠組み`）、`## Constraints`（`## 制約`）、`## Options`（`## 選択肢`）、`## Current Constraint`、`## Observations`、`## Axes` を判断入力へ写す。コードブロックの中の見出しは読まない。対象は `` ``` `` と `~~~`、および4スペースかタブでインデントされたコードである。閉じの行に info 文字列があるときは閉じとして扱わず、閉じていないコードブロックは警告する。読める節が1つも無いときは警告し、見出しが無い項目はuncertainまたは空のままで、本文から推論しない。形式は `docs/specs/vibepro-development-judgment-workflow.md` の Story judgment headings に従う。
+
 `judgment prepare`の公開CLIは`--run-id`を拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1`のテストだけが`--run-id`を渡せ、その値は`^judgment-\d{14}-[0-9a-f]{8}$`に一致しなければならない。prepare だけが受領証 `drafts/<runId>.json` を作る。受領証は `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY`（Infisical https://infisical.unson.jp に置く。リポジトリには保存しない。32文字以上）で HMAC し、`input_sha256`、`source_head_sha`、`pr_number`、`prepared_at`、`advisory`、`blocking` を署名対象に含める。PR番号は `VIBEPRO_JUDGMENT_PR_NUMBER`、無いときは `GITHUB_REF` の `refs/pull/<number>/` から取る。鍵が無い、または32文字未満のときは prepare、adopt、evaluate、audit を拒否する。署名関数はパッケージの公開 export にしない。export を外すだけでは、鍵を持つプロセスが署名を計算できることは変わらない。
 
 `input_sha256` は prepare の時点のbyte列で固定し、adopt は上書きしない。prepare 後にbyte列を変えた入力は拒否する。`judgment input adopt` と `judgment evaluate` は、この形式でないrun ID、`.vibepro/` の外の `source_input`、欠落した受領証、署名不一致、別の PR、別の `source_head_sha`、lineage または artifact の不一致を拒否する。

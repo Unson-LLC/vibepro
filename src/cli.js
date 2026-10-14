@@ -1030,6 +1030,7 @@ async function dispatchCli(argv, io = {}) {
         const result = status.applicable === null
           ? await prepareJudgmentInput(repoRoot, options)
           : await prepareOperationalJudgmentInput(repoRoot, options);
+        for (const warning of result.section_warnings ?? []) write(stderr, `${warning}\n`);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
 `

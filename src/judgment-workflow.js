@@ -24,6 +24,7 @@ import {
   validateJudgmentInvestigationResult
 } from './judgment-investigation.js';
 import { resolveJudgmentPrepareRunId } from './judgment-run-authenticity.js';
+import { applyJudgmentStorySections, parseJudgmentStorySections } from './judgment-story-sections.js';
 import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -120,6 +121,8 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     constraints: [],
     options: []
   };
+  const storySections = parseJudgmentStorySections(storySource.content);
+  applyJudgmentStorySections(input, storySections);
 
   if (options.expertInputPath !== undefined && options.investigationInputPath !== undefined) {
     throw new Error('--expert-input and --investigation are mutually exclusive');
@@ -178,6 +181,7 @@ export async function prepareJudgmentInput(repoRoot, options = {}) {
     source_head_sha: git.head_sha,
     changed_files: git.changed_files,
     artifact: toWorkspaceRelative(root, outputPath),
+    section_warnings: storySections.warnings ?? [],
     advisory: true,
     blocking: false
   };
