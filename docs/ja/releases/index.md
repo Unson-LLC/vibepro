@@ -729,3 +729,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:572:start -->
 - [PR #572](https://github.com/Unson-LLC/vibepro/pull/572) — [2026-10](/ja/releases/2026-10): fix: persist optional --reviewed-by on judgment disposition records
 <!-- vibepro-release-index-pr:572:end -->
+
+<!-- vibepro-release-index-pr:573:start -->
+- [PR #573](https://github.com/Unson-LLC/vibepro/pull/573) — [2026-10](/ja/releases/2026-10): fix: refuse non-genuine judgment runs
+<!-- vibepro-release-index-pr:573:end -->
