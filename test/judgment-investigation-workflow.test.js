@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { JUDGMENT_TEST_ENV } from './support/judgment-test-env.js';
 import { advanceJudgmentInvestigation } from '../src/judgment-investigation.js';
 
 const execFileAsync = promisify(execFile);
@@ -17,7 +18,7 @@ function silentIo() {
   return {
     stdout: { write() {} },
     stderr: { write() {} },
-    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1' }
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   };
 }
 
@@ -199,12 +200,11 @@ test('investigation survives prepare, adoption, evaluation, and plan consumption
   assert.equal(prepared.result.input.investigation_context.questions.length, 1);
   assert.equal(prepared.result.input.investigation_context.questions[0].id, 'question-boundary-contract');
 
-  const actionableInput = await makeActionableInput(root, prepared.result.artifact);
   const adopted = await runCli([
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
-    '--input', actionableInput,
-    '--reviewed-by', 'test-agent',
+    '--input', prepared.result.artifact,
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the frame and retained the investigation question as advisory context.',
     '--json'
@@ -218,7 +218,7 @@ test('investigation survives prepare, adoption, evaluation, and plan consumption
     '--json'
   ], silentIo());
   assert.equal(evaluated.exitCode, 0);
-  assert.equal(evaluated.result.operational.actionable, true);
+  assert.equal(evaluated.result.operational.actionable, false);
   assert.equal(evaluated.result.operational.investigation_unresolved_count, 1);
   assert.equal(evaluated.result.senior.investigation_input.status, 'needs_evidence');
   assert.equal(evaluated.result.senior.investigation_context.status, 'needs_evidence');
@@ -229,14 +229,7 @@ test('investigation survives prepare, adoption, evaluation, and plan consumption
 
   const planned = await runCli(['story', 'plan', root, '--json'], silentIo());
   assert.equal(planned.exitCode, 0);
-  assert.equal(planned.result.plan.development_judgment.status, 'applied');
+  assert.equal(planned.result.plan.development_judgment.status, 'evaluated_unactionable');
   assert.equal(planned.result.plan.development_judgment.investigation_unresolved_count, 1);
-  assert.ok(planned.result.plan.questions.some(
-    (question) => question.field === 'judgment_investigation_open_question'
-      && question.question.includes('Which runtime contract')
-  ));
-  assert.ok(planned.result.plan.task_candidates.some((task) => (
-    task.source_type === 'development_judgment'
-      && task.acceptance.some((criterion) => criterion.includes('Which runtime contract'))
-  )));
+  assert.equal(planned.result.plan.task_candidates.some((task) => task.source_type === 'development_judgment'), false);
 });

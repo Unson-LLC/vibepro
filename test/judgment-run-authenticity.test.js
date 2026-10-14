@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { JUDGMENT_RUN_ID_PATTERN } from '../src/judgment-run-authenticity.js';
+import { JUDGMENT_TEST_ENV } from './support/judgment-test-env.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-reject-nongenuine-judgment';
@@ -17,7 +18,7 @@ function silentIo() {
   return {
     stdout: { write() {} },
     stderr: { write() {} },
-    env: { ...process.env }
+    env: { ...process.env, ...JUDGMENT_TEST_ENV }
   };
 }
 
@@ -27,7 +28,7 @@ function capturingIo() {
     io: {
       stdout: { write() {} },
       stderr: { write(chunk) { stderrChunks.push(chunk); } },
-      env: { ...process.env }
+      env: { ...process.env, ...JUDGMENT_TEST_ENV }
     },
     stderrText() {
       return stderrChunks.join('');
@@ -76,7 +77,7 @@ function adoptArgs(root, inputPath) {
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', inputPath,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'story-and-repository-evidence',
     '--summary', 'Reviewed the prepared judgment input.',
     '--json'
@@ -147,7 +148,7 @@ test('judgment prepare refuses public --run-id and accepts a generated genuine i
   assert.match(refused, /VIBEPRO_ALLOW_JUDGMENT_RUN_ID/);
 
   const captured = capturingIo();
-  captured.io.env = { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1' };
+  captured.io.env = { ...process.env, ...JUDGMENT_TEST_ENV, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1' };
   const bad = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
@@ -165,6 +166,9 @@ test('judgment prepare refuses public --run-id and accepts a generated genuine i
   assert.equal(receipt.artifact, prepared.artifact);
   assert.match(receipt.input_sha256, /^[a-f0-9]{64}$/);
   assert.match(receipt.lineage_sha256, /^[a-f0-9]{64}$/);
+  assert.match(receipt.receipt_hmac, /^[a-f0-9]{64}$/);
+  assert.equal(receipt.pr_number, 573);
+  assert.equal(receipt.source_head_sha, prepared.source_head_sha);
 });
 
 test('adopt and evaluate refuse a missing receipt, a bad run id, an outside source, a hash mismatch, and an artifact mismatch', async () => {
@@ -192,6 +196,8 @@ test('adopt and evaluate refuse a missing receipt, a bad run id, an outside sour
   };
   await mkdir(path.dirname(path.join(root, prepared.draft_receipt)), { recursive: true });
   await writeFile(path.join(root, prepared.draft_receipt), `${JSON.stringify(restored, null, 2)}\n`);
+  await expectRefusal(adoptArgs(root, artifact), /Hand-made receipts are refused/);
+  await writeFile(path.join(root, prepared.draft_receipt), originalReceipt);
 
   const forgedId = JSON.parse(await readFile(artifact, 'utf8'));
   forgedId.run_id = 'judgment-20261014080730-operator';
@@ -225,16 +231,19 @@ test('adopt and evaluate refuse a missing receipt, a bad run id, an outside sour
   await expectRefusal(evaluateArgs(root, copyPath), /artifact .+ does not match the adopted input/);
 });
 
-test('a genuine prepare, evidence edit, adopt, and evaluate passes judgment audit', async () => {
+test('a genuine prepare, unchanged adopt, and evaluate passes judgment audit', async () => {
   const root = await setupRepo('legitimate');
   const prepared = await prepare(root);
   assert.match(prepared.run_id, JUDGMENT_RUN_ID_PATTERN);
-  const adoptedInput = await makeActionable(root, prepared.artifact);
-  const adopted = await runCli(adoptArgs(root, adoptedInput), silentIo());
+  const preparedReceipt = await readFile(path.join(root, prepared.draft_receipt), 'utf8');
+  const adopted = await runCli(adoptArgs(root, path.join(root, prepared.artifact)), silentIo());
   assert.equal(adopted.exitCode, 0, adopted.error ?? 'adopt failed');
   assert.equal(adopted.result.adoption.source_input.startsWith('.vibepro/'), true);
+  assert.deepEqual(adopted.result.adoption.reviewed_by, { kind: 'agent', id: 'test-agent' });
+  assert.equal(adopted.result.adoption.pr_number, 573);
   const receipt = JSON.parse(await readFile(path.join(root, prepared.draft_receipt), 'utf8'));
   assert.equal(receipt.input_sha256, adopted.result.adoption.input_sha256);
+  assert.equal(await readFile(path.join(root, prepared.draft_receipt), 'utf8'), preparedReceipt);
 
   const evaluated = await runCli([
     'judgment', 'evaluate', root,
@@ -243,9 +252,7 @@ test('a genuine prepare, evidence edit, adopt, and evaluate passes judgment audi
     '--json'
   ], silentIo());
   assert.equal(evaluated.exitCode, 0, evaluated.error ?? 'evaluate failed');
-  assert.equal(evaluated.result.operational.actionable, true);
-  assert.equal(evaluated.result.operational.recommendation, 'proceed');
-  assert.ok(evaluated.result.operational.viable_options.some((option) => option.id === 'option-bind-receipt'));
+  assert.equal(evaluated.result.operational.actionable, false);
 
   const outside = path.join(os.tmpdir(), `vibepro-eval-outside-${prepared.run_id}.json`);
   await writeFile(outside, await readFile(path.join(root, adopted.result.adoption.adopted_input), 'utf8'));
@@ -275,6 +282,8 @@ test('a genuine prepare, evidence edit, adopt, and evaluate passes judgment audi
   const audit = await runCli(['judgment', 'audit', root, '--json'], silentIo());
   assert.equal(audit.exitCode, 0, JSON.stringify(audit.result?.findings ?? audit.error));
   assert.equal(audit.result.ok, true);
+  assert.equal(audit.result.advisory, true);
+  assert.equal(audit.result.blocking, false);
   assert.equal(audit.result.scanned, 1);
 
   const currentPath = path.join(root, adopted.result.adoption.artifact.replace(/judgment-[^/]+\.json$/, 'current.json'));
@@ -285,8 +294,72 @@ test('a genuine prepare, evidence edit, adopt, and evaluate passes judgment audi
   const failed = await runCli(['judgment', 'audit', root, '--json'], silentIo());
   assert.notEqual(failed.exitCode, 0);
   assert.equal(failed.result.ok, false);
+  assert.equal(failed.result.advisory, false);
+  assert.equal(failed.result.blocking, true);
   const codes = failed.result.findings.flatMap((finding) => finding.issues.map((issue) => issue.code));
   assert.ok(codes.includes('run_id_format'));
   assert.ok(codes.includes('source_input_outside_vibepro'));
   assert.ok(codes.includes('receipt_missing') || codes.includes('artifact_mismatch') || codes.includes('input_hash_mismatch'));
+});
+
+test('prepare refuses a missing receipt key and audit reports blocking instead of advisory', async () => {
+  const root = await setupRepo('missing-key');
+  const missing = capturingIo();
+  delete missing.io.env.VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY;
+  const prepared = await runCli(['judgment', 'prepare', root, '--id', STORY_ID, '--json'], missing.io);
+  assert.notEqual(prepared.exitCode, 0);
+  assert.match(missing.stderrText(), /VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY/);
+  assert.match(missing.stderrText(), /Infisical/);
+
+  const stdout = [];
+  const audit = await runCli(['judgment', 'audit', root], {
+    stdout: { write(chunk) { stdout.push(chunk); } },
+    stderr: { write() {} },
+    env: missing.io.env
+  });
+  assert.equal(audit.exitCode, 1);
+  assert.equal(audit.result.advisory, false);
+  assert.equal(audit.result.blocking, true);
+  assert.match(stdout.join(''), /Advisory: false\nBlocking: true/);
+  assert.ok(audit.result.findings.some((finding) => finding.issues.some((issue) => issue.code === 'receipt_key_missing')));
+});
+
+test('adopt refuses a tampered signature, another PR, another head, a bare reviewer, and a rewritten input hash', async () => {
+  const root = await setupRepo('receipt-binding');
+  const prepared = await prepare(root);
+  const artifact = path.join(root, prepared.artifact);
+  const receiptPath = path.join(root, prepared.draft_receipt);
+  const originalReceiptText = await readFile(receiptPath, 'utf8');
+  const originalReceipt = JSON.parse(originalReceiptText);
+
+  const tampered = { ...originalReceipt, receipt_hmac: `${originalReceipt.receipt_hmac.slice(0, -1)}${originalReceipt.receipt_hmac.endsWith('a') ? 'b' : 'a'}` };
+  await writeFile(receiptPath, `${JSON.stringify(tampered, null, 2)}\n`);
+  await expectRefusal(adoptArgs(root, artifact), /signature is not valid/);
+  await expectRefusal(evaluateArgs(root, artifact), /signature is not valid/);
+  await writeFile(receiptPath, originalReceiptText);
+
+  const otherPr = capturingIo();
+  otherPr.io.env = { ...otherPr.io.env, VIBEPRO_JUDGMENT_PR_NUMBER: '574' };
+  const otherPrAdopt = await runCli(adoptArgs(root, artifact), otherPr.io);
+  assert.notEqual(otherPrAdopt.exitCode, 0);
+  assert.match(otherPr.stderrText(), /cannot be used on PR 574/);
+
+  await execFileAsync('git', ['commit', '--allow-empty', '-m', 'move head'], { cwd: root });
+  await expectRefusal(adoptArgs(root, artifact), /cannot be used at head/);
+  const afterHead = JSON.parse(await readFile(receiptPath, 'utf8'));
+  assert.equal(afterHead.input_sha256, originalReceipt.input_sha256);
+  assert.equal(afterHead.receipt_hmac, originalReceipt.receipt_hmac);
+  assert.equal(afterHead.source_head_sha, originalReceipt.source_head_sha);
+  await execFileAsync('git', ['reset', '--hard', 'HEAD~1'], { cwd: root });
+
+  const bare = adoptArgs(root, artifact);
+  bare[bare.indexOf('agent:test-agent')] = 'DevDirector';
+  await expectRefusal(bare, /human:<id> or agent:<id>/);
+
+  const edited = JSON.parse(await readFile(artifact, 'utf8'));
+  edited.problem_frame = { ...edited.problem_frame, statement: 'Edited after prepare' };
+  await writeFile(artifact, `${JSON.stringify(edited, null, 2)}\n`);
+  await expectRefusal(adoptArgs(root, artifact), /does not overwrite it/);
+  const afterEdit = await readFile(receiptPath, 'utf8');
+  assert.equal(afterEdit, originalReceiptText);
 });

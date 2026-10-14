@@ -13,7 +13,7 @@ status: accepted
 vibepro judgment applicability record [repo] --id <story-id> --applicable yes|no --reason <text> [--recorded-by <actor>] [--json]
 vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--json]
 vibepro judgment audit [repo] [--json]
-vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
+vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <human:id|agent:id> --authority <source> --summary <text> [--json]
 vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
 vibepro judgment status [repo] --id <story-id> [--json]
 vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
@@ -27,15 +27,17 @@ vibepro judgment pending [repo] [--json]
 
 ## Input adoption
 
-`judgment input adopt`はSenior Judgment schema `0.3.0`を検証し、入力byte列のSHA-256、reviewer、authority、summary、source HEADを保存する。同じrun IDを異なる入力で再採択できない。
+`judgment input adopt`はSenior Judgment schema `0.3.0`を検証し、入力byte列のSHA-256、reviewer、authority、summary、source HEAD、PR番号を保存する。同じrun IDを異なる入力で再採択できない。`--reviewed-by` は `human:<id>` または `agent:<id>` だけを受け、kind を機械的に判定できる形で保存する。
 
 `judgment prepare`はStoryの `## Problem Frame`（`## 問題の枠組み`）、`## Constraints`（`## 制約`）、`## Options`（`## 選択肢`）、`## Current Constraint`、`## Observations`、`## Axes` を判断入力へ写す。コードブロックの中の見出しは読まない。読める節が1つも無いときは警告し、見出しが無い項目はuncertainまたは空のままで、本文から推論しない。形式は `docs/specs/vibepro-development-judgment-workflow.md` の Story judgment headings に従う。
 
-`judgment prepare`の公開CLIは`--run-id`を拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1`のテストだけが`--run-id`を渡せ、その値は`^judgment-\d{14}-[0-9a-f]{8}$`に一致しなければならない。`judgment input adopt`と`judgment evaluate`は、この形式でないrun ID、`.vibepro/`の外の`source_input`、欠落した`drafts/<runId>.json`、draft receiptのlineage hashまたはartifact pathが採択入力と一致しない場合を拒否する。意味のレビューでproblem frameやoptionsを同じartifactへ足す場合、story、run、goalのlineageが一致するときだけreceiptの`input_sha256`を採択byte列へ更新する。
+`judgment prepare`の公開CLIは`--run-id`を拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1`のテストだけが`--run-id`を渡せ、その値は`^judgment-\d{14}-[0-9a-f]{8}$`に一致しなければならない。prepare だけが受領証 `drafts/<runId>.json` を作る。受領証は `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY`（Infisical https://infisical.unson.jp に置く。リポジトリには保存しない）で HMAC し、`input_sha256`、`source_head_sha`、`pr_number` を署名対象に含める。PR番号は `VIBEPRO_JUDGMENT_PR_NUMBER`、無いときは `GITHUB_REF` の `refs/pull/<number>/` から取る。鍵が無いときは prepare、adopt、evaluate、audit を拒否する。
 
-`judgment evaluate`は採択済みinputとhashが一致し、かつdraft receiptの`input_sha256`と一致する場合だけ実行する。
+`input_sha256` は prepare の時点のbyte列で固定し、adopt は上書きしない。prepare 後にbyte列を変えた入力は拒否する。`judgment input adopt` と `judgment evaluate` は、この形式でないrun ID、`.vibepro/` の外の `source_input`、欠落した受領証、署名不一致、別の PR、別の `source_head_sha`、lineage または artifact の不一致を拒否する。
 
-`judgment audit`は`.vibepro/reviews/**/adoptions/current.json`を読み、run ID形式、`.vibepro/`外の`source_input`、draft receiptの欠落、input hashまたはartifactの不一致が一つでもあれば終了コード1で返す。不一致がなければ0で返す。採択ごとに `development-judgment/drafts/<runId>.json`、`development-judgment/runs/<runId>.json`、記録された `source_input` が `HEAD` のコミット済みツリーに含まれるかも見る。作業ツリーにだけあるファイルは失敗とし、欠けているパスを表示する。
+`judgment evaluate`は採択済みinputとhashが一致し、かつdraft receiptの固定 `input_sha256` と一致する場合だけ実行する。
+
+`judgment audit`は`.vibepro/reviews/**/adoptions/current.json`を読み、run ID形式、`.vibepro/`外の`source_input`、draft receiptの欠落、署名不一致、PRまたはheadの不一致、input hashまたはartifactの不一致、`reviewed_by` が human/agent でないことが一つでもあれば終了コード1で返す。終了コード1のとき `advisory` は false、`blocking` は true で、本文と JSON は同じ値を示す。不一致がなければ0で、`advisory` true、`blocking` false を返す。採択ごとに `development-judgment/drafts/<runId>.json`、`development-judgment/runs/<runId>.json`、記録された `source_input` が `HEAD` のコミット済みツリーに含まれるかも見る。作業ツリーにだけあるファイルは失敗とし、欠けているパスを表示する。audit 時点の HEAD は受領証の `source_head_sha` そのものか、その子孫であればよい。adopt と evaluate は受領証の head と一致する checkout でだけ実行する。
 
 `vibepro init` と `vibepro doctor --fix` が書く `.gitignore` は `.vibepro/*` のあとで `!.vibepro/reviews/` を戻す。これにより `.vibepro/reviews/**` の drafts、runs、inputs、adoptions、evaluations をコミットできる。
 

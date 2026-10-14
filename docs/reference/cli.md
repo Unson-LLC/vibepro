@@ -46,14 +46,14 @@ A passing record requires an existing `--inspection-input` outside `.vibepro`. C
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro judgment suggest --input <json> [--json]
   vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]  # --run-id is refused unless VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1
-  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]  # --run-id is refused unless VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1; receipt HMAC requires VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY from Infisical and VIBEPRO_JUDGMENT_PR_NUMBER
+  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <human:id|agent:id> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
   vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
-  vibepro judgment audit [repo] [--json]
+  vibepro judgment audit [repo] [--json]  # exit 1 is blocking: advisory false and blocking true
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]

@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { JUDGMENT_TEST_ENV } from './support/judgment-test-env.js';
 import {
   evaluateJudgmentWorkflow,
   prepareJudgmentInput,
@@ -25,7 +26,7 @@ function silentIo() {
   return {
     stdout: { write() {} },
     stderr: { write() {} },
-    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1' }
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   };
 }
 
@@ -52,7 +53,7 @@ test('judgment prepare creates a conservative draft and evaluation compiles it i
   const prepared = await prepareJudgmentInput(root, {
     storyId: STORY_ID,
     runId: WORKFLOW_RUN_ID,
-    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1' }
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   });
 
   assert.equal(prepared.input.problem_frame.status, 'uncertain');
@@ -122,7 +123,7 @@ test('judgment CLI prepares, evaluates and records outcomes while PR prepare onl
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', prepared.result.artifact,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'test-contract',
     '--summary', 'The conservative input is explicitly reviewed for this compatibility test.',
     '--json'
