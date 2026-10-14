@@ -121,8 +121,8 @@
     {
       "id": "S-001",
       "type": "scenario",
-      "statement": "vibepro judgment audit は .vibepro/reviews/**/adoptions/current.json を走査し、不正な採択があれば終了コード1、無ければ0で終わる。",
-      "rationale": "NGJ-AC-005。auditJudgmentAdoptions が消費者リポジトリのCIから呼べる。",
+      "statement": "vibepro judgment audit は .vibepro/reviews/**/adoptions/current.json を走査し、不正な採択、または drafts/<runId>.json、runs/<runId>.json、source_input がコミット済みツリーに無いとき終了コード1で欠けているファイルを表示する。無ければ0で終わる。",
+      "rationale": "NGJ-AC-005。auditJudgmentAdoptions が消費者リポジトリのCIから呼べる。!.vibepro/reviews/ が必要な gitignore 例外。",
       "origin": {
         "story_refs": [
           {

@@ -256,8 +256,24 @@ test('a genuine prepare, evidence edit, adopt, and evaluate passes judgment audi
     '--json'
   ], /must stay inside \.vibepro/);
 
+  const draftRel = prepared.draft_receipt;
+  const runRel = draftRel.replace(/\/drafts\/([^/]+)\.json$/, '/runs/$1.json');
+  const sourceRel = adopted.result.adoption.source_input;
+  assert.equal(await readFile(path.join(root, draftRel), 'utf8').then(() => true), true);
+  assert.equal(await readFile(path.join(root, runRel), 'utf8').then(() => true), true);
+  const uncommitted = await runCli(['judgment', 'audit', root, '--json'], silentIo());
+  assert.notEqual(uncommitted.exitCode, 0);
+  const missingMessages = uncommitted.result.findings.flatMap((finding) => finding.issues
+    .filter((issue) => issue.code === 'missing_from_committed_tree')
+    .map((issue) => issue.message));
+  for (const relative of [draftRel, runRel, sourceRel]) {
+    assert.ok(missingMessages.some((message) => message.includes(relative)), missingMessages.join('\n'));
+  }
+
+  await execFileAsync('git', ['add', '-f', '--', draftRel, runRel, sourceRel], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'track judgment draft, run, and source input'], { cwd: root });
   const audit = await runCli(['judgment', 'audit', root, '--json'], silentIo());
-  assert.equal(audit.exitCode, 0);
+  assert.equal(audit.exitCode, 0, JSON.stringify(audit.result?.findings ?? audit.error));
   assert.equal(audit.result.ok, true);
   assert.equal(audit.result.scanned, 1);
 

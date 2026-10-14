@@ -33,7 +33,13 @@ vibepro judgment pending [repo] [--json]
 
 `judgment evaluate`は採択済みinputとhashが一致し、かつdraft receiptの`input_sha256`と一致する場合だけ実行する。
 
-`judgment audit`は`.vibepro/reviews/**/adoptions/current.json`を読み、run ID形式、`.vibepro/`外の`source_input`、draft receiptの欠落、input hashまたはartifactの不一致が一つでもあれば終了コード1で返す。不一致がなければ0で返す。
+`judgment audit`は`.vibepro/reviews/**/adoptions/current.json`を読み、run ID形式、`.vibepro/`外の`source_input`、draft receiptの欠落、input hashまたはartifactの不一致が一つでもあれば終了コード1で返す。不一致がなければ0で返す。採択ごとに `development-judgment/drafts/<runId>.json`、`development-judgment/runs/<runId>.json`、記録された `source_input` が `HEAD` のコミット済みツリーに含まれるかも見る。作業ツリーにだけあるファイルは失敗とし、欠けているパスを表示する。消費者リポジトリの既定 `.gitignore`（`.vibepro/*` と `!.vibepro/config.json`）ではこれらのファイルがCIに乗らない。次の例外を足してからコミットする。
+
+```gitignore
+.vibepro/*
+!.vibepro/config.json
+!.vibepro/reviews/
+```
 
 ## Actionability
 

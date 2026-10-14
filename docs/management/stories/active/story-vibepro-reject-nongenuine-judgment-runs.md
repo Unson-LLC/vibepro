@@ -25,7 +25,7 @@ vibepro 0.2.0-beta.29 の `adoptJudgmentInput` と `evaluateOperationalJudgmentW
 - NGJ-AC-002: run IDが `^judgment-\d{14}-[0-9a-f]{8}$` に一致しない入力を拒否する。
 - NGJ-AC-003: `source_input` が `.vibepro/` の外、またはその外へ解決されるsymlinkのとき拒否する。
 - NGJ-AC-004: 公開CLIの `--run-id` は拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1` のテストだけが、形式を満たす `--run-id` を渡せる。
-- NGJ-AC-005: `vibepro judgment audit` は `.vibepro/reviews/**/adoptions/current.json` を走査し、上記のどれかに該当すれば終了コード1、該当がなければ0で終わる。
+- NGJ-AC-005: `vibepro judgment audit` は `.vibepro/reviews/**/adoptions/current.json` を走査し、上記のどれかに該当すれば終了コード1、該当がなければ0で終わる。採択の `drafts/<runId>.json`、`runs/<runId>.json`、`source_input` がコミット済みツリーに無いときも1で終わり、欠けているファイルのパスを出す。消費者リポジトリは `.vibepro/*` を無視し `config.json` だけを戻すので、`!.vibepro/reviews/` を加えてこれらのファイルをコミットする。
 - NGJ-AC-006: 拒否理由は、欠落receipt、hash不一致、artifact不一致、run ID形式、`.vibepro/` 外、を区別できる文面で返す。正当な `prepare` → 証拠の追加 → `adopt` → `evaluate` は成功する。
 
 ## Boundary

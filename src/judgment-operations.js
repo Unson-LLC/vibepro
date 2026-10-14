@@ -1044,6 +1044,7 @@ export async function auditJudgmentAdoptions(repoRoot) {
   const root = path.resolve(repoRoot);
   const reviewsRoot = path.join(getWorkspaceDir(root), 'reviews');
   const files = await findAdoptionCurrents(reviewsRoot);
+  const committed = await readCommittedTree(root);
   const findings = [];
   for (const filePath of files) {
     const relative = toWorkspaceRelative(root, filePath);
@@ -1057,7 +1058,7 @@ export async function auditJudgmentAdoptions(repoRoot) {
       });
       continue;
     }
-    const issues = await inspectAdoptionRecord(root, record);
+    const issues = await inspectAdoptionRecord(root, record, filePath, committed);
     if (issues.length > 0) {
       findings.push({
         artifact: relative,
@@ -1091,7 +1092,7 @@ export function renderJudgmentAuditSummary(result) {
   return `${lines.join('\n')}\n`;
 }
 
-async function inspectAdoptionRecord(root, record) {
+async function inspectAdoptionRecord(root, record, adoptionFile, committed) {
   const issues = [];
   const runId = typeof record?.run_id === 'string' ? record.run_id : '';
   const storyId = typeof record?.story_id === 'string' ? record.story_id : '';
@@ -1108,6 +1109,7 @@ async function inspectAdoptionRecord(root, record) {
       message: `Judgment source_input must stay inside .vibepro/. Refusing ${record?.source_input ?? 'missing'}.`
     });
   }
+  appendCommittedTreeIssues(issues, root, adoptionFile, runId, sourceInput, committed);
   if (!storyId || !runId) return issues;
   let receipt = null;
   try {
@@ -1142,6 +1144,31 @@ async function inspectAdoptionRecord(root, record) {
     });
   }
   return issues;
+}
+
+function appendCommittedTreeIssues(issues, root, adoptionFile, runId, sourceInput, committed) {
+  const required = [];
+  if (runId && !runId.includes('/') && !runId.includes('\\') && !runId.includes('..')) {
+    const developmentDir = path.dirname(path.dirname(adoptionFile));
+    required.push(toWorkspaceRelative(root, path.join(developmentDir, 'drafts', `${runId}.json`)));
+    required.push(toWorkspaceRelative(root, path.join(developmentDir, 'runs', `${runId}.json`)));
+  }
+  required.push(sourceInput);
+  for (const relative of required) {
+    if (relative && committed.has(relative)) continue;
+    const shown = relative || 'source_input';
+    issues.push({
+      code: 'missing_from_committed_tree',
+      message: `Judgment file ${shown} is missing from the committed tree. `
+        + 'Consumer repositories ignore .vibepro/* except config.json, so this file is not in CI. '
+        + 'Add !.vibepro/reviews/ to .gitignore and commit drafts/<runId>.json, runs/<runId>.json, and the source_input file.'
+    });
+  }
+}
+
+async function readCommittedTree(root) {
+  const listing = await gitOptional(root, ['-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', 'HEAD']);
+  return new Set(listing.split('\n').map((line) => line.trim()).filter(Boolean));
 }
 
 function JUDGMENT_RUN_ID_SAFE(runId) {
