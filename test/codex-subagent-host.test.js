@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { access, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { performance } from 'node:perf_hooks';
 import test from 'node:test';
 
 import { createCodexSubagentHost, publishDevelopmentProgress } from '../src/codex-subagent-host.js';
+import { monotonicElapsed, monotonicNow } from '../src/monotonic-clock.js';
 
 test('production Codex host executes a detached CLI worker, dedupes spawn, and delivers completion after parent polling', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-host-'));
@@ -232,7 +232,7 @@ test('completion delivery does not wait for Brainbase and retries the same event
   const sender = {
     async send() {
       sendCalls += 1;
-      sendStartedAt.push(performance.now());
+      sendStartedAt.push(monotonicNow());
       if (sendCalls === 1) {
         await firstSendReleased;
         firstSendSettled = true;
@@ -285,11 +285,11 @@ test('completion delivery does not wait for Brainbase and retries the same event
   assert.equal(receivedEvent.development_progress.status, 'awaiting_integration');
   await waitFor(() => sendCalls === 1, { timeoutMs: 1000 });
   assert.equal(firstSendSettled, false, 'onEvent must not await the pending Brainbase send');
-  const firstSendReleasedAt = performance.now();
+  const firstSendReleasedAt = monotonicNow();
   releaseFirstSend();
   await waitFor(() => sendCalls === 2, { timeoutMs: 3000 });
   // Allow timer scheduling jitter while still proving that the configured backoff was used.
-  assert.ok(sendStartedAt[1] - firstSendReleasedAt >= retryBackoffMs - 20);
+  assert.ok(monotonicElapsed(firstSendReleasedAt, sendStartedAt[1]) >= retryBackoffMs - 20);
   assert.equal(receivedEvent.development_progress.status, 'confirmed');
 });
 
@@ -459,8 +459,8 @@ function runtimeRequest(repoRoot) {
 }
 
 async function waitFor(predicate, { timeoutMs = 10000 } = {}) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     if (await predicate()) return;
     await new Promise((resolve) => setTimeout(resolve, 20));
   }

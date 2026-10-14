@@ -8,6 +8,7 @@ import {
   createDevelopmentProgressEnvelope,
   verifyDevelopmentProgressReadback,
 } from './brainbase-development-progress.js';
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 
 const POLL_MS = 250;
 const HOST_ROOT = ['.vibepro', 'codex-host', 'runs'];
@@ -327,8 +328,8 @@ async function claimRun(runDir) {
 }
 
 async function waitForExistingRun(runDir, request) {
-  const deadline = Date.now() + 5000;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < 5000) {
     const [existingRequest, state] = await Promise.all([
       readJson(path.join(runDir, 'request.json')), readJson(path.join(runDir, 'state.json'))
     ]);
@@ -694,8 +695,8 @@ async function resolveCodexPid(runDir, codexPid) {
 }
 
 async function waitForFile(file, timeoutMs) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     try {
       await readFile(file);
       return true;
@@ -708,8 +709,8 @@ async function waitForFile(file, timeoutMs) {
 }
 
 async function waitForJson(file, timeoutMs) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     const value = await readJson(file);
     if (value) return value;
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -736,8 +737,8 @@ async function waitForProcessExit(pid, timeoutMs, workerProcess) {
       new Promise((resolve) => setTimeout(() => resolve(false), timeoutMs))
     ]);
   }
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     try {
       process.kill(pid, 0);
     } catch (error) {
@@ -751,8 +752,8 @@ async function waitForProcessExit(pid, timeoutMs, workerProcess) {
 
 async function waitForPidExit(pid, timeoutMs, killProcess) {
   if (!Number.isInteger(pid) || pid <= 1) return true;
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     try {
       killProcess(pid, 0);
     } catch (error) {

@@ -17,6 +17,7 @@ import {
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
 } from '../src/verification-evidence.js';
+import { monotonicElapsed, monotonicNow } from '../src/monotonic-clock.js';
 import {
   COMPUTED_OBSERVATION_KEYS,
   buildRunWarnings,
@@ -575,13 +576,13 @@ test('verify run reports an output-buffer kill as its own cause, not as a timeou
 test('verify run kills a silent process on the no-progress deadline well before the wall-clock cap', async () => {
   const root = await setupRepo();
   await writeFile(path.join(root, 'Makefile'), 'all:\n\t@sleep 30\n');
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await cli([
     'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
     '--target', 'Makefile', '--timeout-ms', '5000', '--no-progress-deadline-ms', '300',
     '--', 'make'
   ]);
-  const elapsedMs = Date.now() - startedAt;
+  const elapsedMs = monotonicElapsed(startedAt);
   assert.equal(result.result.status, 'fail');
   assert.equal(result.result.timed_out, true);
   // duration_ms is only the executeCommand span. `sleep` ignores SIGTERM, so a
@@ -616,14 +617,14 @@ test('executeCommand attributes a signal it did not send as an external kill, no
 
 test('executeCommand kills a silent command on the no-progress deadline independently of the wall clock', async () => {
   const script = 'setInterval(() => {}, 1000);';
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
     timeoutMs: 10000,
     noProgressDeadlineMs: 200,
     maxOutputBytes: 1_000_000,
     env: process.env
   });
-  const elapsedMs = Date.now() - startedAt;
+  const elapsedMs = monotonicElapsed(startedAt);
   assert.equal(result.timedOut, true);
   assert.equal(result.externalKillSignal, null);
   assert.ok(elapsedMs < 5000, `expected the no-progress deadline to kill well under the 10000ms wall clock, took ${elapsedMs}ms`);
@@ -638,7 +639,7 @@ test('executeCommand: sustained test-completion progress extends the no-progress
     '  if (i >= 15) { clearInterval(t); process.exit(0); }',
     '}, 50);'
   ].join('\n');
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
     timeoutMs: 5000,
     // The child runs for ~750ms, so surviving this 500ms deadline proves that increasing,
@@ -647,7 +648,7 @@ test('executeCommand: sustained test-completion progress extends the no-progress
     maxOutputBytes: 1_000_000,
     env: process.env
   });
-  const elapsedMs = Date.now() - startedAt;
+  const elapsedMs = monotonicElapsed(startedAt);
   assert.equal(result.exitCode, 0);
   assert.equal(result.timedOut, false);
   assert.ok(elapsedMs > 500, `expected genuine progress to keep the process alive past the 500ms deadline, took ${elapsedMs}ms`);

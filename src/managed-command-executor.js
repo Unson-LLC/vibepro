@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process';
 
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
+
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_TERMINATION_GRACE_MS = 100;
 const DEFAULT_CLOSE_TIMEOUT_MS = 250;
@@ -26,7 +28,7 @@ export async function executeManagedCommand({
   const settings = resolveSettings({ env, timeoutMs, terminationGraceMs, closeTimeoutMs, maxOutputBytes });
   const safeCommand = boundAndRedact(formatCommand(command), settings.maxOutputBytes, redactValues);
   const startedAt = new Date().toISOString();
-  const startedMs = Date.now();
+  const startedMs = monotonicNow();
   const nonInteractiveEnv = buildNonInteractiveEnv(env);
 
   if (typeof runner !== 'function') {
@@ -38,17 +40,17 @@ export async function executeManagedCommand({
 
   const controller = new AbortController();
   const outerBudgetMs = settings.timeoutMs + settings.terminationGraceMs + settings.closeTimeoutMs;
-  const deadlineAt = Date.now() + settings.timeoutMs;
+  const deadlineAt = monotonicNow() + settings.timeoutMs;
   const runDefault = () => executeOwnedChild({
     command,
     stage,
     cwd,
     env: nonInteractiveEnv,
-    settings: { ...settings, timeoutMs: Math.max(1, deadlineAt - Date.now()) },
+    settings: { ...settings, timeoutMs: Math.max(1, deadlineAt - monotonicNow()) },
     redactValues,
     safeCommand,
     startedAt: new Date().toISOString(),
-    startedMs: Date.now()
+    startedMs: monotonicNow()
   });
   const operation = executeManagedOperation({
     stage,
@@ -97,7 +99,7 @@ export async function executeManagedOperation({
   const budget = positiveInteger(timeoutMs, DEFAULT_TIMEOUT_MS);
   const controller = signalController ?? new AbortController();
   const startedAt = new Date().toISOString();
-  const startedMs = Date.now();
+  const startedMs = monotonicNow();
   let timer;
   const operation = Promise.resolve().then(() => runner({
     signal: controller.signal,
@@ -122,7 +124,7 @@ export async function executeManagedOperation({
     stage: stage ?? 'managed.operation',
     started_at: startedAt,
     finished_at: new Date().toISOString(),
-    elapsed_ms: Date.now() - startedMs,
+    elapsed_ms: Math.round(monotonicElapsed(startedMs)),
     timeout_ms: budget,
     termination: {
       ownership: 'external_runner',
@@ -299,7 +301,7 @@ function commandResult({
     failure_kind: failureKind,
     started_at: startedAt,
     finished_at: finishedAt ?? new Date().toISOString(),
-    elapsed_ms: Date.now() - startedMs,
+    elapsed_ms: Math.round(monotonicElapsed(startedMs)),
     timeout_ms: settings.timeoutMs,
     exit_code: exitCode,
     signal,
