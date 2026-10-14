@@ -53,7 +53,7 @@ actionable時はmode別の`development_judgment` task candidateを先頭へ追�
 
 ## Disposition and Outcome
 
-Dispositionは人間の採否とdeliveryへの影響を記録する。`--reviewed-by` が非空なら trim した値を `reviewed_by` に保存する。フラグが無い、空文字、空白のみのときは `reviewed_by` を null にし、`--recorded-by` の意味は変えない。`reviewed_by` を持たない既存レコードは読み取り時に補完しない。Outcomeは後日の観測結果を記録する。Outcome未記録または`unknown`は`outcome_pending`として`judgment pending`へ表示する。
+Dispositionは人間の採否とdeliveryへの影響を記録する。`--reviewed-by` が非空なら前後の空白を trim した値を `reviewed_by` に保存する。フラグが無い、空文字、空白のみ、または値なしで引数の末尾にあるときはエラーにせず `reviewed_by` を null にする。値なしの末尾フラグは無視する。`--recorded-by` の意味は変えない。`reviewed_by` を持たない既存レコードは読み取り時に補完しない。applicability が記録済みの `judgment outcome record` が `--human-decision` または `--effect` とともに disposition を書くときも、同じ規則で `reviewed_by` を保存する。Outcomeは後日の観測結果を記録する。Outcome未記録または`unknown`は`outcome_pending`として`judgment pending`へ表示する。
 
 ## Feedback
 

@@ -131,6 +131,73 @@ test('disposition record stores Japanese --reviewed-by text unchanged', async ()
   assert.match(raw, /レビュー担当/);
 });
 
+test('disposition record trims surrounding whitespace from --reviewed-by', async () => {
+  const root = await setupRepo();
+  const runId = 'run-trimmed-reviewed-by';
+  await seedEvaluation(root, runId);
+
+  const disposition = await recordDisposition(root, runId, ['--reviewed-by', '  レビュー担当  ']);
+  assert.equal(disposition.exitCode, 0);
+  assert.equal(disposition.result.disposition.reviewed_by, 'レビュー担当');
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.reviewed_by, 'レビュー担当');
+});
+
+test('disposition record treats a trailing --reviewed-by without a value as null', async () => {
+  const root = await setupRepo();
+  const runId = 'run-trailing-reviewed-by';
+  await seedEvaluation(root, runId);
+
+  const disposition = await recordDisposition(root, runId, ['--reviewed-by']);
+  assert.equal(disposition.exitCode, 0);
+  assert.equal(disposition.result.disposition.reviewed_by, null);
+  assert.equal(disposition.result.disposition.recorded_by, 'unknown');
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.reviewed_by, null);
+});
+
+test('judgment outcome record stores reviewed_by on the disposition it writes', async () => {
+  const root = await setupRepo();
+  const runId = 'run-outcome-reviewed-by';
+  await seedEvaluation(root, runId);
+  const applicabilityDir = path.join(
+    root,
+    '.vibepro',
+    'reviews',
+    STORY_ID,
+    'development-judgment',
+    'applicability'
+  );
+  await mkdir(applicabilityDir, { recursive: true });
+  await writeFile(path.join(applicabilityDir, 'current.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    applicable: true,
+    reason: 'Outcome record writes the disposition on the operational path.',
+    recorded_by: 'recorder'
+  }, null, 2)}\n`);
+
+  const outcome = await runCli([
+    'judgment', 'outcome', 'record', root,
+    '--id', STORY_ID,
+    '--run', runId,
+    '--human-decision', 'accepted',
+    '--effect', 'changed_plan',
+    '--reviewed-by', '結果確認者',
+    '--status', 'confirmed',
+    '--summary', 'Outcome path persists reviewed_by.',
+    '--json'
+  ], silentIo());
+  assert.equal(outcome.exitCode, 0);
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.reviewed_by, '結果確認者');
+  assert.equal(stored.human_decision, 'accepted');
+  assert.equal(stored.effect, 'changed_plan');
+});
+
 test('existing disposition records without reviewed_by stay readable', async () => {
   const root = await setupRepo();
   const runId = 'run-legacy-disposition';
