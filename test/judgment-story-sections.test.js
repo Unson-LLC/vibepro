@@ -178,6 +178,84 @@ test('headings inside fenced code blocks are not judgment sections', () => {
   assert.deepEqual(parsed.warnings, []);
 });
 
+test('indented fences and indented code blocks are not judgment sections', () => {
+  const indentedFence = [
+    ' ```',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: hidden',
+    '- reason: hidden',
+    ' ```',
+    '',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: visible',
+    '- reason: outside the indented fence'
+  ].join('\n');
+  const fenced = parseJudgmentStorySections(indentedFence);
+  assert.equal(fenced.problem_frame.statement, 'visible');
+  assert.deepEqual(fenced.warnings, []);
+
+  const indentedCode = [
+    '    ## Problem Frame',
+    '    - status: valid',
+    '    - statement: hidden',
+    '    - reason: hidden',
+    '',
+    '## Constraints',
+    '',
+    '### keep-receipt',
+    '- kind: invariant',
+    '- statement: visible'
+  ].join('\n');
+  const indented = parseJudgmentStorySections(indentedCode);
+  assert.equal(indented.problem_frame, null);
+  assert.equal(indented.constraints[0].statement, 'visible');
+  assert.deepEqual(indented.warnings, []);
+});
+
+test('an unclosed code fence warns and a closing info string does not end the fence', () => {
+  const unclosed = [
+    '```',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: hidden',
+    '- reason: hidden'
+  ].join('\n');
+  const open = parseJudgmentStorySections(unclosed);
+  assert.equal(open.problem_frame, null);
+  assert.ok(open.warnings.some((warning) => /unclosed code fence/.test(warning)));
+  assert.ok(open.warnings.some((warning) => /no Story judgment sections/.test(warning)));
+
+  const infoClose = [
+    '```',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: hidden',
+    '- reason: hidden',
+    '```javascript',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: still inside',
+    '- reason: the info string is not a closing fence',
+    '```',
+    '',
+    '## Problem Frame',
+    '',
+    '- status: valid',
+    '- statement: visible',
+    '- reason: after the real closing fence'
+  ].join('\n');
+  const parsed = parseJudgmentStorySections(infoClose);
+  assert.equal(parsed.problem_frame.statement, 'visible');
+  assert.deepEqual(parsed.warnings, []);
+});
+
 test('Japanese judgment headings fill the same sections as the English headings', () => {
   const parsed = parseJudgmentStorySections([
     '## 問題の枠組み',

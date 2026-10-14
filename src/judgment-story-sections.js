@@ -22,6 +22,7 @@ const SECTION_KEYS = Object.freeze([
 ]);
 
 const NO_SECTION_WARNING = 'Judgment prepare found no Story judgment sections. problem_frame, constraints, and options stay uncertain or empty. Recognized headings are ## Problem Frame (## 問題の枠組み), ## Constraints (## 制約), ## Options (## 選択肢), ## Current Constraint, ## Observations, and ## Axes.';
+const UNCLOSED_FENCE_WARNING = 'Judgment prepare found an unclosed code fence. Headings inside it are not read.';
 
 const FRAME_STATUS = new Set(['valid', 'invalid', 'uncertain']);
 const CONSTRAINT_KIND = new Set(['invariant', 'preference']);
@@ -37,7 +38,8 @@ const FIELD_PATTERN = /^- ([a-z][a-z0-9_]*):[ \t]*(.*)$/;
 const ID_PATTERN = /^[a-z][a-z0-9_-]*$/;
 
 export function parseJudgmentStorySections(markdown) {
-  const sections = collectSections(markdown);
+  const collected = collectSections(markdown);
+  const sections = collected.sections;
   const parsed = {
     problem_frame: readProblemFrame(sections.get('problem_frame')),
     constraints: readNamedRecords(sections.get('constraints'), 'Constraints', readConstraint),
@@ -47,9 +49,12 @@ export function parseJudgmentStorySections(markdown) {
     axes: readAxes(sections.get('axes'))
   };
   const readable = SECTION_KEYS.filter((key) => parsed[key]);
+  const warnings = [];
+  if (collected.unclosedFence) warnings.push(UNCLOSED_FENCE_WARNING);
+  if (readable.length === 0) warnings.push(NO_SECTION_WARNING);
   return {
     ...parsed,
-    warnings: readable.length === 0 ? [NO_SECTION_WARNING] : []
+    warnings
   };
 }
 
@@ -77,12 +82,11 @@ function collectSections(markdown) {
   for (let index = 0; index < lines.length; index += 1) {
     const fenceMarker = fenceMarkerAt(lines[index]);
     if (fenceMarker) {
-      fence = fence && fence.marker === fenceMarker.marker && fenceMarker.length >= fence.length
-        ? null
-        : (fence ?? { marker: fenceMarker.marker, length: fenceMarker.length });
+      if (!fence) fence = { marker: fenceMarker.marker, length: fenceMarker.length };
+      else if (fenceMarker.info === '' && fence.marker === fenceMarker.marker && fenceMarker.length >= fence.length) fence = null;
       continue;
     }
-    if (fence) continue;
+    if (fence || isIndentedCodeLine(lines[index])) continue;
     const heading = lines[index].match(/^(#{2,5})[ \t]+(.+?)[ \t]*$/);
     if (heading && heading[1].length === 2) {
       current = null;
@@ -98,7 +102,7 @@ function collectSections(markdown) {
     }
     if (current) current.lines.push({ text: lines[index], number: index + 1 });
   }
-  return sections;
+  return { sections, unclosedFence: fence !== null };
 }
 
 function readProblemFrame(section) {
@@ -380,9 +384,16 @@ function overlayAxes(existing, declared, standardAxes) {
 }
 
 function fenceMarkerAt(text) {
-  const match = String(text).match(/^[ \t]{0,3}(`{3,}|~{3,})[^`~]*$/);
+  const match = String(text).match(/^[ \t]{0,3}(`{3,}|~{3,})(.*)$/);
   if (!match) return null;
-  return { marker: match[1][0], length: match[1].length };
+  const marker = match[1][0];
+  const rest = match[2];
+  if (marker === '`' && rest.includes('`')) return null;
+  return { marker, length: match[1].length, info: rest.trim() };
+}
+
+function isIndentedCodeLine(text) {
+  return /^(?: {4,}|\t)/.test(text) && text.trim() !== '';
 }
 
 function headingAt(line) {
