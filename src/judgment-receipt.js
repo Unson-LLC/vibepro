@@ -3,7 +3,9 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 export const JUDGMENT_RECEIPT_HMAC_ENV = 'VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY';
 export const JUDGMENT_PR_NUMBER_ENV = 'VIBEPRO_JUDGMENT_PR_NUMBER';
 
-const SIGNED_KEYS = Object.freeze([
+const RECEIPT_HMAC_MIN_CHARS = 32;
+
+const RECEIPT_SIGNED_KEYS = Object.freeze([
   'schema_version',
   'story_id',
   'run_id',
@@ -12,7 +14,31 @@ const SIGNED_KEYS = Object.freeze([
   'lineage_sha256',
   'source_head_sha',
   'pr_number',
-  'feedback'
+  'feedback',
+  'prepared_at',
+  'advisory',
+  'blocking'
+]);
+
+const ADOPTION_SIGNED_KEYS = Object.freeze([
+  'schema_version',
+  'story_id',
+  'run_id',
+  'source_input',
+  'adopted_input',
+  'input_sha256',
+  'reviewed_by',
+  'authority',
+  'review_summary',
+  'pr_number',
+  'source_head_sha',
+  'problem_frame_status',
+  'active_axes',
+  'option_count',
+  'adopted_at',
+  'artifact',
+  'advisory',
+  'blocking'
 ]);
 
 export function requireJudgmentReceiptKey(env = process.env) {
@@ -21,6 +47,12 @@ export function requireJudgmentReceiptKey(env = process.env) {
     throw new Error(
       `Judgment receipt key is missing. Set ${JUDGMENT_RECEIPT_HMAC_ENV} from Infisical (https://infisical.unson.jp). `
       + 'vibepro judgment prepare, adopt, evaluate, and audit refuse without it.'
+    );
+  }
+  if (key.length < RECEIPT_HMAC_MIN_CHARS) {
+    throw new Error(
+      `${JUDGMENT_RECEIPT_HMAC_ENV} must be at least ${RECEIPT_HMAC_MIN_CHARS} characters. `
+      + 'Store it in Infisical (https://infisical.unson.jp). The value is not created or printed here.'
     );
   }
   return key;
@@ -38,27 +70,47 @@ export function resolveJudgmentPrNumber(env = process.env) {
   );
 }
 
-export function judgmentReceiptMacPayload(record) {
+function macPayload(record, keys) {
   const payload = {};
-  for (const key of SIGNED_KEYS) payload[key] = canonicalize(record?.[key] ?? null);
+  for (const key of keys) payload[key] = canonicalize(record?.[key] ?? null);
   return JSON.stringify(payload);
 }
 
-export function signJudgmentReceipt(record, env = process.env) {
+function hmacHex(record, keys, env) {
   const key = requireJudgmentReceiptKey(env);
-  return createHmac('sha256', key).update(judgmentReceiptMacPayload(record)).digest('hex');
+  return createHmac('sha256', key).update(macPayload(record, keys)).digest('hex');
+}
+
+function hmacMatches(actual, expected) {
+  const actualBuf = Buffer.from(String(actual ?? ''));
+  const expectedBuf = Buffer.from(expected);
+  return actualBuf.length === expectedBuf.length && timingSafeEqual(actualBuf, expectedBuf);
+}
+
+export function sealJudgmentReceipt(record, env = process.env) {
+  return { ...record, receipt_hmac: hmacHex(record, RECEIPT_SIGNED_KEYS, env) };
+}
+
+export function sealJudgmentAdoption(record, env = process.env) {
+  return { ...record, adoption_hmac: hmacHex(record, ADOPTION_SIGNED_KEYS, env) };
 }
 
 export function assertJudgmentReceiptMac(record, env = process.env) {
-  const expected = signJudgmentReceipt(record, env);
-  const actual = String(record?.receipt_hmac ?? '');
-  const actualBuf = Buffer.from(actual);
-  const expectedBuf = Buffer.from(expected);
-  const matches = actualBuf.length === expectedBuf.length && timingSafeEqual(actualBuf, expectedBuf);
-  if (!matches) {
+  const expected = hmacHex(record, RECEIPT_SIGNED_KEYS, env);
+  if (!hmacMatches(record?.receipt_hmac, expected)) {
     throw new Error(
       'Judgment draft receipt signature is not valid. Hand-made receipts are refused. '
       + 'Only `vibepro judgment prepare` can create a receipt.'
+    );
+  }
+}
+
+export function assertJudgmentAdoptionMac(record, env = process.env) {
+  const expected = hmacHex(record, ADOPTION_SIGNED_KEYS, env);
+  if (!hmacMatches(record?.adoption_hmac, expected)) {
+    throw new Error(
+      'Judgment adoption signature is not valid. A rewritten adoption, including reviewed_by, is refused. '
+      + 'Only `vibepro judgment input adopt` can create an adoption record.'
     );
   }
 }

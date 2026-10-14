@@ -21,6 +21,7 @@ import {
   sourceInputStaysInsideVibepro
 } from './judgment-run-authenticity.js';
 import {
+  assertJudgmentAdoptionMac,
   assertJudgmentReceiptContext,
   assertJudgmentReceiptMac,
   formatReviewedByActor,
@@ -28,7 +29,8 @@ import {
   requireJudgmentReceiptKey,
   resolveJudgmentPrNumber,
   reviewedByIsMechanicallyCheckable,
-  signJudgmentReceipt
+  sealJudgmentAdoption,
+  sealJudgmentReceipt
 } from './judgment-receipt.js';
 import { validateSeniorJudgmentInput } from './senior-judgment-dag.js';
 import { getWorkspaceDir, JUDGMENT_GITIGNORE_MIGRATION_NOTE, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
@@ -170,6 +172,7 @@ export async function adoptJudgmentInput(repoRoot, options = {}) {
     if (existing.input_sha256 !== digest) {
       throw new Error(`Judgment input ${runId} was already adopted with a different SHA-256 digest`);
     }
+    assertJudgmentAdoptionMac(existing, env);
     return {
       adoption: existing,
       status: await getJudgmentOperationalStatus(root, storyId),
@@ -201,11 +204,12 @@ export async function adoptJudgmentInput(repoRoot, options = {}) {
     advisory: true,
     blocking: false
   };
+  const signed = sealJudgmentAdoption(record, env);
   await mkdir(path.dirname(adoptionPath), { recursive: true });
-  await writeFile(adoptionPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
-  await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  await writeFile(adoptionPath, `${JSON.stringify(signed, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(currentPath, `${JSON.stringify(signed, null, 2)}\n`, 'utf8');
   return {
-    adoption: record,
+    adoption: signed,
     status: await getJudgmentOperationalStatus(root, storyId),
     idempotent: false
   };
@@ -238,6 +242,7 @@ export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}
       + `Run \`vibepro judgment input adopt . --id ${storyId} --input ${inputPath} --reviewed-by <actor> --authority <source> --summary <text>\` first.`
     );
   }
+  assertJudgmentAdoptionMac(adoption, env);
   const digest = sha256(bytes);
   if (adoption.input_sha256 !== digest) {
     throw new Error(`Judgment input ${runId} changed after adoption; prepare and adopt a new run instead`);
@@ -962,10 +967,10 @@ async function writeDraftReceipt(root, storyId, { runId, artifact, sourceHeadSha
     advisory: true,
     blocking: false
   };
-  record.receipt_hmac = signJudgmentReceipt(record, env);
+  const signed = sealJudgmentReceipt(record, env);
   await mkdir(path.dirname(receiptPath), { recursive: true });
-  await writeFile(receiptPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
-  await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  await writeFile(receiptPath, `${JSON.stringify(signed, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(currentPath, `${JSON.stringify(signed, null, 2)}\n`, 'utf8');
   return receiptPath;
 }
 
@@ -1196,6 +1201,11 @@ async function inspectAdoptionRecord(root, record, adoptionFile, committed, cont
       assertJudgmentReceiptMac(receipt, context.env);
     } catch (error) {
       issues.push({ code: 'receipt_signature_invalid', message: error.message });
+    }
+    try {
+      assertJudgmentAdoptionMac(record, context.env);
+    } catch (error) {
+      issues.push({ code: 'adoption_signature_invalid', message: error.message });
     }
   }
   if (context.prNumber != null && receipt.pr_number !== context.prNumber) {

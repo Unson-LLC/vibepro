@@ -243,6 +243,7 @@ test('a genuine prepare, unchanged adopt, and evaluate passes judgment audit', a
   assert.equal(adopted.result.adoption.pr_number, 573);
   const receipt = JSON.parse(await readFile(path.join(root, prepared.draft_receipt), 'utf8'));
   assert.equal(receipt.input_sha256, adopted.result.adoption.input_sha256);
+  assert.match(adopted.result.adoption.adoption_hmac, /^[a-f0-9]{64}$/);
   assert.equal(await readFile(path.join(root, prepared.draft_receipt), 'utf8'), preparedReceipt);
 
   const evaluated = await runCli([
@@ -328,6 +329,7 @@ test('adopt refuses a tampered signature, another PR, another head, a bare revie
   const root = await setupRepo('receipt-binding');
   const prepared = await prepare(root);
   const artifact = path.join(root, prepared.artifact);
+  const originalInput = await readFile(artifact, 'utf8');
   const receiptPath = path.join(root, prepared.draft_receipt);
   const originalReceiptText = await readFile(receiptPath, 'utf8');
   const originalReceipt = JSON.parse(originalReceiptText);
@@ -362,4 +364,52 @@ test('adopt refuses a tampered signature, another PR, another head, a bare revie
   await expectRefusal(adoptArgs(root, artifact), /does not overwrite it/);
   const afterEdit = await readFile(receiptPath, 'utf8');
   assert.equal(afterEdit, originalReceiptText);
+
+  await writeFile(artifact, originalInput);
+  for (const [field, value] of [['prepared_at', '2020-01-01T00:00:00.000Z'], ['advisory', false], ['blocking', true]]) {
+    const shifted = { ...originalReceipt, [field]: value };
+    await writeFile(receiptPath, `${JSON.stringify(shifted, null, 2)}\n`);
+    await expectRefusal(adoptArgs(root, artifact), /signature is not valid/);
+  }
+  await writeFile(receiptPath, originalReceiptText);
+});
+
+test('audit refuses an adoption whose reviewed_by was rewritten', async () => {
+  const root = await setupRepo('adoption-mac');
+  const prepared = await prepare(root);
+  const adopted = await runCli(adoptArgs(root, path.join(root, prepared.artifact)), silentIo());
+  assert.equal(adopted.exitCode, 0, adopted.error ?? 'adopt failed');
+  assert.match(adopted.result.adoption.adoption_hmac, /^[a-f0-9]{64}$/);
+  const draftRel = prepared.draft_receipt;
+  const runRel = draftRel.replace(/\/drafts\/([^/]+)\.json$/, '/runs/$1.json');
+  const sourceRel = adopted.result.adoption.source_input;
+  await runCli([
+    'judgment', 'evaluate', root,
+    '--id', STORY_ID,
+    '--input', adopted.result.adoption.adopted_input,
+    '--json'
+  ], silentIo());
+  await execFileAsync('git', ['add', '-f', '--', draftRel, runRel, sourceRel], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'track judgment evidence'], { cwd: root });
+
+  const currentPath = path.join(root, adopted.result.adoption.artifact.replace(/judgment-[^/]+\.json$/, 'current.json'));
+  const current = JSON.parse(await readFile(currentPath, 'utf8'));
+  current.reviewed_by = { kind: 'human', id: 'forged-reviewer' };
+  await writeFile(currentPath, `${JSON.stringify(current, null, 2)}\n`);
+  const failed = await runCli(['judgment', 'audit', root, '--json'], silentIo());
+  assert.equal(failed.exitCode, 1);
+  assert.equal(failed.result.advisory, false);
+  assert.equal(failed.result.blocking, true);
+  const codes = failed.result.findings.flatMap((finding) => finding.issues.map((issue) => issue.code));
+  assert.ok(codes.includes('adoption_signature_invalid'), codes.join(','));
+});
+
+test('prepare refuses a receipt key shorter than 32 characters', async () => {
+  const root = await setupRepo('short-key');
+  const short = capturingIo();
+  short.io.env = { ...short.io.env, VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY: 'short-test-key-31-chars-xxxxxxx' };
+  const prepared = await runCli(['judgment', 'prepare', root, '--id', STORY_ID, '--json'], short.io);
+  assert.notEqual(prepared.exitCode, 0);
+  assert.match(short.stderrText(), /at least 32 characters/);
+  assert.doesNotMatch(short.stderrText(), /short-test-key/);
 });

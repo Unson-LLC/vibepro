@@ -28,8 +28,8 @@ vibepro 0.2.0-beta.29 の `adoptJudgmentInput` と `evaluateOperationalJudgmentW
 - NGJ-AC-005: `vibepro judgment audit` は `.vibepro/reviews/**/adoptions/current.json` を走査し、上記のどれかに該当すれば終了コード1、該当がなければ0で終わる。採択の `drafts/<runId>.json`、`runs/<runId>.json`、`source_input` がコミット済みツリーに無いときも1で終わり、欠けているファイルのパスを出す。
 - NGJ-AC-007: `vibepro init` と `vibepro doctor --fix` が書く `.gitignore` は `.vibepro/*` の後に `!.vibepro/reviews/` を置き、`.vibepro/reviews/**` の drafts、runs、inputs、adoptions、evaluations を追跡できる。`.vibepro/*` と `!.vibepro/config.json` だけの既存リポジトリ（brainbase-organization の形）では doctor が移行文を出し、`--fix` で例外を追記する。その `.gitignore` 変更は各リポジトリの別PRで行う。
 - NGJ-AC-006: 拒否理由は、欠落receipt、署名不一致、hash不一致、artifact不一致、run ID形式、`.vibepro/` 外、別 PR、別 head、鍵なし、を区別できる文面で返す。正当な `prepare` の artifact を byte 列のまま `adopt` → `evaluate` することは成功する。prepare 後に byte 列を変えた入力は拒否し、receipt の `input_sha256` は上書きしない。
-- NGJ-AC-008: 受領証は `judgment prepare` だけが `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` で HMAC する。鍵は Infisical（https://infisical.unson.jp）に置き、このリポジトリには保存しない。鍵が無い、署名が違う、`VIBEPRO_JUDGMENT_PR_NUMBER`（または `GITHUB_REF` の pull 番号）が違う、`source_head_sha` が違う場合は拒否する。
-- NGJ-AC-009: `judgment input adopt` の `--reviewed-by` は `human:<id>` または `agent:<id>` だけを受け、`reviewed_by.kind` を機械的に判定できる。
+- NGJ-AC-008: 受領証は `judgment prepare` だけが `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` で HMAC する。鍵は Infisical（https://infisical.unson.jp）に置き、このリポジトリには保存しない。32文字未満は拒否する。署名対象は `input_sha256`、`source_head_sha`、`pr_number`、`prepared_at`、`advisory`、`blocking` を含む。鍵が無い、署名が違う、`VIBEPRO_JUDGMENT_PR_NUMBER`（または `GITHUB_REF` の pull 番号）が違う、`source_head_sha` が違う場合は拒否する。
+- NGJ-AC-009: `judgment input adopt` の `--reviewed-by` は `human:<id>` または `agent:<id>` だけを受け、`reviewed_by.kind` を機械的に判定できる。採用記録も HMAC し、audit は署名を検証して `reviewed_by` の書き換えを拒否する。
 - NGJ-AC-010: `judgment audit` が終了コード 1 のとき `advisory` は false、`blocking` は true で、表示と JSON が一致する。成功時は `advisory` true、`blocking` false。
 
 ## Boundary
