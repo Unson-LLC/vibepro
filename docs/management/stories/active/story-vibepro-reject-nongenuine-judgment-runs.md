@@ -27,10 +27,13 @@ vibepro 0.2.0-beta.29 の `adoptJudgmentInput` と `evaluateOperationalJudgmentW
 - NGJ-AC-004: 公開CLIの `--run-id` は拒否する。`VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1` のテストだけが、形式を満たす `--run-id` を渡せる。
 - NGJ-AC-005: `vibepro judgment audit` は `.vibepro/reviews/**/adoptions/current.json` を走査し、上記のどれかに該当すれば終了コード1、該当がなければ0で終わる。採択の `drafts/<runId>.json`、`runs/<runId>.json`、`source_input` がコミット済みツリーに無いときも1で終わり、欠けているファイルのパスを出す。
 - NGJ-AC-007: `vibepro init` と `vibepro doctor --fix` が書く `.gitignore` は `.vibepro/*` の後に `!.vibepro/reviews/` を置き、`.vibepro/reviews/**` の drafts、runs、inputs、adoptions、evaluations を追跡できる。`.vibepro/*` と `!.vibepro/config.json` だけの既存リポジトリ（brainbase-organization の形）では doctor が移行文を出し、`--fix` で例外を追記する。その `.gitignore` 変更は各リポジトリの別PRで行う。
-- NGJ-AC-006: 拒否理由は、欠落receipt、hash不一致、artifact不一致、run ID形式、`.vibepro/` 外、を区別できる文面で返す。正当な `prepare` → 証拠の追加 → `adopt` → `evaluate` は成功する。
+- NGJ-AC-006: 拒否理由は、欠落receipt、署名不一致、hash不一致、artifact不一致、run ID形式、`.vibepro/` 外、別 PR、別 head、鍵なし、を区別できる文面で返す。正当な `prepare` の artifact を byte 列のまま `adopt` → `evaluate` することは成功する。prepare 後に byte 列を変えた入力は拒否し、receipt の `input_sha256` は上書きしない。
+- NGJ-AC-008: 受領証は `judgment prepare` だけが `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` で HMAC する。鍵は Infisical（https://infisical.unson.jp）に置き、このリポジトリには保存しない。鍵が無い、署名が違う、`VIBEPRO_JUDGMENT_PR_NUMBER`（または `GITHUB_REF` の pull 番号）が違う、`source_head_sha` が違う場合は拒否する。
+- NGJ-AC-009: `judgment input adopt` の `--reviewed-by` は `human:<id>` または `agent:<id>` だけを受け、`reviewed_by.kind` を機械的に判定できる。
+- NGJ-AC-010: `judgment audit` が終了コード 1 のとき `advisory` は false、`blocking` は true で、表示と JSON が一致する。成功時は `advisory` true、`blocking` false。
 
 ## Boundary
 
 - 過去のdraftファイルは削除しない。新しいprepareは直前のcurrent draftを `superseded_at` / `superseded_by` で印づける。
-- 問題設定、制約、選択肢のレビューは、同じprepared artifact上でstory、run、goalのlineageが変わらない範囲で行い、採択時にreceiptの `input_sha256` をそのbyte列へ更新する。
+- 問題設定、制約、選択肢は Story に書いてから prepare する。prepare 後に artifact の byte 列を変えて採択することはできない。receipt の `input_sha256` は prepare の値のままにする。
 - このStoryの判断入力はDevDirectorが `--reviewed-by DevDirector` で採択する。エージェントは採択しない。
