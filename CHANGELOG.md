@@ -3792,3 +3792,24 @@ Prepare, adopt, evaluate, and audit fail until `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KE
 Store a key of at least 32 characters in Infisical (https://infisical.unson.jp) and inject `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` into the environment that runs prepare, adopt, evaluate, and audit. Set `VIBEPRO_JUDGMENT_PR_NUMBER` to the current pull request.
 
 <!-- vibepro-release-pr:573:end -->
+
+<!-- vibepro-release-pr:574:start -->
+## [#574](https://github.com/Unson-LLC/vibepro/pull/574) fix: judgment prepare reads Story headings
+
+- Author: @sintariran
+- Merged: 2026-10-14T12:00:15Z
+- Commit: `8df6a15207146c0c1ffebde047817d447991a5dc`
+
+### Change Summary
+
+`judgment prepare` fills judgment fields from Story headings, including the Japanese aliases. Headings inside fences and indented code are ignored. An unclosed fence, or a fence whose supposed close carries an info string, stays open and warns.
+
+### Compatibility
+
+Stories without these headings keep the uncertain draft and emit the no-section warning. An unclosed fence adds a second warning.
+
+### User Action
+
+Put the judgment frame and options under the headings above when the draft should be evaluable without editing the JSON. Close fences with a bare `` ``` `` or `~~~` line.
+
+<!-- vibepro-release-pr:574:end -->

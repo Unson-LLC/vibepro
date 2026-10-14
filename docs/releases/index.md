@@ -733,3 +733,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:573:start -->
 - [PR #573](https://github.com/Unson-LLC/vibepro/pull/573) — [2026-10](/releases/2026-10): fix: refuse non-genuine judgment runs
 <!-- vibepro-release-index-pr:573:end -->
+
+<!-- vibepro-release-index-pr:574:start -->
+- [PR #574](https://github.com/Unson-LLC/vibepro/pull/574) — [2026-10](/releases/2026-10): fix: judgment prepare reads Story headings
+<!-- vibepro-release-index-pr:574:end -->
