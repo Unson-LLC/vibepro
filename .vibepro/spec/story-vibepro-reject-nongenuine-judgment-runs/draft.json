@@ -173,6 +173,34 @@
       },
       "first_seen_at": "2026-10-14T09:33:46.888Z",
       "last_revised_at": "2026-10-14T09:33:46.888Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "vibepro init と vibepro doctor --fix は .gitignore に .vibepro/* の後で !.vibepro/reviews/ を書き、.vibepro/reviews/** の drafts、runs、inputs、adoptions、evaluations を追跡できる。!.vibepro/config.json だけの既存 .gitignore は doctor が移行対象として報告し、--fix で例外を追記する。",
+      "rationale": "NGJ-AC-007。brainbase-organization のような .vibepro/* と !.vibepro/config.json だけのリポジトリは、各リポジトリの別PRで .gitignore を更新する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "NGJ-AC-007"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/workspace.js",
+            "anchor": "VIBEPRO_GITIGNORE_REVIEW_LINES"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "doctor migrates a config-only .vibepro gitignore so reviews can be committed"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-14T09:50:00.000Z",
+      "last_revised_at": "2026-10-14T09:50:00.000Z"
     }
   ],
   "generated_at": "2026-10-14T09:33:46.888Z",

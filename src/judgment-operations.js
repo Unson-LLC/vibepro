@@ -21,7 +21,7 @@ import {
   sourceInputStaysInsideVibepro
 } from './judgment-run-authenticity.js';
 import { validateSeniorJudgmentInput } from './senior-judgment-dag.js';
-import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
+import { getWorkspaceDir, JUDGMENT_GITIGNORE_MIGRATION_NOTE, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 const HUMAN_DECISIONS = new Set(['accepted', 'modified', 'rejected']);
@@ -1159,9 +1159,7 @@ function appendCommittedTreeIssues(issues, root, adoptionFile, runId, sourceInpu
     const shown = relative || 'source_input';
     issues.push({
       code: 'missing_from_committed_tree',
-      message: `Judgment file ${shown} is missing from the committed tree. `
-        + 'Consumer repositories ignore .vibepro/* except config.json, so this file is not in CI. '
-        + 'Add !.vibepro/reviews/ to .gitignore and commit drafts/<runId>.json, runs/<runId>.json, and the source_input file.'
+      message: `Judgment file ${shown} is missing from the committed tree. ${JUDGMENT_GITIGNORE_MIGRATION_NOTE}`
     });
   }
 }

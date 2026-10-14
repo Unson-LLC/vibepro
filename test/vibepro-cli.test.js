@@ -538,6 +538,8 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
   assert.match(gitignore, /^\.vibepro\/\*$/m);
   assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
+  assert.match(gitignore, /^!\.vibepro\/reviews\/$/m);
+  assert.ok(gitignore.indexOf('.vibepro/*') < gitignore.indexOf('!.vibepro/reviews/'));
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
@@ -6305,6 +6307,7 @@ test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async 
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
   assert.match(gitignore, /^\.vibepro\/\*$/m);
   assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
+  assert.match(gitignore, /^!\.vibepro\/reviews\/$/m);
   assert.match(gitignore, /node_modules\//);
 
   const after = await runCli(['doctor', repo, '--json']);
@@ -6324,6 +6327,45 @@ test('doctor --fix creates .gitignore when it is absent', async () => {
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
   assert.match(gitignore, /^\.vibepro\/\*$/m);
   assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
+  assert.match(gitignore, /^!\.vibepro\/reviews\/$/m);
+});
+
+test('doctor migrates a config-only .vibepro gitignore so reviews can be committed', async () => {
+  const repo = await makeRepo('vibepro-gitignore-reviews-');
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: repo });
+  const initialized = await runCli(['init', repo]);
+  assert.equal(initialized.exitCode, 0);
+  await writeFile(path.join(repo, '.gitignore'), '.vibepro/*\n!.vibepro/config.json\n');
+  const reviewPaths = [
+    '.vibepro/reviews/story-example/development-judgment/drafts/judgment-20260101000001-0a0a0a01.json',
+    '.vibepro/reviews/story-example/development-judgment/runs/judgment-20260101000001-0a0a0a01.json',
+    '.vibepro/reviews/story-example/development-judgment/inputs/judgment-20260101000001-0a0a0a01.json',
+    '.vibepro/reviews/story-example/development-judgment/adoptions/current.json',
+    '.vibepro/reviews/story-example/development-judgment/evaluations/judgment-20260101000001-0a0a0a01.json'
+  ];
+  for (const relative of reviewPaths) {
+    const absolute = path.join(repo, relative);
+    await mkdir(path.dirname(absolute), { recursive: true });
+    await writeFile(absolute, '{}\n');
+  }
+
+  const dryRun = await runCli(['doctor', repo, '--json']);
+  const check = dryRun.result.checks.find((item) => item.id === 'VP-DOCTOR-GITIGNORE-MISSING');
+  assert.ok(check);
+  assert.match(check.migration_note, /!\.vibepro\/reviews\//);
+  assert.match(check.migration_note, /brainbase-organization/);
+  assert.match(check.detail, /drafts, runs, inputs, adoptions, and evaluations/);
+
+  const fixed = await runCli(['doctor', repo, '--fix', '--json']);
+  assert.equal(fixed.exitCode, 0);
+  const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
+  assert.ok(gitignore.indexOf('.vibepro/*') < gitignore.lastIndexOf('!.vibepro/reviews/'));
+  for (const relative of reviewPaths) {
+    await assert.rejects(
+      execFileAsync('git', ['check-ignore', '-q', '--', relative], { cwd: repo }),
+      (error) => error.code === 1
+    );
+  }
 });
 
 test('story report writes index.html and links resolve to latest run artifacts', async () => {
