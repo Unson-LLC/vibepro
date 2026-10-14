@@ -15,9 +15,18 @@ import {
 import { preparePullRequest } from '../src/pr-manager.js';
 import { addStory } from '../src/story-manager.js';
 import { initWorkspace } from '../src/workspace.js';
+import { resolveBrainbaseProducerModules } from './support/brainbase-producer-modules.js';
 
 const execFileAsync = promisify(execFile);
-const producerModulePath = process.env.BRAINBASE_PRODUCER_MODULE;
+// issuer と outcome-case-service は producer と同じディレクトリに無くてもよい。
+// BRAINBASE_OUTCOME_CASE_SERVICE / BRAINBASE_HANDOFF_ISSUER / BRAINBASE_PRODUCER_ROOT
+// で場所を指定でき、未指定なら producer の親と server-parts の内側を探す。
+const producerModules = process.env.BRAINBASE_PRODUCER_MODULE
+  ? await resolveBrainbaseProducerModules(process.env)
+  : null;
+const producerModulePath = producerModules?.producerModulePath ?? null;
+const outcomeCaseServicePath = producerModules?.outcomeCaseServicePath ?? null;
+const handoffIssuerPath = producerModules?.handoffIssuerPath ?? null;
 const STORY_ID = 'story-brainbase-producer-contract';
 const SIGNING_KEY = 'brainbase-producer-contract-test-signing-key-0123456789';
 const KEY_ID = 'brainbase-vibepro-handoff-hmac-v1';
@@ -67,8 +76,7 @@ async function configureManagedBrainbase(root) {
 // and deterministic resolvers. It intentionally does not reach a production
 // database, authenticate a user, or claim an external source readback.
 async function createOutcomeCaseSnapshot() {
-  const servicePath = path.join(path.dirname(path.resolve(producerModulePath)), 'outcome-case-service.js');
-  const { OutcomeCaseService } = await import(pathToFileURL(servicePath).href);
+  const { OutcomeCaseService } = await import(pathToFileURL(outcomeCaseServicePath).href);
   const items = new Map();
   const actor = {
     person_id: 'per_producer_contract',
@@ -158,8 +166,7 @@ async function createProducerReceipt(root) {
 }
 
 async function createIssuerReceipt(root) {
-  const issuerPath = path.join(path.dirname(path.resolve(producerModulePath)), 'vibepro-handoff-issuer.js');
-  const { createVibeproHandoffIssuer } = await import(pathToFileURL(issuerPath).href);
+  const { createVibeproHandoffIssuer } = await import(pathToFileURL(handoffIssuerPath).href);
   assert.equal(typeof createVibeproHandoffIssuer, 'function');
   const baseSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   const { outcomeCase, service, actor } = await createOutcomeCaseSnapshot();
