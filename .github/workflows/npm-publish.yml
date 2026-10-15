@@ -26,10 +26,19 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      - run: npm install
+      - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run pack:dry-run
+      - name: Assert clean checkout before publish
+        run: |
+          DIRTY=$(git status --porcelain)
+          if [ -n "$DIRTY" ]; then
+            echo "::error::Checkout is dirty before publish; runtime-manifest prepack would refuse to pack"
+            echo "$DIRTY"
+            git diff --stat
+            exit 1
+          fi
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
