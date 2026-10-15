@@ -1,6 +1,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { realpathSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -925,7 +926,7 @@ export async function reconcileNpmRelease({
   root = rootDefault,
   version,
   expectedSha,
-  attempts = 6,
+  attempts = NPM_REGISTRY_CONVERGENCE_ATTEMPTS,
   delay = wait,
   metadata = npmMetadata,
   versions = npmVersions,
@@ -935,11 +936,13 @@ export async function reconcileNpmRelease({
   if (existing) assertGitHead(existing, expectedSha, version);
   else execute('npm', ['publish', '--access', 'public', '--tag', npmDistTags(version)[0]], root);
 
-  const published = await retry(() => metadata(version), attempts, delay);
+  // The first readback revalidates online; later attempts also bypass the
+  // local npm cache so a 404 remembered from the pre-publish lookup is never replayed.
+  const published = await retry((attempt) => metadata(version, { bypassCache: attempt > 0 }), attempts, delay);
   assertGitHead(published, expectedSha, version);
-  await retry(async () => {
-    const visibleVersions = await versions();
-    const currentTags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json'], root));
+  await retry(async (attempt) => {
+    const visibleVersions = await versions({ bypassCache: attempt > 0 });
+    const currentTags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json', NPM_REGISTRY_ONLINE_FLAG], root));
     const desired = desiredDistTags(
       [...visibleVersions, version, ...Object.values(currentTags)],
       npmDistTags(version)
@@ -947,7 +950,7 @@ export async function reconcileNpmRelease({
     for (const [tag, desiredVersion] of Object.entries(desired)) {
       execute('npm', ['dist-tag', 'add', `vibepro@${desiredVersion}`, tag], root);
     }
-    const tags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json'], root));
+    const tags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json', NPM_REGISTRY_ONLINE_FLAG], root));
     return Object.entries(desired).every(([tag, desiredVersion]) => tags[tag] === desiredVersion) ? tags : null;
   }, attempts, delay);
   return published;
@@ -963,8 +966,44 @@ export function desiredDistTags(versions, tags) {
   }));
 }
 
-function npmMetadata(version) {
-  const result = spawnSync('npm', ['view', `vibepro@${version}`, 'version', 'gitHead', '--json'], { encoding: 'utf8' });
+// Registry reads must revalidate against the registry instead of trusting the
+// local npm cache: the registry serves the packument with Cache-Control
+// max-age=300, so a pre-publish lookup can be replayed as E404 for 300 s.
+export const NPM_REGISTRY_ONLINE_FLAG = '--prefer-online';
+
+// Window: 1+2+4+8+16 s backoff, then 30 s steps; 15 attempts = 14 waits =
+// 301 s in total, which exceeds the 300 s packument max-age (run 38734145965
+// gave up after 6 attempts / 31 s of waiting). Same constants as brainbase#795.
+export const NPM_REGISTRY_CONVERGENCE_ATTEMPTS = 15;
+export const NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS = 30_000;
+
+export function npmRegistryConvergenceDelays(attempts = NPM_REGISTRY_CONVERGENCE_ATTEMPTS) {
+  return Array.from({ length: Math.max(attempts - 1, 0) }, (_, index) => registryRetryDelay(index));
+}
+
+function registryRetryDelay(index) {
+  return Math.min(2 ** index * 1000, NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS);
+}
+
+export function npmViewArgs(args, cacheDirectory = null) {
+  const result = ['view', ...args, NPM_REGISTRY_ONLINE_FLAG];
+  if (cacheDirectory) result.push('--cache', cacheDirectory);
+  return result;
+}
+
+export function spawnNpmView(args, { bypassCache = false, spawn = spawnSync } = {}) {
+  // A throwaway cache directory guarantees no cached pre-publish 404/packument
+  // can be replayed, even if npm short-circuits revalidation.
+  const cacheDirectory = bypassCache ? mkdtempSync(path.join(tmpdir(), 'vibepro-npm-readback-cache-')) : null;
+  try {
+    return spawn('npm', npmViewArgs(args, cacheDirectory), { encoding: 'utf8' });
+  } finally {
+    if (cacheDirectory) rmSync(cacheDirectory, { recursive: true, force: true });
+  }
+}
+
+export function npmMetadata(version, { bypassCache = false, spawn = spawnSync } = {}) {
+  const result = spawnNpmView([`vibepro@${version}`, 'version', 'gitHead', '--json'], { bypassCache, spawn });
   if (result.status !== 0) {
     const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`;
     if (/E404|404 Not Found|is not in this registry/iu.test(diagnostic)) return null;
@@ -975,8 +1014,8 @@ function npmMetadata(version) {
   }
 }
 
-function npmVersions() {
-  const result = spawnSync('npm', ['view', 'vibepro', 'versions', '--json'], { encoding: 'utf8' });
+export function npmVersions({ bypassCache = false, spawn = spawnSync } = {}) {
+  const result = spawnNpmView(['vibepro', 'versions', '--json'], { bypassCache, spawn });
   if (result.status !== 0) throw new Error(`npm versions lookup failed: ${(result.stderr ?? '').trim() || `exit ${result.status}`}`);
   try {
     const versions = JSON.parse(result.stdout);
@@ -988,7 +1027,7 @@ function npmVersions() {
 }
 
 export function npmPublishedAt(version, { root = rootDefault, execute = run } = {}) {
-  const response = execute('npm', ['view', 'vibepro', 'time', '--json'], root);
+  const response = execute('npm', npmViewArgs(['vibepro', 'time', '--json']), root);
   let times;
   try {
     times = JSON.parse(response);
@@ -1005,7 +1044,7 @@ async function readMetadataWithRetry(operation, attempts, delay) {
   for (let index = 0; index < attempts; index += 1) {
     try { return operation(); } catch (error) {
       lastError = error;
-      if (index < attempts - 1) await delay(2 ** index * 1000);
+      if (index < attempts - 1) await delay(registryRetryDelay(index));
     }
   }
   throw lastError;
@@ -1021,12 +1060,12 @@ async function retry(operation, attempts, delay) {
   let lastError;
   for (let index = 0; index < attempts; index += 1) {
     try {
-      const value = await operation();
+      const value = await operation(index);
       if (value) return value;
     } catch (error) {
       lastError = error;
     }
-    if (index < attempts - 1) await delay(2 ** index * 1000);
+    if (index < attempts - 1) await delay(registryRetryDelay(index));
   }
   if (lastError) throw lastError;
   throw new Error(`npm registry did not converge after ${attempts} attempts`);
