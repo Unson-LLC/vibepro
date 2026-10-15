@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-10-15 | [`0.2.0-beta.30`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.30) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-17 | [`0.2.0-beta.27`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.27) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -737,3 +738,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:574:start -->
 - [PR #574](https://github.com/Unson-LLC/vibepro/pull/574) — [2026-10](/ja/releases/2026-10): fix: judgment prepare reads Story headings
 <!-- vibepro-release-index-pr:574:end -->
+
+<!-- vibepro-release-index-pr:578:start -->
+- [PR #578](https://github.com/Unson-LLC/vibepro/pull/578) — [2026-10](/ja/releases/2026-10): chore(release): publish 0.2.0-beta.30
+<!-- vibepro-release-index-pr:578:end -->
