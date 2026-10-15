@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -153,6 +154,7 @@ import {
   selectStory
 } from './story-manager.js';
 import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
+import { curateJourneyMap, deriveJourneyMap, renderJourneyCurateSummary, renderJourneyHandoff, renderJourneyMap } from './journey-map.js';
 import {
   installBundledSkills,
   lintBundledSkills,
@@ -244,6 +246,9 @@ Usage:
   vibepro judgment pending [repo] [--json]
   vibepro judgment audit [repo] [--json]  # exit 1 is blocking: advisory false and blocking true
   vibepro guard target [repo] --push-url <URL> [--json]
+  vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey handoff [repo] [--id <journey-id>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--force] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -370,6 +375,9 @@ Usage:
   vibepro judgment pending [repo] [--json]
   vibepro judgment audit [repo] [--json]  # 終了コード 1 のとき advisory は false、blocking は true
   vibepro guard target [repo] --push-url <URL> [--json]
+  vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey handoff [repo] [--id <journey-id>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--force] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -409,7 +417,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'integration', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
-  'workspace', 'worktree', 'store'
+  'workspace', 'worktree', 'store', 'journey'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -1166,6 +1174,47 @@ async function dispatchCli(argv, io = {}) {
 
 ${renderHelp()}`);
       return { exitCode: 1, command };
+    }
+
+    if (command === 'journey') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const journeyIdError = validateJourneyIdOption(rest);
+      if (journeyIdError) {
+        write(stderr, `${journeyIdError}\n`);
+        return { exitCode: 1, command, subcommand };
+      }
+      if (subcommand === 'derive' || subcommand === 'handoff') {
+        const result = await deriveJourneyMap(repoRoot, { journeyId: getOption(rest, '--id') });
+        const payload = subcommand === 'handoff' ? result.journey.handoff : result.journey;
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(payload, null, 2)}\n`
+          : (subcommand === 'handoff' ? renderJourneyHandoff(result) : renderJourneyMap(result)));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'curate') {
+        const outputCheck = await validateJourneyOutputOption(repoRoot, rest);
+        if (outputCheck.error) {
+          write(stderr, `${outputCheck.error}\n`);
+          return { exitCode: 1, command, subcommand };
+        }
+        const result = await curateJourneyMap(repoRoot, {
+          journeyId: getOption(rest, '--id'),
+          inputPath: getOption(rest, '--input'),
+          outputPath: outputCheck.outputPath,
+          overwrite: outputCheck.force === true
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.journey, null, 2)}\n`
+          : renderJourneyCurateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown journey command: ${subcommand}\n\n${renderHelp()}`);
+      return { exitCode: 1, command, subcommand };
     }
 
     if (command === 'guard') {
@@ -2254,6 +2303,70 @@ function renderTaskPlanSummary(command, result) {
 function resolveDiagnosisPhaseOption(args) {
   if (hasFlag(args, '--pre-architecture')) return 'design-input';
   return getOption(args, '--phase');
+}
+
+function validateJourneyIdOption(args) {
+  const index = args.indexOf('--id');
+  if (index === -1) return null;
+  const value = args[index + 1];
+  if (value === undefined || value === '' || value.startsWith('-')) {
+    return 'journey: --id requires a value (e.g. --id journey-9)';
+  }
+  return null;
+}
+
+async function realpathOfNearestExisting(target) {
+  let current = target;
+  const suffix = [];
+  for (;;) {
+    try {
+      return path.join(await fs.promises.realpath(current), ...suffix.reverse());
+    } catch {
+      const parent = path.dirname(current);
+      if (parent === current) return target;
+      suffix.push(path.basename(current));
+      current = parent;
+    }
+  }
+}
+
+async function validateJourneyOutputOption(repoRoot, args) {
+  const index = args.indexOf('--output');
+  if (index === -1) return { outputPath: null };
+  const value = args[index + 1];
+  if (value === undefined || value === '' || value.startsWith('-')) {
+    return { error: 'journey curate: --output requires a path' };
+  }
+  const root = path.resolve(repoRoot);
+  const resolved = path.resolve(root, value);
+  const realRoot = await realpathOfNearestExisting(root);
+  const realTarget = await realpathOfNearestExisting(resolved);
+  const relative = path.relative(realRoot, realTarget);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+    return { error: `journey curate: --output must resolve to a file inside the repo (${root}); refusing ${value}` };
+  }
+  // Reject symlinks anywhere between the repo root and the output path (lstat, never followed),
+  // including dangling ones, so the write cannot be redirected outside the repo.
+  const segments = path.relative(root, resolved).split(path.sep);
+  let cursor = root;
+  for (const segment of segments) {
+    cursor = path.join(cursor, segment);
+    let stat;
+    try {
+      stat = await fs.promises.lstat(cursor);
+    } catch (error) {
+      if (error?.code === 'ENOENT') break;
+      throw error;
+    }
+    if (stat.isSymbolicLink()) {
+      return { error: `journey curate: --output must not be or pass through a symlink; refusing ${value}` };
+    }
+  }
+  const force = hasFlag(args, '--force');
+  if (fs.existsSync(resolved) && !force) {
+    return { error: `journey curate: --output ${value} already exists; pass --force to overwrite` };
+  }
+  return { outputPath: resolved, force };
 }
 
 function getOption(args, name) {
