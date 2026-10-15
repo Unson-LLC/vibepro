@@ -742,3 +742,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:578:start -->
 - [PR #578](https://github.com/Unson-LLC/vibepro/pull/578) — [2026-10](/releases/2026-10): chore(release): publish 0.2.0-beta.30
 <!-- vibepro-release-index-pr:578:end -->
+
+<!-- vibepro-release-index-pr:575:start -->
+- [PR #575](https://github.com/Unson-LLC/vibepro/pull/575) — [2026-10](/releases/2026-10): fix: measure verification elapsed time and timeouts with a monotonic clock
+<!-- vibepro-release-index-pr:575:end -->

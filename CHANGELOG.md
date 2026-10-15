@@ -3834,3 +3834,25 @@ Put the judgment frame and options under the headings above when the draft shoul
 なし
 
 <!-- vibepro-release-pr:578:end -->
+
+<!-- vibepro-release-pr:575:start -->
+## [#575](https://github.com/Unson-LLC/vibepro/pull/575) fix: measure verification elapsed time and timeouts with a monotonic clock
+
+- Author: @sintariran
+- Merged: 2026-10-15T07:09:37Z
+- Commit: `c4da713bac0d6747ad2a2ec8ff6cd8bcf4ee7743`
+
+### Change Summary
+
+- 経過時間とタイムアウト判定は単調時計。開始・終了の ISO 時刻、ファイル mtime、識別子は Date のまま。
+- 注入した時計が戻ったとき、経過は 0 に丸まる境界テストを追加した。
+
+### Compatibility
+
+記録される `duration_ms` / `elapsed_ms` は単調時計の差（ミリ秒、四捨五入）になる。ISO の `started_at` / `finished_at` は従来どおり Date。
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:575:end -->
