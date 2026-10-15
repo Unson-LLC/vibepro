@@ -3961,3 +3961,24 @@ Put the judgment frame and options under the headings above when the draft shoul
 なし
 
 <!-- vibepro-release-pr:585:end -->
+
+<!-- vibepro-release-pr:587:start -->
+## [#587](https://github.com/Unson-LLC/vibepro/pull/587) fix(release): project version history from the documented SemVer token
+
+- Author: @sintariran
+- Merged: 2026-10-15T17:45:14Z
+- Commit: `39cc9e34e3efd19954c4084efe236dedcba9f55c`
+
+### Change Summary
+
+Version-history projection now reads the documented SemVer token in the channel row, upgrade heading, and VitePress `softwareVersion`. It advances that token when it is older than the version being released, and it refuses a newer documented token instead of treating a prerelease prefix as a match.
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:587:end -->
