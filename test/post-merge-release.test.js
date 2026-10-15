@@ -981,6 +981,19 @@ test('PCR-CON-009 manual npm publish installs from the lockfile and proves a cle
   assert.match(manualWorkflow.slice(cleanIndex), /git status --porcelain[\s\S]*exit 1/u);
 });
 
+test('PCR-CON-011 no workflow installs dependencies with npm install', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const dir = new URL('../.github/workflows/', import.meta.url);
+  const files = (await readdir(dir)).filter((name) => /\.ya?ml$/u.test(name));
+  assert.ok(files.includes('ci.yml'));
+  for (const name of files) {
+    const text = await readFile(new URL(name, dir), 'utf8');
+    assert.doesNotMatch(text, /\bnpm (install|i)\b/u, `${name} must use npm ci`);
+  }
+  const ci = await readFile(new URL('ci.yml', dir), 'utf8');
+  assert.match(ci, /^\s+- run: npm ci$/mu);
+});
+
 test('PCR-CON-010 npm ci leaves the committed lockfile unchanged so the runtime-manifest dirty guard passes', async () => {
   const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
   const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
