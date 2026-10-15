@@ -99,6 +99,35 @@ Story・Specと検証結果を確認し、必要に応じて `review prepare` �
   vibepro report show [repo] --kind <kind> --id <story-id>
 ```
 
+## Judgment receipt HMAC 鍵の置き場所
+
+`vibepro judgment prepare` は `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` で receipt に署名します。値はコミットも表示もせず、Infisical にだけ置きます。
+
+| 項目 | 値 |
+| --- | --- |
+| Infisical | `https://infisical.unson.jp` |
+| projectId | `ce20541c-02b9-4523-bbe0-49d50b2fcc19` (Brainbase, org `unson`) |
+| env | `dev` |
+| path | `/vibepro` |
+| Key | `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` (base64, 64 chars) |
+| ラッパーのターゲット（Mac mini） | `brainbase-vibepro-writer` in `~/.brainbase/infisical-targets.json` |
+
+鍵を注入して prepare を実行します（値は子プロセスの環境変数にだけ入ります）。
+
+```bash
+~/workspace/repos/brainbase-unson/scripts/infisical-target-run.sh \
+  --target brainbase-vibepro-writer -- \
+  env VIBEPRO_JUDGMENT_PR_NUMBER=<pr> vibepro judgment prepare <repo> --id <story-id>
+```
+
+値を表示せずに、あることだけを確かめます。
+
+```bash
+~/workspace/repos/brainbase-unson/scripts/infisical-target-run.sh \
+  --target brainbase-vibepro-writer -- \
+  bash -c 'printf "len=%s\n" "${#VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY}"'
+```
+
 ## ドリフト確認
 
 ```bash
