@@ -3813,3 +3813,24 @@ Stories without these headings keep the uncertain draft and emit the no-section 
 Put the judgment frame and options under the headings above when the draft should be evaluable without editing the JSON. Close fences with a bare `` ``` `` or `~~~` line.
 
 <!-- vibepro-release-pr:574:end -->
+
+<!-- vibepro-release-pr:578:start -->
+## [#578](https://github.com/Unson-LLC/vibepro/pull/578) chore(release): publish 0.2.0-beta.30
+
+- Author: @sintariran
+- Merged: 2026-10-15T00:54:58Z
+- Commit: `34f5dea61e97730e464999da83a6ecba9f2e09b5`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:578:end -->
