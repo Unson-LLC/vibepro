@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-17 | [`0.2.0-beta.27`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.27) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-17 | [`0.2.0-beta.26`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.26) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -680,3 +681,59 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:550:start -->
 - [PR #550](https://github.com/Unson-LLC/vibepro/pull/550) — [2026-09](/ja/releases/2026-09): feat: UI変更の標準部品探索と視覚確認を促す
 <!-- vibepro-release-index-pr:550:end -->
+
+<!-- vibepro-release-index-pr:551:start -->
+- [PR #551](https://github.com/Unson-LLC/vibepro/pull/551) — [2026-09](/ja/releases/2026-09): chore(release): publish 0.2.0-beta.29
+<!-- vibepro-release-index-pr:551:end -->
+
+<!-- vibepro-release-index-pr:558:start -->
+- [PR #558](https://github.com/Unson-LLC/vibepro/pull/558) — [2026-09](/ja/releases/2026-09): docs: align judgment terminology with agreed concept model
+<!-- vibepro-release-index-pr:558:end -->
+
+<!-- vibepro-release-index-pr:559:start -->
+- [PR #559](https://github.com/Unson-LLC/vibepro/pull/559) — [2026-09](/ja/releases/2026-09): feat: renew managed Brainbase bindings with receipt history
+<!-- vibepro-release-index-pr:559:end -->
+
+<!-- vibepro-release-index-pr:560:start -->
+- [PR #560](https://github.com/Unson-LLC/vibepro/pull/560) — [2026-09](/ja/releases/2026-09): fix: retain cumulative judgment feedback history
+<!-- vibepro-release-index-pr:560:end -->
+
+<!-- vibepro-release-index-pr:561:start -->
+- [PR #561](https://github.com/Unson-LLC/vibepro/pull/561) — [2026-09](/ja/releases/2026-09): fix: preserve judgment draft when feedback preflight fails
+<!-- vibepro-release-index-pr:561:end -->
+
+<!-- vibepro-release-index-pr:563:start -->
+- [PR #563](https://github.com/Unson-LLC/vibepro/pull/563) — [2026-09](/ja/releases/2026-09): docs: connect self-model to development judgment
+<!-- vibepro-release-index-pr:563:end -->
+
+<!-- vibepro-release-index-pr:567:start -->
+- [PR #567](https://github.com/Unson-LLC/vibepro/pull/567) — [2026-10](/ja/releases/2026-10): TLの並列Task計画と外部実行の責務を定義する
+<!-- vibepro-release-index-pr:567:end -->
+
+<!-- vibepro-release-index-pr:568:start -->
+- [PR #568](https://github.com/Unson-LLC/vibepro/pull/568) — [2026-10](/ja/releases/2026-10): 外部実行の開発進捗をBrainbaseへ送り読み戻しを検証する
+<!-- vibepro-release-index-pr:568:end -->
+
+<!-- vibepro-release-index-pr:569:start -->
+- [PR #569](https://github.com/Unson-LLC/vibepro/pull/569) — [2026-10](/ja/releases/2026-10): feat: PR準備から配備引継ぎを任意出力する
+<!-- vibepro-release-index-pr:569:end -->
+
+<!-- vibepro-release-index-pr:570:start -->
+- [PR #570](https://github.com/Unson-LLC/vibepro/pull/570) — [2026-10](/ja/releases/2026-10): CIをEVO-X2へ統一し、Codex進捗連携を任意で有効化
+<!-- vibepro-release-index-pr:570:end -->
+
+<!-- vibepro-release-index-pr:571:start -->
+- [PR #571](https://github.com/Unson-LLC/vibepro/pull/571) — [2026-10](/ja/releases/2026-10): fix: restore PR test validation and add optional progress dispatch
+<!-- vibepro-release-index-pr:571:end -->
+
+<!-- vibepro-release-index-pr:572:start -->
+- [PR #572](https://github.com/Unson-LLC/vibepro/pull/572) — [2026-10](/ja/releases/2026-10): fix: persist optional --reviewed-by on judgment disposition records
+<!-- vibepro-release-index-pr:572:end -->
+
+<!-- vibepro-release-index-pr:573:start -->
+- [PR #573](https://github.com/Unson-LLC/vibepro/pull/573) — [2026-10](/ja/releases/2026-10): fix: refuse non-genuine judgment runs
+<!-- vibepro-release-index-pr:573:end -->
+
+<!-- vibepro-release-index-pr:574:start -->
+- [PR #574](https://github.com/Unson-LLC/vibepro/pull/574) — [2026-10](/ja/releases/2026-10): fix: judgment prepare reads Story headings
+<!-- vibepro-release-index-pr:574:end -->

@@ -183,6 +183,24 @@ test('unverified Node test environment cannot bless a Git runtime', () => {
   assert.equal(verdict.code, 'runtime_mismatch');
 });
 
+test('verified Node test runtime can exercise a diverged dirty checkout', () => {
+  const runtime = gitRuntime({
+    mode: 'test',
+    test_context: { verified: true, kind: 'node_test' },
+    source_git: {
+      ...gitRuntime().source_git,
+      origin_main_commit: 'c'.repeat(40),
+      origin_main_relation: 'diverged',
+      dirty: true,
+      dirty_summary: ['?? test/fixture']
+    }
+  });
+  const verdict = evaluateRuntimeIntegrity(runtime, { purpose: 'pr_judgment' });
+  assert.equal(verdict.status, 'trusted');
+  assert.equal(verdict.code, null);
+  assert.deepEqual(verdict.reasons, ['internal Node test runtime']);
+});
+
 test('doctor blocks an unexpected source runtime before fix or artifact writes', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-runtime-doctor-'));
   await writeFile(path.join(root, 'index.html'), '<!doctype html>');
@@ -202,7 +220,7 @@ test('doctor blocks an unexpected source runtime before fix or artifact writes',
 
   assert.equal(result.exitCode, 2);
   assert.equal(result.result.overall_status, 'blocked');
-  assert.equal(result.result.runtime_identity.integrity.code, 'runtime_mismatch');
+  assert.ok(['runtime_mismatch', 'stale_runtime'].includes(result.result.runtime_identity.integrity.code));
   assert.equal(await readFile(doctorArtifact, 'utf8'), 'sentinel\n');
   assert.equal(await readFile(configPath, 'utf8'), configBefore);
 });

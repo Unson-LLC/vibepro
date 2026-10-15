@@ -8,6 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { JUDGMENT_TEST_ENV } from './support/judgment-test-env.js';
 import {
   evaluateJudgmentWorkflow,
   prepareJudgmentInput,
@@ -19,10 +20,13 @@ import { STANDARD_JUDGMENT_AXES } from '../src/senior-judgment-dag.js';
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-development-judgment-workflow';
 
+const WORKFLOW_RUN_ID = 'judgment-20260404040404-0d0d0d01';
+
 function silentIo() {
   return {
     stdout: { write() {} },
-    stderr: { write() {} }
+    stderr: { write() {} },
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   };
 }
 
@@ -48,7 +52,8 @@ test('judgment prepare creates a conservative draft and evaluation compiles it i
   const root = await setupRepo();
   const prepared = await prepareJudgmentInput(root, {
     storyId: STORY_ID,
-    runId: 'judgment-workflow-run-1'
+    runId: WORKFLOW_RUN_ID,
+    env: { ...process.env, VIBEPRO_ALLOW_JUDGMENT_RUN_ID: '1', ...JUDGMENT_TEST_ENV }
   });
 
   assert.equal(prepared.input.problem_frame.status, 'uncertain');
@@ -64,7 +69,7 @@ test('judgment prepare creates a conservative draft and evaluation compiles it i
   assert.equal(evaluated.development_judgment.summary.valid, true);
   assert.equal(evaluated.development_judgment.summary.acyclic, true);
   assert.equal(evaluated.development_judgment.projection.blocking, false);
-  assert.equal(evaluated.development_judgment.dag.run_id, 'judgment-workflow-run-1');
+  assert.equal(evaluated.development_judgment.dag.run_id, 'judgment-20260404040404-0d0d0d01');
   assert.deepEqual(
     evaluated.development_judgment.dag.nodes.map((node) => node.id),
     ['goal_contract', 'problem_frame', 'development_mode', 'option_pruning', 'recommendation']
@@ -74,7 +79,7 @@ test('judgment prepare creates a conservative draft and evaluation compiles it i
   const immutableBefore = await readFile(immutableRunPath, 'utf8');
   const outcome = await recordJudgmentOutcome(root, {
     storyId: STORY_ID,
-    runId: 'judgment-workflow-run-1',
+    runId: 'judgment-20260404040404-0d0d0d01',
     evaluationId: 'outcome-workflow-1',
     humanDecision: 'modified',
     effect: 'changed_plan',
@@ -108,7 +113,7 @@ test('judgment CLI prepares, evaluates and records outcomes while PR prepare onl
   const prepared = await runCli([
     'judgment', 'prepare', root,
     '--id', STORY_ID,
-    '--run-id', 'judgment-workflow-cli-run',
+    '--run-id', 'judgment-20260404040405-0e0e0e02',
     '--json'
   ], silentIo());
   assert.equal(prepared.exitCode, 0);
@@ -118,7 +123,7 @@ test('judgment CLI prepares, evaluates and records outcomes while PR prepare onl
     'judgment', 'input', 'adopt', root,
     '--id', STORY_ID,
     '--input', prepared.result.artifact,
-    '--reviewed-by', 'test-agent',
+    '--reviewed-by', 'agent:test-agent',
     '--authority', 'test-contract',
     '--summary', 'The conservative input is explicitly reviewed for this compatibility test.',
     '--json'
@@ -137,7 +142,7 @@ test('judgment CLI prepares, evaluates and records outcomes while PR prepare onl
   const outcome = await runCli([
     'judgment', 'outcome', 'record', root,
     '--id', STORY_ID,
-    '--run', 'judgment-workflow-cli-run',
+    '--run', 'judgment-20260404040405-0e0e0e02',
     '--human-decision', 'accepted',
     '--effect', 'changed_review_focus',
     '--status', 'confirmed',

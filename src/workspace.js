@@ -142,11 +142,50 @@ async function writeJsonIfMissing(filePath, value, label = 'VibePro JSON') {
   }
 }
 
+export const VIBEPRO_GITIGNORE_REVIEW_LINES = Object.freeze([
+  '.vibepro/*',
+  '!.vibepro/config.json',
+  '!.vibepro/reviews/'
+]);
+
+export const JUDGMENT_GITIGNORE_MIGRATION_NOTE = 'Existing repositories whose .gitignore has `.vibepro/*` and only `!.vibepro/config.json` leave `.vibepro/reviews/**` untracked, so drafts, runs, inputs, adoptions, and evaluations never reach CI. Add `!.vibepro/reviews/` after `.vibepro/*`. `vibepro init` and `vibepro doctor --fix` write that exception. Repositories that already use the old pattern, including brainbase-organization, update `.gitignore` in their own change.';
+
+export function gitignoreTracksVibeproReviews(content) {
+  const lines = String(content ?? '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'));
+  let tracked = true;
+  for (const line of lines) {
+    if (line === '.vibepro/' || line === '.vibepro/*' || line === '.vibepro/**' || line === '.vibepro/reviews/' || line === '.vibepro/reviews/**') {
+      tracked = false;
+    } else if (line === '!.vibepro/reviews/' || line === '!.vibepro/reviews/**') {
+      tracked = true;
+    }
+  }
+  return tracked;
+}
+
+export function renderGitignoreUpdate(existing, required) {
+  const stripped = String(existing ?? '')
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== '.vibepro/')
+    .join('\n');
+  const present = new Set(stripped.split(/\r?\n/).map((line) => line.trim()));
+  const missing = required.filter((line) => !present.has(line));
+  const projected = `${stripped.trimEnd()}${stripped.trim() ? '\n' : ''}${missing.join('\n')}${missing.length ? '\n' : ''}`;
+  if (!gitignoreTracksVibeproReviews(projected) && !missing.includes('!.vibepro/reviews/')) {
+    missing.push('!.vibepro/reviews/');
+  }
+  if (missing.length === 0) return null;
+  const prefix = stripped.trim().length > 0 ? `${stripped.trimEnd()}\n` : '';
+  return `${prefix}${missing.join('\n')}\n`;
+}
+
 async function ensureGitIgnore(repoRoot) {
   const ignorePath = path.join(path.resolve(repoRoot), '.gitignore');
   const required = [
-    '.vibepro/*',
-    '!.vibepro/config.json',
+    ...VIBEPRO_GITIGNORE_REVIEW_LINES,
     '.vibepro-store/',
     '.worktrees/vibepro/'
   ];
@@ -158,13 +197,7 @@ async function ensureGitIgnore(repoRoot) {
     if (error.code !== 'ENOENT') throw error;
   }
 
-  existing = existing
-    .split('\n')
-    .filter((line) => line.trim() !== '.vibepro/')
-    .join('\n');
-  const missing = required.filter((line) => !existing.split('\n').includes(line));
-  if (missing.length === 0) return;
-
-  const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';
-  await writeFile(ignorePath, `${prefix}${missing.join('\n')}\n`);
+  const updated = renderGitignoreUpdate(existing, required);
+  if (updated === null) return;
+  await writeFile(ignorePath, updated);
 }

@@ -53,6 +53,30 @@ Senior JudgmentがVALUE / SIMPLIFY / VALIDATE、仮説、選択肢、推薦を�
 
 planはrun ID、input hash、source HEAD、mode、recommendation、effectを持つ。
 
+### TL Task planning and external execution
+
+The TL extends the planning plane from technical advice to an explicit technical decision and
+assignment plan. The plan uses the existing `Task` unit and records:
+
+- the purpose and delegated scope inherited from the Story;
+- dependency classification as `prerequisite`, `interface`, or `overlap`;
+- version-pinned contract references and the observation needed for each milestone;
+- Task assignment, allowed paths, integration order, conflict owner, and replanning links.
+
+Only a true prerequisite blocks the stages declared by that dependency. An interface can permit
+parallel implementation after the contract is agreed, while its implementation milestone remains a
+separate verification or integration condition. A file or semantic overlap is coordinated through
+the recorded integration order and does not by itself block start. Task status is never sufficient
+to release a prerequisite; the external observation must match the plan version and include the
+artifact revision and evidence reference.
+
+This plan is the VibePro planning authority, not a generic execution controller or a second Task
+ledger. The Codex parent or another external host dispatches sessions, prepares worktrees, manages
+occupancy, retries and recovery, and records execution progress. Brainbase can project Story
+references and progress when connected, but it does not replace the Task plan or execution record.
+The TL can classify dispatch readiness and request replanning; it cannot grant merge or deployment
+authority, and its advisory judgment remains outside the existing PR, merge, and release gates.
+
 ### Feedback Plane
 
 採択とOutcomeを時間分離する。
@@ -118,3 +142,5 @@ immutable historyとcurrent projectionを分ける。過去の判断・採択・
 6. Outcomeは次回判断入力へfeedbackする。
 7. Judgmentの欠落・非該当・unactionable・pendingはPR readinessを変更しない。
 8. 旧Gate DAG、予算、merge authorityを復活させない。
+9. TLのTask計画は実行状態の正本を持たず、セッション・worktree・占有・再試行・復旧は外部hostの実行記録に残す。
+10. 計画から導いたdispatch readinessは、PR、merge、deployの権限や既存gateを変更しない。

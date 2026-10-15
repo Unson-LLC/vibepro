@@ -15,6 +15,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { performance } from 'node:perf_hooks';
 import process from 'node:process';
 import test from 'node:test';
 
@@ -120,14 +121,14 @@ test('AC5: streaming test-completion progress extends life; external SIGTERM rec
     '  if (i >= 15) { clearInterval(t); process.exit(0); }',
     '}, 50);'
   ].join('\n');
-  const startedAt = Date.now();
+  const startedAt = performance.now();
   const streamingResult = await executeCommand(process.cwd(), [process.execPath, '-e', streamingScript], {
     timeoutMs: 5000,
     noProgressDeadlineMs: 500,
     maxOutputBytes: 1_000_000,
     env: process.env
   });
-  const streamingElapsedMs = Date.now() - startedAt;
+  const streamingElapsedMs = performance.now() - startedAt;
 
   // Sub-assertion 2: a signal verify run did not itself send (a self-delivered SIGTERM,
   // standing in for an external `kill` or an OOM killer) must be recorded as an external

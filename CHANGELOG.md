@@ -3517,3 +3517,299 @@ Brainbase managed v2連携を使う環境では、Brainbase issuerと共有す�
 なし
 
 <!-- vibepro-release-pr:550:end -->
+
+<!-- vibepro-release-pr:551:start -->
+## [#551](https://github.com/Unson-LLC/vibepro/pull/551) chore(release): publish 0.2.0-beta.29
+
+- Author: @sintariran
+- Merged: 2026-09-22T00:06:56Z
+- Commit: `02934659e8a91a23c2ee8dc0b57ad768ae7c4b45`
+
+### Change Summary
+
+- UI変更時に、既存の標準primitiveと類似画面の探索結果をSpecへ残せます。
+- 対象viewportの修正前後スクリーンショットと目視評価を完了条件として記録できます。
+- DOM寸法やテスト成功だけで視覚品質を合格扱いせず、2回のCSS調整で未解決なら構造・標準部品を再検討します。
+
+### Compatibility
+
+破壊的変更なし。既存CLI契約は変更しません。
+
+### User Action
+
+`npm install vibepro@0.2.0-beta.29` で更新してください。
+
+<!-- vibepro-release-pr:551:end -->
+
+<!-- vibepro-release-pr:558:start -->
+## [#558](https://github.com/Unson-LLC/vibepro/pull/558) docs: align judgment terminology with agreed concept model
+
+- Author: @sintariran
+- Merged: 2026-09-26T10:58:21Z
+- Commit: `51e56725171e173dabd307b977966b8fd6a2c5ac`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:558:end -->
+
+<!-- vibepro-release-pr:559:start -->
+## [#559](https://github.com/Unson-LLC/vibepro/pull/559) feat: renew managed Brainbase bindings with receipt history
+
+- Author: @sintariran
+- Merged: 2026-09-26T15:26:03Z
+- Commit: `ff23b412c82b3f10dd648475af5defff5158b075`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:559:end -->
+
+<!-- vibepro-release-pr:560:start -->
+## [#560](https://github.com/Unson-LLC/vibepro/pull/560) fix: retain cumulative judgment feedback history
+
+- Author: @sintariran
+- Merged: 2026-09-29T11:50:05Z
+- Commit: `1c910cb67ca231b3bc0577dc2c4fbdafb63db1ee`
+
+### Change Summary
+
+次回の専門判断が、直近1回だけでなく境界以後の採用履歴を参照します。
+
+### Compatibility
+
+既存の意味採用・PR権限・Gateには変更なし。
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:560:end -->
+
+<!-- vibepro-release-pr:561:start -->
+## [#561](https://github.com/Unson-LLC/vibepro/pull/561) fix: preserve judgment draft when feedback preflight fails
+
+- Author: @sintariran
+- Merged: 2026-09-29T12:01:51Z
+- Commit: `9aa874e655ad8ffca650bbf193f69f7bab42b883`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:561:end -->
+
+<!-- vibepro-release-pr:563:start -->
+## [#563](https://github.com/Unson-LLC/vibepro/pull/563) docs: connect self-model to development judgment
+
+- Author: @sintariran
+- Merged: 2026-09-30T08:10:45Z
+- Commit: `6769c82c8fe263822e24309f5d5aed04caa9f431`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:563:end -->
+
+<!-- vibepro-release-pr:567:start -->
+## [#567](https://github.com/Unson-LLC/vibepro/pull/567) TLの並列Task計画と外部実行の責務を定義する
+
+- Author: @sintariran
+- Merged: 2026-10-10T06:27:06Z
+- Commit: `88fa8911c6a0315922c675b0909874005a7c68a8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:567:end -->
+
+<!-- vibepro-release-pr:568:start -->
+## [#568](https://github.com/Unson-LLC/vibepro/pull/568) 外部実行の開発進捗をBrainbaseへ送り読み戻しを検証する
+
+- Author: @sintariran
+- Merged: 2026-10-10T06:27:53Z
+- Commit: `df3b4a49f27aed8012ca9537386ff30417a139a4`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:568:end -->
+
+<!-- vibepro-release-pr:569:start -->
+## [#569](https://github.com/Unson-LLC/vibepro/pull/569) feat: PR準備から配備引継ぎを任意出力する
+
+- Author: @sintariran
+- Merged: 2026-10-10T10:28:47Z
+- Commit: `1765ad3be8cd8ae184ce4d13d10a2d0ee46cb998`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:569:end -->
+
+<!-- vibepro-release-pr:570:start -->
+## [#570](https://github.com/Unson-LLC/vibepro/pull/570) CIをEVO-X2へ統一し、Codex進捗連携を任意で有効化
+
+- Author: @sintariran
+- Merged: 2026-10-10T20:17:19Z
+- Commit: `d472cbc547dbecd30924b577ce41b8e0ce18c033`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:570:end -->
+
+<!-- vibepro-release-pr:571:start -->
+## [#571](https://github.com/Unson-LLC/vibepro/pull/571) fix: restore PR test validation and add optional progress dispatch
+
+- Author: @sintariran
+- Merged: 2026-10-10T23:37:47Z
+- Commit: `6c2658fcbea88cfc42450c6816f13267ca019215`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:571:end -->
+
+<!-- vibepro-release-pr:572:start -->
+## [#572](https://github.com/Unson-LLC/vibepro/pull/572) fix: persist optional --reviewed-by on judgment disposition records
+
+- Author: @sintariran
+- Merged: 2026-10-14T07:54:50Z
+- Commit: `975b3986e2b9ebbc17b2e2393ea7f079c9e0b67d`
+
+### Change Summary
+
+`vibepro judgment disposition record` と、運用経路の `judgment outcome record` が disposition を書くときに、任意の `--reviewed-by &lt;actor&gt;` を読む。保存先は disposition JSON の `reviewed_by`。値なしの末尾 `--reviewed-by` はエラーにしない。
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:572:end -->
+
+<!-- vibepro-release-pr:573:start -->
+## [#573](https://github.com/Unson-LLC/vibepro/pull/573) fix: refuse non-genuine judgment runs
+
+- Author: @sintariran
+- Merged: 2026-10-14T11:44:46Z
+- Commit: `96b46104d78ede6dbf570d24c1368bd8dca16afd`
+
+### Change Summary
+
+Judgment adoption rejects input VibePro did not prepare. A draft receipt and the adoption record are HMAC-signed. The receipt binds the PR number, source head, `prepared_at`, `advisory`, and `blocking`. The adoption signature covers `reviewed_by`. Keys shorter than 32 characters are refused.
+
+### Compatibility
+
+Prepare, adopt, evaluate, and audit fail until `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` is set to at least 32 characters and a pull request number is available. `--reviewed-by` must be `human:&lt;id&gt;` or `agent:&lt;id&gt;`. Rewriting `reviewed_by` on an adoption fails audit.
+
+### User Action
+
+Store a key of at least 32 characters in Infisical (https://infisical.unson.jp) and inject `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` into the environment that runs prepare, adopt, evaluate, and audit. Set `VIBEPRO_JUDGMENT_PR_NUMBER` to the current pull request.
+
+<!-- vibepro-release-pr:573:end -->
+
+<!-- vibepro-release-pr:574:start -->
+## [#574](https://github.com/Unson-LLC/vibepro/pull/574) fix: judgment prepare reads Story headings
+
+- Author: @sintariran
+- Merged: 2026-10-14T12:00:15Z
+- Commit: `8df6a15207146c0c1ffebde047817d447991a5dc`
+
+### Change Summary
+
+`judgment prepare` fills judgment fields from Story headings, including the Japanese aliases. Headings inside fences and indented code are ignored. An unclosed fence, or a fence whose supposed close carries an info string, stays open and warns.
+
+### Compatibility
+
+Stories without these headings keep the uncertain draft and emit the no-section warning. An unclosed fence adds a second warning.
+
+### User Action
+
+Put the judgment frame and options under the headings above when the draft should be evaluable without editing the JSON. Close fences with a bare `` ``` `` or `~~~` line.
+
+<!-- vibepro-release-pr:574:end -->

@@ -30,6 +30,7 @@ import {
   doctorBrainbaseIntegration,
   getBrainbaseIntegrationStatus,
   reconcileBrainbaseOutbox,
+  rebindBrainbaseContext,
   renderBrainbaseContextBinding,
   renderBrainbaseDoctor,
   renderBrainbaseIntegrationStatus,
@@ -66,6 +67,7 @@ import { renderVerificationRunSummary, runVerificationCommand } from './verifica
 import {
   adoptJudgmentInput,
   evaluateOperationalJudgmentWorkflow,
+  auditJudgmentAdoptions,
   getJudgmentOperationalStatus,
   listPendingJudgmentWork,
   prepareOperationalJudgmentInput,
@@ -74,6 +76,7 @@ import {
   recordOperationalJudgmentOutcome,
   renderJudgmentAdoptionSummary,
   renderJudgmentApplicabilitySummary,
+  renderJudgmentAuditSummary,
   renderJudgmentDispositionSummary,
   renderJudgmentOperationalEvaluationSummary,
   renderJudgmentOperationalStatus,
@@ -104,7 +107,8 @@ import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
-import { bindTaskAuthority } from './task-authority.js';
+import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
+import { analyzeTaskPlan, readTrackedTaskObservations, readTrackedTaskPlan, validateTaskPlan } from './task-plan.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
   assertPreSpecReadinessForFinalSpec,
@@ -231,13 +235,14 @@ Usage:
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro judgment suggest --input <json> [--json]
   vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]
-  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]  # --run-id is refused unless VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1; receipt HMAC requires VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY from Infisical and VIBEPRO_JUDGMENT_PR_NUMBER
+  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <human:id|agent:id> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
-  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
+  vibepro judgment audit [repo] [--json]  # exit 1 is blocking: advisory false and blocking true
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
@@ -259,13 +264,16 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # applicable=yes when an engineering choice is still open (2+ viable options, unverified problem/effect, or unobserved value of a structural addition = a VALUE/SIMPLIFY/VALIDATE decision remains); no only when an adopted Story/Architecture/Spec/plan already fixes the single option. Tenant/authority scope is not this criterion
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
   vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON入力ファイル>] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase rebind [repo] --id <story-id> --input <fresh-managed-handoff.json> --previous-digest <receipt-digest> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro integration brainbase status [repo] [--id <story-id>] [--json]
   vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
@@ -353,13 +361,14 @@ Usage:
   vibepro judgment applicability record [repo] --id <story-id> --applicable <yes|no> --reason <text> [--recorded-by <actor>] [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro judgment suggest --input <json> [--json]
   vibepro judgment investigate [repo] --input <request-or-result.json> [--response <response.json>] [--graph <graph.json>] [--json]
-  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]
-  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <actor> --authority <source> --summary <text> [--json]
+  vibepro judgment prepare [repo] --id <story-id> [--run-id <id>] [--output <path>] [--expert-input <observations.json> | --investigation <result.json>] [--json]  # --run-id は VIBEPRO_ALLOW_JUDGMENT_RUN_ID=1 のときだけ使える。受領証の HMAC には Infisical の VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY と VIBEPRO_JUDGMENT_PR_NUMBER が必要
+  vibepro judgment input adopt [repo] --id <story-id> --input <input.json> --reviewed-by <human:id|agent:id> --authority <source> --summary <text> [--json]
   vibepro judgment evaluate [repo] --id <story-id> --input <adopted-input.json> [--json]
   vibepro judgment status [repo] --id <story-id> [--json]
-  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--recorded-by <actor>] [--json]
+  vibepro judgment disposition record [repo] --id <story-id> --run <run-id> --human-decision <accepted|modified|rejected> --effect <changed_plan|changed_review_focus|escalated_to_human|no_effect> --summary <text> [--evidence <ref>]... [--reviewed-by <actor>] [--recorded-by <actor>] [--json]
   vibepro judgment outcome record [repo] --id <story-id> --run <run-id> --status <confirmed|mixed|falsified|unknown> --summary <text> [--evidence <ref>]... [--observed-outcome <id:observation>]... [--json]
   vibepro judgment pending [repo] [--json]
+  vibepro judgment audit [repo] [--json]  # 終了コード 1 のとき advisory は false、blocking は true
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
@@ -374,11 +383,14 @@ Usage:
   vibepro story plan [repo] [--limit <n>] [--judgment-applicable <yes|no> --judgment-reason <text> --judgment-actor <actor>] [--judgment-input <reviewed.json> --judgment-reviewed-by <actor> --judgment-authority <source> --judgment-review-summary <text>] [--judgment-human-decision <accepted|modified|rejected> --judgment-effect <effect> --judgment-disposition-summary <text>] [--judgment-outcome-status <confirmed|mixed|falsified|unknown> --judgment-outcome-summary <text> --judgment-evidence <ref> --judgment-observed-outcome <key:value>]... [--json]  # 工学的な選択がまだ残る（実行可能な選択肢が2つ以上、問題や効果が未検証、構造追加の価値が未観測 = VALUE/SIMPLIFY/VALIDATE の判断が残る）なら yes。採択済みの Story/Architecture/Spec/plan が単一の選択肢を固定している時だけ no。tenant 境界や権限はこの基準ではない
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
+  vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON input file>] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--push-remote <name>] [--repo <owner/name>] [--title <title>] [--dry-run] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro integration brainbase bind [repo] --id <story-id> --input <handoff.json> [--json]
+  vibepro integration brainbase rebind [repo] --id <story-id> --input <fresh-managed-handoff.json> --previous-digest <receipt-digest> [--json]
   vibepro integration brainbase event [repo] --id <story-id> --summary <verified-learning> [--json]
   vibepro integration brainbase status [repo] [--id <story-id>] [--json]
   vibepro integration brainbase doctor [repo] [--id <story-id>] [--json]
@@ -1011,12 +1023,14 @@ async function dispatchCli(argv, io = {}) {
           runId: getOption(rest, '--run-id'),
           outputPath: getOption(rest, '--output'),
           expertInputPath: expertInputPath ?? undefined,
-          investigationInputPath: investigationInputPath ?? undefined
+          investigationInputPath: investigationInputPath ?? undefined,
+          env: io.env ?? process.env
         };
         const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
         const result = status.applicable === null
           ? await prepareJudgmentInput(repoRoot, options)
           : await prepareOperationalJudgmentInput(repoRoot, options);
+        for (const warning of result.section_warnings ?? []) write(stderr, `${warning}\n`);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
 `
@@ -1031,7 +1045,8 @@ async function dispatchCli(argv, io = {}) {
           inputPath: getOption(rest, '--input'),
           reviewedBy: getOption(rest, '--reviewed-by'),
           authority: getOption(rest, '--authority'),
-          summary: getOption(rest, '--summary')
+          summary: getOption(rest, '--summary'),
+          env: io.env ?? process.env
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
@@ -1042,7 +1057,8 @@ async function dispatchCli(argv, io = {}) {
       if (subcommand === 'evaluate') {
         const options = {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          inputPath: getOption(rest, '--input')
+          inputPath: getOption(rest, '--input'),
+          env: io.env ?? process.env
         };
         const status = await getJudgmentOperationalStatus(repoRoot, options.storyId);
         const result = status.applicable === null
@@ -1055,6 +1071,14 @@ async function dispatchCli(argv, io = {}) {
             ? renderJudgmentEvaluationSummary(result)
             : renderJudgmentOperationalEvaluationSummary(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'audit') {
+        const result = await auditJudgmentAdoptions(repoRoot, { env: io.env ?? process.env });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}
+`
+          : renderJudgmentAuditSummary(result));
+        return { exitCode: result.ok ? 0 : 1, command, subcommand, result };
       }
       if (subcommand === 'status') {
         const result = await getJudgmentOperationalStatus(
@@ -1075,7 +1099,8 @@ async function dispatchCli(argv, io = {}) {
           effect: getOption(rest, '--effect'),
           summary: getOption(rest, '--summary'),
           evidenceRefs: getOptions(rest, '--evidence'),
-          recordedBy: getOption(rest, '--recorded-by')
+          recordedBy: getOption(rest, '--recorded-by'),
+          reviewedBy: getOption(rest, '--reviewed-by')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
@@ -1111,7 +1136,8 @@ async function dispatchCli(argv, io = {}) {
             effect: getOption(rest, '--effect'),
             summary: getOption(rest, '--summary'),
             evidenceRefs: getOptions(rest, '--evidence'),
-            recordedBy: getOption(rest, '--recorded-by')
+            recordedBy: getOption(rest, '--recorded-by'),
+            reviewedBy: getOption(rest, '--reviewed-by')
           });
         }
         const result = await recordOperationalJudgmentOutcome(repoRoot, {
@@ -1395,7 +1421,8 @@ ${renderHelp()}`);
           judgmentOutcomeStatus: getOption(rest, '--judgment-outcome-status'),
           judgmentOutcomeSummary: getOption(rest, '--judgment-outcome-summary'),
           judgmentEvidenceRefs: getOptions(rest, '--judgment-evidence'),
-          judgmentObservedOutcomes: getOptions(rest, '--judgment-observed-outcome')
+          judgmentObservedOutcomes: getOptions(rest, '--judgment-observed-outcome'),
+          env: io.env ?? process.env
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.plan, null, 2)}\n`
@@ -1408,11 +1435,61 @@ ${renderHelp()}`);
 
     if (command === 'task') {
       const subcommand = rest[0];
-      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
+      if (subcommand === 'plan') {
+        const planCommand = rest[1];
+        const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        if (planCommand === 'validate') {
+          const input = await readTrackedTaskPlan(repoRoot, getOption(rest, '--input'));
+          const plan = validateTaskPlan(input.document, {
+            storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+            repository: getOption(rest, '--repository')
+          });
+          const observationsInput = getOption(rest, '--observations');
+          const observations = observationsInput
+            ? await readTrackedTaskObservations(repoRoot, observationsInput)
+            : null;
+          const analysis = analyzeTaskPlan(plan, { observations: observations?.observations ?? [] });
+          const result = {
+            input_path: input.path,
+            ...(observations ? { observations_path: observations.path } : {}),
+            plan,
+            analysis
+          };
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderTaskPlanSummary('validate', result));
+          return { exitCode: 0, command, subcommand: 'plan validate', result };
+        }
+        if (planCommand === 'read') {
+          const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+          if (!storyId) throw new Error('task plan read requires --id <story-id>');
+          const accepted = await readAcceptedTaskAuthorityStrict(repoRoot, storyId);
+          const plan = acceptedAuthorityToPlan(accepted);
+          const observationsInput = getOption(rest, '--observations');
+          const observations = observationsInput
+            ? await readTrackedTaskObservations(repoRoot, observationsInput)
+            : null;
+          const analysis = plan
+            ? analyzeTaskPlan(plan, { observations: observations?.observations ?? [] })
+            : null;
+          const result = {
+            accepted,
+            ...(observations ? { observations_path: observations.path } : {}),
+            analysis
+          };
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderTaskPlanSummary('read', result));
+          return { exitCode: 0, command, subcommand: 'plan read', result };
+        }
+        write(stderr, `Unknown task plan command: ${planCommand ?? ''}\n\n${renderHelp()}`);
+        return { exitCode: 1, command, subcommand: 'plan' };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
       if (subcommand === 'bind') {
         const result = await bindTaskAuthority(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
@@ -1469,6 +1546,9 @@ ${renderHelp()}`);
       if (subcommand === 'prepare') {
         const jsonOutput = hasFlag(rest, '--json');
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
+        const deployHandoff = hasFlag(rest, '--deploy-handoff')
+          ? await readDeployHandoffInput(getOption(rest, '--deploy-handoff'))
+          : undefined;
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
           commandName: 'pr prepare'
@@ -1481,7 +1561,8 @@ ${renderHelp()}`);
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           language: getOption(rest, '--language'),
-          env: io.env ?? process.env
+          env: io.env ?? process.env,
+          deployHandoff
         });
         write(stdout, jsonOutput
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
@@ -1532,6 +1613,18 @@ if (command === 'integration') {
     const result = await bindBrainbaseContext(repoRoot, {
       storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
       input: getOption(rest, '--input'),
+      env: io.env
+    });
+    write(stdout, hasFlag(rest, '--json')
+      ? `${JSON.stringify(result, null, 2)}\n`
+      : renderBrainbaseContextBinding(result));
+    return { exitCode: 0, command, subcommand: `${provider}-${action}`, result };
+  }
+  if (action === 'rebind') {
+    const result = await rebindBrainbaseContext(repoRoot, {
+      storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+      input: getOption(rest, '--input'),
+      expectedPreviousDigest: getOption(rest, '--previous-digest'),
       env: io.env
     });
     write(stdout, hasFlag(rest, '--json')
@@ -2104,6 +2197,60 @@ function renderOutcomeHelp(subcommand = null, language = null) {
     : `VibePro Outcome\n\nコマンド:\n  vibepro outcome record   downstream outcome observationを記録します。\n  vibepro outcome refresh  canonical outcome revisionを再構築して永続化します。\n\n各コマンドの正確なオプションは --help で確認できます。\n`;
 }
 
+function acceptedAuthorityToPlan(accepted) {
+  if (accepted.schema_version !== '0.2.0') return null;
+  return {
+    schema_version: accepted.schema_version,
+    repository: accepted.repository,
+    story_id: accepted.story_id,
+    plan_version: accepted.plan_version,
+    intent: accepted.intent,
+    tasks: accepted.tasks.map((task) => ({
+      task_id: task.id,
+      story_id: task.story_id,
+      ...(task.title == null ? {} : { title: task.title }),
+      allowed_paths: task.allowed_paths,
+      acceptance_criteria: task.acceptance_criteria,
+      ...(task.depends_on == null ? {} : { depends_on: task.depends_on }),
+      ...(task.status == null ? {} : { status: task.status }),
+      purpose: task.purpose,
+      out_of_scope: task.out_of_scope,
+      dependencies: task.dependencies,
+      contracts: task.contracts,
+      assignment: task.assignment,
+      integration: task.integration
+    }))
+  };
+}
+
+function renderTaskPlanSummary(command, result) {
+  const plan = result.plan ?? acceptedAuthorityToPlan(result.accepted);
+  const analysis = result.analysis;
+  const lines = [
+    `task plan ${command}: ${analysis?.status ?? 'accepted'}`,
+    `story: ${plan?.story_id ?? result.accepted?.story_id ?? 'unknown'}`,
+    `plan version: ${plan?.plan_version ?? result.accepted?.plan_version ?? 'legacy'}`,
+    `tasks: ${plan?.tasks.length ?? result.accepted?.task_count ?? 0}`
+  ];
+  if (analysis) {
+    lines.push(`dispatch ready: ${analysis.dispatch_ready ? 'yes' : 'no'}`);
+    const readyStages = analysis.ready_stages ?? { start: analysis.ready_task_ids ?? [], verify: [], integrate: [] };
+    lines.push(`startable: ${readyStages.start.join(', ') || 'none'}`);
+    lines.push(`verify-ready: ${readyStages.verify.join(', ') || 'none'}`);
+    lines.push(`integrate-ready: ${readyStages.integrate.join(', ') || 'none'}`);
+    // Keep the legacy label for operators/scripts that still scan the
+    // human-readable summary; it now explicitly means start candidates.
+    lines.push(`ready: ${analysis.ready_task_ids.join(', ') || 'none'}`);
+    lines.push(`blocked: ${analysis.blocked_task_ids.join(', ') || 'none'}`);
+    lines.push(`observations: ${analysis.observation_count}`);
+    if (analysis.diagnostics.length > 0) {
+      lines.push('diagnostics:');
+      for (const diagnostic of analysis.diagnostics) lines.push(`- ${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
 function resolveDiagnosisPhaseOption(args) {
   if (hasFlag(args, '--pre-architecture')) return 'design-input';
   return getOption(args, '--phase');
@@ -2113,6 +2260,24 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
+}
+
+async function readDeployHandoffInput(inputPath) {
+  if (!inputPath || inputPath.startsWith('--')) {
+    throw new Error('pr prepare --deploy-handoff requires a JSON input file');
+  }
+  const resolvedPath = path.resolve(inputPath);
+  let raw;
+  try {
+    raw = await readFile(resolvedPath, 'utf8');
+  } catch (error) {
+    throw new Error(`Unable to read deploy handoff input: ${resolvedPath}`, { cause: error });
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`Deploy handoff input must be valid JSON: ${resolvedPath}`, { cause: error });
+  }
 }
 
 function renderProcessRecordStoreResult(subcommand, result) {

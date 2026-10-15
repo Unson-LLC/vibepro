@@ -1444,9 +1444,45 @@
         "started_at": null,
         "due_at": null,
         "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-disposition-reviewed-by",
+        "title": "judgment disposition record が --reviewed-by を保存しない",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-14",
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-reject-nongenuine-judgment-runs",
+        "title": "手作りの判断runを採択できないようにする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-prepare-reads-story-judgment",
+        "title": "judgment prepare が Story の見出しを判断入力に読む",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
       }
     ],
-    "current_story_id": "story-vibepro-brainbase-outcome-case-binding-v2"
+    "current_story_id": "story-vibepro-disposition-reviewed-by"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }

@@ -6,7 +6,8 @@ import { spawnSync } from 'node:child_process';
 import os, { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { createEntrypointIo, isDirectExecution, main, resolveEntrypointIo } from '../bin/vibepro.js';
+import { createEntrypointIo, isDirectExecution, main, resolveEntrypointIo, resolveDevelopmentProgressSender } from '../bin/vibepro.js';
+import { publishDevelopmentProgress } from '../src/codex-subagent-host.js';
 
 const entrypointPath = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
 
@@ -60,6 +61,31 @@ test('binary entrypoint resolves an explicit Codex host module without enumerati
   assert.equal(io.codexSubagentHost.marker, root);
 });
 
+test('binary entrypoint injects a Brainbase sender only with explicit configuration', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-entrypoint-progress-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(path.join(root, 'host.mjs'), `
+    export function createCodexSubagentHost({ developmentProgressSender }) {
+      return {
+        senderConfigured: typeof developmentProgressSender?.send === 'function'
+          && typeof developmentProgressSender?.readback === 'function',
+        targetOrigin: developmentProgressSender?.target?.origin ?? null,
+      };
+    }
+  `);
+  const io = await resolveEntrypointIo({
+    stdout: { write() {} }, stderr: { write() {} },
+    env: {
+      VIBEPRO_CODEX_HOST_MODULE: './host.mjs',
+      BRAINBASE_DEVELOPMENT_API_URL: 'https://brainbase.example.test',
+      BRAINBASE_DEVELOPMENT_API_TOKEN: 'test-token',
+    },
+    cwd: () => root,
+  });
+  assert.equal(io.codexSubagentHost.senderConfigured, true);
+  assert.equal(io.codexSubagentHost.targetOrigin, 'https://brainbase.example.test');
+});
+
 test('runtime commands bind the Codex host to the explicit repository instead of shell cwd', async (t) => {
   const shellRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-entrypoint-shell-'));
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-entrypoint-repo-'));
@@ -70,6 +96,26 @@ test('runtime commands bind the Codex host to the explicit repository instead of
     stdout: { write() {} }, stderr: { write() {} }, env: { VIBEPRO_CODEX_HOST_MODULE: './host.mjs' }, cwd: () => shellRoot
   }, ['execute', 'runtime-poll', repoRoot, '--story-id', 'story']);
   assert.equal(io.codexSubagentHost.marker, repoRoot);
+});
+
+test('invalid optional Brainbase settings preserve local host initialization and a failure receipt', async () => {
+  for (const configuration of [
+    { BRAINBASE_DEVELOPMENT_API_URL: 'https://brainbase.example.test' },
+    { BRAINBASE_DEVELOPMENT_API_TOKEN: 'secret-sentinel' },
+    { BRAINBASE_DEVELOPMENT_API_URL: 'invalid-url', BRAINBASE_DEVELOPMENT_API_TOKEN: 'secret-sentinel' },
+    { BRAINBASE_DEVELOPMENT_API_URL: 'https://brainbase.example.test', BRAINBASE_DEVELOPMENT_API_TOKEN: 'invalid token' },
+  ]) {
+    const sender = resolveDevelopmentProgressSender(configuration);
+    assert.deepEqual(await publishDevelopmentProgress({ sender }), {
+      status: 'unconfigured', reason: 'development_progress_configuration_invalid',
+    });
+    assert.doesNotMatch(JSON.stringify(sender), /secret-sentinel|invalid token|invalid-url/);
+    const io = await resolveEntrypointIo({
+      stdout: { write() {} }, stderr: { write() {} }, env: configuration,
+      cwd: () => process.cwd(),
+    });
+    assert.equal(typeof io.codexSubagentHost.spawn, 'function');
+  }
 });
 
 test('direct execution predicate accepts the real entrypoint and a symlink to it', async (t) => {
