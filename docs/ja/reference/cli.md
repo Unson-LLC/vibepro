@@ -57,7 +57,7 @@ Story・Specと検証結果を確認し、必要に応じて `review prepare` �
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
-  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--force] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]

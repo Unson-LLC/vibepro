@@ -57,7 +57,7 @@ A passing record requires an existing `--inspection-input` outside `.vibepro`. C
   vibepro guard target [repo] --push-url <URL> [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
-  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--force] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]

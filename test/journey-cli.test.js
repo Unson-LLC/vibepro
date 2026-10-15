@@ -113,3 +113,75 @@ test('journey curate routes --input, --id and --output to curateJourneyMap', asy
   assert.equal(curated.curation_status, 'curated');
   assert.equal(curated.curation.input_path, 'fixture-judgments.json');
 });
+
+async function makeCuratableRepo() {
+  const repo = await makeRepo();
+  const derive = capture();
+  await runCli(['journey', 'derive', repo, '--json'], derive.io);
+  const pack = JSON.parse(derive.out);
+  // Test fixture only: resolves every derived item so output handling can be exercised.
+  const fixture = {
+    conflicts: Object.fromEntries((pack.conflicts ?? []).map((item) => [item.id, { status: 'accepted' }])),
+    open_questions: Object.fromEntries((pack.open_questions ?? []).map((item) => [item.id, { status: 'accepted' }]))
+  };
+  await writeFile(path.join(repo, 'fixture-judgments.json'), JSON.stringify(fixture));
+  return repo;
+}
+
+test('journey --id without a value fails with exit 1', async () => {
+  const repo = await makeRepo();
+  for (const argv of [
+    ['journey', 'derive', repo, '--id'],
+    ['journey', 'derive', repo, '--id', '--json'],
+    ['journey', 'handoff', repo, '--id', '--json'],
+    ['journey', 'curate', repo, '--input', 'j.json', '--id', '--output', 'x.json']
+  ]) {
+    const c = capture();
+    const result = await runCli(argv, c.io);
+    assert.equal(result.exitCode, 1, argv.join(' '));
+    assert.match(c.err, /--id requires a value/);
+    assert.equal(c.out, '');
+  }
+});
+
+test('journey curate --output refuses paths outside the repo', async () => {
+  const repo = await makeCuratableRepo();
+  const outside = await mkdtemp(path.join(tmpdir(), 'vibepro-journey-outside-'));
+  for (const target of ['../escape.json', '../../escape.json', 'out/../../escape.json', path.join(outside, 'abs.json'), '.']) {
+    const c = capture();
+    const result = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', '--output', target], c.io);
+    assert.equal(result.exitCode, 1, target);
+    assert.match(c.err, /must resolve to a file inside the repo/, target);
+  }
+  await assert.rejects(readFile(path.join(path.dirname(repo), 'escape.json'), 'utf8'));
+  await assert.rejects(readFile(path.join(outside, 'abs.json'), 'utf8'));
+});
+
+test('journey curate --output refuses to overwrite unless --force, default path still works', async () => {
+  const repo = await makeCuratableRepo();
+  const def = capture();
+  assert.equal((await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json'], def.io)).exitCode, 0, def.err);
+  const defAgain = capture();
+  assert.equal((await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json'], defAgain.io)).exitCode, 0, defAgain.err);
+
+  const target = path.join(repo, 'out-existing.json');
+  await writeFile(target, 'KEEP');
+  const blocked = capture();
+  const refused = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', '--output', 'out-existing.json'], blocked.io);
+  assert.equal(refused.exitCode, 1);
+  assert.match(blocked.err, /already exists; pass --force/);
+  assert.equal(await readFile(target, 'utf8'), 'KEEP');
+
+  const forced = capture();
+  const ok = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', '--output', 'out-existing.json', '--force'], forced.io);
+  assert.equal(ok.exitCode, 0, forced.err);
+  assert.equal(JSON.parse(await readFile(target, 'utf8')).curation_status, 'curated');
+});
+
+test('help documents --force for journey curate in both languages', async () => {
+  for (const language of ['en', 'ja']) {
+    const c = capture();
+    await runCli(['help', '--language', language], c.io);
+    assert.match(c.out, /vibepro journey curate .*--output <path>\] \[--force\]/);
+  }
+});
