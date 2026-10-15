@@ -44,3 +44,7 @@ period: 2026-10
 - [ ] JSC-3: `walking_skeleton.required_step_ids` を設定した Journey だけ、必須 step がその値になる。
 - [ ] JSC-4: curate input の `add_steps` で Story のない step を足せ、`walking_skeleton_required` で必須にできる。`add_open_questions` で未解決の論点を足せる。
 - [ ] JSC-5: 形式の誤り、既存と重なる論点 ID、derive 後の scope の変更では、curate は書き込まずに失敗する。
+- [ ] JSC-6: `add_steps[].story_ids` が derive の `source_story_ids` にない（存在しない、または scope 外の）Story を含むとき、curate は書き込まずに失敗する。walking skeleton を誤って covered にしない。
+- [ ] JSC-7: 未知の `after_step_id`、別 activity の step を指す `after_step_id`、2つの activity に置かれる `step_id` では、curate は書き込まずに失敗する。
+- [ ] JSC-8: 設定した `walking_skeleton.required_step_ids` が、`add_steps` を足したあとの backbone に step として存在しないとき、curate は書き込まずに失敗する。
+- [ ] JSC-9: `add_open_questions` の中で ID が重なると失敗する。既存 step への追加で label を省いたときは、既存の label を保つ。

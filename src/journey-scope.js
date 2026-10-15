@@ -81,7 +81,7 @@ export function normalizeAddedSteps(value) {
     return {
       step_id: stepId,
       activity_id: activityId,
-      label: String(item.label ?? stepId),
+      label: item.label === undefined || item.label === null || String(item.label).trim() === '' ? null : String(item.label),
       story_ids: parseTagList(item.story_ids),
       after_step_id: item.after_step_id ? String(item.after_step_id) : null,
       walking_skeleton_required: item.walking_skeleton_required === true,
@@ -93,11 +93,14 @@ export function normalizeAddedSteps(value) {
 export function normalizeAddedOpenQuestions(value) {
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value)) throw new Error('journey curate add_open_questions must be an array');
+  const seen = new Set();
   return value.map((item, index) => {
     const id = String(item?.id ?? '').trim();
     const question = String(item?.question ?? '').trim();
     if (!id) throw new Error(`journey curate add_open_questions[${index}] requires id`);
     if (!question) throw new Error(`journey curate add_open_questions[${index}] requires question`);
+    if (seen.has(id)) throw new Error(`journey curate add_open_questions[${index}] duplicates id within add_open_questions: ${id}`);
+    seen.add(id);
     return {
       id,
       kind: item.kind ? String(item.kind) : 'curated_question',
@@ -108,6 +111,46 @@ export function normalizeAddedOpenQuestions(value) {
       curation: item.status ? { status: String(item.status).toLowerCase(), reason: item.reason ?? null } : null
     };
   });
+}
+
+// Validate curate additions against the derived context pack before anything
+// is written. Every check throws, so curate stops without writing an artifact.
+// - add_steps[].story_ids must be in source_story_ids (in-scope, existing
+//   Stories); otherwise an unknown or out-of-scope id could mark a
+//   walking-skeleton step as covered.
+// - a step_id may live in only one activity (existing backbone + additions).
+// - after_step_id must name a step already in the same activity, or one added
+//   earlier in add_steps to that activity.
+// - configured walking_skeleton.required_step_ids must exist in the curated
+//   backbone (add them with add_steps when no Story places them yet).
+export function validateCurateAdditions(contextPack, addedSteps, { configuredRequiredStepIds = null } = {}) {
+  const sourceStoryIds = new Set(contextPack.source_story_ids ?? []);
+  const stepActivity = new Map();
+  for (const activity of contextPack.backbone ?? []) {
+    for (const step of activity.steps ?? []) stepActivity.set(step.step_id, activity.activity_id);
+  }
+  addedSteps.forEach((added, index) => {
+    const outOfScope = added.story_ids.filter((id) => !sourceStoryIds.has(id));
+    if (outOfScope.length > 0) {
+      throw new Error(`journey curate add_steps[${index}] (${added.step_id}) story_ids are not in this journey's source_story_ids (unknown or out of scope): ${outOfScope.join(', ')}`);
+    }
+    const knownActivity = stepActivity.get(added.step_id);
+    if (knownActivity && knownActivity !== added.activity_id) {
+      throw new Error(`journey curate add_steps[${index}] step_id ${added.step_id} already belongs to activity ${knownActivity}; a step_id can appear in only one activity`);
+    }
+    if (added.after_step_id) {
+      const afterActivity = stepActivity.get(added.after_step_id);
+      if (!afterActivity) throw new Error(`journey curate add_steps[${index}] after_step_id is unknown: ${added.after_step_id}`);
+      if (afterActivity !== added.activity_id) {
+        throw new Error(`journey curate add_steps[${index}] after_step_id ${added.after_step_id} is in activity ${afterActivity}, not ${added.activity_id}`);
+      }
+    }
+    stepActivity.set(added.step_id, added.activity_id);
+  });
+  const unknownRequired = (configuredRequiredStepIds ?? []).filter((id) => !stepActivity.has(id));
+  if (unknownRequired.length > 0) {
+    throw new Error(`journey walking_skeleton.required_step_ids are not steps in the curated backbone: ${unknownRequired.join(', ')}. Add them with add_steps or fix .vibepro/config.json.`);
+  }
 }
 
 export function applyAddedSteps(backbone, addedSteps, { activityLabel } = {}) {
@@ -128,7 +171,7 @@ export function applyAddedSteps(backbone, addedSteps, { activityLabel } = {}) {
     }
     const step = {
       step_id: added.step_id,
-      label: added.label,
+      label: added.label ?? added.step_id,
       order: 0,
       story_ids: added.story_ids,
       story_labels: {},

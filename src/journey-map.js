@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { discoverPrArtifactStoryIds, resolveGateArtifactFile, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import {
-  applyAddedSteps, filterStoriesByScope, normalizeAddedOpenQuestions, normalizeAddedSteps, normalizeJourneyScope,
+  applyAddedSteps, filterStoriesByScope, validateCurateAdditions, normalizeAddedOpenQuestions, normalizeAddedSteps, normalizeJourneyScope,
   parseTagList, readJourneyConfig, recomputeWalkingSkeleton, resolveConfiguredRequiredSteps, sameJourneyScope
 } from './journey-scope.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -219,7 +219,8 @@ export async function curateJourneyMap(repoRoot, options = {}) {
   const judgments = parseJudgmentInput(await readFile(inputAbsolutePath, 'utf8'), inputAbsolutePath);
   const conflictDecisions = normalizeJudgments(judgments.conflicts ?? judgments.conflict_resolutions);
   const questionDecisions = normalizeJudgments(judgments.open_questions ?? judgments.open_question_resolutions ?? judgments.questions);
-  const scope = normalizeJourneyScope(options.scope ?? (await readJourneyConfig(root, journeyId)).scope);
+  const journeyConfig = await readJourneyConfig(root, journeyId);
+  const scope = normalizeJourneyScope(options.scope ?? journeyConfig.scope);
   if (!sameJourneyScope(scope, contextPack.scope ?? null)) {
     throw new Error(`Journey scope differs from the latest context pack. Rerun \`vibepro journey derive . --id ${journeyId}\` before curating.`);
   }
@@ -228,6 +229,7 @@ export async function curateJourneyMap(repoRoot, options = {}) {
   const existingQuestionIds = new Set((contextPack.open_questions ?? []).map((question) => question.id));
   const duplicate = addedQuestions.find((question) => existingQuestionIds.has(question.id));
   if (duplicate) throw new Error(`journey curate add_open_questions id already exists: ${duplicate.id}`);
+  validateCurateAdditions(contextPack, addedSteps, { configuredRequiredStepIds: resolveConfiguredRequiredSteps(journeyConfig) });
   const missing = collectUnhandledJourneyItems(contextPack, { conflictDecisions, questionDecisions });
   if (missing.length > 0) {
     throw new Error([

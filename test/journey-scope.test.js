@@ -139,3 +139,89 @@ test('JSC-5 curate rejects malformed additions, duplicate question ids and a sco
     /scope differs/
   );
 });
+
+async function readStatus(repo) {
+  try {
+    return JSON.parse(await readFile(path.join(repo, '.vibepro', 'journeys', 'agent-registration.json'), 'utf8')).curation_status;
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function deferAll(journey) {
+  return Object.fromEntries((journey.open_questions ?? []).map((q) => [q.id, { status: 'deferred', reason: 'later' }]));
+}
+
+test('JSC-6 curate rejects add_steps story_ids that are unknown or outside the journey scope and writes nothing', async () => {
+  const repo = await setupRepo({
+    journeyConfig: { scope: { story_tags: ['journey-9'] }, walking_skeleton: { required_step_ids: ['agent-connect-request', 'agent-approve'] } }
+  });
+  const { journey } = await deriveJourneyMap(repo, { journeyId: 'agent-registration' });
+  const before = await readStatus(repo);
+  const base = { open_questions: await deferAll(journey) };
+  for (const storyId of ['billing-pay', 'no-such-story']) {
+    const input = await writeInput(repo, {
+      ...base,
+      add_steps: [{ activity_id: 'activation', step_id: 'agent-task-readback', story_ids: [storyId], walking_skeleton_required: true }]
+    });
+    await assert.rejects(curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: input }), new RegExp(`not in this journey's source_story_ids.*${storyId}`));
+    assert.equal(await readStatus(repo), before);
+  }
+  const inScope = await writeInput(repo, {
+    ...base,
+    add_steps: [{ activity_id: 'activation', step_id: 'agent-task-readback', story_ids: ['journey9-approve'], walking_skeleton_required: true }]
+  });
+  const { journey: curated } = await curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: inScope });
+  assert.ok(curated.walking_skeleton.covered_step_ids.includes('agent-task-readback'));
+});
+
+test('JSC-7 curate rejects unknown after_step_id and a step_id placed in a second activity', async () => {
+  const repo = await setupRepo({ journeyConfig: { scope: { story_tags: ['journey-9'] } } });
+  const { journey } = await deriveJourneyMap(repo, { journeyId: 'agent-registration' });
+  const base = { open_questions: await deferAll(journey) };
+  const unknownAfter = await writeInput(repo, { ...base, add_steps: [{ activity_id: 'activation', step_id: 'x-step', after_step_id: 'nope' }] });
+  await assert.rejects(curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: unknownAfter }), /after_step_id is unknown: nope/);
+  const otherActivity = await writeInput(repo, { ...base, add_steps: [{ activity_id: 'retention', step_id: 'agent-approve' }] });
+  await assert.rejects(curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: otherActivity }), /already belongs to activity activation/);
+  const twiceAdded = await writeInput(repo, {
+    ...base,
+    add_steps: [{ activity_id: 'activation', step_id: 'new-step' }, { activity_id: 'retention', step_id: 'new-step' }]
+  });
+  await assert.rejects(curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: twiceAdded }), /only one activity/);
+  const chained = await writeInput(repo, {
+    ...base,
+    add_steps: [{ activity_id: 'activation', step_id: 'new-a', after_step_id: 'agent-approve' }, { activity_id: 'activation', step_id: 'new-b', after_step_id: 'new-a' }]
+  });
+  const { journey: curated } = await curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: chained });
+  const ids = curated.backbone.find((a) => a.activity_id === 'activation').steps.map((s) => s.step_id);
+  assert.deepEqual(ids.slice(ids.indexOf('agent-approve'), ids.indexOf('agent-approve') + 3), ['agent-approve', 'new-a', 'new-b']);
+});
+
+test('JSC-8 curate rejects configured required_step_ids that are not steps after additions', async () => {
+  const repo = await setupRepo({
+    journeyConfig: { scope: { story_tags: ['journey-9'] }, walking_skeleton: { required_step_ids: ['agent-approve', 'agent-task-readback'] } }
+  });
+  const { journey } = await deriveJourneyMap(repo, { journeyId: 'agent-registration' });
+  const base = { open_questions: await deferAll(journey) };
+  const missing = await writeInput(repo, base);
+  await assert.rejects(curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: missing }), /required_step_ids are not steps in the curated backbone: agent-task-readback/);
+  const added = await writeInput(repo, { ...base, add_steps: [{ activity_id: 'activation', step_id: 'agent-task-readback' }] });
+  const { journey: curated } = await curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: added });
+  assert.ok(curated.walking_skeleton.gaps.some((gap) => gap.step_id === 'agent-task-readback'));
+});
+
+test('JSC-9 curate rejects duplicate ids inside add_open_questions and keeps an existing label when add has none', async () => {
+  const repo = await setupRepo({ journeyConfig: { scope: { story_tags: ['journey-9'] } } });
+  const { journey } = await deriveJourneyMap(repo, { journeyId: 'agent-registration' });
+  const base = { open_questions: await deferAll(journey) };
+  const dup = await writeInput(repo, { ...base, add_open_questions: [{ id: 'q-1', question: 'a' }, { id: 'q-1', question: 'b' }] });
+  await assert.rejects(curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: dup }), /duplicates id within add_open_questions: q-1/);
+  const original = journey.backbone.flatMap((a) => a.steps).find((s) => s.step_id === 'agent-approve').label;
+  const noLabel = await writeInput(repo, { ...base, add_steps: [{ activity_id: 'activation', step_id: 'agent-approve', story_ids: ['journey9-connect'] }] });
+  const { journey: curated } = await curateJourneyMap(repo, { journeyId: 'agent-registration', inputPath: noLabel });
+  const step = curated.backbone.flatMap((a) => a.steps).find((s) => s.step_id === 'agent-approve');
+  assert.equal(step.label, original);
+  assert.notEqual(step.label, 'agent-approve');
+  assert.ok(step.story_ids.includes('journey9-connect'));
+});
