@@ -1492,6 +1492,18 @@
         "started_at": null,
         "due_at": null,
         "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-journey-scope-steps-curate",
+        "title": "Journey を Story の範囲で絞り、必須 step と curate での step・論点の追加を扱う",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "feature"
       }
     ],
     "current_story_id": "story-vibepro-disposition-reviewed-by"
