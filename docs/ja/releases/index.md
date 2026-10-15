@@ -758,3 +758,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:583:start -->
 - [PR #583](https://github.com/Unson-LLC/vibepro/pull/583) — [2026-10](/ja/releases/2026-10): ci: npm-publish uses npm ci and asserts a clean checkout before pack
 <!-- vibepro-release-index-pr:583:end -->
+
+<!-- vibepro-release-index-pr:584:start -->
+- [PR #584](https://github.com/Unson-LLC/vibepro/pull/584) — [2026-10](/ja/releases/2026-10): fix(release): npm readback を --prefer-online と使い捨て cache で収束させる
+<!-- vibepro-release-index-pr:584:end -->
