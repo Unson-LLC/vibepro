@@ -969,6 +969,40 @@ test('PCR-CON-005 serializes an interleaved older release with an atomic lease',
   assert.deepEqual(sleeps, [1_000, 10_000]);
 });
 
+test('PCR-CON-009 manual npm publish installs from the lockfile and proves a clean checkout before pack', async () => {
+  const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
+  assert.match(manualWorkflow, /^\s+- run: npm ci$/mu);
+  assert.doesNotMatch(manualWorkflow, /npm install\b/u);
+  assert.match(manualWorkflow, /runs-on: \[self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2\]/u);
+  assert.doesNotMatch(manualWorkflow, /--provenance|id-token/u);
+  const cleanIndex = manualWorkflow.indexOf('- name: Assert clean checkout before publish');
+  assert.ok(cleanIndex > manualWorkflow.indexOf('npm run pack:dry-run'));
+  assert.ok(cleanIndex < manualWorkflow.indexOf('- name: Publish'));
+  assert.match(manualWorkflow.slice(cleanIndex), /git status --porcelain[\s\S]*exit 1/u);
+});
+
+test('PCR-CON-011 no workflow installs dependencies with npm install', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const dir = new URL('../.github/workflows/', import.meta.url);
+  const files = (await readdir(dir)).filter((name) => /\.ya?ml$/u.test(name));
+  assert.ok(files.includes('ci.yml'));
+  for (const name of files) {
+    const text = await readFile(new URL(name, dir), 'utf8');
+    assert.doesNotMatch(text, /\bnpm (install|i)\b/u, `${name} must use npm ci`);
+  }
+  const ci = await readFile(new URL('ci.yml', dir), 'utf8');
+  assert.match(ci, /^\s+- run: npm ci$/mu);
+});
+
+test('PCR-CON-010 npm ci leaves the committed lockfile unchanged so the runtime-manifest dirty guard passes', async () => {
+  const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
+  const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.equal(lock.lockfileVersion, 3);
+  assert.equal(lock.packages[''].version, packageJson.version);
+  const guard = await readFile(new URL('../scripts/runtime-manifest.mjs', import.meta.url), 'utf8');
+  assert.match(guard, /Refusing to pack VibePro from a dirty Git checkout/u);
+});
+
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');

@@ -754,3 +754,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:581:start -->
 - [PR #581](https://github.com/Unson-LLC/vibepro/pull/581) — [2026-10](/releases/2026-10): ci: drop id-token permission from npm publish (self-hosted, no provenance)
 <!-- vibepro-release-index-pr:581:end -->
+
+<!-- vibepro-release-index-pr:583:start -->
+- [PR #583](https://github.com/Unson-LLC/vibepro/pull/583) — [2026-10](/releases/2026-10): ci: npm-publish uses npm ci and asserts a clean checkout before pack
+<!-- vibepro-release-index-pr:583:end -->

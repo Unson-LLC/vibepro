@@ -3898,3 +3898,24 @@ Put the judgment frame and options under the headings above when the draft shoul
 なし
 
 <!-- vibepro-release-pr:581:end -->
+
+<!-- vibepro-release-pr:583:start -->
+## [#583](https://github.com/Unson-LLC/vibepro/pull/583) ci: npm-publish uses npm ci and asserts a clean checkout before pack
+
+- Author: @sintariran
+- Merged: 2026-10-15T12:10:01Z
+- Commit: `040c053f9e7e3a8ac67dcd79291b84a780e28052`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:583:end -->
