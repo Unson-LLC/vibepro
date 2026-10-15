@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { monotonicElapsed, monotonicNow } from '../src/monotonic-clock.js';
 import {
   executeManagedCommand,
   executeManagedOperation
@@ -16,7 +17,7 @@ test('managed command finitely settles, escalates SIGTERM to SIGKILL, and observ
   t.after(async () => rm(root, { recursive: true, force: true }));
   const script = `trap '' TERM; echo $$ > '${pidFile}'; while :; do sleep 1; done`;
 
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await executeManagedCommand({
     command: ['/bin/sh', ['-c', script]],
     stage: 'fixture.real-hanging-child',
@@ -30,7 +31,7 @@ test('managed command finitely settles, escalates SIGTERM to SIGKILL, and observ
   assert.equal(result.termination.term_sent, true);
   assert.equal(result.termination.kill_sent, true);
   assert.equal(result.termination.close_observed, true);
-  assert.ok(Date.now() - startedAt < 2_000, 'timeout lifecycle must finitely settle');
+  assert.ok(monotonicElapsed(startedAt) < 2_000, 'timeout lifecycle must finitely settle');
   const pid = Number(await readFile(pidFile, 'utf8'));
   await assertProcessGone(pid);
 });
@@ -80,7 +81,7 @@ test('managed command bounds and redacts stdout stderr and command diagnostics',
 
 test('managed operation enforces an outer deadline on a non-settling injected runner', async () => {
   let aborted = false;
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await executeManagedOperation({
     stage: 'fixture.injected-runner',
     timeoutMs: 50,
@@ -93,12 +94,12 @@ test('managed operation enforces an outer deadline on a non-settling injected ru
   assert.equal(result.failure_kind, 'runner_timeout');
   assert.equal(result.termination.abort_requested, true);
   assert.equal(aborted, true);
-  assert.ok(Date.now() - startedAt < 1_000);
+  assert.ok(monotonicElapsed(startedAt) < 1_000);
 });
 
 async function assertProcessGone(pid) {
-  const deadline = Date.now() + 1_000;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < 1_000) {
     try {
       process.kill(pid, 0);
     } catch (error) {

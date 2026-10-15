@@ -11,6 +11,7 @@ import { buildContentBinding } from './content-binding.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRuntimeIntegrity } from './runtime-info.js';
 import { enqueueBrainbaseLearningCandidate } from './brainbase-integration.js';
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -501,8 +502,8 @@ async function withEvidenceLock(evidencePath, action) {
 }
 
 async function acquireLock(lockPath) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < EVIDENCE_LOCK_TIMEOUT_MS) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < EVIDENCE_LOCK_TIMEOUT_MS) {
     try {
       await mkdir(lockPath);
       return;

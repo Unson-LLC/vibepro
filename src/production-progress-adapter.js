@@ -1,5 +1,6 @@
 import path from 'node:path';
 
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 import { readAcceptedTaskAuthorityStrict } from './task-authority.js';
 
 export const PRODUCTION_PROGRESS_PLAN_SCHEMA_VERSION = '0.2.0';
@@ -296,11 +297,12 @@ function buildRequest(value, repoRoot, mapping, plan) {
 }
 
 async function waitForConfirmed(events, timeoutMs, pollMs) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     const confirmed = events.find((event) => event?.development_progress?.status === 'confirmed');
     if (confirmed) return { status: 'confirmed', event: confirmed };
-    await new Promise((resolve) => setTimeout(resolve, Math.min(pollMs, Math.max(1, deadline - Date.now()))));
+    const remaining = Math.max(1, timeoutMs - monotonicElapsed(startedAt));
+    await new Promise((resolve) => setTimeout(resolve, Math.min(pollMs, remaining)));
   }
   const hasProgressReceipt = events.some((event) => event?.development_progress);
   return {

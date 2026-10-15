@@ -6,6 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { createCodexSubagentHost } from '../../src/codex-subagent-host.js';
+import { monotonicElapsed, monotonicNow } from '../../src/monotonic-clock.js';
 
 // story-vibepro-codex-host-containment-test-load-tolerance E2E flow-replay.
 // This replays the real spawn -> shutdown -> containment lifecycle through
@@ -44,8 +45,8 @@ async function writeAtomicPidFixture(repoRoot) {
 }
 
 async function waitFor(predicate, { timeoutMs = 10000 } = {}) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     if (await predicate()) return;
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
@@ -126,10 +127,10 @@ test('production Codex host containment wait succeeds well inside the widened 30
   const started = await host.spawn(runtimeRequest(repoRoot));
   const childPid = await waitForChildPid(childPidPath, { timeoutMs: 300000 });
 
-  const shutdownStartedAt = Date.now();
+  const shutdownStartedAt = monotonicNow();
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'e2e_containment_deadline' });
   await waitFor(async () => !isProcessAlive(childPid), { timeoutMs: 300000 });
-  const observedMs = Date.now() - shutdownStartedAt;
+  const observedMs = monotonicElapsed(shutdownStartedAt);
 
   assert.equal(isProcessAlive(childPid), false, 'the codex child is reaped inside the 300000ms deadline (ac:2)');
   assert.equal(observedMs < 300000, true,

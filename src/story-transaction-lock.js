@@ -3,6 +3,7 @@ import { lstat, mkdir, readFile, rename, rm, stat, utimes, writeFile } from 'nod
 import os from 'node:os';
 import path from 'node:path';
 
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const LOCK_TIMEOUT_MS = 30_000;
@@ -60,8 +61,8 @@ async function acquireDirectoryLock(lockPath, options = {}) {
   const heartbeatMs = options.heartbeatMs ?? LOCK_HEARTBEAT_MS;
   const processAlive = options.processAlive ?? isProcessAlive;
   await mkdir(path.dirname(lockPath), { recursive: true });
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     const token = randomUUID();
     const stagingPath = `${lockPath}.prepare-${token}`;
     const ownership = {
@@ -79,7 +80,7 @@ async function acquireDirectoryLock(lockPath, options = {}) {
     try {
       await prepareLockGeneration(stagingPath, token);
       await options.beforeAcquireRename?.({ lockPath, stagingPath, token });
-      if (Date.now() - startedAt >= timeoutMs) break;
+      if (monotonicElapsed(startedAt) >= timeoutMs) break;
       await assertPathAbsent(lockPath);
       await rename(stagingPath, lockPath);
       startLockHeartbeat(ownership, heartbeatMs);
@@ -172,8 +173,8 @@ async function acquireMutationGuard(lockPath, {
   processAlive = isProcessAlive
 } = {}) {
   const transitionPath = path.join(lockPath, TRANSITION_DIR);
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     const token = randomUUID();
     const stagingPath = path.join(lockPath, `${TRANSITION_DIR}.prepare-${token}`);
     try {
@@ -414,7 +415,7 @@ function generationName(token) {
 }
 
 function remainingMs(startedAt, timeoutMs) {
-  return Math.max(0, timeoutMs - (Date.now() - startedAt));
+  return Math.max(0, timeoutMs - monotonicElapsed(startedAt));
 }
 
 function isProcessAlive(pid) {

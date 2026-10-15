@@ -1480,6 +1480,18 @@
         "started_at": null,
         "due_at": null,
         "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-monotonic-verification-clock",
+        "title": "検証の経過時間とタイムアウトを単調時計で測る",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
       }
     ],
     "current_story_id": "story-vibepro-disposition-reviewed-by"
