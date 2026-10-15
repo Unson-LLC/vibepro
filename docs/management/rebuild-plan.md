@@ -20,6 +20,8 @@
 | 5 | review lifecycle会計・authorize/close儀式 | agent-review.jsから`startAgentReviewLifecycle`/`authorizeAgentReviewDispatch`/`closeAgentReviewLifecycle`等を削除、`review`コマンドをprepare/record/summaryへ縮小、`independent-review-orchestrator` `review-surface-violations` |
 | 6 | Gate DAG本体とcli/pr-managerの最終縮小（旧Slice 4残の audit 連鎖を含む） | pr-manager.jsから`evaluateGateReadiness` `buildGateOverride` `buildPrFreshnessGate` `buildArtifactConsistencyGate` `shipPullRequest` `autopilotPullRequest` 等を削除し、`preparePullRequest`（証跡要約）と`createPullRequest`のみへ。同時に execution-state / merge-manager / outcome-manager / canonical-audit / canonical-persistence / merge-public-projection / session-efficiency-audit / usage-report / evidence-cost-budget / strict-head-binding 全系を削除（依存の根がpr-managerなので一括でしか剥がれない） |
 
+> Slice 1 注記（PR #585）: `journey-map` 系は削除対象だが、`vibepro journey derive/handoff/curate` の CLI ルーティングは #585 で追加済み。Slice 1 実施時は `journey` コマンド（および今後の `journey judgments prepare`）を残すか別途判断すること。
+
 ## 残す最終形（v-next コマンド面）
 
 `init` / `config` / `skills` / `codex` / `doctor` / `status` / `workspace` / `store` / `story`（list/add/select/archive/report） / `spec`（fingerprint/readiness/write/show/drift） / `review`（prepare/record + PR向けsummary） / `pr`（prepare=証跡要約, create） / `verify`（run/record/import-ci: テスト実行と結果記録のみ、Gate契約なし）
