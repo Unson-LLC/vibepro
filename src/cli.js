@@ -153,6 +153,7 @@ import {
   selectStory
 } from './story-manager.js';
 import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
+import { curateJourneyMap, deriveJourneyMap, renderJourneyCurateSummary, renderJourneyHandoff, renderJourneyMap } from './journey-map.js';
 import {
   installBundledSkills,
   lintBundledSkills,
@@ -244,6 +245,9 @@ Usage:
   vibepro judgment pending [repo] [--json]
   vibepro judgment audit [repo] [--json]  # exit 1 is blocking: advisory false and blocking true
   vibepro guard target [repo] --push-url <URL> [--json]
+  vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey handoff [repo] [--id <journey-id>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -370,6 +374,9 @@ Usage:
   vibepro judgment pending [repo] [--json]
   vibepro judgment audit [repo] [--json]  # 終了コード 1 のとき advisory は false、blocking は true
   vibepro guard target [repo] --push-url <URL> [--json]
+  vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey handoff [repo] [--id <journey-id>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--output <path>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -409,7 +416,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'runtime', 'doctor', 'status', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'integration', 'pr', 'story', 'trace', 'task',
   'decision', 'judgment', 'verify', 'review', 'guard', 'spec', 'report',
-  'workspace', 'worktree', 'store'
+  'workspace', 'worktree', 'store', 'journey'
 ];
 
 // Commands whose success produces durable process records (reviews, verify
@@ -1166,6 +1173,36 @@ async function dispatchCli(argv, io = {}) {
 
 ${renderHelp()}`);
       return { exitCode: 1, command };
+    }
+
+    if (command === 'journey') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'derive' || subcommand === 'handoff') {
+        const result = await deriveJourneyMap(repoRoot, { journeyId: getOption(rest, '--id') });
+        const payload = subcommand === 'handoff' ? result.journey.handoff : result.journey;
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(payload, null, 2)}\n`
+          : (subcommand === 'handoff' ? renderJourneyHandoff(result) : renderJourneyMap(result)));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'curate') {
+        const result = await curateJourneyMap(repoRoot, {
+          journeyId: getOption(rest, '--id'),
+          inputPath: getOption(rest, '--input'),
+          outputPath: getOption(rest, '--output')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.journey, null, 2)}\n`
+          : renderJourneyCurateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown journey command: ${subcommand}\n\n${renderHelp()}`);
+      return { exitCode: 1, command, subcommand };
     }
 
     if (command === 'guard') {
