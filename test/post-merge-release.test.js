@@ -1302,3 +1302,88 @@ test('post-merge first deployment executes the missing-selector fallback as full
   assert.match(recorded, /^validation_reason=trusted_base_selector_unavailable$/mu);
   assert.equal(await readFile(summary, 'utf8'), recorded);
 });
+
+test('PCR-CON-012 npm view readback revalidates with --prefer-online and no cache by default', async () => {
+  const { npmMetadata, npmVersions } = await import('../scripts/post-merge-release.mjs');
+  const calls = [];
+  const spawn = (command, args) => {
+    calls.push([command, ...args]);
+    return args.includes('versions')
+      ? { status: 0, stdout: '["0.2.0-beta.1"]', stderr: '' }
+      : { status: 0, stdout: '{"version":"0.2.0-beta.1","gitHead":"abc123"}', stderr: '' };
+  };
+  assert.deepEqual(npmMetadata('0.2.0-beta.1', { spawn }), { version: '0.2.0-beta.1', gitHead: 'abc123' });
+  assert.deepEqual(npmVersions({ spawn }), ['0.2.0-beta.1']);
+  for (const call of calls) {
+    assert.ok(call.includes('--prefer-online'), call.join(' '));
+    assert.ok(!call.includes('--cache'), call.join(' '));
+  }
+});
+
+test('PCR-CON-012 bypassCache uses a throwaway --cache dir and removes it', async () => {
+  const { existsSync } = await import('node:fs');
+  const { npmMetadata } = await import('../scripts/post-merge-release.mjs');
+  let cacheDirectory = '';
+  const spawn = (_command, args) => {
+    cacheDirectory = args[args.indexOf('--cache') + 1];
+    assert.equal(existsSync(cacheDirectory), true);
+    assert.ok(args.includes('--prefer-online'));
+    return { status: 1, stdout: '', stderr: 'npm error code E404\nNo match found for version 0.2.0-beta.1' };
+  };
+  assert.equal(npmMetadata('0.2.0-beta.1', { bypassCache: true, spawn }), null);
+  assert.match(cacheDirectory, /vibepro-npm-readback-cache-/);
+  assert.equal(existsSync(cacheDirectory), false);
+});
+
+test('PCR-CON-012 convergence window is 15 attempts / 301 s, longer than packument max-age 300 s', async () => {
+  const {
+    NPM_REGISTRY_CONVERGENCE_ATTEMPTS, NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS, npmRegistryConvergenceDelays
+  } = await import('../scripts/post-merge-release.mjs');
+  const delays = npmRegistryConvergenceDelays();
+  assert.equal(NPM_REGISTRY_CONVERGENCE_ATTEMPTS, 15);
+  assert.equal(delays.length, 14);
+  assert.equal(Math.max(...delays), NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS);
+  const total = delays.reduce((sum, value) => sum + value, 0);
+  assert.equal(total, 301_000);
+  assert.ok(total > 300_000);
+});
+
+test('PCR-CON-012 default readback waits the full window and bypasses the cache after the first attempt', async () => {
+  const delays = [];
+  const metadataOptions = [];
+  let reads = 0;
+  await assert.rejects(reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123',
+    metadata: (_version, options) => { reads += 1; metadataOptions.push(options); return null; },
+    versions: () => ['0.2.0-beta.1'],
+    execute: () => '',
+    delay: async (milliseconds) => { delays.push(milliseconds); }
+  }), /did not converge after 15 attempts/);
+  assert.equal(reads, 16);
+  assert.equal(metadataOptions[0], undefined);
+  assert.deepEqual(metadataOptions[1], { bypassCache: false });
+  for (const options of metadataOptions.slice(2)) assert.deepEqual(options, { bypassCache: true });
+  const postPublishDelays = delays.slice(-14);
+  assert.equal(postPublishDelays.reduce((sum, value) => sum + value, 0), 301_000);
+});
+
+test('PCR-CON-012 converges past a cached pre-publish 404 and reads dist-tags with --prefer-online', async () => {
+  let reads = 0;
+  const views = [];
+  const versionOptions = [];
+  const result = await reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123',
+    metadata: () => { reads += 1; return reads < 5 ? null : { version: '0.2.0-beta.1', gitHead: 'abc123' }; },
+    versions: (options) => { versionOptions.push(options); return ['0.2.0-beta.1']; },
+    execute: (command, args) => {
+      if (args[0] === 'view') { views.push(args); return JSON.stringify({ beta: '0.2.0-beta.1', latest: '0.2.0-beta.1' }); }
+      return '';
+    },
+    delay: async () => {}
+  });
+  assert.equal(result.gitHead, 'abc123');
+  assert.equal(reads, 5);
+  assert.deepEqual(versionOptions[0], { bypassCache: false });
+  assert.ok(views.length > 0);
+  for (const args of views) assert.ok(args.includes('--prefer-online'), args.join(' '));
+});

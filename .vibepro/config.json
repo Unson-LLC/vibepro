@@ -1506,6 +1506,18 @@
         "contract_type": "feature"
       },
       {
+        "story_id": "story-vibepro-npm-readback-prefer-online",
+        "title": "npm 公開後の readback を registry の cache に左右されず収束させる",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-15",
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
         "story_id": "story-vibepro-journey-cli-routing",
         "title": "vibepro journey derive / handoff / curate を CLI から実行できるようにする",
         "ssot": "local",
