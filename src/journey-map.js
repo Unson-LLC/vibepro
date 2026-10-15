@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { mkdir, open, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { discoverPrArtifactStoryIds, resolveGateArtifactFile, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -278,7 +279,20 @@ export async function curateJourneyMap(repoRoot, options = {}) {
     ? path.resolve(root, options.outputPath)
     : path.join(curatedDir, `${journeyId}.json`);
   await mkdir(path.dirname(curatedPath), { recursive: true });
-  await writeFile(curatedPath, `${JSON.stringify(curated, null, 2)}\n`);
+  if (options.outputPath) {
+    // Explicit --output: never follow a symlink at the final component, and without
+    // overwrite use an exclusive create (wx) so an existing file is never replaced.
+    const { O_WRONLY, O_CREAT, O_TRUNC, O_EXCL, O_NOFOLLOW } = fsConstants;
+    const flags = O_WRONLY | O_CREAT | O_NOFOLLOW | (options.overwrite ? O_TRUNC : O_EXCL);
+    const handle = await open(curatedPath, flags, 0o644);
+    try {
+      await handle.writeFile(`${JSON.stringify(curated, null, 2)}\n`);
+    } finally {
+      await handle.close();
+    }
+  } else {
+    await writeFile(curatedPath, `${JSON.stringify(curated, null, 2)}\n`);
+  }
 
   const manifest = await readManifest(root);
   manifest.journey = {
