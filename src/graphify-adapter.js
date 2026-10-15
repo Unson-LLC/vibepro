@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute } from './artifact-routing.js';
+import { monotonicNow } from './monotonic-clock.js';
 import { classifyTermination, createProgressDeadline } from './progress-deadline.js';
 
 const GRAPHIFY_FILES = ['graph.json', 'GRAPH_REPORT.md', 'graph.html'];
@@ -237,11 +238,12 @@ export function runProcess(command, args, options = {}) {
   } = options;
 
   return new Promise((resolve, reject) => {
+    const startedMono = monotonicNow();
     const kernel = createProgressDeadline({
       no_progress_deadline_ms: noProgressDeadlineMs,
       max_wall_clock_ms: maxWallClockMs,
-      started_at: Date.now(),
-      now: () => Date.now()
+      started_at: startedMono,
+      now: monotonicNow
     });
 
     let stdout = '';

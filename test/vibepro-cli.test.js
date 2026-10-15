@@ -6192,7 +6192,7 @@ test('--version prints the package version', async () => {
 });
 
 test('beta.30 release metadata and CLI report the exact candidate version', async () => {
-  const expectedVersion = '0.2.0-beta.30';
+  const expectedVersion = '0.2.0-beta.31';
   const packageJson = await readJson(path.resolve('package.json'));
   const packageLock = await readJson(path.resolve('package-lock.json'));
   let out = '';

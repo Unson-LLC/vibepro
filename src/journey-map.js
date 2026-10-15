@@ -3,6 +3,10 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { discoverPrArtifactStoryIds, resolveGateArtifactFile, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import {
+  applyAddedSteps, filterStoriesByScope, validateCurateAdditions, normalizeAddedOpenQuestions, normalizeAddedSteps, normalizeJourneyScope,
+  parseTagList, readJourneyConfig, recomputeWalkingSkeleton, resolveConfiguredRequiredSteps, sameJourneyScope
+} from './journey-scope.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const JOURNEY_SCHEMA_VERSION = '0.1.0';
@@ -48,11 +52,13 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
   await initWorkspace(root);
   const manifest = await readManifest(root);
   const journeyId = options.journeyId ?? DEFAULT_JOURNEY_ID;
+  const journeyConfig = await readJourneyConfig(root, journeyId);
+  const scope = normalizeJourneyScope(options.scope ?? journeyConfig.scope);
   const storyInputs = await readJourneyStoryInputs(root);
-  const sourceStories = storyInputs.filter((story) => story.status !== 'archived');
+  const sourceStories = filterStoriesByScope(storyInputs.filter((story) => story.status !== 'archived'), scope);
   const placements = sourceStories.map((story) => placeStory(story));
   const backbone = buildBackbone(placements);
-  const releaseSlices = buildReleaseSlices(placements, backbone);
+  const releaseSlices = buildReleaseSlices(placements, backbone, resolveConfiguredRequiredSteps(journeyConfig));
   const walkingSkeleton = buildWalkingSkeleton(backbone, releaseSlices);
   const conflicts = buildJourneyConflicts(placements);
   const unplacedStories = placements
@@ -88,6 +94,7 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
     authoritative: false,
     curation_status: 'needs_curated_journey',
     generated_at: generatedAt,
+    ...(scope ? { scope } : {}),
     source_story_ids: sourceStories.map((story) => story.story_id),
     source_digest: buildSourceDigest(sourceStories),
     source: {
@@ -212,6 +219,17 @@ export async function curateJourneyMap(repoRoot, options = {}) {
   const judgments = parseJudgmentInput(await readFile(inputAbsolutePath, 'utf8'), inputAbsolutePath);
   const conflictDecisions = normalizeJudgments(judgments.conflicts ?? judgments.conflict_resolutions);
   const questionDecisions = normalizeJudgments(judgments.open_questions ?? judgments.open_question_resolutions ?? judgments.questions);
+  const journeyConfig = await readJourneyConfig(root, journeyId);
+  const scope = normalizeJourneyScope(options.scope ?? journeyConfig.scope);
+  if (!sameJourneyScope(scope, contextPack.scope ?? null)) {
+    throw new Error(`Journey scope differs from the latest context pack. Rerun \`vibepro journey derive . --id ${journeyId}\` before curating.`);
+  }
+  const addedSteps = normalizeAddedSteps(judgments.add_steps);
+  const addedQuestions = normalizeAddedOpenQuestions(judgments.add_open_questions);
+  const existingQuestionIds = new Set((contextPack.open_questions ?? []).map((question) => question.id));
+  const duplicate = addedQuestions.find((question) => existingQuestionIds.has(question.id));
+  if (duplicate) throw new Error(`journey curate add_open_questions id already exists: ${duplicate.id}`);
+  validateCurateAdditions(contextPack, addedSteps, { configuredRequiredStepIds: resolveConfiguredRequiredSteps(journeyConfig) });
   const missing = collectUnhandledJourneyItems(contextPack, { conflictDecisions, questionDecisions });
   if (missing.length > 0) {
     throw new Error([
@@ -234,8 +252,11 @@ export async function curateJourneyMap(repoRoot, options = {}) {
       next_slice: judgments.next_slice ?? judgments.nextSlice ?? null,
       notes: judgments.notes ?? null,
       conflicts: Object.fromEntries(conflictDecisions),
-      open_questions: Object.fromEntries(questionDecisions)
+      open_questions: Object.fromEntries(questionDecisions),
+      added_steps: addedSteps,
+      added_open_questions: addedQuestions.map((question) => question.id)
     },
+    ...buildCuratedStructure(contextPack, addedSteps),
     conflicts: (contextPack.conflicts ?? []).map((conflict) => ({
       ...conflict,
       curation: conflictDecisions.get(conflict.id) ?? null
@@ -247,7 +268,7 @@ export async function curateJourneyMap(repoRoot, options = {}) {
         blocker: curation?.status ? false : question.blocker === true,
         curation
       };
-    })
+    }).concat(addedQuestions)
   };
   curated.handoff = buildJourneyHandoff(curated);
 
@@ -850,6 +871,7 @@ function parseStoryDoc(relativePath, content) {
     release_slice: frontmatter.release_slice ?? null,
     enabler_kind: frontmatter.enabler_kind ?? null,
     journey_to: frontmatter.journey_to ?? frontmatter.post_step_destination ?? null,
+    tags: parseTagList(frontmatter.journey_tags ?? frontmatter.tags),
     body,
     acceptance_focus: extractAcceptanceCriteria(body),
     source_types: ['story_doc'],
@@ -951,6 +973,7 @@ function normalizeStoryInput(story) {
     release_slice: story.release_slice ?? null,
     enabler_kind: story.enabler_kind ?? null,
     journey_to: story.journey_to ?? null,
+    tags: parseTagList(story.tags),
     body: story.body ?? '',
     acceptance_focus: story.acceptance_focus ?? story.derived_definition?.acceptance_focus ?? [],
     derived_definition: story.derived_definition ?? null,
@@ -974,6 +997,7 @@ function mergeStoryInput(a, b) {
     source_types: [...new Set([...(a.source_types ?? []), ...(b.source_types ?? [])])],
     source_paths: [...new Set([...(a.source_paths ?? []), ...(b.source_paths ?? [])])],
     acceptance_focus: [...new Set([...(a.acceptance_focus ?? []), ...(b.acceptance_focus ?? [])])],
+    tags: [...new Set([...(a.tags ?? []), ...(b.tags ?? [])])],
     spec_clauses: mergeEvidenceArray(a.spec_clauses, b.spec_clauses, (item) => item.id),
     surfaces: mergeEvidenceArray(a.surfaces, b.surfaces, (item) => `${item.kind}:${item.ref}`),
     gate_evidence: mergeEvidenceArray(a.gate_evidence, b.gate_evidence, (item) => `${item.kind}:${item.ref}`)
@@ -1171,7 +1195,7 @@ function buildBackbone(placements) {
     }));
 }
 
-function buildReleaseSlices(placements, backbone) {
+function buildReleaseSlices(placements, backbone, configuredRequiredStepIds = null) {
   return RELEASE_SLICE_ORDER.slice(0, 3).map((sliceId) => {
     const placed = placements.filter((placement) => placement.release_slice === sliceId);
     return {
@@ -1179,7 +1203,7 @@ function buildReleaseSlices(placements, backbone) {
       label: formatReleaseSliceName({ slice_id: sliceId }),
       kind: sliceId,
       story_ids: placed.map((placement) => placement.story_id),
-      required_step_ids: sliceId === 'walking_skeleton' ? inferWalkingSkeletonRequiredSteps(backbone) : [],
+      required_step_ids: sliceId === 'walking_skeleton' ? (configuredRequiredStepIds ?? inferWalkingSkeletonRequiredSteps(backbone)) : [],
       status: placed.length > 0 ? 'present' : 'empty'
     };
   });
@@ -1211,6 +1235,18 @@ function buildWalkingSkeleton(backbone, releaseSlices) {
     story_ids: steps
       .filter((step) => coveredStepIds.includes(step.step_id))
       .flatMap((step) => step.story_ids)
+  };
+}
+
+function buildCuratedStructure(contextPack, addedSteps) {
+  if (addedSteps.length === 0) return {};
+  const backbone = applyAddedSteps(contextPack.backbone ?? [], addedSteps, { activityLabel: (id) => ACTIVITY_LABELS[id] ?? id });
+  const required = [...new Set([...(contextPack.walking_skeleton?.required_step_ids ?? []),
+    ...addedSteps.filter((step) => step.walking_skeleton_required).map((step) => step.step_id)])];
+  return {
+    backbone,
+    walking_skeleton: recomputeWalkingSkeleton(backbone, required, (id) => inferStepLabel({}, id)),
+    release_slices: (contextPack.release_slices ?? []).map((slice) => (slice.slice_id === 'walking_skeleton' ? { ...slice, required_step_ids: required } : slice))
   };
 }
 
