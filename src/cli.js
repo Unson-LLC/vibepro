@@ -1205,7 +1205,8 @@ ${renderHelp()}`);
         const result = await curateJourneyMap(repoRoot, {
           journeyId: getOption(rest, '--id'),
           inputPath: getOption(rest, '--input'),
-          outputPath: outputCheck.outputPath
+          outputPath: outputCheck.outputPath,
+          overwrite: outputCheck.force === true
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.journey, null, 2)}\n`
@@ -2344,10 +2345,28 @@ async function validateJourneyOutputOption(repoRoot, args) {
   if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
     return { error: `journey curate: --output must resolve to a file inside the repo (${root}); refusing ${value}` };
   }
-  if (fs.existsSync(resolved) && !hasFlag(args, '--force')) {
+  // Reject symlinks anywhere between the repo root and the output path (lstat, never followed),
+  // including dangling ones, so the write cannot be redirected outside the repo.
+  const segments = path.relative(root, resolved).split(path.sep);
+  let cursor = root;
+  for (const segment of segments) {
+    cursor = path.join(cursor, segment);
+    let stat;
+    try {
+      stat = await fs.promises.lstat(cursor);
+    } catch (error) {
+      if (error?.code === 'ENOENT') break;
+      throw error;
+    }
+    if (stat.isSymbolicLink()) {
+      return { error: `journey curate: --output must not be or pass through a symlink; refusing ${value}` };
+    }
+  }
+  const force = hasFlag(args, '--force');
+  if (fs.existsSync(resolved) && !force) {
     return { error: `journey curate: --output ${value} already exists; pass --force to overwrite` };
   }
-  return { outputPath: resolved };
+  return { outputPath: resolved, force };
 }
 
 function getOption(args, name) {

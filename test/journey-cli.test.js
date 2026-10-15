@@ -1,7 +1,7 @@
 import './support/scratch-tmpdir.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -176,6 +176,52 @@ test('journey curate --output refuses to overwrite unless --force, default path 
   const ok = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', '--output', 'out-existing.json', '--force'], forced.io);
   assert.equal(ok.exitCode, 0, forced.err);
   assert.equal(JSON.parse(await readFile(target, 'utf8')).curation_status, 'curated');
+});
+
+test('journey curate --output refuses a directory symlink pointing outside the repo', async () => {
+  const repo = await makeCuratableRepo();
+  const outside = await mkdtemp(path.join(tmpdir(), 'vibepro-journey-outside-'));
+  await symlink(outside, path.join(repo, 'linkdir'));
+  const c = capture();
+  const result = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', '--output', 'linkdir/x.json', '--force'], c.io);
+  assert.equal(result.exitCode, 1);
+  assert.match(c.err, /must (resolve to a file inside the repo|not be or pass through a symlink)/);
+  assert.deepEqual(await readdir(outside), []);
+});
+
+test('journey curate --output refuses a file symlink even with --force', async () => {
+  const repo = await makeCuratableRepo();
+  const outside = await mkdtemp(path.join(tmpdir(), 'vibepro-journey-outside-'));
+  const victim = path.join(outside, 'victim.json');
+  await writeFile(victim, 'KEEP');
+  const inside = path.join(repo, 'inside.json');
+  await writeFile(inside, 'INSIDE');
+  for (const [name, target] of [['out-link.json', victim], ['in-link.json', inside]]) {
+    await symlink(target, path.join(repo, name));
+    const c = capture();
+    const result = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', '--output', name, '--force'], c.io);
+    assert.equal(result.exitCode, 1, name);
+    assert.match(c.err, /must (resolve to a file inside the repo|not be or pass through a symlink)/, name);
+  }
+  assert.equal(await readFile(victim, 'utf8'), 'KEEP');
+  assert.equal(await readFile(inside, 'utf8'), 'INSIDE');
+});
+
+test('journey curate --output refuses a dangling symlink whose target is outside the repo', async () => {
+  const repo = await makeCuratableRepo();
+  const outside = await mkdtemp(path.join(tmpdir(), 'vibepro-journey-outside-'));
+  const missing = path.join(outside, 'not-yet.json');
+  await symlink(missing, path.join(repo, 'dangling.json'));
+  await mkdir(path.join(outside, 'gone'));
+  await symlink(path.join(outside, 'gone', 'sub'), path.join(repo, 'dangling-dir'));
+  for (const argv of [['--output', 'dangling.json'], ['--output', 'dangling.json', '--force'], ['--output', 'dangling-dir/x.json']]) {
+    const c = capture();
+    const result = await runCli(['journey', 'curate', repo, '--input', 'fixture-judgments.json', ...argv], c.io);
+    assert.equal(result.exitCode, 1, argv.join(' '));
+    assert.match(c.err, /must not be or pass through a symlink/, argv.join(' '));
+  }
+  await assert.rejects(readFile(missing, 'utf8'));
+  assert.deepEqual(await readdir(path.join(outside, 'gone')), []);
 });
 
 test('help documents --force for journey curate in both languages', async () => {
