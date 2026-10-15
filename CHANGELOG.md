@@ -3877,3 +3877,24 @@ Put the judgment frame and options under the headings above when the draft shoul
 なし
 
 <!-- vibepro-release-pr:580:end -->
+
+<!-- vibepro-release-pr:581:start -->
+## [#581](https://github.com/Unson-LLC/vibepro/pull/581) ci: drop id-token permission from npm publish (self-hosted, no provenance)
+
+- Author: @sintariran
+- Merged: 2026-10-15T11:06:18Z
+- Commit: `45c31901f23ba9651b1acd432ef686749e53e82c`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:581:end -->

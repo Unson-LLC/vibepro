@@ -750,3 +750,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:580:start -->
 - [PR #580](https://github.com/Unson-LLC/vibepro/pull/580) — [2026-10](/releases/2026-10): feat: Journey scope, configurable walking-skeleton steps, and curate additions
 <!-- vibepro-release-index-pr:580:end -->
+
+<!-- vibepro-release-index-pr:581:start -->
+- [PR #581](https://github.com/Unson-LLC/vibepro/pull/581) — [2026-10](/releases/2026-10): ci: drop id-token permission from npm publish (self-hosted, no provenance)
+<!-- vibepro-release-index-pr:581:end -->
