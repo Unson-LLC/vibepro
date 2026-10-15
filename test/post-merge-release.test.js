@@ -1254,6 +1254,104 @@ test('PCR-CON-004 appends published-version history across sequential idempotent
   assert.deepEqual(await snapshot(), inconsistentSnapshot, 'semantic validation failure must not write any projection');
 });
 
+async function seedPublishedVersionDocs(root, documented) {
+  const history = (prose, betaThreeBody) => [
+    '# Channels',
+    '| Channel | Version | Authority |',
+    '| --- | --- | --- |',
+    `| npm \`latest\` | \`${documented}\` | Live npm registry dist-tag |`,
+    `| npm \`beta\` | \`${documented}\` | Live npm registry dist-tag |`,
+    `| Repository \`main\` | \`${documented}\` release source | package |`,
+    `## ${documented}`,
+    prose,
+    '## 0.2.0-beta.3',
+    betaThreeBody,
+    ''
+  ].join('\n');
+  const files = {
+    'docs/reference/version-history.md': history(
+      'Historical prose keeps 0.2.0-beta.30.',
+      'Body for 0.2.0-beta.3 stays.'
+    ),
+    'docs/ja/reference/version-history.md': history(
+      '履歴本文の0.2.0-beta.30は残す。',
+      '0.2.0-beta.3の見出し本文。'
+    ),
+    'docs/guide/release-and-audit.md': [
+      '## Upgrade to 0.1.9',
+      'Old upgrade stays.',
+      `## Upgrade to ${documented}`,
+      'Pin `vibepro@0.2.0-beta.2`.',
+      ''
+    ].join('\n'),
+    'docs/ja/guide/release-and-audit.md': [
+      '## 0.1.9へのupgrade',
+      '古いupgradeは残す。',
+      `## ${documented}へのupgrade`,
+      '`vibepro@0.2.0-beta.2`をpinする。',
+      ''
+    ].join('\n'),
+    'docs/.vitepress/config.mjs': `export default {\n  softwareVersion: '${documented}',\n};\n`,
+    'docs/releases/index.md': '| Version |\n| --- |\n',
+    'docs/ja/releases/index.md': '| Version |\n| --- |\n'
+  };
+  for (const [relative, content] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), content);
+  }
+}
+
+test('PCR-CON-013 advances a stale documented channel without reading npm dist-tags', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-version-gap-'));
+  await seedPublishedVersionDocs(root, '0.2.0-beta.30');
+  await projectPublishedVersion(root, '0.2.0-beta.31', '0.2.0-beta.32', '2026-10-15T17:02:00Z');
+  const projected = await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8');
+  await projectPublishedVersion(root, '0.2.0-beta.31', '0.2.0-beta.32', '2026-10-15T17:02:00Z');
+  assert.equal(await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8'), projected);
+
+  for (const relative of ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md']) {
+    const history = await readFile(path.join(root, relative), 'utf8');
+    assert.match(history, /\| npm `latest` \| `0\.2\.0-beta\.32` \|/);
+    assert.match(history, /\| npm `beta` \| `0\.2\.0-beta\.32` \|/);
+    assert.match(history, /\| Repository `main` \| `0\.2\.0-beta\.32` release source \|/);
+    assert.doesNotMatch(history, /0\.2\.0-beta\.320|0\.2\.0-beta\.310|0\.2\.0-beta\.31/);
+    const headings = [...history.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)$/gmu)].map((match) => match[1]);
+    assert.deepEqual(headings, ['0.2.0-beta.32', '0.2.0-beta.30', '0.2.0-beta.3']);
+  }
+  const english = await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8');
+  const japanese = await readFile(path.join(root, 'docs/ja/reference/version-history.md'), 'utf8');
+  assert.match(english, /Historical prose keeps 0\.2\.0-beta\.30\./);
+  assert.match(english, /Body for 0\.2\.0-beta\.3 stays\./);
+  assert.match(japanese, /履歴本文の0\.2\.0-beta\.30は残す。/);
+  assert.match(japanese, /0\.2\.0-beta\.3の見出し本文。/);
+
+  const guide = await readFile(path.join(root, 'docs/guide/release-and-audit.md'), 'utf8');
+  const jaGuide = await readFile(path.join(root, 'docs/ja/guide/release-and-audit.md'), 'utf8');
+  assert.match(guide, /## Upgrade to 0\.1\.9\nOld upgrade stays\./);
+  assert.match(guide, /## Upgrade to 0\.2\.0-beta\.32\nPin `vibepro@0\.2\.0-beta\.2`\./);
+  assert.doesNotMatch(guide, /## Upgrade to 0\.2\.0-beta\.30/);
+  assert.match(jaGuide, /## 0\.1\.9へのupgrade\n古いupgradeは残す。/);
+  assert.match(jaGuide, /## 0\.2\.0-beta\.32へのupgrade\n`vibepro@0\.2\.0-beta\.2`をpinする。/);
+  assert.match(await readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8'), /softwareVersion: '0\.2\.0-beta\.32'/);
+  assert.match(await readFile(path.join(root, 'docs/releases/index.md'), 'utf8'), /\/v\/0\.2\.0-beta\.32\)/);
+});
+
+test('PCR-CON-013 does not treat a prerelease prefix as the documented channel version', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-version-prefix-'));
+  await seedPublishedVersionDocs(root, '0.2.0-beta.30');
+  const before = Object.fromEntries(await Promise.all(
+    ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md', 'docs/guide/release-and-audit.md', 'docs/ja/guide/release-and-audit.md', 'docs/.vitepress/config.mjs']
+      .map(async (relative) => [relative, await readFile(path.join(root, relative), 'utf8')])
+  ));
+  await assert.rejects(
+    projectPublishedVersion(root, '0.2.0-beta.3', '0.2.0-beta.4', '2026-10-15T17:02:00Z'),
+    /\| npm `latest` \| identifies 0\.2\.0-beta\.30; must identify 0\.2\.0-beta\.3 or 0\.2\.0-beta\.4/
+  );
+  for (const [relative, content] of Object.entries(before)) {
+    assert.equal(await readFile(path.join(root, relative), 'utf8'), content);
+  }
+});
+
 test('post-merge docs release is not gated by an approval environment', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   assert.doesNotMatch(workflow, /^\s+environment:\s+npm\s*$/m);
