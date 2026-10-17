@@ -778,3 +778,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:591:start -->
 - [PR #591](https://github.com/Unson-LLC/vibepro/pull/591) — [2026-10](/releases/2026-10): feat: CLI-usable reasoned not_applicable exemption for multi-tenant applicability gate
 <!-- vibepro-release-index-pr:591:end -->
+
+<!-- vibepro-release-index-pr:589:start -->
+- [PR #589](https://github.com/Unson-LLC/vibepro/pull/589) — [2026-10](/releases/2026-10): feat(task-plan): add overlap_refs to schema 0.2.0
+<!-- vibepro-release-index-pr:589:end -->
