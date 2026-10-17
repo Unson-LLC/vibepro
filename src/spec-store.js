@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { WORKSPACE_DIR } from './workspace.js';
 import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
+import { recordMultiTenantApplicabilityDeclarationAudit } from './multi-tenant-applicability-audit.js';
 import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
 
 export const SPEC_SCHEMA_VERSION = '0.1.0';
@@ -71,14 +72,30 @@ export async function writeMultiTenantContract(repoRoot, storyId, contract, opti
     throw new Error('multi-tenant Contract rejected: explicit_non_applicability_required');
   }
 
+  const storyText = options.storyText ?? spec.story_context ?? '';
   const assessment = assessMultiTenantArchitecture({
-    storyText: options.storyText ?? spec.story_context ?? '',
+    storyText,
     contract,
     evidence: options.evidence,
     applicabilityEvidence: options.applicabilityEvidence,
     expectedHeadCommit: options.expectedHeadCommit,
     mode: 'final'
   });
+  const declaredNonApplicability = contract?.applicability === false || contract?.applicability === 'not_applicable';
+  const reasoned = assessment.reasoned_non_applicability;
+  if (declaredNonApplicability) {
+    await recordMultiTenantApplicabilityDeclarationAudit(repoRoot, {
+      story_id: storyId,
+      declared_applicability: contract?.applicability,
+      reason: reasoned?.reason ?? (typeof contract?.reason === 'string' ? contract.reason.trim() : null),
+      evidence_ref: reasoned?.evidence_ref ?? (typeof contract?.evidence_ref === 'string' ? contract.evidence_ref.trim() : null),
+      accepted: reasoned?.attempted
+        ? reasoned.accepted === true
+        : assessment.implementation_readiness?.status === 'ready',
+      refusal_reason: reasoned?.attempted && !reasoned.accepted ? reasoned.refusal_reason : null,
+      strong_signals: reasoned?.strong_signals ?? []
+    });
+  }
   const acceptedNonApplicability = assessment.status === 'not_applicable'
     && assessment.implementation_readiness?.status === 'ready';
   if (assessment.status !== 'ready' && !acceptedNonApplicability) {
