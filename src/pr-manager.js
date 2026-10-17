@@ -721,7 +721,7 @@ function summarizeSpec(acceptedSpec, draftSpec, storyId) {
       present: false,
       status: 'draft',
       story_id: draftSpec.story_id ?? storyId,
-      clause_count: (draftSpec.clauses ?? []).length
+      clause_count: Array.isArray(draftSpec.clauses) ? draftSpec.clauses.length : 0
     };
   }
   return { present: false, status: 'missing' };

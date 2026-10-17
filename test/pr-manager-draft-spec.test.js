@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { preparePullRequest, renderPrPrepareSummary } from '../src/pr-manager.js';
-import { getSpecDraftFile, writeDraftSpec, writeInferredSpec } from '../src/spec-store.js';
+import { getSpecDraftFile, readDraftSpec, writeDraftSpec, writeInferredSpec } from '../src/spec-store.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -136,6 +136,70 @@ test('pr prepare treats an invalid draft spec as missing without throwing', asyn
   const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
 
   assert.deepEqual(result.preparation.spec, { present: false, status: 'missing' });
+});
+
+test('pr prepare treats non-object drafts as missing', async () => {
+  const storyId = 'story-draft-spec';
+  for (const raw of [null, [], 123, 'x', true, {}]) {
+    const root = await setupRepo({ storyId });
+    await writeDraftSpec(root, storyId, raw);
+
+    assert.equal(await readDraftSpec(root, storyId), null);
+
+    const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
+
+    assert.deepEqual(result.preparation.spec, { present: false, status: 'missing' });
+
+    const summary = renderPrPrepareSummary(result);
+    assert.match(summary, /- spec: missing/);
+
+    const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+    assert.match(body, /- no accepted spec found for this story/);
+    assert.doesNotMatch(body, /undefined/);
+  }
+});
+
+test('pr prepare counts clauses as zero when clauses is not an array', async () => {
+  const storyId = 'story-draft-spec';
+  for (const clauses of ['abc', {}]) {
+    const root = await setupRepo({ storyId });
+    await writeDraftSpec(root, storyId, draft(clauses));
+
+    const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
+
+    assert.deepEqual(result.preparation.spec, {
+      present: false,
+      status: 'draft',
+      story_id: storyId,
+      clause_count: 0
+    });
+
+    const summary = renderPrPrepareSummary(result);
+    assert.match(summary, /- spec: draft \(not accepted\)/);
+
+    const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+    assert.match(body, new RegExp(`- draft spec present, not accepted \\(\`${storyId}\`, 0 clause\\(s\\)\\)`));
+    assert.doesNotMatch(body, /undefined/);
+  }
+});
+
+test('pr prepare counts an empty clauses array as zero clauses', async () => {
+  const storyId = 'story-draft-spec';
+  const root = await setupRepo({ storyId });
+  await writeDraftSpec(root, storyId, draft([]));
+
+  const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
+
+  assert.deepEqual(result.preparation.spec, {
+    present: false,
+    status: 'draft',
+    story_id: storyId,
+    clause_count: 0
+  });
+
+  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(body, new RegExp(`- draft spec present, not accepted \\(\`${storyId}\`, 0 clause\\(s\\)\\)`));
+  assert.doesNotMatch(body, /undefined/);
 });
 
 test('pr prepare draft spec leaves gate status and readiness identical to no spec', async () => {
