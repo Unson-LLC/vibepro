@@ -612,11 +612,6 @@ function observationMatches(observation, target, planVersion, local) {
   return expectedPlanVersion != null && observation.plan_version === expectedPlanVersion;
 }
 
-/**
- * Interface references are pinned to the declared contract version. A bare
- * contract id is ambiguous when a provider has published more than one
- * version, so it cannot resolve an interface dependency.
- */
 function parseStrictCompletionContractRef(value, index) {
   const label = `task plan overlap_refs ${index} completion_contract_ref`;
   if (typeof value !== 'string' || value.length === 0) {
@@ -631,12 +626,17 @@ function parseStrictCompletionContractRef(value, index) {
   if (!id || !version) {
     throw new Error(`${label} must pin id@version`);
   }
-  if (/\s/.test(id) || /\s/.test(version)) {
+  if (containsForbiddenCompletionContractRefChar(id) || containsForbiddenCompletionContractRefChar(version)) {
     throw new Error(`${label} id and version must not contain whitespace`);
   }
   return { id, version, ref: `${id}@${version}` };
 }
 
+/**
+ * Interface references are pinned to the declared contract version. A bare
+ * contract id is ambiguous when a provider has published more than one
+ * version, so it cannot resolve an interface dependency.
+ */
 function parseContractRef(value) {
   if (typeof value !== 'string') return null;
   const separator = value.lastIndexOf('@');
@@ -645,6 +645,10 @@ function parseContractRef(value) {
   const version = value.slice(separator + 1).trim();
   if (!id || !version) return null;
   return { id, version };
+}
+
+function containsForbiddenCompletionContractRefChar(value) {
+  return /[\s\u200b\ufeff]/i.test(value);
 }
 
 function requiredString(value, label) {

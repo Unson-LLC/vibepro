@@ -392,6 +392,14 @@ test('overlap_refs: rejects completion_contract_ref when id or version contains 
   );
 });
 
+test('overlap_refs: rejects completion_contract_ref when id or version contains a zero-width space', () => {
+  const zwsp = '\u200b';
+  assert.throws(
+    () => validateTaskPlan(twoTaskPlan([{ completion_contract_ref: `id${zwsp}@1`, task_ids: ['alpha', 'beta'] }])),
+    /must not contain whitespace/
+  );
+});
+
 test('overlap_refs: rejects a second ref that would duplicate id@1 after trimming padded whitespace', () => {
   assert.throws(
     () => validateTaskPlan(twoTaskPlan([
