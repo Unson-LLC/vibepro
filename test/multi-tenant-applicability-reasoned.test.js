@@ -50,7 +50,8 @@ async function initGit(repo) {
 
 test('isPlausibleMultiTenantEvidenceRef accepts and rejects expected shapes', () => {
   for (const rejected of [
-    'x', 'n/a', 'N/A', 'none', '///', '/', '../..', 'http://', 'https://', '-/-', 'a.b', 'x-y', 'na', 'tbd'
+    'x', 'n/a', 'N/A', 'none', '///', '/', '../..', 'http://', 'https://', '-/-', 'a.b', 'x-y', 'na', 'tbd',
+    'todo/wip', 'TODO-1', 'NA-1', 'see/below', 'http://n/a'
   ]) {
     assert.equal(isPlausibleMultiTenantEvidenceRef(rejected), false, `expected reject: ${rejected}`);
   }
@@ -222,6 +223,27 @@ test('strong multi-tenant signals in spec clauses refuse reasoned not_applicable
   assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
 });
 
+test('strong signals in spec.story_context without storyContext arg still require multi_tenant contract', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-spec-context-gate-'));
+  await writeFile(path.join(repo, 'cli.js'), 'export const color = "blue";\n');
+  const storyId = 'story-spec-context-gate';
+  const spec = {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    story_context: 'propagate tenant_id across cross-tenant boundaries for every queue.',
+    clauses: [{
+      id: 'TENANT-CTX-1',
+      type: 'scenario',
+      statement: 'Apply the propagation rule.',
+      origin: { code_refs: [{ file: 'cli.js', anchor: 'color' }] }
+    }]
+  };
+
+  const result = await validateSpec(repo, spec, { mode: 'final' });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_contract_missing'));
+});
+
 test('validateSpec without storyContext refuses reasoned not_applicable fail-safe', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-no-arg-'));
   const storyId = 'story-reasoned-na-no-arg';
@@ -233,6 +255,59 @@ test('validateSpec without storyContext refuses reasoned not_applicable fail-saf
   const result = await validateSpec(repo, spec, { mode: 'final' });
   assert.equal(result.ok, false);
   assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_story_missing'));
+});
+
+test('strong signals in top-level semantic_contract refuse reasoned not_applicable', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-top-semantic-'));
+  const storyId = 'story-reasoned-na-top-semantic';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'claimed out of scope',
+    evidence_ref: 'docs/example.md'
+  });
+  spec.clauses[0].statement = 'Update CLI colors only.';
+  spec.semantic_contract = { summary: 'tenant_id cross-tenant isolation required' };
+
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
+});
+
+test('strong signals in clause verifiable_by refuse reasoned not_applicable', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-verifiable-'));
+  const storyId = 'story-reasoned-na-verifiable';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'claimed out of scope',
+    evidence_ref: 'docs/example.md'
+  });
+  spec.clauses[0].statement = 'Update CLI colors only.';
+  spec.clauses[0].verifiable_by = 'integration test proving tenant_id propagation across tenants';
+
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
+});
+
+test('strong signals in clause acceptance_criteria array refuse reasoned not_applicable', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-ac-array-'));
+  const storyId = 'story-reasoned-na-ac-array';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'claimed out of scope',
+    evidence_ref: 'docs/example.md'
+  });
+  spec.clauses[0].statement = 'Update CLI colors only.';
+  spec.clauses[0].acceptance_criteria = [
+    'must deny cross-tenant access when tenant_id is ambiguous'
+  ];
+
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
 });
 
 test('strong signals in clause semantic_contract refuse reasoned not_applicable', async () => {

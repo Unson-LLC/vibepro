@@ -22,16 +22,31 @@ export function detectStrongMultiTenantSignals(storyText = '') {
   return STRONG_SIGNALS.filter(([, pattern]) => pattern.test(text)).map(([reason]) => reason);
 }
 
+function appendSemanticContractText(parts, value) {
+  if (typeof value === 'string' && value.trim()) {
+    parts.push(value);
+  } else if (value && typeof value === 'object') {
+    parts.push(JSON.stringify(value));
+  }
+}
+
 function appendClauseScanText(parts, clause) {
   if (!clause || typeof clause !== 'object') return;
-  for (const field of ['statement', 'rationale', 'expected', 'acceptance_criteria']) {
+  for (const field of ['statement', 'rationale', 'expected']) {
     if (typeof clause[field] === 'string' && clause[field].trim()) parts.push(clause[field]);
   }
-  const semanticContract = clause.semantic_contract;
-  if (typeof semanticContract === 'string' && semanticContract.trim()) {
-    parts.push(semanticContract);
-  } else if (semanticContract && typeof semanticContract === 'object') {
-    parts.push(JSON.stringify(semanticContract));
+  const acceptanceCriteria = clause.acceptance_criteria;
+  if (typeof acceptanceCriteria === 'string' && acceptanceCriteria.trim()) {
+    parts.push(acceptanceCriteria);
+  } else if (Array.isArray(acceptanceCriteria)) {
+    parts.push(acceptanceCriteria.map((entry) => String(entry ?? '')).join('\n'));
+  }
+  appendSemanticContractText(parts, clause.semantic_contract);
+  const verifiableBy = clause.verifiable_by;
+  if (typeof verifiableBy === 'string' && verifiableBy.trim()) {
+    parts.push(verifiableBy);
+  } else if (verifiableBy && typeof verifiableBy === 'object') {
+    parts.push(JSON.stringify(verifiableBy));
   }
 }
 
@@ -41,6 +56,7 @@ export function collectMultiTenantSpecScanText(spec) {
   if (typeof spec.story_context === 'string' && spec.story_context.trim()) {
     parts.push(spec.story_context);
   }
+  appendSemanticContractText(parts, spec.semantic_contract);
   for (const clause of spec.clauses ?? []) {
     appendClauseScanText(parts, clause);
   }
@@ -57,16 +73,25 @@ const EMPTY_MEANING_EVIDENCE_REFS = new Set([
   'n/a', 'na', 'none', 'tbd', 'tba', '-', '--', 'nil', 'null', 'unknown', '...', 'todo', 'wip'
 ]);
 
+function isEmptyMeaningEvidenceToken(token) {
+  const normalized = String(token ?? '').toLowerCase().replace(/\//g, '').replace(/\s+/g, '');
+  return EMPTY_MEANING_EVIDENCE_REFS.has(String(token ?? '').toLowerCase())
+    || EMPTY_MEANING_EVIDENCE_REFS.has(normalized);
+}
+
 export function isPlausibleMultiTenantEvidenceRef(value) {
   const ref = String(value ?? '').trim();
   if (!ref) return false;
 
   const collapsed = ref.toLowerCase().replace(/\//g, '').replace(/\s+/g, '');
-  if (EMPTY_MEANING_EVIDENCE_REFS.has(ref.toLowerCase()) || EMPTY_MEANING_EVIDENCE_REFS.has(collapsed)) {
+  if (isEmptyMeaningEvidenceToken(ref) || EMPTY_MEANING_EVIDENCE_REFS.has(collapsed)) {
     return false;
   }
 
   if (ref.startsWith('..')) return false;
+  if (/^todo\//i.test(ref)) return false;
+  if (/^see\/below$/i.test(ref)) return false;
+  if (/^(TODO|NA)-\d+$/i.test(ref)) return false;
   if (/^\/+$/.test(ref)) return false;
   if (/^-\/?-$/.test(ref)) return false;
   if (/^[a-zA-Z]-[a-zA-Z]$/.test(ref)) return false;
@@ -75,7 +100,12 @@ export function isPlausibleMultiTenantEvidenceRef(value) {
   if (/^https?:\/\//i.test(ref)) {
     try {
       const url = new URL(ref);
-      return Boolean(url.hostname);
+      if (!url.hostname || isEmptyMeaningEvidenceToken(url.hostname)) return false;
+      const authorityCollapsed = `${url.hostname}${url.pathname}`.toLowerCase().replace(/\//g, '');
+      if (isEmptyMeaningEvidenceToken(authorityCollapsed) || authorityCollapsed === 'na') return false;
+      const pathCollapsed = url.pathname.toLowerCase().replace(/\//g, '');
+      if (pathCollapsed && isEmptyMeaningEvidenceToken(pathCollapsed)) return false;
+      return true;
     } catch {
       return false;
     }
@@ -84,6 +114,7 @@ export function isPlausibleMultiTenantEvidenceRef(value) {
   if (ref.includes('/')) {
     const segments = ref.split('/').filter((segment) => segment.length > 0);
     if (segments.length === 0) return false;
+    if (segments.some((segment) => isEmptyMeaningEvidenceToken(segment))) return false;
     const last = segments[segments.length - 1];
     return last.length >= 2 && /[a-zA-Z0-9]/.test(last);
   }

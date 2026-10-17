@@ -123,12 +123,12 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     }
   }
 
-  const storySourceText = options.storyContext ?? '';
+  const applicabilityStoryText = options.storyContext ?? spec.story_context ?? '';
   const storySourcePresent = options.storyContext !== undefined
     ? options.storyContext.trim() !== ''
     : false;
   const multiTenantArchitecture = assessMultiTenantArchitecture({
-    storyText: storySourceText,
+    storyText: applicabilityStoryText,
     spec,
     storySourcePresent,
     contract: spec.multi_tenancy ?? null,
