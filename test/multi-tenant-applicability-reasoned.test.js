@@ -48,10 +48,18 @@ async function initGit(repo) {
   await execFileAsync('git', ['commit', '-m', 'chore: bootstrap'], { cwd: repo });
 }
 
-test('isPlausibleMultiTenantEvidenceRef rejects trivial values', () => {
-  assert.equal(isPlausibleMultiTenantEvidenceRef('x'), false);
-  assert.equal(isPlausibleMultiTenantEvidenceRef('docs/example.md'), true);
-  assert.equal(isPlausibleMultiTenantEvidenceRef('https://example.com/evidence'), true);
+test('isPlausibleMultiTenantEvidenceRef accepts and rejects expected shapes', () => {
+  for (const rejected of [
+    'x', 'n/a', 'N/A', 'none', '///', '/', '../..', 'http://', 'https://', '-/-', 'a.b', 'x-y', 'na', 'tbd'
+  ]) {
+    assert.equal(isPlausibleMultiTenantEvidenceRef(rejected), false, `expected reject: ${rejected}`);
+  }
+  assert.equal(isPlausibleMultiTenantEvidenceRef('docs/x.md'), true);
+  assert.equal(
+    isPlausibleMultiTenantEvidenceRef('https://github.com/owner/repo/blob/main/docs/x.md'),
+    true
+  );
+  assert.equal(isPlausibleMultiTenantEvidenceRef('ADR-012'), true);
 });
 
 test('reasoned not_applicable declaration passes spec validation in final mode', async () => {
@@ -96,7 +104,7 @@ test('draft mode does not write applicability audit records', async () => {
   );
 });
 
-test('duplicate final validations append only one audit line', async () => {
+test('duplicate final validations append only one audit line per commit', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-dedup-'));
   const storyId = 'story-reasoned-na-dedup';
   const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
@@ -105,21 +113,42 @@ test('duplicate final validations append only one audit line', async () => {
     reason: 'no tenant boundary',
     evidence_ref: 'docs/example.md'
   });
-  const options = { mode: 'final', storyContext, expectedHeadCommit: 'b'.repeat(40) };
+  const head = 'b'.repeat(40);
+  const options = { mode: 'final', storyContext, headCommit: head };
   await validateSpec(repo, spec, options);
   await validateSpec(repo, spec, options);
   const lines = (await readFile(getMultiTenantApplicabilityAuditPath(repo), 'utf8')).trim().split('\n');
   assert.equal(lines.length, 1);
-  assert.equal(
+  assert.equal(JSON.parse(lines[0]).head_commit, head);
+
+  await validateSpec(repo, spec, { ...options, headCommit: 'c'.repeat(40) });
+  const linesAfterHeadChange = (await readFile(getMultiTenantApplicabilityAuditPath(repo), 'utf8')).trim().split('\n');
+  assert.equal(linesAfterHeadChange.length, 2);
+});
+
+test('distinct refusal reasons for the same spec each produce an audit line', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-refusal-dedup-'));
+  const storyId = 'story-reasoned-na-refusal-dedup';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'claimed out of scope',
+    evidence_ref: 'docs/example.md'
+  });
+  const head = 'd'.repeat(40);
+  await validateSpec(repo, spec, {
+    mode: 'final',
+    storyContext: 'tenant_idをcross-tenant境界で分離する。',
+    headCommit: head
+  });
+  await validateSpec(repo, spec, { mode: 'final', storyContext: '', headCommit: head });
+  const lines = (await readFile(getMultiTenantApplicabilityAuditPath(repo), 'utf8')).trim().split('\n');
+  assert.equal(lines.length, 2);
+  const refusalReasons = lines.map((line) => JSON.parse(line).refusal_reason);
+  assert.ok(refusalReasons.includes('strong_signal_present'));
+  assert.ok(refusalReasons.includes('story_missing'));
+  assert.notEqual(
     buildMultiTenantApplicabilityAuditDedupKey(JSON.parse(lines[0])),
-    buildMultiTenantApplicabilityAuditDedupKey({
-      spec_id: storyId,
-      head_commit: 'b'.repeat(40),
-      declared_applicability: 'not_applicable',
-      reason: 'no tenant boundary',
-      evidence_ref: 'docs/example.md',
-      accepted: true
-    })
+    buildMultiTenantApplicabilityAuditDedupKey(JSON.parse(lines[1]))
   );
 });
 
@@ -193,6 +222,38 @@ test('strong multi-tenant signals in spec clauses refuse reasoned not_applicable
   assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
 });
 
+test('validateSpec without storyContext refuses reasoned not_applicable fail-safe', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-no-arg-'));
+  const storyId = 'story-reasoned-na-no-arg';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'no tenant boundary',
+    evidence_ref: 'docs/example.md'
+  });
+  const result = await validateSpec(repo, spec, { mode: 'final' });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_story_missing'));
+});
+
+test('strong signals in clause semantic_contract refuse reasoned not_applicable', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-semantic-'));
+  const storyId = 'story-reasoned-na-semantic';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'claimed out of scope',
+    evidence_ref: 'docs/example.md'
+  });
+  spec.clauses[0].statement = 'Update CLI colors only.';
+  spec.clauses[0].semantic_contract = {
+    summary: 'cross-tenant credential isolation via tenant_id'
+  };
+
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
+});
+
 test('missing Story (empty storyContext) refuses reasoned not_applicable fail-safe', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-no-story-'));
   const storyId = 'story-reasoned-na-no-story';
@@ -212,6 +273,7 @@ test('spec write --final accepts reasoned not_applicable from spec multi_tenancy
   const storyId = 'story-cli-reasoned-na';
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-cli-reasoned-na-'));
   await seedRepo(repo, storyId);
+  await initGit(repo);
   await runCli(['init', repo, '--story-id', storyId, '--title', 'local cli color']);
   await writePreSpecReadiness(repo, storyId, {
     schema_version: '0.1.0',
@@ -253,6 +315,7 @@ test('spec write --final accepts reasoned not_applicable from spec multi_tenancy
   const record = JSON.parse(auditLines[0]);
   assert.equal(record.story_id, storyId);
   assert.equal(record.accepted, true);
+  assert.match(record.head_commit ?? '', /^[0-9a-f]{40}$/i);
 });
 
 test('pr prepare records reasoned declaration in pr-prepare.json and pr-body.md', async () => {

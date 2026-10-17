@@ -16,7 +16,8 @@ export function buildMultiTenantApplicabilityAuditDedupKey(record) {
     declared_applicability: record.declared_applicability ?? null,
     reason: record.reason ?? null,
     evidence_ref: record.evidence_ref ?? null,
-    accepted: record.accepted === true
+    accepted: record.accepted === true,
+    refusal_reason: record.accepted ? null : (record.refusal_reason ?? null)
   });
 }
 

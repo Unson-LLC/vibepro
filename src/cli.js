@@ -106,6 +106,7 @@ import {
 } from './decision-records.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
+import { collectGitContext } from './git-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
 import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
@@ -1838,10 +1839,12 @@ if (command === 'integration') {
           story_id: storyId,
           title: storyId
         }).catch(() => null);
+        const gitContext = await collectGitContext(path.resolve(repoRoot)).catch(() => ({ head_sha: null }));
         const validation = await validateSpec(repoRoot, parsed, {
           expectedStoryId: storyId,
           mode: draft ? 'draft' : 'final',
-          storyContext: storySource?.content ?? ''
+          storyContext: storySource?.content ?? '',
+          headCommit: gitContext.head_sha ?? null
         });
         if (!validation.ok) {
           write(stdout, `${JSON.stringify({

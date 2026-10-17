@@ -22,6 +22,19 @@ export function detectStrongMultiTenantSignals(storyText = '') {
   return STRONG_SIGNALS.filter(([, pattern]) => pattern.test(text)).map(([reason]) => reason);
 }
 
+function appendClauseScanText(parts, clause) {
+  if (!clause || typeof clause !== 'object') return;
+  for (const field of ['statement', 'rationale', 'expected', 'acceptance_criteria']) {
+    if (typeof clause[field] === 'string' && clause[field].trim()) parts.push(clause[field]);
+  }
+  const semanticContract = clause.semantic_contract;
+  if (typeof semanticContract === 'string' && semanticContract.trim()) {
+    parts.push(semanticContract);
+  } else if (semanticContract && typeof semanticContract === 'object') {
+    parts.push(JSON.stringify(semanticContract));
+  }
+}
+
 export function collectMultiTenantSpecScanText(spec) {
   if (!spec || typeof spec !== 'object') return '';
   const parts = [];
@@ -29,8 +42,7 @@ export function collectMultiTenantSpecScanText(spec) {
     parts.push(spec.story_context);
   }
   for (const clause of spec.clauses ?? []) {
-    if (typeof clause?.statement === 'string' && clause.statement.trim()) parts.push(clause.statement);
-    if (typeof clause?.rationale === 'string' && clause.rationale.trim()) parts.push(clause.rationale);
+    appendClauseScanText(parts, clause);
   }
   return parts.join('\n');
 }
@@ -41,12 +53,43 @@ export function buildStrongSignalScanText({ storyText = '', spec = null } = {}) 
     .join('\n');
 }
 
+const EMPTY_MEANING_EVIDENCE_REFS = new Set([
+  'n/a', 'na', 'none', 'tbd', 'tba', '-', '--', 'nil', 'null', 'unknown', '...', 'todo', 'wip'
+]);
+
 export function isPlausibleMultiTenantEvidenceRef(value) {
   const ref = String(value ?? '').trim();
-  if (ref.length < 3) return false;
-  if (/^https?:\/\//i.test(ref)) return true;
-  if (ref.includes('/')) return true;
-  if (/^[a-zA-Z0-9][a-zA-Z0-9._-]*[._-][a-zA-Z0-9._-]+$/.test(ref)) return true;
+  if (!ref) return false;
+
+  const collapsed = ref.toLowerCase().replace(/\//g, '').replace(/\s+/g, '');
+  if (EMPTY_MEANING_EVIDENCE_REFS.has(ref.toLowerCase()) || EMPTY_MEANING_EVIDENCE_REFS.has(collapsed)) {
+    return false;
+  }
+
+  if (ref.startsWith('..')) return false;
+  if (/^\/+$/.test(ref)) return false;
+  if (/^-\/?-$/.test(ref)) return false;
+  if (/^[a-zA-Z]-[a-zA-Z]$/.test(ref)) return false;
+  if (/^[a-zA-Z0-9]\.[a-zA-Z0-9]$/.test(ref)) return false;
+
+  if (/^https?:\/\//i.test(ref)) {
+    try {
+      const url = new URL(ref);
+      return Boolean(url.hostname);
+    } catch {
+      return false;
+    }
+  }
+
+  if (ref.includes('/')) {
+    const segments = ref.split('/').filter((segment) => segment.length > 0);
+    if (segments.length === 0) return false;
+    const last = segments[segments.length - 1];
+    return last.length >= 2 && /[a-zA-Z0-9]/.test(last);
+  }
+
+  if (/^[A-Z][A-Z0-9]*-\d+[A-Z0-9-]*$/i.test(ref)) return true;
+
   return false;
 }
 
