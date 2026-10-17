@@ -3982,3 +3982,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:587:end -->
+
+<!-- vibepro-release-pr:588:start -->
+## [#588](https://github.com/Unson-LLC/vibepro/pull/588) fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
+
+- Author: @sintariran
+- Merged: 2026-10-17T10:14:58Z
+- Commit: `9511e8cc42e73ac5a380c0be1fedb7bf7ac28140`
+
+### Change Summary
+
+マルチテナント適用判定の弱シグナル誤検知を修正（リリースは本 PR では行わない）。
+
+### Compatibility
+
+弱い語の共起のみでマルチテナント契約を要求していた Story は、final spec write が通るようになる。強いシグナルがある Story の契約要件は変わらない。
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:588:end -->

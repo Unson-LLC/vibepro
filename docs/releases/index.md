@@ -770,3 +770,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:587:start -->
 - [PR #587](https://github.com/Unson-LLC/vibepro/pull/587) — [2026-10](/releases/2026-10): fix(release): project version history from the documented SemVer token
 <!-- vibepro-release-index-pr:587:end -->
+
+<!-- vibepro-release-index-pr:588:start -->
+- [PR #588](https://github.com/Unson-LLC/vibepro/pull/588) — [2026-10](/releases/2026-10): fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
+<!-- vibepro-release-index-pr:588:end -->
