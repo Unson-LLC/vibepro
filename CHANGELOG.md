@@ -4045,3 +4045,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:589:end -->
+
+<!-- vibepro-release-pr:594:start -->
+## [#594](https://github.com/Unson-LLC/vibepro/pull/594) [trial-opencode-deepseek] pr prepare: show draft spec (#439)
+
+- Author: @sintariran
+- Merged: 2026-10-17T14:30:02Z
+- Commit: `f4d6be78c1d56dff2c110d8eeb73cf2e678d0e0e`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:594:end -->
