@@ -114,6 +114,27 @@ test('shared Acceptance Criteria parser handles numbered/case/Japanese variants 
   }
 });
 
+test('shared Acceptance Criteria parser accepts a single parenthetical suffix on the heading', () => {
+  for (const heading of [
+    '## 受入条件（Brainbase 完了契約 criteria 原文）',
+    '## 受入条件 (Brainbase criteria)',
+    '## Acceptance Criteria (draft)'
+  ]) {
+    const criteria = extractMarkdownAcceptanceCriteria(storyDocument(heading));
+    assert.equal(criteria.length, 12, heading);
+    assert.deepEqual(criteria.map((item) => item.id), Array.from(
+      { length: 12 },
+      (_, index) => `DSS-AC-${String(index + 1).padStart(3, '0')}`
+    ));
+    assert.ok(criteria.every((item) => !item.text.includes('BACKGROUND-ONLY')));
+    assert.ok(criteria.every((item) => !item.text.includes('BOUNDARY-ONLY')));
+  }
+
+  for (const heading of ['## 受入条件の背景', '## Acceptance Criteria notes']) {
+    assert.equal(extractMarkdownAcceptanceCriteria(storyDocument(heading)).length, 0, heading);
+  }
+});
+
 test('pr prepare projects one exact clause map, computed counts, and distinct task authorities', async () => {
   const root = await setupRepo();
   const first = await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--base', 'main', '--json']);
