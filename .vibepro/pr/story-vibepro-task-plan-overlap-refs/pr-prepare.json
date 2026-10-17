@@ -1,22 +1,22 @@
 {
   "schema_version": "0.2.0",
-  "created_at": "2026-10-17T12:19:03.388Z",
+  "created_at": "2026-10-17T15:12:53.833Z",
   "runtime_identity": {
     "schema_version": "0.2.0",
-    "collected_at": "2026-10-17T12:19:03.262Z",
+    "collected_at": "2026-10-17T15:12:53.637Z",
     "mode": "normal",
     "source_kind": "npm_package",
     "test_context": null,
     "package": {
       "name": "vibepro",
-      "version": "0.2.0-beta.32",
-      "exact_version": "0.2.0-beta.32",
-      "root": "/tmp/vp-install/node_modules/vibepro"
+      "version": "0.2.0-beta.33",
+      "exact_version": "0.2.0-beta.33",
+      "root": "/tmp/vp-acpr/node_modules/vibepro"
     },
     "cli": {
-      "entrypoint": "/tmp/vp-install/node_modules/vibepro/bin/vibepro.js",
-      "invoked_as": "/tmp/vp-install/node_modules/.bin/vibepro",
-      "runtime_module": "/tmp/vp-install/node_modules/vibepro/src/runtime-info.js"
+      "entrypoint": "/tmp/vp-acpr/node_modules/vibepro/bin/vibepro.js",
+      "invoked_as": "/tmp/vp-acpr/node_modules/.bin/vibepro",
+      "runtime_module": "/tmp/vp-acpr/node_modules/vibepro/src/runtime-info.js"
     },
     "release_manifest": {
       "status": "valid",
@@ -24,14 +24,14 @@
         "schema_version": "0.1.0",
         "package": {
           "name": "vibepro",
-          "version": "0.2.0-beta.32",
-          "package_json_sha256": "3dc7d009303fe7d8108b28d5d9d6ed2881a63355e2abe400c315e119773edbfc",
+          "version": "0.2.0-beta.33",
+          "package_json_sha256": "5bdc2ba371738de9ff218dc99601ecce0d2b99d411ffdebd91f9415d9c92df4b",
           "entrypoint": "bin/vibepro.js"
         },
         "source_git": {
-          "commit": "b915564c3f4dcaaf2752ce00155f24f34ec05f9f",
-          "origin_url": "https://github.com/Unson-LLC/vibepro",
-          "origin_main_commit": "5e36c830884a9e77dcca46e041004e24e2735d23",
+          "commit": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+          "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+          "origin_main_commit": "e0dda8630ae111f23199c181f5e5c0bd3bf95d7f",
           "origin_main_relation": "ahead",
           "dirty": false
         }
@@ -40,15 +40,15 @@
     },
     "source_git": {
       "is_git_repo": false,
-      "commit": "b915564c3f4dcaaf2752ce00155f24f34ec05f9f",
+      "commit": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
       "branch": null,
-      "origin_url": "https://github.com/Unson-LLC/vibepro",
-      "origin_main_commit": "5e36c830884a9e77dcca46e041004e24e2735d23",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "e0dda8630ae111f23199c181f5e5c0bd3bf95d7f",
       "origin_main_relation": "published",
       "dirty": false,
       "dirty_summary": []
     },
-    "identity_digest": "c025d4568cf51bb850940ea2d741c15a4eadcde40d9545c5b8201d19112ed1b2",
+    "identity_digest": "4d1c3331f3ae3634d9cee41243625f3e3604b1e9df85124b1868a6236927e219",
     "integrity": {
       "status": "trusted",
       "code": null,
@@ -93,139 +93,86 @@
     },
     "generated": {
       "authority": "generated_proposal",
-      "path": ".vibepro/stories/story-vibepro-task-plan-overlap-refs/tasks/tasks.md",
-      "present": true,
-      "task_count": 1,
-      "status_counts": {
-        "todo": 1
-      },
+      "path": null,
+      "present": false,
+      "task_count": 0,
+      "status_counts": {},
       "execution_policies": [],
       "mutates_repository": [],
-      "tasks": [
-        {
-          "id": "VP-TASK-ARCH-001",
-          "status": "todo",
-          "execution_policy": null,
-          "mutates_repository": null
-        }
-      ]
+      "tasks": []
     }
   },
   "output": {
     "language": "ja"
   },
   "git": {
-    "current_branch": "cursor/task-plan-overlap-refs-3fc2",
-    "head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-    "base_ref": "main",
+    "current_branch": "cursor/ac-heading-paren-suffix",
+    "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+    "base_ref": "origin/main",
     "head_ref": "HEAD",
     "changed_files": [
       {
         "status": "M",
-        "path": ".vibepro/config.json"
-      },
-      {
-        "status": "A",
-        "path": ".vibepro/spec/story-vibepro-task-plan-overlap-refs/draft.json"
-      },
-      {
-        "status": "A",
-        "path": ".vibepro/spec/story-vibepro-task-plan-overlap-refs/pre-spec-readiness.json"
-      },
-      {
-        "status": "A",
-        "path": ".vibepro/spec/story-vibepro-task-plan-overlap-refs/spec.json"
+        "path": "src/markdown-acceptance-criteria.js"
       },
       {
         "status": "M",
-        "path": "CHANGELOG.md"
-      },
-      {
-        "status": "M",
-        "path": "docs/ja/releases/2026-10.md"
-      },
-      {
-        "status": "M",
-        "path": "docs/ja/releases/index.md"
-      },
-      {
-        "status": "A",
-        "path": "docs/management/stories/active/story-vibepro-task-plan-overlap-refs.md"
-      },
-      {
-        "status": "M",
-        "path": "docs/releases/2026-10.md"
-      },
-      {
-        "status": "M",
-        "path": "docs/releases/index.md"
-      },
-      {
-        "status": "M",
-        "path": "package-lock.json"
-      },
-      {
-        "status": "M",
-        "path": "package.json"
-      },
-      {
-        "status": "M",
-        "path": "src/multi-tenant-architecture.js"
-      },
-      {
-        "status": "M",
-        "path": "src/task-authority.js"
-      },
-      {
-        "status": "M",
-        "path": "src/task-plan.js"
-      },
-      {
-        "status": "M",
-        "path": "test/multi-tenant-architecture.test.js"
-      },
-      {
-        "status": "M",
-        "path": "test/task-authority.test.js"
-      },
-      {
-        "status": "M",
-        "path": "test/task-plan.test.js"
+        "path": "test/pr-artifact-consistency.test.js"
       }
     ],
     "dirty_files": [
       {
         "status": "M",
-        "path": "vibepro/spec/story-vibepro-task-plan-overlap-refs/pre-spec-readiness.json"
+        "path": "vibepro/pr/story-vibepro-task-plan-decomposer/pr-prepare.json"
+      },
+      {
+        "status": "M",
+        "path": ".vibepro/pr/story-vibepro-task-plan-decomposer/verification-evidence.json"
+      },
+      {
+        "status": "M",
+        "path": ".vibepro/pr/story-vibepro-task-plan-decomposer/verification-runs/typecheck.json"
+      },
+      {
+        "status": "M",
+        "path": ".vibepro/pr/story-vibepro-task-plan-decomposer/verification-runs/unit.json"
+      },
+      {
+        "status": "M",
+        "path": ".vibepro/pr/story-vibepro-task-plan-decomposer/verification-runs/unit.log"
+      },
+      {
+        "status": "M",
+        "path": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-evidence.json"
+      },
+      {
+        "status": "M",
+        "path": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-runs/unit.json"
       }
     ],
-    "commit_count": 10
+    "commit_count": 1
   },
   "spec": {
     "present": true,
+    "status": "accepted",
     "story_id": "story-vibepro-task-plan-overlap-refs",
     "clause_count": 8
   },
   "spec_drift": null,
   "verification": {
     "recorded": true,
-    "updated_at": "2026-10-17T12:19:03.123Z",
+    "updated_at": "2026-10-17T15:12:52.941Z",
     "artifact": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-evidence.json",
     "commands": [
       {
         "kind": "unit",
         "status": "pass",
-        "command": "node --test test/task-plan.test.js test/task-authority.test.js",
-        "summary": "vibepro verify run executed the unit command: exit_code=0, tests=35 pass=35 fail=0, duration_ms=30467, status=pass computed from the exit code | agent summary: overlap_refs S-001 boundary tests at H",
+        "command": "node --test test/pr-artifact-consistency.test.js test/task-plan.test.js test/task-authority.test.js",
+        "summary": "vibepro verify run executed the unit command: exit_code=0, tests=40 pass=40 fail=0, duration_ms=1464, status=pass computed from the exit code | agent summary: AC heading parser + T3 overlap_refs focused unit tests",
         "summary_authority": "agent_provided_non_authoritative",
         "evidence_source": "runner_direct",
         "observation": {
-          "targets": [
-            "test/task-plan.test.js",
-            "test/task-authority.test.js",
-            "src/task-plan.js",
-            "src/task-authority.js"
-          ],
+          "targets": [],
           "scenarios": [],
           "values": {
             "status": "pass",
@@ -233,24 +180,24 @@
             "evidence_source": "runner_direct",
             "run_artifact": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-runs/unit.json",
             "run_log": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-runs/unit.log",
-            "tests": "35",
-            "pass": "35",
+            "tests": "40",
+            "pass": "40",
             "fail": "0",
             "skipped": "0",
             "todo": "0",
-            "duration_ms": "30467",
-            "started_at": "2026-10-17T12:18:32.547Z",
-            "finished_at": "2026-10-17T12:19:02.959Z",
-            "head_sha_before": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-            "head_sha_after": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-            "head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
+            "duration_ms": "1464",
+            "started_at": "2026-10-17T15:12:51.367Z",
+            "finished_at": "2026-10-17T15:12:52.786Z",
+            "head_sha_before": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "head_sha_after": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
             "worktree_sampled": "true",
             "worktree_sampling_complete": "true",
-            "worktree_sha256_before": "09e84b25952a562d7f5bb7886fd0d5b6028ee250e65ccf6cfc8fa2a26c51df15",
-            "worktree_sha256_after": "09e84b25952a562d7f5bb7886fd0d5b6028ee250e65ccf6cfc8fa2a26c51df15",
-            "stdout_sha256": "095346865e8ec2dfd6890c8843fc769e8670160cd47c3bb4dc78d4c66c4a1a6f",
-            "output_sha256": "095346865e8ec2dfd6890c8843fc769e8670160cd47c3bb4dc78d4c66c4a1a6f",
-            "output_bytes": "7466",
+            "worktree_sha256_before": "836fb22c58e5a0b0619fa3ddd7a8c9ee538e87ed88fd8aacf3a385f5f44aea48",
+            "worktree_sha256_after": "836fb22c58e5a0b0619fa3ddd7a8c9ee538e87ed88fd8aacf3a385f5f44aea48",
+            "stdout_sha256": "b664f62d6693c960849d11094575745ec95cc45c9b6c28c6bb3cf7fdde59939a",
+            "output_sha256": "b664f62d6693c960849d11094575745ec95cc45c9b6c28c6bb3cf7fdde59939a",
+            "output_bytes": "8623",
             "log_truncated": "false",
             "output_metrics": "tap",
             "timed_out": "false",
@@ -259,14 +206,14 @@
             "timeout_ms": "7200000",
             "max_output_bytes": "67108864",
             "harness_env_removed": "none",
-            "runner_node_version": "v22.14.0",
+            "runner_node_version": "v20.19.2",
             "tree_mutated_during_run": "false",
             "head_moved_during_run": "false",
             "worktree_changed_during_run": "false",
-            "worktree_status_sha256_before": "9ece8c93139cdfa2ba0796492adf65a919f48fdf74335393a5680946cbc660e7",
-            "worktree_status_sha256_after": "9ece8c93139cdfa2ba0796492adf65a919f48fdf74335393a5680946cbc660e7",
-            "worktree_diff_sha256_before": "fd07e363d05322dad6b2f650375c32d9641d0fb9d627faf5a513222ee3d0cff9",
-            "worktree_diff_sha256_after": "fd07e363d05322dad6b2f650375c32d9641d0fb9d627faf5a513222ee3d0cff9"
+            "worktree_status_sha256_before": "a656231dd4c42c6c00468c446fe5366899e280f1deb3aef2a1c89af6ce6696b6",
+            "worktree_status_sha256_after": "a656231dd4c42c6c00468c446fe5366899e280f1deb3aef2a1c89af6ce6696b6",
+            "worktree_diff_sha256_before": "d38f6acb72027407ce6bb7e4ea2f6e5a8166eac7ba3cfa796fc00d5bd785c987",
+            "worktree_diff_sha256_after": "d38f6acb72027407ce6bb7e4ea2f6e5a8166eac7ba3cfa796fc00d5bd785c987"
           }
         },
         "computed_observation": {
@@ -318,24 +265,24 @@
             "run_artifact": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-runs/unit.json",
             "run_log": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/verification-runs/unit.log",
             "exit_code": "0",
-            "tests": "35",
-            "pass": "35",
+            "tests": "40",
+            "pass": "40",
             "fail": "0",
             "skipped": "0",
             "todo": "0",
-            "duration_ms": "30467",
-            "started_at": "2026-10-17T12:18:32.547Z",
-            "finished_at": "2026-10-17T12:19:02.959Z",
-            "head_sha_before": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-            "head_sha_after": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-            "head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
+            "duration_ms": "1464",
+            "started_at": "2026-10-17T15:12:51.367Z",
+            "finished_at": "2026-10-17T15:12:52.786Z",
+            "head_sha_before": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "head_sha_after": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
             "worktree_sampled": "true",
             "worktree_sampling_complete": "true",
-            "worktree_sha256_before": "09e84b25952a562d7f5bb7886fd0d5b6028ee250e65ccf6cfc8fa2a26c51df15",
-            "worktree_sha256_after": "09e84b25952a562d7f5bb7886fd0d5b6028ee250e65ccf6cfc8fa2a26c51df15",
-            "stdout_sha256": "095346865e8ec2dfd6890c8843fc769e8670160cd47c3bb4dc78d4c66c4a1a6f",
-            "output_sha256": "095346865e8ec2dfd6890c8843fc769e8670160cd47c3bb4dc78d4c66c4a1a6f",
-            "output_bytes": "7466",
+            "worktree_sha256_before": "836fb22c58e5a0b0619fa3ddd7a8c9ee538e87ed88fd8aacf3a385f5f44aea48",
+            "worktree_sha256_after": "836fb22c58e5a0b0619fa3ddd7a8c9ee538e87ed88fd8aacf3a385f5f44aea48",
+            "stdout_sha256": "b664f62d6693c960849d11094575745ec95cc45c9b6c28c6bb3cf7fdde59939a",
+            "output_sha256": "b664f62d6693c960849d11094575745ec95cc45c9b6c28c6bb3cf7fdde59939a",
+            "output_bytes": "8623",
             "log_truncated": "false",
             "output_metrics": "tap",
             "timed_out": "false",
@@ -344,14 +291,14 @@
             "timeout_ms": "7200000",
             "max_output_bytes": "67108864",
             "harness_env_removed": "none",
-            "runner_node_version": "v22.14.0",
+            "runner_node_version": "v20.19.2",
             "tree_mutated_during_run": "false",
             "head_moved_during_run": "false",
             "worktree_changed_during_run": "false",
-            "worktree_status_sha256_before": "9ece8c93139cdfa2ba0796492adf65a919f48fdf74335393a5680946cbc660e7",
-            "worktree_status_sha256_after": "9ece8c93139cdfa2ba0796492adf65a919f48fdf74335393a5680946cbc660e7",
-            "worktree_diff_sha256_before": "fd07e363d05322dad6b2f650375c32d9641d0fb9d627faf5a513222ee3d0cff9",
-            "worktree_diff_sha256_after": "fd07e363d05322dad6b2f650375c32d9641d0fb9d627faf5a513222ee3d0cff9"
+            "worktree_status_sha256_before": "a656231dd4c42c6c00468c446fe5366899e280f1deb3aef2a1c89af6ce6696b6",
+            "worktree_status_sha256_after": "a656231dd4c42c6c00468c446fe5366899e280f1deb3aef2a1c89af6ce6696b6",
+            "worktree_diff_sha256_before": "d38f6acb72027407ce6bb7e4ea2f6e5a8166eac7ba3cfa796fc00d5bd785c987",
+            "worktree_diff_sha256_after": "d38f6acb72027407ce6bb7e4ea2f6e5a8166eac7ba3cfa796fc00d5bd785c987"
           },
           "artifact_derived_keys": [
             "status",
@@ -404,8 +351,8 @@
           "output_metrics": "tap"
         },
         "computed_counts": {
-          "tests": 35,
-          "pass": 35,
+          "tests": 40,
+          "pass": 40,
           "fail": 0
         },
         "artifact_check": {
@@ -415,15 +362,15 @@
           "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
         },
         "observation_check": {
-          "status": "recorded",
-          "reason": "observation states the inspected targets and what was observed"
+          "status": "partial",
+          "reason": "observation is incomplete; record targets plus scenarios or observed values"
         },
         "git_context": {
-          "head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-          "current_branch": "cursor/task-plan-overlap-refs-3fc2",
+          "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+          "current_branch": "cursor/ac-heading-paren-suffix",
           "dirty": false,
           "raw_dirty": true,
-          "status_fingerprint_hash": "2b32e0add9b0d66623e5e3cfbdb2933e067fcb040d2ca9c8054b4b6c4c3e03c3",
+          "status_fingerprint_hash": "9a43126ff9f874065719f59919d970b68ec5792c1e5f2a27b6d36fb5d3adee1f",
           "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
           "fingerprint_scope": {
             "user_excludes": [
@@ -431,7 +378,7 @@
               ".worktrees/vibepro/"
             ]
           },
-          "recorded_at": "2026-10-17T12:19:03.112Z"
+          "recorded_at": "2026-10-17T15:12:52.934Z"
         },
         "content_binding": {
           "schema_version": "0.1.0",
@@ -439,31 +386,10 @@
           "mode": "strict_head",
           "status": "strict_head",
           "reason": "strict HEAD binding was requested for this evidence",
-          "recorded_head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-          "surface_files": [
-            {
-              "path": "src/task-authority.js",
-              "sha256": "31c54941eeab904b0eeeb7795e10d631cebdb7ac32ae001d9824cfa44895e045",
-              "size": 26599
-            },
-            {
-              "path": "src/task-plan.js",
-              "sha256": "a64b2556ba43188d606b0b6af833b340c9e56e12e7b2e206ebf3968e11b64373",
-              "size": 35004
-            },
-            {
-              "path": "test/task-authority.test.js",
-              "sha256": "c3117c88f3481c4aa82a6600516afdfc67ab4979e4af25596319e436079b6d9b",
-              "size": 18741
-            },
-            {
-              "path": "test/task-plan.test.js",
-              "sha256": "073c734ab25e1bb3992ac1958aa0c3b05be2ec0cbe6b5c3fc0d624bf0f0539ac",
-              "size": 17607
-            }
-          ],
+          "recorded_head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+          "surface_files": [],
           "missing_files": [],
-          "surface_hash": "320a8de94ea487f4c8b580779935543fbdf90e2a853c3625fec8233a25e6ff12"
+          "surface_hash": null
         },
         "warnings": [
           {
@@ -474,30 +400,30 @@
             "command_name": "verify run",
             "reason": "no managed worktree execution state is recorded for this checkout; no current VibePro command creates one, so set execution.managed_worktree to \"disabled\" in .vibepro/config.json unless this checkout was set up as a managed worktree by other tooling",
             "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-            "repo_root": "/workspace",
-            "actual_root": "/workspace",
+            "repo_root": "/workspace/opencode-trial/wt-ac-pr",
+            "actual_root": "/workspace/opencode-trial/wt-ac-pr",
             "expected_root": null,
-            "expected_head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
-            "current_head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
+            "expected_head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "current_head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
             "managed_worktree": null
           }
         ],
         "runtime_identity": {
           "schema_version": "0.2.0",
-          "collected_at": "2026-10-17T12:19:03.024Z",
+          "collected_at": "2026-10-17T15:12:52.846Z",
           "mode": "normal",
           "source_kind": "npm_package",
           "test_context": null,
           "package": {
             "name": "vibepro",
-            "version": "0.2.0-beta.32",
-            "exact_version": "0.2.0-beta.32",
-            "root": "/tmp/vp-install/node_modules/vibepro"
+            "version": "0.2.0-beta.33",
+            "exact_version": "0.2.0-beta.33",
+            "root": "/tmp/vp-acpr/node_modules/vibepro"
           },
           "cli": {
-            "entrypoint": "/tmp/vp-install/node_modules/vibepro/bin/vibepro.js",
-            "invoked_as": "/tmp/vp-install/node_modules/.bin/vibepro",
-            "runtime_module": "/tmp/vp-install/node_modules/vibepro/src/runtime-info.js"
+            "entrypoint": "/tmp/vp-acpr/node_modules/vibepro/bin/vibepro.js",
+            "invoked_as": "/tmp/vp-acpr/node_modules/.bin/vibepro",
+            "runtime_module": "/tmp/vp-acpr/node_modules/vibepro/src/runtime-info.js"
           },
           "release_manifest": {
             "status": "valid",
@@ -505,14 +431,14 @@
               "schema_version": "0.1.0",
               "package": {
                 "name": "vibepro",
-                "version": "0.2.0-beta.32",
-                "package_json_sha256": "3dc7d009303fe7d8108b28d5d9d6ed2881a63355e2abe400c315e119773edbfc",
+                "version": "0.2.0-beta.33",
+                "package_json_sha256": "5bdc2ba371738de9ff218dc99601ecce0d2b99d411ffdebd91f9415d9c92df4b",
                 "entrypoint": "bin/vibepro.js"
               },
               "source_git": {
-                "commit": "b915564c3f4dcaaf2752ce00155f24f34ec05f9f",
-                "origin_url": "https://github.com/Unson-LLC/vibepro",
-                "origin_main_commit": "5e36c830884a9e77dcca46e041004e24e2735d23",
+                "commit": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+                "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+                "origin_main_commit": "e0dda8630ae111f23199c181f5e5c0bd3bf95d7f",
                 "origin_main_relation": "ahead",
                 "dirty": false
               }
@@ -521,15 +447,15 @@
           },
           "source_git": {
             "is_git_repo": false,
-            "commit": "b915564c3f4dcaaf2752ce00155f24f34ec05f9f",
+            "commit": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
             "branch": null,
-            "origin_url": "https://github.com/Unson-LLC/vibepro",
-            "origin_main_commit": "5e36c830884a9e77dcca46e041004e24e2735d23",
+            "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+            "origin_main_commit": "e0dda8630ae111f23199c181f5e5c0bd3bf95d7f",
             "origin_main_relation": "published",
             "dirty": false,
             "dirty_summary": []
           },
-          "identity_digest": "c025d4568cf51bb850940ea2d741c15a4eadcde40d9545c5b8201d19112ed1b2",
+          "identity_digest": "4d1c3331f3ae3634d9cee41243625f3e3604b1e9df85124b1868a6236927e219",
           "integrity": {
             "status": "trusted",
             "code": null,
@@ -539,8 +465,8 @@
             ]
           }
         },
-        "executed_at": "2026-10-17T12:19:02.959Z",
-        "trust_status": "trusted"
+        "executed_at": "2026-10-17T15:12:52.786Z",
+        "trust_status": "untrusted"
       }
     ]
   },
@@ -816,15 +742,398 @@
     "path": "docs/management/stories/active/story-vibepro-task-plan-overlap-refs.md",
     "title": "task-plan 0.2.0 に overlap_refs を追加する",
     "found": true,
-    "acceptance_criteria_count": 0
+    "acceptance_criteria_count": 4
   },
   "traceability": {
-    "acceptance_criteria": [],
+    "acceptance_criteria": [
+      {
+        "id": "AC-1",
+        "type": "acceptance_criterion",
+        "source_text": "**draft-pr:** Unson-LLC/vibeproにtask-plan 0.2.0へoverlap_refsを追加する境界テスト付きdraft PRがある",
+        "text": "**draft-pr:** Unson-LLC/vibeproにtask-plan 0.2.0へoverlap_refsを追加する境界テスト付きdraft PRがある",
+        "source_line": 25,
+        "status": "unmapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/task-plan.test.js"
+        ],
+        "mapped_tests": [
+          "test/task-plan.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/task-plan.test.js",
+            "case": "interface contract mismatch blocks the affected Task while overlap stays startable",
+            "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "blob_oid": "c4d817cf7c739b26ae8f74b973943bb85ed1f2f5"
+          },
+          {
+            "file": "test/task-plan.test.js",
+            "case": "interface contract mismatch blocks the affected Task while overlap stays startable",
+            "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "blob_oid": "c4d817cf7c739b26ae8f74b973943bb85ed1f2f5"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "INV-001",
+          "C-001",
+          "C-002",
+          "INV-004",
+          "S-001"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "invalid",
+        "verification_status": "untrusted",
+        "semantic_assessment": null,
+        "semantic_assessments": [
+          {
+            "index": 0,
+            "clause_id": "INV-001",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "index": 1,
+            "clause_id": "C-001",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "index": 2,
+            "clause_id": "C-002",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "index": 5,
+            "clause_id": "INV-004",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "index": 7,
+            "clause_id": "S-001",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          }
+        ],
+        "reason_codes": [
+          "test_ref_missing",
+          "test_pattern_missing",
+          "verification_evidence_untrusted"
+        ],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-2",
+        "type": "acceptance_criterion",
+        "source_text": "**behavior:** completion_contractはBrainbase側に置き、task-planは参照のみ持つことがスキーマ/テストで示される",
+        "text": "**behavior:** completion_contractはBrainbase側に置き、task-planは参照のみ持つことがスキーマ/テストで示される",
+        "source_line": 26,
+        "status": "unmapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [
+          "test/task-authority.test.js"
+        ],
+        "mapped_tests": [
+          "test/task-authority.test.js"
+        ],
+        "mapped_test_provenance": [
+          {
+            "file": "test/task-authority.test.js",
+            "case": "schema 0.2 bind and accepted read preserve the parallel plan contract",
+            "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
+            "blob_oid": "a28b7875bac28c6365b9bc4fffff49d180c62e0c"
+          }
+        ],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [
+          "INV-002",
+          "INV-003",
+          "C-003"
+        ],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "invalid",
+        "verification_status": "untrusted",
+        "semantic_assessment": null,
+        "semantic_assessments": [
+          {
+            "index": 3,
+            "clause_id": "INV-002",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "index": 4,
+            "clause_id": "INV-003",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          },
+          {
+            "index": 6,
+            "clause_id": "C-003",
+            "status": "unavailable",
+            "outcome_kind": "unknown",
+            "case_kind": "unknown",
+            "answer_status": "unavailable",
+            "answer_resolution": "unresolved",
+            "evaluation_declared": false,
+            "checks": {
+              "relevant": null,
+              "directly_answers": null,
+              "applicable": null,
+              "current": null,
+              "non_conflicting": null,
+              "unambiguous": null,
+              "sufficient": null
+            },
+            "supporting_record_ids": [],
+            "verification_status": "untrusted",
+            "reason_codes": [
+              "semantic_outcome_kind_unknown",
+              "semantic_case_kind_unknown",
+              "semantic_evaluation_unavailable",
+              "semantic_answer_unavailable"
+            ],
+            "errors": [],
+            "warnings": []
+          }
+        ],
+        "reason_codes": [
+          "test_ref_missing",
+          "test_pattern_missing",
+          "verification_evidence_untrusted"
+        ],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-3",
+        "type": "acceptance_criterion",
+        "source_text": "**ci-inspector:** 当該PRのCIが緑で、Inspectorが合格または条件付き合格を出す（Inspector は廃止済みのため Maintainer が同等のレビューを行う）",
+        "text": "**ci-inspector:** 当該PRのCIが緑で、Inspectorが合格または条件付き合格を出す（Inspector は廃止済みのため Maintainer が同等のレビューを行う）",
+        "source_line": 27,
+        "status": "unmapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [],
+        "mapped_tests": [],
+        "mapped_test_provenance": [],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "invalid",
+        "verification_status": "untrusted",
+        "semantic_assessment": null,
+        "semantic_assessments": [],
+        "reason_codes": [
+          "accepted_spec_clause_missing",
+          "verification_evidence_untrusted"
+        ],
+        "weak_mapping_reason": null
+      },
+      {
+        "id": "AC-4",
+        "type": "acceptance_criterion",
+        "source_text": "**visibility:** project_codesにbrainbaseとvibeproの両方があり、brainbase絞り込みのタスク一覧に見える — **本 criterion は Brainbase タスク台帳側で満たされている（vibepro 実装スコープ外）**",
+        "text": "**visibility:** project_codesにbrainbaseとvibeproの両方があり、brainbase絞り込みのタスク一覧に見える — **本 criterion は Brainbase タスク台帳側で満たされている（vibepro 実装スコープ外）**",
+        "source_line": 28,
+        "status": "unmapped",
+        "story_scenario_ids": [],
+        "scenario_lineage_status": "valid",
+        "unknown_story_scenario_ids": [],
+        "mapped_files": [],
+        "mapped_tests": [],
+        "mapped_test_provenance": [],
+        "mapped_evidence": [],
+        "mapped_review_findings": [],
+        "spec_clause_ids": [],
+        "mapping_source": "accepted_spec",
+        "lineage_status": "invalid",
+        "verification_status": "untrusted",
+        "semantic_assessment": null,
+        "semantic_assessments": [],
+        "reason_codes": [
+          "accepted_spec_clause_missing",
+          "verification_evidence_untrusted"
+        ],
+        "weak_mapping_reason": null
+      }
+    ],
     "scenario_clauses": [],
     "scenario_lineage": null,
     "accepted_spec_lineage": {
       "status": "invalid",
-      "head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099",
+      "head_sha": "8b43ed209a378cf7f78360e85a30e5c889ec2404",
       "spec_path": ".vibepro/spec/story-vibepro-task-plan-overlap-refs/spec.json",
       "spec_blob_oid": "06e44f56ba0fc413a6a4130c7bcdd1d0f4b8b7b0",
       "story_path": "docs/management/stories/active/story-vibepro-task-plan-overlap-refs.md",
@@ -833,7 +1142,6 @@
       "clause_count": 8,
       "resolved_clause_count": 0,
       "reason_codes": [
-        "unknown_story_ac",
         "test_ref_missing",
         "test_pattern_missing"
       ],
@@ -841,7 +1149,6 @@
         {
           "clause_id": "INV-001",
           "reason_codes": [
-            "unknown_story_ac",
             "test_ref_missing",
             "test_pattern_missing"
           ]
@@ -849,21 +1156,18 @@
         {
           "clause_id": "C-001",
           "reason_codes": [
-            "unknown_story_ac",
             "test_ref_missing"
           ]
         },
         {
           "clause_id": "C-002",
           "reason_codes": [
-            "unknown_story_ac",
             "test_ref_missing"
           ]
         },
         {
           "clause_id": "INV-002",
           "reason_codes": [
-            "unknown_story_ac",
             "test_ref_missing",
             "test_pattern_missing"
           ]
@@ -871,7 +1175,6 @@
         {
           "clause_id": "INV-003",
           "reason_codes": [
-            "unknown_story_ac",
             "test_ref_missing",
             "test_pattern_missing"
           ]
@@ -879,31 +1182,18 @@
         {
           "clause_id": "INV-004",
           "reason_codes": [
-            "unknown_story_ac",
             "test_pattern_missing"
-          ]
-        },
-        {
-          "clause_id": "C-003",
-          "reason_codes": [
-            "unknown_story_ac"
-          ]
-        },
-        {
-          "clause_id": "S-001",
-          "reason_codes": [
-            "unknown_story_ac"
           ]
         }
       ]
     },
     "summary": {
-      "clause_count": 0,
-      "acceptance_criteria_count": 0,
+      "clause_count": 4,
+      "acceptance_criteria_count": 4,
       "scenario_clause_count": 0,
       "mapped_count": 0,
       "weakly_mapped_count": 0,
-      "unmapped_count": 0,
+      "unmapped_count": 4,
       "semantic_assessment": {
         "status": "available",
         "semantic_contract_status": "available",
@@ -942,7 +1232,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -971,7 +1261,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1000,7 +1290,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1029,7 +1319,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1058,7 +1348,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1087,7 +1377,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1116,7 +1406,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1145,7 +1435,7 @@
               "sufficient": null
             },
             "supporting_record_ids": [],
-            "verification_status": "unknown",
+            "verification_status": "untrusted",
             "reason_codes": [
               "semantic_outcome_kind_unknown",
               "semantic_case_kind_unknown",
@@ -1213,7 +1503,240 @@
         "errors": [],
         "warnings": []
       },
-      "semantic_assessments": [],
+      "semantic_assessments": [
+        {
+          "index": 0,
+          "clause_id": "INV-001",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 1,
+          "clause_id": "C-001",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 2,
+          "clause_id": "C-002",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 5,
+          "clause_id": "INV-004",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 7,
+          "clause_id": "S-001",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 3,
+          "clause_id": "INV-002",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 4,
+          "clause_id": "INV-003",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 6,
+          "clause_id": "C-003",
+          "status": "unavailable",
+          "outcome_kind": "unknown",
+          "case_kind": "unknown",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "untrusted",
+          "reason_codes": [
+            "semantic_outcome_kind_unknown",
+            "semantic_case_kind_unknown",
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        }
+      ],
       "outcome_coverage": {
         "status": "partial",
         "internal_output": {
@@ -1263,7 +1786,29 @@
         }
       },
       "scenario_lineage": null,
-      "examples": []
+      "examples": [
+        {
+          "id": "AC-1",
+          "type": "acceptance_criterion",
+          "status": "unmapped",
+          "source_text": "**draft-pr:** Unson-LLC/vibeproにtask-plan 0.2.0へoverlap_refsを追加する境界テスト付きdraft PRがある",
+          "weak_mapping_reason": null
+        },
+        {
+          "id": "AC-2",
+          "type": "acceptance_criterion",
+          "status": "unmapped",
+          "source_text": "**behavior:** completion_contractはBrainbase側に置き、task-planは参照のみ持つことがスキーマ/テストで示される",
+          "weak_mapping_reason": null
+        },
+        {
+          "id": "AC-3",
+          "type": "acceptance_criterion",
+          "status": "unmapped",
+          "source_text": "**ci-inspector:** 当該PRのCIが緑で、Inspectorが合格または条件付き合格を出す（Inspector は廃止済みのため Maintainer が同等のレビューを行う）",
+          "weak_mapping_reason": null
+        }
+      ]
     }
   }
 }
