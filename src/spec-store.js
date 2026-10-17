@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { WORKSPACE_DIR } from './workspace.js';
 import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
+import { recordMultiTenantApplicabilityDeclarationAudit } from './multi-tenant-applicability-audit.js';
 import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
 
 export const SPEC_SCHEMA_VERSION = '0.1.0';
@@ -71,14 +72,31 @@ export async function writeMultiTenantContract(repoRoot, storyId, contract, opti
     throw new Error('multi-tenant Contract rejected: explicit_non_applicability_required');
   }
 
+  const storyText = options.storyText ?? spec.story_context ?? '';
   const assessment = assessMultiTenantArchitecture({
-    storyText: options.storyText ?? spec.story_context ?? '',
+    storyText,
+    spec,
+    storySourcePresent: options.storySourcePresent !== false && storyText.trim() !== '',
     contract,
     evidence: options.evidence,
     applicabilityEvidence: options.applicabilityEvidence,
     expectedHeadCommit: options.expectedHeadCommit,
     mode: 'final'
   });
+  const reasoned = assessment.reasoned_non_applicability;
+  if (reasoned?.attempted) {
+    await recordMultiTenantApplicabilityDeclarationAudit(repoRoot, {
+      story_id: storyId,
+      declared_applicability: contract?.applicability,
+      reason: reasoned.reason ?? null,
+      evidence_ref: reasoned.evidence_ref ?? null,
+      accepted: reasoned.accepted === true,
+      refusal_reason: reasoned.accepted ? null : reasoned.refusal_reason,
+      strong_signals: reasoned.strong_signals ?? [],
+      head_commit: options.expectedHeadCommit ?? null,
+      reasoned_attempted: true
+    }, { mode: 'final' });
+  }
   const acceptedNonApplicability = assessment.status === 'not_applicable'
     && assessment.implementation_readiness?.status === 'ready';
   if (assessment.status !== 'ready' && !acceptedNonApplicability) {
