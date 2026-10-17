@@ -1540,6 +1540,18 @@
         "started_at": "2026-10-17",
         "due_at": null,
         "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-task-plan-decomposer",
+        "title": "Storyからtask-planを作る",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
       }
     ],
     "current_story_id": "story-vibepro-disposition-reviewed-by"
