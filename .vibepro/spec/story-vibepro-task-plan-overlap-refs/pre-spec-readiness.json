@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-plan-overlap-refs",
+  "created_at": "2026-10-17T12:18:32.224Z",
+  "status": "ready",
+  "git": {
+    "head_sha": "7d24d9663e2dbac507823bff92d05f8b28edf099"
+  },
+  "checks": [
+    {
+      "id": "story_selected",
+      "status": "pass",
+      "reason": "Story is registered in .vibepro/config.json (brainbase.stories[])"
+    },
+    {
+      "id": "graphify_context",
+      "status": "pass",
+      "reason": "Graphify graph has 27240 nodes and 31560 edges"
+    },
+    {
+      "id": "story_diagnosis",
+      "status": "pass",
+      "reason": "Story diagnosis run exists: 2026-10-17T104322Z"
+    }
+  ],
+  "graphify": {
+    "available": true,
+    "artifact": ".vibepro/graphify/graph.json",
+    "node_count": 27240,
+    "edge_count": 31560,
+    "edge_source_key": "links"
+  },
+  "diagnosis": {
+    "run_id": "2026-10-17T104322Z",
+    "gate_status": "needs_review",
+    "evidence_artifact": ".vibepro/diagnostics/2026-10-17T104322Z/evidence.json"
+  },
+  "engineering_judgment": null,
+  "pr_prepare": {
+    "created_at": "2026-10-17T12:18:32.051Z",
+    "artifact": ".vibepro/pr/story-vibepro-task-plan-overlap-refs/pr-prepare.json"
+  },
+  "next_actions": []
+}
