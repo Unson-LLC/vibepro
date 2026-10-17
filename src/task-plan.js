@@ -15,8 +15,10 @@ const PLAN_FIELDS = new Set([
   'story_id',
   'plan_version',
   'intent',
-  'tasks'
+  'tasks',
+  'overlap_refs'
 ]);
+const OVERLAP_REF_FIELDS = new Set(['completion_contract_ref', 'task_ids']);
 const INTENT_FIELDS = new Set(['purpose', 'priority', 'delegated_scope', 'acceptance_criteria']);
 const TASK_FIELDS = new Set([
   'task_id',
@@ -87,6 +89,8 @@ export function validateTaskPlan(document, { storyId = null, repository = null }
     tasks: normalizeTasks(document.tasks, normalizedStoryId, normalizedRepository, document.plan_version)
   };
   if (plan.tasks.length === 0) throw new Error('task plan requires a nonempty tasks array');
+  const overlapRefs = normalizeOverlapRefs(document.overlap_refs, plan.tasks);
+  if (overlapRefs !== undefined) plan.overlap_refs = overlapRefs;
   return plan;
 }
 
@@ -378,6 +382,44 @@ function normalizeIntent(intent) {
     delegated_scope: normalizeStringList(intent.delegated_scope, 'task plan intent delegated_scope'),
     acceptance_criteria: normalizeStringList(intent.acceptance_criteria, 'task plan intent acceptance_criteria')
   };
+}
+
+function normalizeOverlapRefs(value, tasks) {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) throw new Error('task plan overlap_refs must be an array');
+  const taskIds = new Set(tasks.map((task) => task.task_id));
+  const seenRefs = new Set();
+  const normalized = value.map((entry, index) => {
+    if (!entry || Array.isArray(entry) || typeof entry !== 'object') {
+      throw new Error(`task plan overlap_refs at index ${index} must be an object`);
+    }
+    const unknown = Object.keys(entry).filter((key) => !OVERLAP_REF_FIELDS.has(key));
+    if (unknown.length > 0) throw new Error(`unknown task plan overlap_refs field: ${unknown.join(', ')}`);
+    const completionContractRef = requiredString(entry.completion_contract_ref, `task plan overlap_refs ${index} completion_contract_ref`);
+    if (!parseContractRef(completionContractRef)) {
+      throw new Error(`task plan overlap_refs ${index} completion_contract_ref must pin id@version`);
+    }
+    if (seenRefs.has(completionContractRef)) {
+      throw new Error(`duplicate task plan overlap_refs completion_contract_ref: ${completionContractRef}`);
+    }
+    seenRefs.add(completionContractRef);
+    const rawTaskIds = normalizeStringList(entry.task_ids, `task plan overlap_refs ${index} task_ids`);
+    const uniqueTaskIds = new Set(rawTaskIds);
+    if (uniqueTaskIds.size !== rawTaskIds.length) {
+      throw new Error(`task plan overlap_refs ${index} task_ids must not contain duplicates`);
+    }
+    if (rawTaskIds.length < 2) {
+      throw new Error(`task plan overlap_refs ${index} task_ids must contain at least two task ids`);
+    }
+    for (const taskId of rawTaskIds) {
+      if (!taskIds.has(taskId)) throw new Error(`task plan overlap_refs ${index} references unknown task_id: ${taskId}`);
+    }
+    return {
+      completion_contract_ref: completionContractRef,
+      task_ids: [...rawTaskIds].sort()
+    };
+  });
+  return normalized.sort((left, right) => left.completion_contract_ref.localeCompare(right.completion_contract_ref));
 }
 
 function normalizeTasks(tasks, storyId, repository, planVersion) {

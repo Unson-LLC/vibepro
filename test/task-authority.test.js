@@ -103,6 +103,82 @@ test('bind creates deterministic accepted authority with tracked provenance', as
   await assert.rejects(access(path.join(root, '.vibepro', 'stories', STORY_ID, 'reviews')));
 });
 
+test('schema 0.1 bind rejects overlap_refs as an unknown authority field', async () => {
+  const root = await repo();
+  const input = await trackedInput(root, 'legacy-overlap.json', {
+    overlap_refs: [{ completion_contract_ref: 'shared@1', task_ids: ['TASK-001', 'TASK-002'] }]
+  });
+  await assert.rejects(
+    bindTaskAuthority(root, { storyId: STORY_ID, inputPath: input }),
+    /unknown task authority field: overlap_refs/
+  );
+});
+
+test('schema 0.2 bind and accepted read preserve overlap_refs', async () => {
+  const root = await repo();
+  const input = {
+    schema_version: '0.2.0',
+    repository: 'vibepro',
+    story_id: STORY_ID,
+    plan_version: 'plan-1',
+    intent: {
+      purpose: 'parallel implementation pilot',
+      priority: 'high',
+      delegated_scope: ['implementation'],
+      acceptance_criteria: ['each Task has an explicit boundary']
+    },
+    overlap_refs: [{
+      completion_contract_ref: 'brainbase-shared-completion@3',
+      task_ids: ['TASK-002', 'TASK-001']
+    }],
+    tasks: [
+      {
+        task_id: 'TASK-001',
+        story_id: STORY_ID,
+        title: 'Implement A',
+        allowed_paths: ['src/a.js'],
+        acceptance_criteria: ['a is reviewable'],
+        depends_on: [],
+        status: 'in_progress',
+        purpose: 'implement A',
+        out_of_scope: ['deployment'],
+        dependencies: [],
+        contracts: [],
+        assignment: { capabilities: ['javascript'], parallel_group: 'parallel', adjustable_scope: ['tests'] },
+        integration: { order: 1, conflict_owner: 'codex-parent' }
+      },
+      {
+        task_id: 'TASK-002',
+        story_id: STORY_ID,
+        title: 'Implement B',
+        allowed_paths: ['src/b.js'],
+        acceptance_criteria: ['b is reviewable'],
+        depends_on: [],
+        status: 'in_progress',
+        purpose: 'implement B',
+        out_of_scope: ['deployment'],
+        dependencies: [],
+        contracts: [],
+        assignment: { capabilities: ['javascript'], parallel_group: 'parallel', adjustable_scope: ['tests'] },
+        integration: { order: 2, conflict_owner: 'codex-parent' }
+      }
+    ]
+  };
+  const name = 'parallel-overlap.json';
+  await writeFile(path.join(root, name), `${JSON.stringify(input, null, 2)}\n`);
+  await execFileAsync('git', ['add', name], { cwd: root });
+
+  const bound = await bindTaskAuthority(root, { storyId: STORY_ID, inputPath: name });
+  assert.deepEqual(bound.authority.overlap_refs, [{
+    completion_contract_ref: 'brainbase-shared-completion@3',
+    task_ids: ['TASK-001', 'TASK-002']
+  }]);
+  assert.ok(!bound.authority.overlap_refs[0].completion_contract);
+
+  const strict = await readAcceptedTaskAuthorityStrict(root, STORY_ID);
+  assert.deepEqual(strict.overlap_refs, bound.authority.overlap_refs);
+});
+
 test('schema 0.2 bind and accepted read preserve the parallel plan contract', async () => {
   const root = await repo();
   const input = await parallelTrackedInput(root);
