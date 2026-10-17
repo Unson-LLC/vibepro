@@ -4003,3 +4003,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:588:end -->
+
+<!-- vibepro-release-pr:591:start -->
+## [#591](https://github.com/Unson-LLC/vibepro/pull/591) feat: CLI-usable reasoned not_applicable exemption for multi-tenant applicability gate
+
+- Author: @sintariran
+- Merged: 2026-10-17T12:20:37Z
+- Commit: `294c561eb242649bb0b9de252b1551150944584b`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:591:end -->

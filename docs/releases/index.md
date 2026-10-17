@@ -774,3 +774,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:588:start -->
 - [PR #588](https://github.com/Unson-LLC/vibepro/pull/588) — [2026-10](/releases/2026-10): fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
 <!-- vibepro-release-index-pr:588:end -->
+
+<!-- vibepro-release-index-pr:591:start -->
+- [PR #591](https://github.com/Unson-LLC/vibepro/pull/591) — [2026-10](/releases/2026-10): feat: CLI-usable reasoned not_applicable exemption for multi-tenant applicability gate
+<!-- vibepro-release-index-pr:591:end -->
