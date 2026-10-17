@@ -395,14 +395,11 @@ function normalizeOverlapRefs(value, tasks) {
     }
     const unknown = Object.keys(entry).filter((key) => !OVERLAP_REF_FIELDS.has(key));
     if (unknown.length > 0) throw new Error(`unknown task plan overlap_refs field: ${unknown.join(', ')}`);
-    const completionContractRef = requiredString(entry.completion_contract_ref, `task plan overlap_refs ${index} completion_contract_ref`);
-    if (!parseContractRef(completionContractRef)) {
-      throw new Error(`task plan overlap_refs ${index} completion_contract_ref must pin id@version`);
+    const parsedContractRef = parseStrictCompletionContractRef(entry.completion_contract_ref, index);
+    if (seenRefs.has(parsedContractRef.ref)) {
+      throw new Error(`duplicate task plan overlap_refs completion_contract_ref: ${parsedContractRef.ref}`);
     }
-    if (seenRefs.has(completionContractRef)) {
-      throw new Error(`duplicate task plan overlap_refs completion_contract_ref: ${completionContractRef}`);
-    }
-    seenRefs.add(completionContractRef);
+    seenRefs.add(parsedContractRef.ref);
     const rawTaskIds = normalizeStringList(entry.task_ids, `task plan overlap_refs ${index} task_ids`);
     const uniqueTaskIds = new Set(rawTaskIds);
     if (uniqueTaskIds.size !== rawTaskIds.length) {
@@ -415,7 +412,7 @@ function normalizeOverlapRefs(value, tasks) {
       if (!taskIds.has(taskId)) throw new Error(`task plan overlap_refs ${index} references unknown task_id: ${taskId}`);
     }
     return {
-      completion_contract_ref: completionContractRef,
+      completion_contract_ref: parsedContractRef.ref,
       task_ids: [...rawTaskIds].sort()
     };
   });
@@ -620,6 +617,26 @@ function observationMatches(observation, target, planVersion, local) {
  * contract id is ambiguous when a provider has published more than one
  * version, so it cannot resolve an interface dependency.
  */
+function parseStrictCompletionContractRef(value, index) {
+  const label = `task plan overlap_refs ${index} completion_contract_ref`;
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${label} must be a nonempty string`);
+  }
+  const separator = value.lastIndexOf('@');
+  if (separator <= 0 || separator === value.length - 1) {
+    throw new Error(`${label} must pin id@version`);
+  }
+  const id = value.slice(0, separator);
+  const version = value.slice(separator + 1);
+  if (!id || !version) {
+    throw new Error(`${label} must pin id@version`);
+  }
+  if (/\s/.test(id) || /\s/.test(version)) {
+    throw new Error(`${label} id and version must not contain whitespace`);
+  }
+  return { id, version, ref: `${id}@${version}` };
+}
+
 function parseContractRef(value) {
   if (typeof value !== 'string') return null;
   const separator = value.lastIndexOf('@');

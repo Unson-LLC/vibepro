@@ -385,6 +385,23 @@ test('overlap_refs: rejects fewer than two task_ids', () => {
   );
 });
 
+test('overlap_refs: rejects completion_contract_ref when id or version contains whitespace', () => {
+  assert.throws(
+    () => validateTaskPlan(twoTaskPlan([{ completion_contract_ref: ' id @ 1 ', task_ids: ['alpha', 'beta'] }])),
+    /must not contain whitespace/
+  );
+});
+
+test('overlap_refs: rejects a second ref that would duplicate id@1 after trimming padded whitespace', () => {
+  assert.throws(
+    () => validateTaskPlan(twoTaskPlan([
+      { completion_contract_ref: 'id@1', task_ids: ['alpha', 'beta'] },
+      { completion_contract_ref: ' id @ 1 ', task_ids: ['alpha', 'beta'] }
+    ])),
+    /must not contain whitespace/
+  );
+});
+
 test('overlap_refs: rejects duplicate completion_contract_ref values', () => {
   assert.throws(
     () => validateTaskPlan(twoTaskPlan([
