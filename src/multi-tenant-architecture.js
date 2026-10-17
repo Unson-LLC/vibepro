@@ -31,7 +31,6 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
   const reasons = STRONG_SIGNALS.filter(([, pattern]) => pattern.test(text)).map(([reason]) => reason);
   const hasActor = TENANT_ACTOR.test(text);
   const hasBoundary = BOUNDARY_SURFACE.test(text);
-  if (hasActor && hasBoundary) reasons.push('tenant_actor_and_boundary_surface');
   const onlyPresentationChange = COPY_ONLY.test(text) && !hasBoundary && reasons.length <= 1;
   const explicitlyLocal = LOCAL_ONLY.test(text) && reasons.length === 0;
   if (onlyPresentationChange || explicitlyLocal) {
@@ -43,7 +42,8 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
   }
   if (reasons.length > 0) return { applicable: true, status: 'applicable', reasons: [...new Set(reasons)] };
   if (hasActor || hasBoundary) {
-    return { applicable: true, status: 'needs_review', reasons: [hasActor ? 'tenant_actor_without_boundary' : 'boundary_without_tenant_actor'] };
+    const weakReason = hasActor && hasBoundary ? 'tenant_actor_and_boundary_surface' : hasActor ? 'tenant_actor_without_boundary' : 'boundary_without_tenant_actor';
+    return { applicable: true, status: 'needs_review', reasons: [weakReason] };
   }
   return { applicable: false, status: 'not_applicable', reasons: ['no_multi_tenant_signal'] };
 }

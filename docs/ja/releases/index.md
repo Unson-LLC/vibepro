@@ -766,3 +766,11 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:585:start -->
 - [PR #585](https://github.com/Unson-LLC/vibepro/pull/585) — [2026-10](/ja/releases/2026-10): feat: route vibepro journey derive/handoff/curate in the CLI
 <!-- vibepro-release-index-pr:585:end -->
+
+<!-- vibepro-release-index-pr:587:start -->
+- [PR #587](https://github.com/Unson-LLC/vibepro/pull/587) — [2026-10](/ja/releases/2026-10): fix(release): project version history from the documented SemVer token
+<!-- vibepro-release-index-pr:587:end -->
+
+<!-- vibepro-release-index-pr:588:start -->
+- [PR #588](https://github.com/Unson-LLC/vibepro/pull/588) — [2026-10](/ja/releases/2026-10): fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
+<!-- vibepro-release-index-pr:588:end -->

@@ -433,8 +433,10 @@ function projectVersionHistory(content, before, after, locale) {
   const headings = versionHistoryHeadings(lines.join('\n'));
   if (headings.length === 0) throw new Error('Published-version heading is missing');
   const currentHeading = lines.findIndex((line) => line === `## ${headings[0]}`);
-  if (headings[0] !== before && headings[0] !== after) {
-    throw new Error(`Current published-version heading must identify ${before} or ${after}`);
+  // The newest heading is the last docs projection. A skipped release-history
+  // commit leaves it older than package.json `before`; still prepend `after`.
+  if (headings[0] !== before && headings[0] !== after && compareSemver(headings[0], after) > 0) {
+    throw new Error(`Current published-version heading identifies ${headings[0]}; expected ${before} or ${after}`);
   }
   if (!headings.includes(after)) {
     const details = locale === 'ja'
@@ -468,8 +470,8 @@ function validatePublishedVersionProjection(projections, before, after) {
     if (next[0] !== after || next.filter((version) => version === after).length !== 1) {
       throw new Error(`${relative} must identify ${after} exactly once as the newest published version`);
     }
-    if (!prior.includes(after) && prior[0] !== before) {
-      throw new Error(`${relative} must identify ${before} before projecting ${after}`);
+    if (!prior.includes(after) && prior[0] !== before && compareSemver(prior[0], after) > 0) {
+      throw new Error(`${relative} identifies ${prior[0]}; expected ${before} before projecting ${after}`);
     }
     for (const version of prior) {
       if (next.filter((candidate) => candidate === version).length !== 1) {
@@ -484,9 +486,10 @@ function validatePublishedVersionProjection(projections, before, after) {
   }
 }
 
+const SEMVER_TOKEN = String.raw`\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?`;
+
 function versionHistoryHeadings(content) {
-  return [...content.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)$/gmu)]
-    .map((match) => match[1]);
+  return [...content.matchAll(new RegExp(`^## (${SEMVER_TOKEN})$`, 'gmu'))].map((match) => match[1]);
 }
 
 function assertUniqueVersionHeadings(headings, field) {
@@ -495,13 +498,31 @@ function assertUniqueVersionHeadings(headings, field) {
   }
 }
 
+function upgradeHeadingVersion(line, locale) {
+  const pattern = locale === 'ja'
+    ? new RegExp(`^## (${SEMVER_TOKEN})へのupgrade$`, 'u')
+    : new RegExp(`^## Upgrade to (${SEMVER_TOKEN})$`, 'u');
+  return line.match(pattern)?.[1] ?? null;
+}
+
 function projectUpgradeHeading(content, before, after, locale) {
   const lines = content.split('\n');
-  const beforeHeading = locale === 'ja' ? `## ${before}\u3078\u306eupgrade` : `## Upgrade to ${before}`;
-  const afterHeading = locale === 'ja' ? `## ${after}\u3078\u306eupgrade` : `## Upgrade to ${after}`;
-  const index = lines.findIndex((line) => line === beforeHeading || line === afterHeading);
-  if (index < 0) throw new Error(`Current upgrade heading is missing for locale ${locale}`);
-  lines[index] = afterHeading;
+  const headings = lines
+    .map((line, index) => ({ index, version: upgradeHeadingVersion(line, locale) }))
+    .filter((entry) => entry.version);
+  const selected = headings.find((entry) => entry.version === after)
+    ?? headings.find((entry) => entry.version === before)
+    ?? headings
+      .filter((entry) => compareSemver(entry.version, after) < 0)
+      .sort((left, right) => compareSemver(right.version, left.version))[0];
+  if (!selected) {
+    const newer = headings.find((entry) => compareSemver(entry.version, after) > 0);
+    if (newer) {
+      throw new Error(`Current upgrade heading identifies ${newer.version}; expected ${before} or ${after}`);
+    }
+    throw new Error(`Current upgrade heading is missing for locale ${locale}`);
+  }
+  lines[selected.index] = locale === 'ja' ? `## ${after}へのupgrade` : `## Upgrade to ${after}`;
   return lines.join('\n');
 }
 
@@ -513,12 +534,27 @@ function projectSoftwareVersion(content, before, after) {
   return lines.join('\n');
 }
 
+function firstSemverToken(line) {
+  return line.match(new RegExp(`(?<![0-9A-Za-z.])(${SEMVER_TOKEN})(?![0-9A-Za-z.])`, 'u'))?.[1] ?? null;
+}
+
+function replaceSemverToken(line, from, to) {
+  return line.replace(new RegExp(`(?<![0-9A-Za-z.])${escapeRegExp(from)}(?![0-9A-Za-z.])`, 'u'), to);
+}
+
+// Channel rows are the last docs projection, not a live `npm view` dist-tag.
+// Match a whole SemVer token: `0.2.0-beta.3` is not `0.2.0-beta.30`. When a
+// previous release-history commit was skipped, the token can be older than
+// package.json `before`; advance that documented token to `after`.
 function replaceCurrentVersion(line, before, after, field) {
-  if (line.includes(after)) return line;
-  if (!line.includes(before)) {
-    throw new Error(`${field} must identify ${before} or ${after}`);
+  const current = firstSemverToken(line);
+  if (current === after) return line;
+  if (current === before || (current && compareSemver(current, after) < 0)) {
+    const replaced = replaceSemverToken(line, current, after);
+    if (replaced !== line) return replaced;
   }
-  return line.replace(before, after);
+  const actual = current ? ` identifies ${current};` : '';
+  throw new Error(`${field}${actual} must identify ${before} or ${after}`);
 }
 
 function releaseBlock(number, note) {
