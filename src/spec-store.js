@@ -75,26 +75,27 @@ export async function writeMultiTenantContract(repoRoot, storyId, contract, opti
   const storyText = options.storyText ?? spec.story_context ?? '';
   const assessment = assessMultiTenantArchitecture({
     storyText,
+    spec,
+    storySourcePresent: options.storySourcePresent !== false && storyText.trim() !== '',
     contract,
     evidence: options.evidence,
     applicabilityEvidence: options.applicabilityEvidence,
     expectedHeadCommit: options.expectedHeadCommit,
     mode: 'final'
   });
-  const declaredNonApplicability = contract?.applicability === false || contract?.applicability === 'not_applicable';
   const reasoned = assessment.reasoned_non_applicability;
-  if (declaredNonApplicability) {
+  if (reasoned?.attempted) {
     await recordMultiTenantApplicabilityDeclarationAudit(repoRoot, {
       story_id: storyId,
       declared_applicability: contract?.applicability,
-      reason: reasoned?.reason ?? (typeof contract?.reason === 'string' ? contract.reason.trim() : null),
-      evidence_ref: reasoned?.evidence_ref ?? (typeof contract?.evidence_ref === 'string' ? contract.evidence_ref.trim() : null),
-      accepted: reasoned?.attempted
-        ? reasoned.accepted === true
-        : assessment.implementation_readiness?.status === 'ready',
-      refusal_reason: reasoned?.attempted && !reasoned.accepted ? reasoned.refusal_reason : null,
-      strong_signals: reasoned?.strong_signals ?? []
-    });
+      reason: reasoned.reason ?? null,
+      evidence_ref: reasoned.evidence_ref ?? null,
+      accepted: reasoned.accepted === true,
+      refusal_reason: reasoned.accepted ? null : reasoned.refusal_reason,
+      strong_signals: reasoned.strong_signals ?? [],
+      head_commit: options.expectedHeadCommit ?? null,
+      reasoned_attempted: true
+    }, { mode: 'final' });
   }
   const acceptedNonApplicability = assessment.status === 'not_applicable'
     && assessment.implementation_readiness?.status === 'ready';

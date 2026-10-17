@@ -1,24 +1,30 @@
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { access, mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
-import { getMultiTenantApplicabilityAuditPath } from '../src/multi-tenant-applicability-audit.js';
-import { writePreSpecReadiness } from '../src/spec-store.js';
+import { getMultiTenantApplicabilityAuditPath, buildMultiTenantApplicabilityAuditDedupKey } from '../src/multi-tenant-applicability-audit.js';
+import { isPlausibleMultiTenantEvidenceRef } from '../src/multi-tenant-architecture.js';
+import { writeInferredSpec, writePreSpecReadiness } from '../src/spec-store.js';
 import { validateSpec } from '../src/spec-validator.js';
 import { runCli } from '../src/cli.js';
+import { resolvePrArtifactFile } from '../src/artifact-routing.js';
 
-function minimalSpec(storyId, multiTenancy) {
+const execFileAsync = promisify(execFile);
+
+function minimalSpec(storyId, multiTenancy, clauseOverrides = {}) {
   return {
     schema_version: '0.1.0',
     story_id: storyId,
     clauses: [{
       id: 'LOCAL-1',
       type: 'scenario',
-      statement: 'ローカルCLIの表示色を変更する。',
+      statement: clauseOverrides.statement ?? 'ローカルCLIの表示色を変更する。',
       origin: { code_refs: [{ file: 'cli.js', anchor: 'color' }] }
     }],
     multi_tenancy: multiTenancy
@@ -33,6 +39,20 @@ async function seedRepo(repo, storyId) {
     `---\nstory_id: ${storyId}\n---\n単一利用者向けローカルCLIの表示色を変更する。\n`
   );
 }
+
+async function initGit(repo) {
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.email', 'vibepro@example.com'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro Test'], { cwd: repo });
+  await execFileAsync('git', ['add', '.'], { cwd: repo });
+  await execFileAsync('git', ['commit', '-m', 'chore: bootstrap'], { cwd: repo });
+}
+
+test('isPlausibleMultiTenantEvidenceRef rejects trivial values', () => {
+  assert.equal(isPlausibleMultiTenantEvidenceRef('x'), false);
+  assert.equal(isPlausibleMultiTenantEvidenceRef('docs/example.md'), true);
+  assert.equal(isPlausibleMultiTenantEvidenceRef('https://example.com/evidence'), true);
+});
 
 test('reasoned not_applicable declaration passes spec validation in final mode', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-'));
@@ -52,11 +72,55 @@ test('reasoned not_applicable declaration passes spec validation in final mode',
 
   const auditPath = getMultiTenantApplicabilityAuditPath(repo);
   const lines = (await readFile(auditPath, 'utf8')).trim().split('\n');
-  const record = JSON.parse(lines.at(-1));
+  assert.equal(lines.length, 1);
+  const record = JSON.parse(lines[0]);
   assert.equal(record.story_id, storyId);
   assert.equal(record.accepted, true);
   assert.equal(record.reason, spec.multi_tenancy.reason);
   assert.equal(record.evidence_ref, spec.multi_tenancy.evidence_ref);
+});
+
+test('draft mode does not write applicability audit records', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-draft-'));
+  const storyId = 'story-reasoned-na-draft';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'out of scope',
+    evidence_ref: 'docs/example.md'
+  });
+  await validateSpec(repo, spec, { mode: 'draft', storyContext });
+  await assert.rejects(
+    () => access(getMultiTenantApplicabilityAuditPath(repo)),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
+test('duplicate final validations append only one audit line', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-dedup-'));
+  const storyId = 'story-reasoned-na-dedup';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'no tenant boundary',
+    evidence_ref: 'docs/example.md'
+  });
+  const options = { mode: 'final', storyContext, expectedHeadCommit: 'b'.repeat(40) };
+  await validateSpec(repo, spec, options);
+  await validateSpec(repo, spec, options);
+  const lines = (await readFile(getMultiTenantApplicabilityAuditPath(repo), 'utf8')).trim().split('\n');
+  assert.equal(lines.length, 1);
+  assert.equal(
+    buildMultiTenantApplicabilityAuditDedupKey(JSON.parse(lines[0])),
+    buildMultiTenantApplicabilityAuditDedupKey({
+      spec_id: storyId,
+      head_commit: 'b'.repeat(40),
+      declared_applicability: 'not_applicable',
+      reason: 'no tenant boundary',
+      evidence_ref: 'docs/example.md',
+      accepted: true
+    })
+  );
 });
 
 test('empty reason refuses reasoned not_applicable and writes audit', async () => {
@@ -78,7 +142,21 @@ test('empty reason refuses reasoned not_applicable and writes audit', async () =
   assert.equal(record.refusal_reason, 'reason_required');
 });
 
-test('strong multi-tenant signals refuse reasoned not_applicable', async () => {
+test('invalid evidence_ref format is refused', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-bad-ref-'));
+  const storyId = 'story-reasoned-na-bad-ref';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'no tenant boundary in this change',
+    evidence_ref: 'x'
+  });
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_evidence_ref_invalid'));
+});
+
+test('strong multi-tenant signals in Story refuse reasoned not_applicable', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-strong-'));
   const storyId = 'story-reasoned-na-strong';
   const storyContext = '複数テナントのqueueとcredential境界をtenant_idで分離する。';
@@ -96,6 +174,38 @@ test('strong multi-tenant signals refuse reasoned not_applicable', async () => {
   assert.equal(record.accepted, false);
   assert.equal(record.refusal_reason, 'strong_signal_present');
   assert.ok(record.strong_signals.length > 0);
+});
+
+test('strong multi-tenant signals in spec clauses refuse reasoned not_applicable', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-clause-'));
+  const storyId = 'story-reasoned-na-clause';
+  const storyContext = '単一利用者向けローカルCLIの表示色を変更する。';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'claimed out of scope',
+    evidence_ref: 'docs/example.md'
+  }, {
+    statement: 'separate cross-tenant credential boundaries with tenant_id propagation.'
+  });
+
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_strong_signal_conflict'));
+});
+
+test('missing Story (empty storyContext) refuses reasoned not_applicable fail-safe', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reasoned-na-no-story-'));
+  const storyId = 'story-reasoned-na-no-story';
+  const spec = minimalSpec(storyId, {
+    applicability: 'not_applicable',
+    reason: 'no tenant boundary',
+    evidence_ref: 'docs/example.md'
+  });
+  spec.story_context = '単一利用者向けローカルCLIの表示色を変更する。';
+
+  const result = await validateSpec(repo, spec, { mode: 'final', storyContext: '' });
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((error) => error.code === 'multi_tenant_applicability_story_missing'));
 });
 
 test('spec write --final accepts reasoned not_applicable from spec multi_tenancy block', async () => {
@@ -139,8 +249,48 @@ test('spec write --final accepts reasoned not_applicable from spec multi_tenancy
   assert.equal(output.multi_tenant_architecture.implementation_readiness.status, 'ready');
 
   const auditLines = (await readFile(getMultiTenantApplicabilityAuditPath(repo), 'utf8')).trim().split('\n');
-  assert.ok(auditLines.length >= 1);
-  const record = JSON.parse(auditLines.at(-1));
+  assert.equal(auditLines.length, 1);
+  const record = JSON.parse(auditLines[0]);
   assert.equal(record.story_id, storyId);
   assert.equal(record.accepted, true);
+});
+
+test('pr prepare records reasoned declaration in pr-prepare.json and pr-body.md', async () => {
+  const storyId = 'story-pr-reasoned-declaration';
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-reasoned-decl-'));
+  await seedRepo(repo, storyId);
+  await initGit(repo);
+  await runCli(['init', repo, '--story-id', storyId, '--title', 'reasoned declaration pr']);
+  await writeInferredSpec(repo, storyId, {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    generated_at: new Date().toISOString(),
+    clauses: [{
+      id: 'LOCAL-1',
+      type: 'scenario',
+      statement: 'ローカルCLIの表示色を変更する。',
+      origin: { code_refs: [{ file: 'cli.js', anchor: 'color' }] }
+    }],
+    multi_tenancy: {
+      applicability: 'not_applicable',
+      reason: 'ローカルCLI配色のみでテナント境界は該当しない',
+      evidence_ref: `docs/management/stories/active/${storyId}.md`
+    }
+  });
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0);
+
+  const jsonPath = await resolvePrArtifactFile(repo, storyId, 'pr-prepare.json');
+  const preparation = JSON.parse(await readFile(jsonPath, 'utf8'));
+  assert.ok(preparation.multi_tenant_non_applicability_declaration);
+  assert.equal(preparation.multi_tenant_non_applicability_declaration.verdict, 'accepted');
+  assert.equal(preparation.multi_tenant_non_applicability_declaration.spec_id, storyId);
+  assert.ok(preparation.multi_tenant_non_applicability_declaration.head_commit);
+
+  const bodyPath = await resolvePrArtifactFile(repo, storyId, 'pr-body.md');
+  const body = await readFile(bodyPath, 'utf8');
+  assert.match(body, /reasoned non-applicability declaration/);
+  assert.match(body, /ローカルCLI配色のみでテナント境界は該当しない/);
+  assert.match(body, new RegExp(preparation.multi_tenant_non_applicability_declaration.head_commit));
 });

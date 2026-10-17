@@ -123,9 +123,16 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     }
   }
 
-  const storyContext = options.storyContext ?? spec.story_context ?? '';
+  const storySourceText = options.storyContext !== undefined
+    ? options.storyContext
+    : (spec.story_context ?? '');
+  const storySourcePresent = options.storyContext !== undefined
+    ? options.storyContext.trim() !== ''
+    : true;
   const multiTenantArchitecture = assessMultiTenantArchitecture({
-    storyText: storyContext,
+    storyText: storySourceText,
+    spec,
+    storySourcePresent,
     contract: spec.multi_tenancy ?? null,
     applicabilityEvidence: options.multiTenantApplicabilityEvidence,
     expectedHeadCommit: options.expectedHeadCommit,
@@ -134,29 +141,32 @@ export async function validateSpec(repoRoot, spec, options = {}) {
   const declaredNonApplicability = spec.multi_tenancy?.applicability === false
     || spec.multi_tenancy?.applicability === 'not_applicable';
   const reasoned = multiTenantArchitecture.reasoned_non_applicability;
-  if (declaredNonApplicability) {
-    const auditAccepted = reasoned?.attempted
-      ? reasoned.accepted === true
-      : multiTenantArchitecture.implementation_readiness?.status === 'ready';
+  if (reasoned?.attempted) {
     await recordMultiTenantApplicabilityDeclarationAudit(root, {
       story_id: spec.story_id,
       declared_applicability: spec.multi_tenancy?.applicability,
-      reason: reasoned?.reason ?? (typeof spec.multi_tenancy?.reason === 'string' ? spec.multi_tenancy.reason.trim() : null),
-      evidence_ref: reasoned?.evidence_ref ?? (typeof spec.multi_tenancy?.evidence_ref === 'string' ? spec.multi_tenancy.evidence_ref.trim() : null),
-      accepted: auditAccepted,
-      refusal_reason: reasoned?.attempted && !reasoned.accepted ? reasoned.refusal_reason : null,
-      strong_signals: reasoned?.strong_signals ?? []
-    });
+      reason: reasoned.reason ?? null,
+      evidence_ref: reasoned.evidence_ref ?? null,
+      accepted: reasoned.accepted === true,
+      refusal_reason: reasoned.accepted ? null : reasoned.refusal_reason,
+      strong_signals: reasoned.strong_signals ?? [],
+      head_commit: options.expectedHeadCommit ?? options.headCommit ?? null,
+      reasoned_attempted: true
+    }, { mode: options.mode ?? 'final' });
   }
   if (reasoned?.attempted && !reasoned.accepted) {
     const refusalMessages = {
       reason_required: 'multi_tenancy.reason must be a non-empty string for a reasoned not_applicable declaration',
       evidence_ref_required: 'multi_tenancy.evidence_ref must be a non-empty string for a reasoned not_applicable declaration',
+      evidence_ref_invalid: 'multi_tenancy.evidence_ref must be a plausible path, URL, or identifier reference',
+      story_missing: 'reasoned not_applicable requires a Story document; empty story context is rejected fail-safe',
       strong_signal_present: `strong multi-tenant signals override not_applicable: ${reasoned.strong_signals.join(', ')}`
     };
     const refusalCodes = {
       reason_required: 'multi_tenant_applicability_reason_required',
       evidence_ref_required: 'multi_tenant_applicability_evidence_ref_required',
+      evidence_ref_invalid: 'multi_tenant_applicability_evidence_ref_invalid',
+      story_missing: 'multi_tenant_applicability_story_missing',
       strong_signal_present: 'multi_tenant_applicability_strong_signal_conflict'
     };
     const issue = {

@@ -22,6 +22,55 @@ export function detectStrongMultiTenantSignals(storyText = '') {
   return STRONG_SIGNALS.filter(([, pattern]) => pattern.test(text)).map(([reason]) => reason);
 }
 
+export function collectMultiTenantSpecScanText(spec) {
+  if (!spec || typeof spec !== 'object') return '';
+  const parts = [];
+  if (typeof spec.story_context === 'string' && spec.story_context.trim()) {
+    parts.push(spec.story_context);
+  }
+  for (const clause of spec.clauses ?? []) {
+    if (typeof clause?.statement === 'string' && clause.statement.trim()) parts.push(clause.statement);
+    if (typeof clause?.rationale === 'string' && clause.rationale.trim()) parts.push(clause.rationale);
+  }
+  return parts.join('\n');
+}
+
+export function buildStrongSignalScanText({ storyText = '', spec = null } = {}) {
+  return [storyText, collectMultiTenantSpecScanText(spec)]
+    .filter((part) => typeof part === 'string' && part.trim())
+    .join('\n');
+}
+
+export function isPlausibleMultiTenantEvidenceRef(value) {
+  const ref = String(value ?? '').trim();
+  if (ref.length < 3) return false;
+  if (/^https?:\/\//i.test(ref)) return true;
+  if (ref.includes('/')) return true;
+  if (/^[a-zA-Z0-9][a-zA-Z0-9._-]*[._-][a-zA-Z0-9._-]+$/.test(ref)) return true;
+  return false;
+}
+
+export function projectMultiTenantNonApplicabilityDeclaration({
+  spec = null,
+  multiTenantArchitecture = null,
+  headCommit = null,
+  storyId = null
+} = {}) {
+  const reasoned = multiTenantArchitecture?.reasoned_non_applicability;
+  if (!reasoned?.attempted) return null;
+  return {
+    schema_version: '0.1.0',
+    spec_id: spec?.story_id ?? storyId ?? null,
+    head_commit: headCommit ?? null,
+    declared_applicability: spec?.multi_tenancy?.applicability ?? null,
+    reason: reasoned.reason ?? null,
+    evidence_ref: reasoned.evidence_ref ?? null,
+    verdict: reasoned.accepted ? 'accepted' : 'rejected',
+    refusal_reason: reasoned.accepted ? null : (reasoned.refusal_reason ?? null),
+    strong_signals: reasoned.strong_signals ?? []
+  };
+}
+
 function isExplicitNonApplicability(contract) {
   return contract?.applicability === false || contract?.applicability === 'not_applicable';
 }
@@ -30,7 +79,13 @@ function isExplicitNonApplicability(contract) {
  * Lighter auditable override: spec carries reason + evidence_ref (no caller HEAD evidence).
  * Attempted when either field is present on multi_tenancy; caller-evidence-only declarations omit both.
  */
-export function assessReasonedNonApplicabilityDeclaration(contract, storyText = '') {
+export function assessReasonedNonApplicabilityDeclaration(contract, context = {}) {
+  const storyText = typeof context === 'string' ? context : (context?.storyText ?? '');
+  const spec = typeof context === 'object' && context !== null && !Array.isArray(context) ? context.spec ?? null : null;
+  const storySourcePresent = typeof context === 'object' && context !== null && !Array.isArray(context)
+    ? context.storySourcePresent !== false
+    : true;
+
   if (!isExplicitNonApplicability(contract)) {
     return { attempted: false };
   }
@@ -42,7 +97,19 @@ export function assessReasonedNonApplicabilityDeclaration(contract, storyText = 
 
   const reason = hasReasonField ? contract.reason.trim() : '';
   const evidenceRef = hasEvidenceRefField ? contract.evidence_ref.trim() : '';
-  const strongSignals = detectStrongMultiTenantSignals(storyText);
+  const scanText = buildStrongSignalScanText({ storyText, spec });
+  const strongSignals = detectStrongMultiTenantSignals(scanText);
+
+  if (!storySourcePresent) {
+    return {
+      attempted: true,
+      accepted: false,
+      refusal_reason: 'story_missing',
+      reason,
+      evidence_ref: evidenceRef,
+      strong_signals: strongSignals
+    };
+  }
 
   if (strongSignals.length > 0) {
     return {
@@ -69,6 +136,16 @@ export function assessReasonedNonApplicabilityDeclaration(contract, storyText = 
       attempted: true,
       accepted: false,
       refusal_reason: 'evidence_ref_required',
+      reason,
+      evidence_ref: evidenceRef,
+      strong_signals: []
+    };
+  }
+  if (!isPlausibleMultiTenantEvidenceRef(evidenceRef)) {
+    return {
+      attempted: true,
+      accepted: false,
+      refusal_reason: 'evidence_ref_invalid',
       reason,
       evidence_ref: evidenceRef,
       strong_signals: []
@@ -132,9 +209,22 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
   return { applicable: false, status: 'not_applicable', reasons: ['no_multi_tenant_signal'] };
 }
 
-export function assessMultiTenantArchitecture({ storyText = '', contract = null, evidence = null, applicabilityEvidence = null, expectedHeadCommit = null, mode = 'final' } = {}) {
+export function assessMultiTenantArchitecture({
+  storyText = '',
+  spec = null,
+  storySourcePresent = true,
+  contract = null,
+  evidence = null,
+  applicabilityEvidence = null,
+  expectedHeadCommit = null,
+  mode = 'final'
+} = {}) {
   const applicability = detectMultiTenantApplicability(storyText, { explicit: contract?.applicability });
-  const reasonedDeclaration = assessReasonedNonApplicabilityDeclaration(contract, storyText);
+  const reasonedDeclaration = assessReasonedNonApplicabilityDeclaration(contract, {
+    storyText,
+    spec,
+    storySourcePresent
+  });
   if (!applicability.applicable) {
     const explicitlyNotApplicable = isExplicitNonApplicability(contract);
     const reasonedReadiness = reasonedImplementationReadiness(reasonedDeclaration);

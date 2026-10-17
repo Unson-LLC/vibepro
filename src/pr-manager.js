@@ -31,7 +31,11 @@ import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
 import { assertSelectedTaskAccepted, assertSelectedTaskScope, readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
-import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
+import {
+  assessMultiTenantArchitecture,
+  multiTenantReviewLenses,
+  projectMultiTenantNonApplicabilityDeclaration
+} from './multi-tenant-architecture.js';
 import { buildExecutionDag } from './managed-worktree.js';
 import { readOperationalJudgmentProjection } from './judgment-operations.js';
 import { readNarrative } from './report-store.js';
@@ -100,10 +104,18 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const selectedTaskScope = await assertSelectedTaskScope(root, selectedTaskAuthority?.selected, git);
   const multiTenantArchitecture = assessMultiTenantArchitecture({
     storyText: storySource?.content ?? '',
+    spec,
+    storySourcePresent: Boolean(storySource?.content?.trim()),
     contract: spec?.multi_tenancy ?? null,
     applicabilityEvidence: options.multiTenantApplicabilityEvidence,
     expectedHeadCommit: git.head_sha,
     mode: 'final'
+  });
+  const multiTenantNonApplicabilityDeclaration = projectMultiTenantNonApplicabilityDeclaration({
+    spec,
+    multiTenantArchitecture,
+    headCommit: git.head_sha,
+    storyId
   });
 
   const preparation = {
@@ -133,6 +145,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
       ...multiTenantArchitecture,
       review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
     },
+    ...(multiTenantNonApplicabilityDeclaration
+      ? { multi_tenant_non_applicability_declaration: multiTenantNonApplicabilityDeclaration }
+      : {}),
     ...(fixScope ? { fix_scope: fixScope } : {}),
     execution_dag: executionDag,
     gate_status: readiness.status,
@@ -707,7 +722,7 @@ function renderPrNarrative(narrative, status = 'missing') {
 }
 
 function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, multi_tenant_non_applicability_declaration: multiTenantNonApplicabilityDeclaration, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
@@ -808,6 +823,17 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
   lines.push('### Multi-tenant architecture');
   if (!multiTenantArchitecture?.applicable) {
     lines.push('- status: not_applicable');
+    if (multiTenantNonApplicabilityDeclaration) {
+      lines.push('- reasoned non-applicability declaration:');
+      lines.push(`  - spec: \`${multiTenantNonApplicabilityDeclaration.spec_id ?? 'unknown'}\``);
+      lines.push(`  - head: \`${multiTenantNonApplicabilityDeclaration.head_commit ?? 'unknown'}\``);
+      lines.push(`  - verdict: \`${multiTenantNonApplicabilityDeclaration.verdict}\``);
+      lines.push(`  - reason: ${multiTenantNonApplicabilityDeclaration.reason ?? 'n/a'}`);
+      lines.push(`  - evidence_ref: \`${multiTenantNonApplicabilityDeclaration.evidence_ref ?? 'n/a'}\``);
+      if (multiTenantNonApplicabilityDeclaration.refusal_reason) {
+        lines.push(`  - refusal: \`${multiTenantNonApplicabilityDeclaration.refusal_reason}\``);
+      }
+    }
   } else {
     lines.push(`- status: ${multiTenantArchitecture.status}`);
     lines.push(`- activation: ${(multiTenantArchitecture.activation_reasons ?? []).join(', ') || 'unknown'}`);
