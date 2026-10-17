@@ -786,3 +786,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:594:start -->
 - [PR #594](https://github.com/Unson-LLC/vibepro/pull/594) — [2026-10](/ja/releases/2026-10): [trial-opencode-deepseek] pr prepare: show draft spec (#439)
 <!-- vibepro-release-index-pr:594:end -->
+
+<!-- vibepro-release-index-pr:595:start -->
+- [PR #595](https://github.com/Unson-LLC/vibepro/pull/595) — [2026-10](/ja/releases/2026-10): feat: Storyからtask-planを作る分解器 (T4)
+<!-- vibepro-release-index-pr:595:end -->

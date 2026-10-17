@@ -786,3 +786,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:594:start -->
 - [PR #594](https://github.com/Unson-LLC/vibepro/pull/594) — [2026-10](/releases/2026-10): [trial-opencode-deepseek] pr prepare: show draft spec (#439)
 <!-- vibepro-release-index-pr:594:end -->
+
+<!-- vibepro-release-index-pr:595:start -->
+- [PR #595](https://github.com/Unson-LLC/vibepro/pull/595) — [2026-10](/releases/2026-10): feat: Storyからtask-planを作る分解器 (T4)
+<!-- vibepro-release-index-pr:595:end -->
