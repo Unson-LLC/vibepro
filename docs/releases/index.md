@@ -790,3 +790,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:595:start -->
 - [PR #595](https://github.com/Unson-LLC/vibepro/pull/595) — [2026-10](/releases/2026-10): feat: Storyからtask-planを作る分解器 (T4)
 <!-- vibepro-release-index-pr:595:end -->
+
+<!-- vibepro-release-index-pr:596:start -->
+- [PR #596](https://github.com/Unson-LLC/vibepro/pull/596) — [2026-10](/releases/2026-10): fix(ac-parser): 受入条件見出しの括弧付き注記を認識する
+<!-- vibepro-release-index-pr:596:end -->
