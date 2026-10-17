@@ -59,6 +59,24 @@ export async function readInferredSpec(repoRoot, storyId) {
   }
 }
 
+export async function readDraftSpec(repoRoot, storyId) {
+  if (!storyId) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(await readFile(getSpecDraftFile(repoRoot, storyId), 'utf8'));
+  } catch {
+    return null;
+  }
+  return isSpecShapedDraft(parsed) ? parsed : null;
+}
+
+function isSpecShapedDraft(value) {
+  return typeof value === 'object'
+    && value !== null
+    && !Array.isArray(value)
+    && Object.keys(value).length > 0;
+}
+
 export async function readMultiTenantContract(repoRoot, storyId) {
   const spec = await readInferredSpec(repoRoot, storyId);
   return spec?.multi_tenancy ?? null;

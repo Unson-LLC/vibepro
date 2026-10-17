@@ -23,7 +23,7 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
-import { readDrift, readInferredSpec } from './spec-store.js';
+import { readDrift, readDraftSpec, readInferredSpec } from './spec-store.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getReviewStatus } from './lightweight-review.js';
 import { bindStoryTraceability, buildAcceptedSpecClauseMap, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
@@ -60,10 +60,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
-  const [storyRecord, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
+  const [storyRecord, git, spec, draftSpec, drift, verification, review, developmentJudgment] = await Promise.all([
     readStory(root, storyId, options),
     collectGitState(root, options),
     readInferredSpec(root, storyId).catch(() => null),
+    readDraftSpec(root, storyId).catch(() => null),
     readDrift(root, storyId).catch(() => null),
     readVerificationSummary(root, storyId),
     readReviewSummary(root, storyId),
@@ -136,7 +137,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     task_authorities: taskAuthorities,
     output: { language },
     git,
-    spec: spec ? { present: true, story_id: spec.story_id ?? storyId, clause_count: (spec.clauses ?? []).length } : { present: false },
+    spec: summarizeSpec(spec, draftSpec, storyId),
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
@@ -721,6 +722,26 @@ function renderPrNarrative(narrative, status = 'missing') {
   return sections.length > 0 ? `### 保存済みの判断説明\n\n${sections.join('\n\n')}\n\n` : '';
 }
 
+function summarizeSpec(acceptedSpec, draftSpec, storyId) {
+  if (acceptedSpec) {
+    return {
+      present: true,
+      status: 'accepted',
+      story_id: acceptedSpec.story_id ?? storyId,
+      clause_count: (acceptedSpec.clauses ?? []).length
+    };
+  }
+  if (draftSpec) {
+    return {
+      present: false,
+      status: 'draft',
+      story_id: draftSpec.story_id ?? storyId,
+      clause_count: Array.isArray(draftSpec.clauses) ? draftSpec.clauses.length : 0
+    };
+  }
+  return { present: false, status: 'missing' };
+}
+
 function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
   const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, multi_tenant_non_applicability_declaration: multiTenantNonApplicabilityDeclaration, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
   const lines = [];
@@ -788,9 +809,13 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
   }
   lines.push('');
   lines.push('### Spec');
-  lines.push(spec.present
-    ? `- accepted spec present (\`${spec.story_id}\`, ${spec.clause_count} clause(s))`
-    : '- no accepted spec found for this story');
+  if (spec.present) {
+    lines.push(`- accepted spec present (\`${spec.story_id}\`, ${spec.clause_count} clause(s))`);
+  } else if (spec.status === 'draft') {
+    lines.push(`- draft spec present, not accepted (\`${spec.story_id}\`, ${spec.clause_count} clause(s))`);
+  } else {
+    lines.push('- no accepted spec found for this story');
+  }
   if (specDrift) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
   }
@@ -1382,7 +1407,7 @@ export function renderPrPrepareSummary(result) {
     `- base: ${preparation.git.base_ref}`,
     `- head: ${preparation.git.head_ref} (${preparation.git.head_sha ?? '-'})`,
     `- changed files: ${preparation.git.changed_files.length}`,
-    `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
+    `- spec: ${preparation.spec.status === 'accepted' ? 'present' : preparation.spec.status === 'draft' ? 'draft (not accepted)' : 'missing'}`,
     `- outcome case: ${preparation.outcome_case_status ?? 'unknown'} (${preparation.outcome_case_reason_code ?? 'projection_status_missing'})`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
