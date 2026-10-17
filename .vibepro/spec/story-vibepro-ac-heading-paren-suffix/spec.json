@@ -1,0 +1,599 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-ac-heading-paren-suffix",
+  "story_context": "受入条件見出しは、見出し語の直後に全角または ASCII の括弧が一つ続いても認識される。括弧の無い従来の見出しはこれまで通り認識される。既存 Story markdown で件数が変わるのは T4 と T3 だけである。",
+  "generated_by": {
+    "caller": "cursor-agent",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "見出し語の直後に全角または ASCII の括弧グループが一つだけ続く受入条件見出しは、その節の箇条書きを受入条件として認識する。",
+      "rationale": "AC-1。実装は src/markdown-acceptance-criteria.js の見出し正規表現で、括弧グループを一つだけ許す。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser recognizes a full-width parenthetical suffix"
+          },
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser recognizes an ASCII parenthetical suffix"
+          },
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser recognizes 受入条件（Brainbase 完了契約 criteria 原文）"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-artifact-consistency.test.js",
+            "must_contain": "## 受入条件（Brainbase 完了契約 criteria 原文）"
+          }
+        ]
+      },
+      "confidence": 0.94,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "見出し語が延びた行、入れ子の括弧、括弧グループが二つ、全角と ASCII が混在した括弧は受入条件見出しにしない。",
+      "rationale": "AC-1 の境界。一つの括弧グループだけを許す正規表現は、これらの見出しを節の開始にしない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser does not recognize 受入条件外（x）"
+          },
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser rejects a nested parenthetical suffix"
+          },
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser rejects two parenthetical groups"
+          },
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser rejects mixed full-width and ASCII parentheses"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "src/markdown-acceptance-criteria.js",
+            "must_contain": "（[^）]*）"
+          }
+        ]
+      },
+      "confidence": 0.9,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "括弧の無い従来の受入条件見出しは認識され、その節の外にある箇条書きは受入条件にならない。",
+      "rationale": "AC-2。番号付き、英語、日本語の従来見出しは括弧サフィックス追加の前から認識されている。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-2"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "export function extractMarkdownAcceptanceCriteria"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser handles numbered/case/Japanese variants without background bullets"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/pr-artifact-consistency.test.js",
+            "must_contain": "shared Acceptance Criteria parser handles numbered/case/Japanese variants without background bullets"
+          }
+        ]
+      },
+      "confidence": 0.95,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "docs/management/stories 配下の既存 Story markdown で、括弧サフィックスを許す前の見出し判定と比べて受入条件の件数が変わるのは T4 と T3 だけで、それぞれ 0 件から 4 件になる。",
+      "rationale": "AC-3。T4 は story-vibepro-task-plan-decomposer、T3 は story-vibepro-task-plan-overlap-refs。どちらも見出しが ## 受入条件（Brainbase 完了契約 criteria 原文）である。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-3"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "export function extractMarkdownAcceptanceCriteria"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "acceptance-criteria counts change only for the T4 and T3 stories"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "docs/management/stories/active/story-vibepro-task-plan-decomposer.md",
+            "must_contain": "## 受入条件（Brainbase 完了契約 criteria 原文）"
+          },
+          {
+            "file_glob": "docs/management/stories/active/story-vibepro-task-plan-overlap-refs.md",
+            "must_contain": "## 受入条件（Brainbase 完了契約 criteria 原文）"
+          }
+        ]
+      },
+      "confidence": 0.93,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "見出しが ## 受入条件（補足）の Story を抽出すると、節内の箇条書きが受入条件になり、節の外の箇条書きは含まれない。",
+      "rationale": "AC-1 の全角括弧の正例。変更前の見出し判定ではこの見出しを認識しない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser recognizes a full-width parenthetical suffix"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.94,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "見出しが ## 受入条件 (補足)、## 受入条件(補足)、## Acceptance Criteria (draft) の Story を抽出すると、節内の箇条書きが受入条件になる。",
+      "rationale": "AC-1 の ASCII 括弧の正例。空白の有無をどちらも許す。変更前の見出し判定では認識しない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "\\([^)]*\\)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser recognizes an ASCII parenthetical suffix"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.94,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "見出しが ## 受入条件（Brainbase 完了契約 criteria 原文）の Story を抽出すると、節内の箇条書きが受入条件になる。",
+      "rationale": "AC-1 の実見出し。T4 と T3 が使っている全文である。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser recognizes 受入条件（Brainbase 完了契約 criteria 原文）"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.95,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "見出しが ## 受入条件外（x）の Story を抽出すると、受入条件は 0 件である。",
+      "rationale": "AC-1 の境界。見出し語の直後に括弧が無いので、現行の判定でも変更前の判定でも節を開かない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "export function extractMarkdownAcceptanceCriteria"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser does not recognize 受入条件外（x）"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "confidence": 0.92,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "見出しが ## 受入条件（外（内））または ## Acceptance Criteria (outer (inner)) の Story を抽出すると、受入条件は 0 件である。",
+      "rationale": "AC-1 の境界。入れ子の括弧は一つのグループとして閉じない。現行の判定でも変更前の判定でも節を開かない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser rejects a nested parenthetical suffix"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "confidence": 0.92,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "見出しが ## 受入条件（一）（二）または ## Acceptance Criteria (one) (two) の Story を抽出すると、受入条件は 0 件である。",
+      "rationale": "AC-1 の境界。括弧グループが二つ続く見出しは節を開かない。現行の判定でも変更前の判定でも 0 件である。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser rejects two parenthetical groups"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "confidence": 0.92,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-007",
+      "type": "scenario",
+      "statement": "全角と ASCII が混在した ## 受入条件（補足)、## 受入条件 (補足）、## Acceptance Criteria（draft)、## Acceptance Criteria (draft）は受入条件見出しにしない。",
+      "rationale": "AC-1 の境界。開きと閉じは同じ種類の括弧でなければならない。現行の判定でも変更前の判定でも 0 件である。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "（[^）]*）"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser rejects mixed full-width and ASCII parentheses"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "confidence": 0.92,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-008",
+      "type": "scenario",
+      "statement": "## 6. ACCEPTANCE CRITERIA、### 6.2 Acceptance Criteria、## 受け入れ基準、# 受け入れ条件、## 受入条件は、これまで通り節内の箇条書きだけを受入条件にする。",
+      "rationale": "AC-2。この見出し群は変更前の判定でも認識される。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-2"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "export function extractMarkdownAcceptanceCriteria"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "shared Acceptance Criteria parser handles numbered/case/Japanese variants without background bullets"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.95,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    },
+    {
+      "id": "S-009",
+      "type": "scenario",
+      "statement": "docs/management/stories 配下の Story markdown を走査し、変更前の見出し判定と現在の抽出を比べると、件数差は T4 と T3 の 0 件から 4 件だけである。",
+      "rationale": "AC-3。比較に使う変更前の見出し正規表現は guidance.tests に固定する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-3"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/markdown-acceptance-criteria.js",
+            "anchor": "export function extractMarkdownAcceptanceCriteria"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-consistency.test.js",
+            "case": "acceptance-criteria counts change only for the T4 and T3 stories"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.93,
+      "first_seen_at": "2026-10-17T16:00:04.094Z",
+      "last_revised_at": "2026-10-17T16:00:04.094Z"
+    }
+  ],
+  "guidance": {
+    "phase": "implementation",
+    "test_file": "test/pr-artifact-consistency.test.js",
+    "helper": "既存の storyDocument(heading) を使う。節内は DSS-AC-001 から DSS-AC-012 の 12 件で、BACKGROUND-ONLY と BOUNDARY-ONLY は受入条件にしない。",
+    "existing_test_not_the_boundary": "test/pr-artifact-consistency.test.js の 'shared Acceptance Criteria parser accepts a single parenthetical suffix on the heading' に含まれる負例 ## 受入条件の背景 と ## Acceptance Criteria notes は、変更前の見出し判定でも 0 件なので境界を区別しない。AC-1 の test_refs には入れない。",
+    "tests": [
+      {
+        "name": "shared Acceptance Criteria parser recognizes a full-width parenthetical suffix",
+        "ac_id": "AC-1",
+        "polarity": "positive",
+        "fails_on_old_heading": true,
+        "inputs": [
+          "## 受入条件（補足）"
+        ],
+        "expect": "12 件。id は DSS-AC-001 から DSS-AC-012。BACKGROUND-ONLY と BOUNDARY-ONLY を含まない。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser recognizes an ASCII parenthetical suffix",
+        "ac_id": "AC-1",
+        "polarity": "positive",
+        "fails_on_old_heading": true,
+        "inputs": [
+          "## 受入条件 (補足)",
+          "## 受入条件(補足)",
+          "## Acceptance Criteria (draft)"
+        ],
+        "expect": "各見出しで 12 件。id は DSS-AC-001 から DSS-AC-012。BACKGROUND-ONLY と BOUNDARY-ONLY を含まない。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser recognizes 受入条件（Brainbase 完了契約 criteria 原文）",
+        "ac_id": "AC-1",
+        "polarity": "positive",
+        "fails_on_old_heading": true,
+        "inputs": [
+          "## 受入条件（Brainbase 完了契約 criteria 原文）"
+        ],
+        "expect": "12 件。id は DSS-AC-001 から DSS-AC-012。BACKGROUND-ONLY と BOUNDARY-ONLY を含まない。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser does not recognize 受入条件外（x）",
+        "ac_id": "AC-1",
+        "polarity": "negative",
+        "fails_on_old_heading": false,
+        "pins_current_behaviour": true,
+        "inputs": [
+          "## 受入条件外（x）"
+        ],
+        "expect": "0 件。変更前の見出し判定でも 0 件。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser rejects a nested parenthetical suffix",
+        "ac_id": "AC-1",
+        "polarity": "negative",
+        "fails_on_old_heading": false,
+        "pins_current_behaviour": true,
+        "inputs": [
+          "## 受入条件（外（内））",
+          "## Acceptance Criteria (outer (inner))"
+        ],
+        "expect": "各見出しで 0 件。変更前の見出し判定でも 0 件。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser rejects two parenthetical groups",
+        "ac_id": "AC-1",
+        "polarity": "negative",
+        "fails_on_old_heading": false,
+        "pins_current_behaviour": true,
+        "inputs": [
+          "## 受入条件（一）（二）",
+          "## Acceptance Criteria (one) (two)"
+        ],
+        "expect": "各見出しで 0 件。変更前の見出し判定でも 0 件。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser rejects mixed full-width and ASCII parentheses",
+        "ac_id": "AC-1",
+        "polarity": "negative",
+        "fails_on_old_heading": false,
+        "pins_current_behaviour": true,
+        "inputs": [
+          "## 受入条件（補足)",
+          "## 受入条件 (補足）",
+          "## Acceptance Criteria（draft)",
+          "## Acceptance Criteria (draft）"
+        ],
+        "expect": "各見出しで 0 件。変更前の見出し判定でも 0 件。"
+      },
+      {
+        "name": "shared Acceptance Criteria parser handles numbered/case/Japanese variants without background bullets",
+        "ac_id": "AC-2",
+        "polarity": "positive",
+        "already_in_file": true,
+        "fails_on_old_heading": false,
+        "inputs": [
+          "## 6. ACCEPTANCE CRITERIA",
+          "### 6.2 Acceptance Criteria",
+          "## 受け入れ基準",
+          "# 受け入れ条件",
+          "## 受入条件"
+        ],
+        "expect": "各見出しで 12 件。id は DSS-AC-001 から DSS-AC-012。BACKGROUND-ONLY と BOUNDARY-ONLY を含まない。このテストは既にファイルにある。"
+      },
+      {
+        "name": "acceptance-criteria counts change only for the T4 and T3 stories",
+        "ac_id": "AC-3",
+        "polarity": "regression",
+        "fails_on_old_heading": true,
+        "scan": "docs/management/stories/**/*.md",
+        "old_heading": "/^#{1,6}\\s+(?:(?:\\d+(?:\\.\\d+)*)[.)]?\\s+)?(?:acceptance\\s+criteria|受け入れ基準|受入基準|受け入れ条件|受入条件|完了定義)\\s*[:：]?\\s*$/i",
+        "count_rule": "変更前の件数は old_heading で節を開き、extractMarkdownAcceptanceCriteria と同じ箇条書き規則で数える。現在の件数は extractMarkdownAcceptanceCriteria の length。",
+        "expect": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-task-plan-decomposer.md",
+            "old_count": 0,
+            "new_count": 4
+          },
+          {
+            "file": "docs/management/stories/active/story-vibepro-task-plan-overlap-refs.md",
+            "old_count": 0,
+            "new_count": 4
+          }
+        ],
+        "expect_note": "この 2 ファイル以外の件数差は空である。計画時点の走査は 331 ファイルで、差はこの 2 件だけだった。"
+      }
+    ]
+  },
+  "open_questions": [],
+  "generated_at": "2026-10-17T16:00:04.094Z",
+  "previous_spec_id": null
+}
