@@ -4171,3 +4171,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:599:end -->
+
+<!-- vibepro-release-pr:601:start -->
+## [#601](https://github.com/Unson-LLC/vibepro/pull/601) ci: post-mergeの公開をnpm-publish.ymlの呼び出しにする
+
+- Author: @sintariran
+- Merged: 2026-10-18T02:39:51Z
+- Commit: `1e0a24e810fa564fbe7b75406ed8cd60b1eaa6f2`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:601:end -->

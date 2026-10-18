@@ -806,3 +806,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:599:start -->
 - [PR #599](https://github.com/Unson-LLC/vibepro/pull/599) — [2026-10](/releases/2026-10): ci: OIDC公開ジョブからnpm環境を外し、断られた理由をログに出す
 <!-- vibepro-release-index-pr:599:end -->
+
+<!-- vibepro-release-index-pr:601:start -->
+- [PR #601](https://github.com/Unson-LLC/vibepro/pull/601) — [2026-10](/releases/2026-10): ci: post-mergeの公開をnpm-publish.ymlの呼び出しにする
+<!-- vibepro-release-index-pr:601:end -->
