@@ -52,7 +52,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-002",
@@ -115,7 +115,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-008",
@@ -154,7 +154,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T01:19:15.889Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-009",
@@ -193,7 +193,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T01:19:15.889Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "S-001",
@@ -224,7 +224,7 @@
       "outcome_kind": "internal_output",
       "confidence": 0.9,
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-003",
@@ -279,7 +279,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-004",
@@ -334,7 +334,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-005",
@@ -373,12 +373,12 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-006",
       "type": "invariant",
-      "statement": "npm Trusted Publisher 登録が一致すべき値（workflow filename post-merge-release.yml と npm-publish.yml、post-merge の release job は environment なし・npm-publish の publish job は environment: npm、両 job の id-token: write、publish script の npm dist-tag add）はリポジトリ内で固定され、architecture doc の Security 節が両 workflow の登録と dist-tag 許可を述べる。",
+      "statement": "npm Trusted Publisher 登録が一致すべき値（workflow filename post-merge-release.yml と npm-publish.yml、どちらの publish job にも GitHub environment が無いこと（#599）、両 job の id-token: write、publish script の npm dist-tag add）はリポジトリ内で固定され、architecture doc の Security 節が両 workflow の登録と dist-tag 許可を述べる。",
       "rationale": "AC-5。npm 側の登録は外部から確認できないため PR 本文で佐藤さんに確認を依頼する。その確認対象の値をテストで固定する。PR 本文の節そのものは PR レビューで確認する。",
       "origin": {
         "story_refs": [
@@ -390,7 +390,7 @@
         "code_refs": [
           {
             "file": ".github/workflows/npm-publish.yml",
-            "anchor": "environment: npm"
+            "anchor": "No GitHub environment"
           }
         ],
         "test_refs": [
@@ -412,7 +412,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "INV-007",
@@ -459,7 +459,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "S-002",
@@ -494,7 +494,7 @@
       "outcome_kind": "internal_output",
       "confidence": 0.9,
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     },
     {
       "id": "S-003",
@@ -525,7 +525,7 @@
       "outcome_kind": "internal_output",
       "confidence": 0.9,
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T01:19:15.889Z"
+      "last_revised_at": "2026-10-18T01:25:47.114Z"
     }
   ],
   "guidance": {
@@ -540,6 +540,6 @@
     ]
   },
   "open_questions": [],
-  "generated_at": "2026-10-18T01:19:15.889Z",
-  "previous_spec_id": "2026-10-18T00:43:57.518Z"
+  "generated_at": "2026-10-18T01:25:47.114Z",
+  "previous_spec_id": "2026-10-18T01:19:15.889Z"
 }

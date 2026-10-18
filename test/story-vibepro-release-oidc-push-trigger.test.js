@@ -77,8 +77,12 @@ test('npm Trusted Publisher registration values are pinned by the publishing wor
   assert.match(release, /runs-on: ubuntu-latest/u);
   assert.doesNotMatch(release, /^\s+environment:/mu);
 
+  // #599: no GitHub environment on either publish job; an environment claim in
+  // the OIDC token would have to match the npm Trusted Publisher entry.
   const publish = workflowJob(npmPublish, 'publish');
-  assert.match(publish, /^    environment: npm$/mu);
+  assert.doesNotMatch(publish, /^\s+environment:/mu);
+  assert.doesNotMatch(postMerge, /^\s+environment:/mu);
+  assert.doesNotMatch(npmPublish, /^\s+environment:/mu);
   assert.match(publish, /id-token: write/u);
   assert.match(publish, /runs-on: ubuntu-latest/u);
 
