@@ -1,17 +1,18 @@
 name: Post-merge continuous release
 
 on:
-  pull_request_target:
-    types:
-      - closed
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 concurrency:
-  group: post-merge-release-pr-${{ github.event.pull_request.number }}
+  group: post-merge-release-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
   validation:
-    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     permissions:
       actions: read
@@ -19,35 +20,82 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      release_required: ${{ steps.projection.outputs.release_required }}
-      version: ${{ steps.projection.outputs.version }}
+      release_required: ${{ steps.projection.outputs.release_required || steps.dispatch_projection.outputs.release_required }}
+      version: ${{ steps.projection.outputs.version || steps.dispatch_projection.outputs.version }}
       validation_mode: ${{ steps.validation.outputs.validation_mode }}
       validation_reason: ${{ steps.validation.outputs.validation_reason }}
+      merged: ${{ steps.pull_request.outputs.merged }}
+      pr_number: ${{ steps.pull_request.outputs.pr_number }}
+      merge_sha: ${{ steps.pull_request.outputs.merge_sha }}
+      base_sha: ${{ steps.pull_request.outputs.base_sha }}
+      head_sha: ${{ steps.pull_request.outputs.head_sha }}
+      merged_at: ${{ steps.pull_request.outputs.merged_at }}
     steps:
+      - name: Resolve merged pull request for the pushed commit
+        id: pull_request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # push: the pushed merge commit. workflow_dispatch: the current tip of
+          # main at run time, never a stale or PR-supplied SHA.
+          MERGE_SHA: ${{ github.sha }}
+        run: |
+          PR_NUMBER=$(gh api "repos/$GITHUB_REPOSITORY/commits/$MERGE_SHA/pulls" --jq "map(select(.merged_at != null and .merge_commit_sha == \"$MERGE_SHA\" and .base.ref == \"main\")) | .[0].number // empty")
+          if [ -z "$PR_NUMBER" ] && [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # A dispatch still releases MERGE_SHA; only its release notes come from the latest merged PR before it.
+            for COMMIT in $(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$MERGE_SHA&per_page=30" --jq '.[1:][].sha'); do
+              PR_NUMBER=$(gh api "repos/$GITHUB_REPOSITORY/commits/$COMMIT/pulls" --jq "map(select(.merged_at != null and .merge_commit_sha == \"$COMMIT\" and .base.ref == \"main\")) | .[0].number // empty")
+              if [ -n "$PR_NUMBER" ]; then break; fi
+            done
+          fi
+          if [ -z "$PR_NUMBER" ]; then
+            echo "merged=false" >> "$GITHUB_OUTPUT"
+            echo "pull_request=none (no merged main PR for ${MERGE_SHA})" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '{action: "closed", number: .number, pull_request: .}' > "$RUNNER_TEMP/post-merge-release-event.json"
+          {
+            echo "merged=true"
+            echo "pr_number=$PR_NUMBER"
+            echo "merge_sha=$MERGE_SHA"
+            gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '"base_sha=\(.base.sha)\nhead_sha=\(.head.sha)\nmerged_at=\(.merged_at)"'
+          } >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v7
+        if: ${{ steps.pull_request.outputs.merged == 'true' }}
         with:
           # The selector is code from the immutable pre-merge base, never from
           # the pull request or the moving post-merge default branch.
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ steps.pull_request.outputs.base_sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v7
+        if: ${{ steps.pull_request.outputs.merged == 'true' }}
         with:
           node-version: 22
       - run: npm ci
+        if: ${{ steps.pull_request.outputs.merged == 'true' }}
       - name: Plan conditional package release
         id: projection
-        run: node scripts/post-merge-release.mjs plan --event "$GITHUB_EVENT_PATH"
+        if: ${{ steps.pull_request.outputs.merged == 'true' && github.event_name == 'push' }}
+        run: node scripts/post-merge-release.mjs plan --event "$RUNNER_TEMP/post-merge-release-event.json"
+      - name: Plan dispatched release of the main tip
+        id: dispatch_projection
+        if: ${{ steps.pull_request.outputs.merged == 'true' && github.event_name == 'workflow_dispatch' }}
+        env:
+          MERGE_SHA: ${{ steps.pull_request.outputs.merge_sha }}
+        run: |
+          echo "release_required=true" >> "$GITHUB_OUTPUT"
+          echo "version=$(git show "$MERGE_SHA:package.json" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).version')" >> "$GITHUB_OUTPUT"
+          echo "dispatch_release_sha=${MERGE_SHA}" >> "$GITHUB_STEP_SUMMARY"
       - name: Select exact-SHA validation path
         id: validation
         if: ${{ steps.projection.outputs.release_required == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if ! node scripts/post-merge-release.mjs validation-plan --event "$GITHUB_EVENT_PATH" --repository "$GITHUB_REPOSITORY"; then
+          if ! node scripts/post-merge-release.mjs validation-plan --event "$RUNNER_TEMP/post-merge-release-event.json" --repository "$GITHUB_REPOSITORY"; then
             echo "validation_mode=full" >> "$GITHUB_OUTPUT"
             echo "validation_reason=trusted_base_selector_unavailable" >> "$GITHUB_OUTPUT"
-            echo "reviewed_head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
-            echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> "$GITHUB_OUTPUT"
+            echo "reviewed_head_sha=${{ steps.pull_request.outputs.head_sha }}" >> "$GITHUB_OUTPUT"
+            echo "merge_sha=${{ steps.pull_request.outputs.merge_sha }}" >> "$GITHUB_OUTPUT"
           fi
           cat "$GITHUB_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
 
@@ -63,14 +111,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ needs.validation.outputs.merge_sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Bind package release to the merged PR commit
         env:
-          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          RELEASE_SHA: ${{ needs.validation.outputs.merge_sha }}
         run: |
           test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
           test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
@@ -105,7 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ needs.validation.outputs.merge_sha }}
           fetch-depth: 0
       # Without a registry URL, setup-node writes no token-reading .npmrc, so a
       # failed OIDC exchange fails as ENEEDAUTH instead of falling back to a
@@ -119,11 +167,17 @@ jobs:
         run: npm install --global npm@11.21.1
       - name: Bind publication to the validated merge commit
         env:
-          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          RELEASE_SHA: ${{ needs.validation.outputs.merge_sha }}
         run: |
           test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
           test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
           npm ci
+      - name: Resolve merged pull request event
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.validation.outputs.pr_number }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '{action: "closed", number: .number, pull_request: .}' > "$RUNNER_TEMP/post-merge-release-event.json"
       # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
       # no long-lived npm token is available to this job.
       - name: Publish npm and reconcile GitHub Release under package lease
@@ -131,7 +185,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.validation.outputs.version }}
-          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          RELEASE_SHA: ${{ needs.validation.outputs.merge_sha }}
         run: |
           PUBLISH_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           echo "publish_started_at=${PUBLISH_STARTED_AT}" >> "$GITHUB_OUTPUT"
@@ -140,26 +194,33 @@ jobs:
           trap release_lock EXIT
           node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
           echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-          node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output /tmp/vibepro-release.md
+          node scripts/post-merge-release.mjs release-body --event "$RUNNER_TEMP/post-merge-release-event.json" --output /tmp/vibepro-release.md
           node scripts/post-merge-release.mjs reconcile-github-release --version "$VERSION" --sha "$RELEASE_SHA" --notes-file /tmp/vibepro-release.md --repository "$GITHUB_REPOSITORY"
           echo "github_release=v${VERSION}@${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
 
   docs:
     needs: [validation, release]
     # Docs follow a successful publication, or run alone when the version is unchanged.
-    if: ${{ always() && needs.validation.result == 'success' && (needs.validation.outputs.release_required != 'true' || needs.release.result == 'success') }}
+    if: ${{ always() && needs.validation.result == 'success' && needs.validation.outputs.merged == 'true' && (needs.validation.outputs.release_required != 'true' || needs.release.result == 'success') }}
     runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     timeout-minutes: 90
     permissions:
       contents: write
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ needs.validation.outputs.merge_sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      - name: Resolve merged pull request event
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.validation.outputs.pr_number }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '{action: "closed", number: .number, pull_request: .}' > "$RUNNER_TEMP/post-merge-release-event.json"
       - name: Record version gate
         if: ${{ needs.validation.outputs.release_required != 'true' }}
         run: echo "npm=skipped (package version unchanged)" >> "$GITHUB_STEP_SUMMARY"
@@ -177,14 +238,14 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             npm ci --ignore-scripts
-            node scripts/post-merge-release.mjs project --event "$GITHUB_EVENT_PATH"
+            node scripts/post-merge-release.mjs project --event "$RUNNER_TEMP/post-merge-release-event.json"
             git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md docs/.vitepress/config.mjs
             if git diff --cached --quiet; then
               pushed=true
               echo "docs_commit=unchanged_or_reconciled" >> "$GITHUB_STEP_SUMMARY"
               break
             fi
-            git commit -m "docs: record release notes for PR #${{ github.event.pull_request.number }}"
+            git commit -m "docs: record release notes for PR #${{ needs.validation.outputs.pr_number }}"
             if git push origin HEAD:main; then
               pushed=true
               echo "docs_commit=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
@@ -205,14 +266,14 @@ jobs:
 
   recovery:
     needs: [validation, release-candidate, release, docs]
-    if: ${{ always() && needs.validation.result == 'success' }}
+    if: ${{ always() && needs.validation.result == 'success' && needs.validation.outputs.merged == 'true' }}
     runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ needs.validation.outputs.merge_sha }}
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -224,7 +285,7 @@ jobs:
           if [ "${{ needs.validation.outputs.release_required }}" = "true" ] && [ -n "${{ needs.release.outputs.npm_published_at }}" ]; then
             WORKFLOW_COMPLETED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
             node scripts/post-merge-release.mjs timing \
-              --merged-at "${{ github.event.pull_request.merged_at }}" \
+              --merged-at "${{ needs.validation.outputs.merged_at }}" \
               --publish-started-at "${{ needs.release.outputs.publish_started_at }}" \
               --npm-published-at "${{ needs.release.outputs.npm_published_at }}" \
               --workflow-completed-at "$WORKFLOW_COMPLETED_AT"

@@ -1564,6 +1564,18 @@
         "started_at": "2026-10-17",
         "due_at": null,
         "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-release-oidc-push-trigger",
+        "title": "post-merge release を push トリガーへ移し npm Trusted Publishing を通す",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-18",
+        "due_at": null,
+        "contract_type": null
       }
     ],
     "current_story_id": "story-vibepro-disposition-reviewed-by"

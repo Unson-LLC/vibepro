@@ -118,11 +118,11 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   assert.deepEqual(calls.filter((call) => call[1] === 'dist-tag').map((call) => call.at(-1)), ['beta', 'latest']);
 
   const workflow = await readFile(new URL('../../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /pull_request\.merged == true/);
-  assert.match(workflow, /group: post-merge-release-pr-\$\{\{ github\.event\.pull_request\.number \}\}/);
+  assert.match(workflow, /needs\.validation\.outputs\.merged == 'true'/);
+  assert.match(workflow, /group: post-merge-release-\$\{\{ github\.sha \}\}/);
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
-  assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
+  assert.match(workflow, /needs\.validation\.outputs\.merge_sha/);
   assert.match(workflow, /npm-release-lock\.mjs acquire/);
   assert.match(workflow, /trap release_lock EXIT/);
   assert.match(workflow, /timeout-minutes: 90/);

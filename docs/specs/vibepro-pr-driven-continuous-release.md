@@ -39,7 +39,7 @@ diagrams:
 
 - `PCR-CON-001`: Release Notesは `Change Summary`、`Compatibility`、`User Action` の3節を持ち、空節は `なし` になる。
 - `PCR-CON-001A`: VibeProはStoryの `Solution`、`Compatibility`、`User Action` を各安定節へ抽出し、post-merge jobはapproval environmentを使用しない。
-- `PCR-CON-001B`: post-merge triggerは `pull_request_target.closed` を使用し、`merged == true` かつbase=`main` に限定する。workflowとprojection codeはdefault branchから読み、package buildだけをmerge SHAへ固定することでfork由来PRでも自動公開契約を維持する。
+- `PCR-CON-001B`: post-merge triggerは `main` への `push` と `workflow_dispatch` を使用する。npm Trusted Publishing は `pull_request_target` のOIDC tokenを受け付けないため、merge判定・PR番号・merge SHA・base SHAはpushされたcommit（`github.sha`）に紐づくmerge済みPRからGitHub APIで解決し、該当PRが無ければ後続jobをskipする。workflowとprojection codeはdefault branchから読み、package buildだけをmerge SHAへ固定する。`workflow_dispatch` では実行時点のmain先端（`github.sha`）を常にRELEASE_SHAとし、release notesだけをそれ以前の最新merge済みPRから取る。
 - `PCR-CON-002`: note identityはPR番号で、同じeventの再処理は既存markerを置換して重複しない。
 - `PCR-CON-003`: note metadataはnumber/title/author/merged_at/merge_commit_sha/html_urlをevent payloadから取得する。
 - `PCR-CON-004`: version gateはbaseとmergeのSemVerを比較し、厳密な増加時だけreleaseする。
@@ -50,3 +50,4 @@ diagrams:
 - `PCR-CON-009`: PR body/titleを含むPR由来の表示値にあるraw HTML/Vue interpolationをescapeし、npm metadataの404以外の障害ではpublishせず有限retry後に停止する。
 - `PCR-CON-010`: workflow runはPR番号単位で保持して別PRのpending eventを置換せず、docs deploy直前に最新mainへ同期してburst merge時も全PRの投影を公開する。
 - `PCR-CON-011`: docs push競合時は最新`origin/main`へfetch/resetし、対象PRを再投影して再試行する。生成commit同士のrebase conflictを回復経路にしない。
+- `PCR-CON-014`: npm公開はGitHub-hosted runner上のTrusted Publishing（OIDC、`id-token: write`）だけで行い、validationとrelease-candidateは自前runnerで成功した後にだけreleaseを実行する。
