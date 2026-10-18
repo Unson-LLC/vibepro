@@ -774,3 +774,23 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:588:start -->
 - [PR #588](https://github.com/Unson-LLC/vibepro/pull/588) — [2026-10](/releases/2026-10): fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
 <!-- vibepro-release-index-pr:588:end -->
+
+<!-- vibepro-release-index-pr:591:start -->
+- [PR #591](https://github.com/Unson-LLC/vibepro/pull/591) — [2026-10](/releases/2026-10): feat: CLI-usable reasoned not_applicable exemption for multi-tenant applicability gate
+<!-- vibepro-release-index-pr:591:end -->
+
+<!-- vibepro-release-index-pr:589:start -->
+- [PR #589](https://github.com/Unson-LLC/vibepro/pull/589) — [2026-10](/releases/2026-10): feat(task-plan): add overlap_refs to schema 0.2.0
+<!-- vibepro-release-index-pr:589:end -->
+
+<!-- vibepro-release-index-pr:594:start -->
+- [PR #594](https://github.com/Unson-LLC/vibepro/pull/594) — [2026-10](/releases/2026-10): [trial-opencode-deepseek] pr prepare: show draft spec (#439)
+<!-- vibepro-release-index-pr:594:end -->
+
+<!-- vibepro-release-index-pr:595:start -->
+- [PR #595](https://github.com/Unson-LLC/vibepro/pull/595) — [2026-10](/releases/2026-10): feat: Storyからtask-planを作る分解器 (T4)
+<!-- vibepro-release-index-pr:595:end -->
+
+<!-- vibepro-release-index-pr:596:start -->
+- [PR #596](https://github.com/Unson-LLC/vibepro/pull/596) — [2026-10](/releases/2026-10): fix(ac-parser): 受入条件見出しの括弧付き注記を認識する
+<!-- vibepro-release-index-pr:596:end -->

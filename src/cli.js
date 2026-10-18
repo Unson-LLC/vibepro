@@ -106,9 +106,11 @@ import {
 } from './decision-records.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
+import { collectGitContext } from './git-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
 import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
+import { decomposeStoryToTaskPlan } from './task-plan-decomposer.js';
 import { analyzeTaskPlan, readTrackedTaskObservations, readTrackedTaskPlan, validateTaskPlan } from './task-plan.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
@@ -270,6 +272,7 @@ Usage:
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan decompose [repo] --story <path> [--repository <name>] [--json]
   vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
@@ -392,6 +395,7 @@ Usage:
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan decompose [repo] --story <path> [--repository <name>] [--json]
   vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON input file>] [--json]
@@ -1513,6 +1517,18 @@ ${renderHelp()}`);
             : renderTaskPlanSummary('validate', result));
           return { exitCode: 0, command, subcommand: 'plan validate', result };
         }
+        if (planCommand === 'decompose') {
+          const storyPath = getOption(rest, '--story');
+          if (!storyPath) throw new Error('task plan decompose requires --story <path>');
+          const storyText = await readFile(path.resolve(repoRoot, storyPath), 'utf8');
+          const plan = decomposeStoryToTaskPlan(storyText, {
+            repository: getOption(rest, '--repository')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(plan, null, 2)}\n`
+            : renderTaskPlanDecomposeSummary(plan));
+          return { exitCode: 0, command, subcommand: 'plan decompose', result: { plan } };
+        }
         if (planCommand === 'read') {
           const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
           if (!storyId) throw new Error('task plan read requires --id <story-id>');
@@ -1838,10 +1854,12 @@ if (command === 'integration') {
           story_id: storyId,
           title: storyId
         }).catch(() => null);
+        const gitContext = await collectGitContext(path.resolve(repoRoot)).catch(() => ({ head_sha: null }));
         const validation = await validateSpec(repoRoot, parsed, {
           expectedStoryId: storyId,
           mode: draft ? 'draft' : 'final',
-          storyContext: storySource?.content ?? ''
+          storyContext: storySource?.content ?? '',
+          headCommit: gitContext.head_sha ?? null
         });
         if (!validation.ok) {
           write(stdout, `${JSON.stringify({
@@ -2270,6 +2288,15 @@ function acceptedAuthorityToPlan(accepted) {
       integration: task.integration
     }))
   };
+}
+
+function renderTaskPlanDecomposeSummary(plan) {
+  return [
+    'task plan decompose: accepted',
+    `story: ${plan.story_id}`,
+    `plan version: ${plan.plan_version}`,
+    `tasks: ${plan.tasks.length}`
+  ].join('\n') + '\n';
 }
 
 function renderTaskPlanSummary(command, result) {

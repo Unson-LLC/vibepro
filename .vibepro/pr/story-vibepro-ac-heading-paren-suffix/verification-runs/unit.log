@@ -1,0 +1,110 @@
+TAP version 13
+# Subtest: shared Acceptance Criteria parser handles numbered/case/Japanese variants without background bullets
+ok 1 - shared Acceptance Criteria parser handles numbered/case/Japanese variants without background bullets
+  ---
+  duration_ms: 3.010657
+  ...
+# Subtest: shared Acceptance Criteria parser accepts a single parenthetical suffix on the heading
+ok 2 - shared Acceptance Criteria parser accepts a single parenthetical suffix on the heading
+  ---
+  duration_ms: 0.318747
+  ...
+# Subtest: shared Acceptance Criteria parser recognizes a full-width parenthetical suffix
+ok 3 - shared Acceptance Criteria parser recognizes a full-width parenthetical suffix
+  ---
+  duration_ms: 0.262021
+  ...
+# Subtest: shared Acceptance Criteria parser recognizes an ASCII parenthetical suffix
+ok 4 - shared Acceptance Criteria parser recognizes an ASCII parenthetical suffix
+  ---
+  duration_ms: 0.212614
+  ...
+# Subtest: shared Acceptance Criteria parser recognizes 受入条件（Brainbase 完了契約 criteria 原文）
+ok 5 - shared Acceptance Criteria parser recognizes 受入条件（Brainbase 完了契約 criteria 原文）
+  ---
+  duration_ms: 0.119704
+  ...
+# Subtest: shared Acceptance Criteria parser does not recognize 受入条件外（x）
+ok 6 - shared Acceptance Criteria parser does not recognize 受入条件外（x）
+  ---
+  duration_ms: 0.095255
+  ...
+# Subtest: shared Acceptance Criteria parser rejects a nested parenthetical suffix
+ok 7 - shared Acceptance Criteria parser rejects a nested parenthetical suffix
+  ---
+  duration_ms: 0.104154
+  ...
+# Subtest: shared Acceptance Criteria parser rejects two parenthetical groups
+ok 8 - shared Acceptance Criteria parser rejects two parenthetical groups
+  ---
+  duration_ms: 0.11792
+  ...
+# Subtest: shared Acceptance Criteria parser rejects mixed full-width and ASCII parentheses
+ok 9 - shared Acceptance Criteria parser rejects mixed full-width and ASCII parentheses
+  ---
+  duration_ms: 0.241372
+  ...
+# Subtest: acceptance-criteria counts change only for the T4 and T3 stories
+ok 10 - acceptance-criteria counts change only for the T4 and T3 stories
+  ---
+  duration_ms: 76.020275
+  ...
+# Subtest: pr prepare projects one exact clause map, computed counts, and distinct task authorities
+ok 11 - pr prepare projects one exact clause map, computed counts, and distinct task authorities
+  ---
+  duration_ms: 290.096946
+  ...
+# Subtest: pr prepare fails closed when canonical traceability cannot be refreshed
+ok 12 - pr prepare fails closed when canonical traceability cannot be refreshed
+  ---
+  duration_ms: 251.236593
+  ...
+# Subtest: pr prepare --task accepts only explicitly bound authority without changing review readiness
+ok 13 - pr prepare --task accepts only explicitly bound authority without changing review readiness
+  ---
+  duration_ms: 459.175334
+  ...
+# Subtest: decompose: two acceptance criteria yield plan_version and no overlap_refs
+ok 14 - decompose: two acceptance criteria yield plan_version and no overlap_refs
+  ---
+  duration_ms: 11.453113
+  ...
+# Subtest: decompose: identical input matches plan_version and AC edits change it
+ok 15 - decompose: identical input matches plan_version and AC edits change it
+  ---
+  duration_ms: 1.125465
+  ...
+# Subtest: decompose: declared overlap_refs normalize to T3 completion_contract_ref shape
+ok 16 - decompose: declared overlap_refs normalize to T3 completion_contract_ref shape
+  ---
+  duration_ms: 0.886256
+  ...
+# Subtest: decompose: rejects forbidden body field sections
+ok 17 - decompose: rejects forbidden body field sections
+  ---
+  duration_ms: 0.441753
+  ...
+# Subtest: decompose: rejects missing allowed_paths
+ok 18 - decompose: rejects missing allowed_paths
+  ---
+  duration_ms: 0.25905
+  ...
+# Subtest: decompose: overlap_refs do not block task start
+ok 19 - decompose: overlap_refs do not block task start
+  ---
+  duration_ms: 1.20965
+  ...
+# Subtest: task plan decompose --json prints schema_version 0.2.0 and plan_version
+ok 20 - task plan decompose --json prints schema_version 0.2.0 and plan_version
+  ---
+  duration_ms: 220.04284
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1307.967403
