@@ -26,4 +26,4 @@ docsは最新main上のbot commitとして公開する。一方、GitHub Release
 
 ## Security
 
-`NPM_TOKEN`、`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID` は承認待ちを生まないGitHub Actions repository secretからのみ注入する。post-merge jobにはapproval environmentを設定しない。scriptはtokenを引数、生成物、summaryへ書かない。PR bodyとtitleを含むPR由来の表示値はuntrusted Markdownとして扱い、workflow command/outputへ直接評価せず、raw HTMLとVue interpolationをescapeしてからVitePressへ渡す。
+npm公開はnpm Trusted Publishing（GitHub ActionsのOIDC）だけで認証し、長期の`NPM_TOKEN`をworkflowへ渡さない。OIDCはGitHub-hosted runnerでしか使えないため、検証は自前runner、`npm publish`とdist-tagの付け替えを行うjobだけを`ubuntu-latest`（`id-token: write`、npm 11.21.1）で動かす。npm側には`post-merge-release.yml`と`npm-publish.yml`の両方をTrusted Publisherとして登録し、dist-tagの許可も付ける。`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID` は承認待ちを生まないGitHub Actions repository secretからのみ注入する。post-merge jobにはapproval environmentを設定しない。scriptはtokenを引数、生成物、summaryへ書かない。PR bodyとtitleを含むPR由来の表示値はuntrusted Markdownとして扱い、workflow command/outputへ直接評価せず、raw HTMLとVue interpolationをescapeしてからVitePressへ渡す。
