@@ -802,3 +802,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:597:start -->
 - [PR #597](https://github.com/Unson-LLC/vibepro/pull/597) — [2026-10](/ja/releases/2026-10): ci: 手動npm公開のcheckoutで全履歴を取る
 <!-- vibepro-release-index-pr:597:end -->
+
+<!-- vibepro-release-index-pr:599:start -->
+- [PR #599](https://github.com/Unson-LLC/vibepro/pull/599) — [2026-10](/ja/releases/2026-10): ci: OIDC公開ジョブからnpm環境を外し、断られた理由をログに出す
+<!-- vibepro-release-index-pr:599:end -->

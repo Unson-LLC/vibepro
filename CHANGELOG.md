@@ -4150,3 +4150,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:597:end -->
+
+<!-- vibepro-release-pr:599:start -->
+## [#599](https://github.com/Unson-LLC/vibepro/pull/599) ci: OIDC公開ジョブからnpm環境を外し、断られた理由をログに出す
+
+- Author: @sintariran
+- Merged: 2026-10-18T01:10:39Z
+- Commit: `5511926bc960e8510bebde33f229d477e5af9b74`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:599:end -->
