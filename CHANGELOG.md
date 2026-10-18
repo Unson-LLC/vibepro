@@ -4129,3 +4129,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:592:end -->
+
+<!-- vibepro-release-pr:597:start -->
+## [#597](https://github.com/Unson-LLC/vibepro/pull/597) ci: 手動npm公開のcheckoutで全履歴を取る
+
+- Author: @sintariran
+- Merged: 2026-10-18T00:32:52Z
+- Commit: `e2583517eb73bc4c3dc6263e852cf7e394b81ac3`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:597:end -->

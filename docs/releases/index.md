@@ -798,3 +798,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:592:start -->
 - [PR #592](https://github.com/Unson-LLC/vibepro/pull/592) — [2026-10](/releases/2026-10): ci: npm公開をTrusted Publishing（OIDC）へ切り替える
 <!-- vibepro-release-index-pr:592:end -->
+
+<!-- vibepro-release-index-pr:597:start -->
+- [PR #597](https://github.com/Unson-LLC/vibepro/pull/597) — [2026-10](/releases/2026-10): ci: 手動npm公開のcheckoutで全履歴を取る
+<!-- vibepro-release-index-pr:597:end -->
