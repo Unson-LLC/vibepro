@@ -8,7 +8,7 @@
   "story_id": "story-vibepro-release-oidc-push-trigger",
   "runtime_identity": {
     "schema_version": "0.2.0",
-    "collected_at": "2026-10-18T01:21:53.612Z",
+    "collected_at": "2026-10-18T01:30:40.376Z",
     "mode": "normal",
     "source_kind": "npm_package",
     "test_context": null,
@@ -16,12 +16,12 @@
       "name": "vibepro",
       "version": "0.2.0-beta.33",
       "exact_version": "0.2.0-beta.33",
-      "root": "/workspace/opencode-trial/vp-oidc2/node_modules/vibepro"
+      "root": "/workspace/opencode-trial/vp-oidc3/node_modules/vibepro"
     },
     "cli": {
-      "entrypoint": "/workspace/opencode-trial/vp-oidc2/node_modules/vibepro/bin/vibepro.js",
-      "invoked_as": "/workspace/opencode-trial/vp-oidc2/node_modules/.bin/vibepro",
-      "runtime_module": "/workspace/opencode-trial/vp-oidc2/node_modules/vibepro/src/runtime-info.js"
+      "entrypoint": "/workspace/opencode-trial/vp-oidc3/node_modules/vibepro/bin/vibepro.js",
+      "invoked_as": "/workspace/opencode-trial/vp-oidc3/node_modules/.bin/vibepro",
+      "runtime_module": "/workspace/opencode-trial/vp-oidc3/node_modules/vibepro/src/runtime-info.js"
     },
     "release_manifest": {
       "status": "valid",
@@ -34,9 +34,9 @@
           "entrypoint": "bin/vibepro.js"
         },
         "source_git": {
-          "commit": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "commit": "8abbba784461984461cdcbf28c0bf8112986e92a",
           "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-          "origin_main_commit": "2f7d4813bb91fd4bdbaeab97fc27d71695ab6c58",
+          "origin_main_commit": "51b4d8c8e7f499c6b37248db3e983c3c536dcf71",
           "origin_main_relation": "ahead",
           "dirty": false
         }
@@ -45,15 +45,15 @@
     },
     "source_git": {
       "is_git_repo": false,
-      "commit": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+      "commit": "8abbba784461984461cdcbf28c0bf8112986e92a",
       "branch": null,
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-      "origin_main_commit": "2f7d4813bb91fd4bdbaeab97fc27d71695ab6c58",
+      "origin_main_commit": "51b4d8c8e7f499c6b37248db3e983c3c536dcf71",
       "origin_main_relation": "published",
       "dirty": false,
       "dirty_summary": []
     },
-    "identity_digest": "ff24df81d22ff00d66129cc1d99b7d80c434978d80f7b229aa82bbe13de67f65",
+    "identity_digest": "df8da2e1a2dcbedc3d6679d4b121a8ae12616575b3b5a5d21f3761176c364ed8",
     "integrity": {
       "status": "trusted",
       "code": null,
@@ -63,19 +63,19 @@
       ]
     }
   },
-  "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+  "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
   "observed": {
     "status": "pass",
     "evidence_source": "runner_direct",
     "run_artifact": ".vibepro/pr/story-vibepro-release-oidc-push-trigger/verification-runs/typecheck.json",
     "run_log": ".vibepro/pr/story-vibepro-release-oidc-push-trigger/verification-runs/typecheck.log",
     "exit_code": "0",
-    "duration_ms": "9439",
-    "started_at": "2026-10-18T01:21:53.662Z",
-    "finished_at": "2026-10-18T01:22:03.043Z",
-    "head_sha_before": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-    "head_sha_after": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-    "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+    "duration_ms": "9419",
+    "started_at": "2026-10-18T01:30:40.433Z",
+    "finished_at": "2026-10-18T01:30:49.795Z",
+    "head_sha_before": "8abbba784461984461cdcbf28c0bf8112986e92a",
+    "head_sha_after": "8abbba784461984461cdcbf28c0bf8112986e92a",
+    "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
     "worktree_sampled": "true",
     "worktree_sampling_complete": "true",
     "worktree_sha256_before": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
@@ -108,9 +108,9 @@
     ],
     "command": "npm run typecheck",
     "cwd": ".",
-    "started_at": "2026-10-18T01:21:53.662Z",
-    "finished_at": "2026-10-18T01:22:03.043Z",
-    "duration_ms": 9439,
+    "started_at": "2026-10-18T01:30:40.433Z",
+    "finished_at": "2026-10-18T01:30:49.795Z",
+    "duration_ms": 9419,
     "exit_code": 0,
     "signal": null,
     "timed_out": false,
@@ -118,8 +118,8 @@
     "external_kill_signal": null,
     "timeout_ms": 7200000,
     "max_output_bytes": 67108864,
-    "head_sha_before": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-    "head_sha_after": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+    "head_sha_before": "8abbba784461984461cdcbf28c0bf8112986e92a",
+    "head_sha_after": "8abbba784461984461cdcbf28c0bf8112986e92a",
     "worktree_sha256_before": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
     "worktree_sha256_after": "af60ab5be9ad4965eaa1059028902dc21b4b010385fbd5bfd03807f26e68aaf3",
     "tree_mutated_during_run": false,
@@ -147,8 +147,8 @@
       "repo_root": "/workspace/opencode-trial/wt-oidc",
       "actual_root": "/workspace/opencode-trial/wt-oidc",
       "expected_root": null,
-      "expected_head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-      "current_head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+      "expected_head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+      "current_head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
       "managed_worktree": null
     },
     {

@@ -35,56 +35,56 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release uses immutable pre-merge base code for fork validation",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge first deployment executes the missing-selector fallback as full validation",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release installs dependencies before unconditional docs projection",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release push path takes release_required only from the plan --event output",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release push retries the merged PR lookup and warns when none is found",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         }
       ],
       "mapped_evidence": [],
@@ -260,20 +260,20 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release publishes only after validation and release-candidate succeed",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release candidate runs only after validation planned a release",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         }
       ],
       "mapped_evidence": [],
@@ -363,26 +363,26 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-013 advances a stale documented channel without reading npm dist-tags",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-013 does not treat a prerelease prefix as the documented channel version",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         }
       ],
       "mapped_evidence": [],
@@ -472,8 +472,8 @@
         {
           "file": "test/story-vibepro-release-oidc-push-trigger.test.js",
           "case": "story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "939556dbf527ba38875a5a11554b4251b2313f62"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "cade4fa8370398754e44b957477d44e3a36fcb94"
         }
       ],
       "mapped_evidence": [],
@@ -563,8 +563,8 @@
         {
           "file": "test/story-vibepro-release-oidc-push-trigger.test.js",
           "case": "npm Trusted Publisher registration values are pinned by the publishing workflows",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "939556dbf527ba38875a5a11554b4251b2313f62"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "cade4fa8370398754e44b957477d44e3a36fcb94"
         }
       ],
       "mapped_evidence": [],
@@ -654,32 +654,32 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch binds RELEASE_SHA to the current main tip",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch binds RELEASE_SHA to the current main tip",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip",
-          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
-          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+          "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
+          "blob_oid": "454572db0c76b65d34a766e0319222529bbb7066"
         }
       ],
       "mapped_evidence": [],
@@ -784,9 +784,9 @@
   "scenario_lineage": null,
   "accepted_spec_lineage": {
     "status": "resolved",
-    "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+    "head_sha": "8abbba784461984461cdcbf28c0bf8112986e92a",
     "spec_path": ".vibepro/spec/story-vibepro-release-oidc-push-trigger/spec.json",
-    "spec_blob_oid": "d2761f86e6894f62e6602a303c2c5179e50efc7a",
+    "spec_blob_oid": "6a4fb4335ace401eb5babd692727b6b19f700107",
     "story_path": "docs/management/stories/active/story-vibepro-release-oidc-push-trigger.md",
     "story_blob_oid": "fedaa630d492aa9d6c9fc51086cbe1baa927c096",
     "mapping_source": "accepted_spec",
@@ -2380,5 +2380,5 @@
     "examples": []
   },
   "created_at": "2026-10-18T00:45:02.155Z",
-  "updated_at": "2026-10-18T01:22:11.263Z"
+  "updated_at": "2026-10-18T01:30:57.894Z"
 }

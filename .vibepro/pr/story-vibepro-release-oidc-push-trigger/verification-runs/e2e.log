@@ -2,7 +2,7 @@ TAP version 13
 # Subtest: story-vibepro-pr-driven-continuous-release replays merged-PR projection and immutable npm convergence
 ok 1 - story-vibepro-pr-driven-continuous-release replays merged-PR projection and immutable npm convergence
   ---
-  duration_ms: 67.386042
+  duration_ms: 65.09528
   ...
 # Switched to a new branch 'feature'
 # Switched to branch 'main'
@@ -10,7 +10,7 @@ ok 1 - story-vibepro-pr-driven-continuous-release replays merged-PR projection a
 # Subtest: story-vibepro-release-exact-sha-fast-path replays real merge-tree binding and workflow fast/fallback branches
 ok 2 - story-vibepro-release-exact-sha-fast-path replays real merge-tree binding and workflow fast/fallback branches
   ---
-  duration_ms: 153.106891
+  duration_ms: 154.428717
   ...
 1..2
 # tests 2
@@ -20,4 +20,4 @@ ok 2 - story-vibepro-release-exact-sha-fast-path replays real merge-tree binding
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 570.173901
+# duration_ms 549.991981
