@@ -1145,7 +1145,8 @@ exit 1
       GH_TOKEN: 'x',
       GITHUB_OUTPUT: output,
       GITHUB_STEP_SUMMARY: summary,
-      RUNNER_TEMP: dir
+      RUNNER_TEMP: dir,
+      PR_LOOKUP_RETRY_DELAY: '0'
     }
   });
   assert.equal(run.status, 0, run.stderr);
@@ -1175,11 +1176,129 @@ exit 1
       GH_TOKEN: 'x',
       GITHUB_OUTPUT: pushOutput,
       GITHUB_STEP_SUMMARY: summary,
-      RUNNER_TEMP: dir
+      RUNNER_TEMP: dir,
+      PR_LOOKUP_RETRY_DELAY: '0'
     }
   });
   assert.equal(push.status, 0, push.stderr);
   assert.equal((await readFile(pushOutput, 'utf8')).trim(), 'merged=false');
+});
+
+test('post-merge release push path takes release_required only from the plan --event output', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const validation = workflowJob(workflow, 'validation');
+  assert.match(validation, /^      release_required: \$\{\{ steps\.projection\.outputs\.release_required \|\| steps\.dispatch_projection\.outputs\.release_required \}\}$/mu);
+  const projection = validation.match(/      - name: Plan conditional package release\n[\s\S]*?(?=\n      - )/u)?.[0];
+  assert.equal(projection, "      - name: Plan conditional package release\n        id: projection\n        if: ${{ steps.pull_request.outputs.merged == 'true' && github.event_name == 'push' }}\n        run: node scripts/post-merge-release.mjs plan --event \"$RUNNER_TEMP/post-merge-release-event.json\"");
+  const dispatch = validation.match(/      - name: Plan dispatched release of the main tip\n[\s\S]*?(?=\n      - )/u)?.[0];
+  assert.match(dispatch, /if: \$\{\{ steps\.pull_request\.outputs\.merged == 'true' && github\.event_name == 'workflow_dispatch' \}\}/u);
+  const writers = validation.split('\n').filter((line) => line.includes('release_required=')).map((line) => line.trim());
+  assert.deepEqual(writers, ['echo "release_required=true" >> "$GITHUB_OUTPUT"']);
+  assert.ok(dispatch.includes('echo "release_required=true" >> "$GITHUB_OUTPUT"'));
+});
+
+test('post-merge release candidate runs only after validation planned a release', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const candidate = workflowJob(workflow, 'release-candidate');
+  assert.match(candidate, /^  release-candidate:\n    needs: validation\n    if: \$\{\{ needs\.validation\.outputs\.release_required == 'true' \}\}\n/u);
+  const candidateIf = candidate.match(/^    if: (.*)$/mu)?.[1] ?? '';
+  assert.equal(candidateIf, "${{ needs.validation.outputs.release_required == 'true' }}");
+  assert.doesNotMatch(candidateIf, /always\(\)|failure\(\)|cancelled\(\)/u);
+});
+
+test('post-merge release push retries the merged PR lookup and warns when none is found', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const extracted = workflowJob(workflow, 'validation')
+    .match(/- name: Resolve merged pull request for the pushed commit[\s\S]*?run: \|\n([\s\S]*?)(?=\n      - )/u)?.[1];
+  assert.equal(typeof extracted, 'string');
+  const script = extracted.replace(/^ {10}/gmu, '');
+  const TIP = 'a'.repeat(40);
+  const PR_MERGE = 'b'.repeat(40);
+  const BASE = 'c'.repeat(40);
+  const HEAD = 'd'.repeat(40);
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-push-retry-'));
+  const gh = path.join(dir, 'gh');
+  await writeFile(gh, `#!/usr/bin/env bash
+set -euo pipefail
+path="$2"
+DIR="${dir}"
+if [ "$path" = "repos/Unson-LLC/vibepro/commits/${TIP}/pulls" ]; then
+  echo "lookup" >> "$DIR/calls"
+  if [ "\${FAKE_MODE:-}" = "late" ] && [ "$(wc -l < "$DIR/calls")" -ge 2 ]; then
+    echo "596"
+  fi
+  exit 0
+fi
+if [ "$path" = "repos/Unson-LLC/vibepro/pulls/596" ]; then
+  for arg in "$@"; do
+    case "$arg" in
+      *base_sha=*) printf 'base_sha=%s\\nhead_sha=%s\\nmerged_at=2026-10-18T00:00:00Z\\n' "${BASE}" "${HEAD}"; exit 0 ;;
+    esac
+  done
+  echo '{"action":"closed","number":596,"pull_request":{"number":596,"merge_commit_sha":"${PR_MERGE}"}}'
+  exit 0
+fi
+exit 1
+`);
+  await chmod(gh, 0o755);
+  const output = path.join(dir, 'output');
+  const summary = path.join(dir, 'summary');
+  const calls = path.join(dir, 'calls');
+  await writeFile(output, '');
+  await writeFile(summary, '');
+  await writeFile(calls, '');
+  const late = spawnSync('bash', ['-euo', 'pipefail', '-c', script], {
+    encoding: 'utf8',
+    env: {
+      PATH: `${dir}:${process.env.PATH}`,
+      GITHUB_EVENT_NAME: 'push',
+      GITHUB_REPOSITORY: 'Unson-LLC/vibepro',
+      MERGE_SHA: TIP,
+      GH_TOKEN: 'x',
+      GITHUB_OUTPUT: output,
+      GITHUB_STEP_SUMMARY: summary,
+      RUNNER_TEMP: dir,
+      PR_LOOKUP_RETRY_DELAY: '0',
+      FAKE_MODE: 'late'
+    }
+  });
+  assert.equal(late.status, 0, late.stderr);
+  const outputs = Object.fromEntries(
+    (await readFile(output, 'utf8')).split('\n').filter(Boolean).map((line) => {
+      const index = line.indexOf('=');
+      return [line.slice(0, index), line.slice(index + 1)];
+    })
+  );
+  assert.equal(outputs.merged, 'true');
+  assert.equal(outputs.pr_number, '596');
+  assert.equal(outputs.merge_sha, TIP);
+  assert.equal((await readFile(calls, 'utf8')).split('\n').filter(Boolean).length, 2);
+  assert.doesNotMatch(late.stdout, /::warning::/u);
+
+  const neverOutput = path.join(dir, 'output-never');
+  const neverSummary = path.join(dir, 'summary-never');
+  await writeFile(neverOutput, '');
+  await writeFile(neverSummary, '');
+  await writeFile(calls, '');
+  const never = spawnSync('bash', ['-euo', 'pipefail', '-c', script], {
+    encoding: 'utf8',
+    env: {
+      PATH: `${dir}:${process.env.PATH}`,
+      GITHUB_EVENT_NAME: 'push',
+      GITHUB_REPOSITORY: 'Unson-LLC/vibepro',
+      MERGE_SHA: TIP,
+      GH_TOKEN: 'x',
+      GITHUB_OUTPUT: neverOutput,
+      GITHUB_STEP_SUMMARY: neverSummary,
+      RUNNER_TEMP: dir,
+      PR_LOOKUP_RETRY_DELAY: '0',
+      FAKE_MODE: 'never'
+    }
+  });
+  assert.equal(never.status, 0, never.stderr);
+  assert.equal((await readFile(neverOutput, 'utf8')).trim(), 'merged=false');
+  assert.equal((await readFile(calls, 'utf8')).split('\n').filter(Boolean).length, 3);
+  assert.ok(never.stdout.includes(`::warning::No merged main pull request found for ${TIP}`));
 });
 
 test('post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test', async () => {

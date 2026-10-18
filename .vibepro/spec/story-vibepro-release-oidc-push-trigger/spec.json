@@ -52,7 +52,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "INV-002",
@@ -115,7 +115,85 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
+    },
+    {
+      "id": "INV-008",
+      "type": "invariant",
+      "statement": "push 経路の release_required は plan --event（base と merge の SemVer 比較）の出力だけから決まる。validation job で release_required= を書く行は workflow_dispatch 専用の dispatch_projection step の 1 行だけである。",
+      "rationale": "AC-1 の「それ以外の挙動は変えない」。projection step を echo release_required=true に置き換えると全 merge で公開されるため、これを検出できるようにする（レビュー修正ループ1の must-fix）。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "Plan conditional package release"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release push path takes release_required only from the plan --event output"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release push path takes release_required only from the plan --event output"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T01:19:15.889Z",
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
+    },
+    {
+      "id": "INV-009",
+      "type": "invariant",
+      "statement": "push された commit の merge 済み PR 検索は最大 3 回まで再試行し、それでも見つからないときは ::warning:: を出してから merged=false で後続 job を skip する。黙って skip しない。",
+      "rationale": "AC-1。merge 直後は commits/{sha}/pulls API の結果が遅れて返ることがある。PR を解決できなかった run を Actions 上で見えるようにする。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "for attempt in 1 2 3; do"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release push retries the merged PR lookup and warns when none is found"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release push retries the merged PR lookup and warns when none is found"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T01:19:15.889Z",
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "S-001",
@@ -146,12 +224,12 @@
       "outcome_kind": "internal_output",
       "confidence": 0.9,
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "INV-003",
       "type": "invariant",
-      "statement": "release job は needs: [validation, release-candidate] と if: ${{ needs.validation.outputs.release_required == 'true' }} をこの順で持ち、if に always()・failure()・cancelled() を含まない。docs job は needs: [validation, release] で npm 公開成功後（または version 不変時）だけ動く。",
+      "statement": "release-candidate job は needs: validation と if: ${{ needs.validation.outputs.release_required == 'true' }} を、release job は needs: [validation, release-candidate] と if: ${{ needs.validation.outputs.release_required == 'true' }} をこの順で持ち、どちらの if にも always()・failure()・cancelled() を含まない。docs job は needs: [validation, release] で npm 公開成功後（または version 不変時）だけ動く。",
       "rationale": "AC-2。release の if に always() が入ると release-candidate の失敗後にも公開が走るため、テストで固定する。",
       "origin": {
         "story_refs": [
@@ -173,6 +251,10 @@
           },
           {
             "file": "test/post-merge-release.test.js",
+            "case": "post-merge release candidate runs only after validation planned a release"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
             "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing"
           }
         ]
@@ -188,12 +270,16 @@
           },
           {
             "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release candidate runs only after validation planned a release"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
             "must_contain": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing"
           }
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "INV-004",
@@ -248,7 +334,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "INV-005",
@@ -287,7 +373,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "INV-006",
@@ -326,7 +412,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "INV-007",
@@ -373,7 +459,7 @@
         ]
       },
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "S-002",
@@ -408,7 +494,7 @@
       "outcome_kind": "internal_output",
       "confidence": 0.9,
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     },
     {
       "id": "S-003",
@@ -439,7 +525,7 @@
       "outcome_kind": "internal_output",
       "confidence": 0.9,
       "first_seen_at": "2026-10-18T00:43:57.518Z",
-      "last_revised_at": "2026-10-18T00:43:57.518Z"
+      "last_revised_at": "2026-10-18T01:19:15.889Z"
     }
   ],
   "guidance": {
@@ -454,6 +540,6 @@
     ]
   },
   "open_questions": [],
-  "generated_at": "2026-10-18T00:43:57.518Z",
-  "previous_spec_id": null
+  "generated_at": "2026-10-18T01:19:15.889Z",
+  "previous_spec_id": "2026-10-18T00:43:57.518Z"
 }

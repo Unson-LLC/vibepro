@@ -1,10 +1,10 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-release-oidc-push-trigger",
-  "created_at": "2026-10-18T00:43:50.743Z",
+  "created_at": "2026-10-18T01:19:13.029Z",
   "status": "ready",
   "git": {
-    "head_sha": "3d2027989422fbc0ef705b43ffd16595b0763409"
+    "head_sha": "5b9055c0cb948a6e0cc61e3d0ad711f27f10179b"
   },
   "checks": [
     {
@@ -37,7 +37,7 @@
   },
   "engineering_judgment": null,
   "pr_prepare": {
-    "created_at": "2026-10-18T00:43:50.576Z",
+    "created_at": "2026-10-18T01:19:12.812Z",
     "artifact": ".vibepro/pr/story-vibepro-release-oidc-push-trigger/pr-prepare.json"
   },
   "next_actions": []

@@ -39,7 +39,13 @@ jobs:
           # main at run time, never a stale or PR-supplied SHA.
           MERGE_SHA: ${{ github.sha }}
         run: |
-          PR_NUMBER=$(gh api "repos/$GITHUB_REPOSITORY/commits/$MERGE_SHA/pulls" --jq "map(select(.merged_at != null and .merge_commit_sha == \"$MERGE_SHA\" and .base.ref == \"main\")) | .[0].number // empty")
+          PR_NUMBER=""
+          for attempt in 1 2 3; do
+            PR_NUMBER=$(gh api "repos/$GITHUB_REPOSITORY/commits/$MERGE_SHA/pulls" --jq "map(select(.merged_at != null and .merge_commit_sha == \"$MERGE_SHA\" and .base.ref == \"main\")) | .[0].number // empty")
+            if [ -n "$PR_NUMBER" ] || [ "$attempt" = 3 ]; then break; fi
+            # commits/{sha}/pulls can lag right after a merge.
+            sleep "${PR_LOOKUP_RETRY_DELAY:-10}"
+          done
           if [ -z "$PR_NUMBER" ] && [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             # A dispatch still releases MERGE_SHA; only its release notes come from the latest merged PR before it.
             for COMMIT in $(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$MERGE_SHA&per_page=30" --jq '.[1:][].sha'); do
@@ -48,6 +54,7 @@ jobs:
             done
           fi
           if [ -z "$PR_NUMBER" ]; then
+            echo "::warning::No merged main pull request found for ${MERGE_SHA} after 3 lookups; package release and docs are skipped."
             echo "merged=false" >> "$GITHUB_OUTPUT"
             echo "pull_request=none (no merged main PR for ${MERGE_SHA})" >> "$GITHUB_STEP_SUMMARY"
             exit 0
