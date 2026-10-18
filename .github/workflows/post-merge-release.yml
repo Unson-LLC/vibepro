@@ -90,15 +90,16 @@ jobs:
   release:
     needs: [validation, release-candidate]
     if: ${{ needs.validation.outputs.release_required == 'true' }}
-    # npm Trusted Publishing accepts OIDC only from GitHub-hosted runners.
-    runs-on: ubuntu-latest
+    # npm refuses the OIDC token of a pull_request_target run ("OIDC token
+    # exchange error - package not found"; brainbase and run 39088095340), so
+    # this job does not publish. It dispatches npm-publish.yml, the npm Trusted
+    # Publisher, and waits for it; a GITHUB_TOKEN may trigger workflow_dispatch.
+    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     timeout-minutes: 90
     permissions:
+      actions: write
       contents: write
       pull-requests: read
-      # npm Trusted Publishing exchanges the GitHub Actions OIDC token for a
-      # short-lived publish token; npm also signs provenance with it.
-      id-token: write
     outputs:
       publish_started_at: ${{ steps.publish.outputs.publish_started_at }}
       npm_published_at: ${{ steps.publish.outputs.npm_published_at }}
@@ -107,43 +108,54 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
-      # Without a registry URL, setup-node writes no token-reading .npmrc, so a
-      # failed OIDC exchange fails as ENEEDAUTH instead of falling back to a
-      # stale token that fails as E404 on PUT.
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      # Trusted Publishing needs npm >= 11.5.1; dist-tag add through OIDC
-      # needs npm >= 11.21.0.
-      - name: Install trusted-publishing npm CLI
-        run: npm install --global npm@11.21.1
       - name: Bind publication to the validated merge commit
         env:
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
           test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
-          npm ci
-      # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
-      # no long-lived npm token is available to this job. npm logs why an OIDC
-      # exchange was refused only at verbose level, so keep it on here.
-      - name: Publish npm and reconcile GitHub Release under package lease
+      # npm-publish.yml publishes the head of main; the docs job, which moves
+      # main, runs only after this job, so that head must be the merge commit.
+      - name: Publish npm through the trusted publishing workflow
         id: publish
         env:
-          NPM_CONFIG_LOGLEVEL: verbose
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.validation.outputs.version }}
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           PUBLISH_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           echo "publish_started_at=${PUBLISH_STARTED_AT}" >> "$GITHUB_OUTPUT"
-          RELEASE_LOCK=$(node scripts/npm-release-lock.mjs acquire)
-          release_lock() { node scripts/npm-release-lock.mjs release "$RELEASE_LOCK"; }
-          trap release_lock EXIT
-          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
+          gh workflow run npm-publish.yml --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+          RUN_ID=""
+          for _ in $(seq 1 30); do
+            RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow npm-publish.yml --event workflow_dispatch --limit 10 \
+              --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${PUBLISH_STARTED_AT}\")] | sort_by(.createdAt) | .[0].databaseId // empty")
+            [ -n "$RUN_ID" ] && break
+            sleep 10
+          done
+          test -n "$RUN_ID"
+          echo "npm_publish_run=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" >> "$GITHUB_STEP_SUMMARY"
+          RUN_SHA=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json headSha --jq .headSha)
+          if [ "$RUN_SHA" != "$RELEASE_SHA" ]; then
+            echo "::error::npm-publish.yml run ${RUN_ID} targets ${RUN_SHA}, expected merge commit ${RELEASE_SHA}"
+            exit 1
+          fi
+          gh run watch "$RUN_ID" --repo "$GITHUB_REPOSITORY" --exit-status --interval 30
+          test "$(npm view "vibepro@${VERSION}" gitHead --prefer-online)" = "$RELEASE_SHA"
+          NPM_PUBLISHED_AT=$(npm view vibepro time --json --prefer-online | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>process.stdout.write(JSON.parse(d)[process.argv[1]]))" "$VERSION")
+          echo "npm_published_at=${NPM_PUBLISHED_AT}" >> "$GITHUB_OUTPUT"
           echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-          node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output /tmp/vibepro-release.md
-          node scripts/post-merge-release.mjs reconcile-github-release --version "$VERSION" --sha "$RELEASE_SHA" --notes-file /tmp/vibepro-release.md --repository "$GITHUB_REPOSITORY"
+      - name: Reconcile GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.validation.outputs.version }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output "$RUNNER_TEMP/vibepro-release.md"
+          node scripts/post-merge-release.mjs reconcile-github-release --version "$VERSION" --sha "$RELEASE_SHA" --notes-file "$RUNNER_TEMP/vibepro-release.md" --repository "$GITHUB_REPOSITORY"
           echo "github_release=v${VERSION}@${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
 
   docs:
