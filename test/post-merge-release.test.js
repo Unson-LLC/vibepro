@@ -1006,7 +1006,7 @@ test('PCR-CON-009 manual npm publish installs from the lockfile and proves a cle
   assert.match(manualWorkflow.slice(cleanIndex), /git status --porcelain[\s\S]*exit 1/u);
 });
 
-test('PCR-CON-013 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing', async () => {
+test('PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const candidate = workflowJob(workflow, 'release-candidate');
   const release = workflowJob(workflow, 'release');
@@ -1022,6 +1022,179 @@ test('PCR-CON-013 post-merge release validates on the self-hosted runner and pub
   assert.match(docs, /needs\.validation\.outputs\.release_required != 'true' \|\| needs\.release\.result == 'success'/u);
   assert.doesNotMatch(docs, /id-token|publish-npm/u);
   assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/u);
+});
+
+test('PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /^on:\n  push:\n    branches:\n      - main\n  workflow_dispatch:\n\n/mu);
+  assert.doesNotMatch(workflow, /inputs\./u);
+  assert.doesNotMatch(workflow, /pull_request_target/u);
+  assert.doesNotMatch(workflow, /GITHUB_EVENT_PATH/u);
+  assert.doesNotMatch(workflow, /github\.event\.pull_request/u);
+  assert.match(workflow, /group: post-merge-release-\$\{\{ github\.sha \}\}/u);
+  assert.match(workflowJob(workflow, 'validation'), /if: \$\{\{ github\.ref == 'refs\/heads\/main' \}\}/u);
+});
+
+test('PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const validation = workflowJob(workflow, 'validation');
+  assert.ok(
+    validation.indexOf('- name: Resolve merged pull request for the pushed commit') < validation.indexOf('uses: actions/checkout'),
+    'pull request resolution must run before checkout'
+  );
+  assert.match(validation, /MERGE_SHA: \$\{\{ github\.sha \}\}/u);
+  assert.match(validation, /gh api "repos\/\$GITHUB_REPOSITORY\/commits\/\$MERGE_SHA\/pulls"/u);
+  assert.match(validation, /merge_commit_sha == \\"\$MERGE_SHA\\"/u);
+  assert.match(validation, /\.base\.ref == \\"main\\"/u);
+  assert.match(validation, /echo "merged=false" >> "\$GITHUB_OUTPUT"[\s\S]*?exit 0/u);
+  for (const name of ['merged', 'pr_number', 'merge_sha', 'base_sha', 'head_sha', 'merged_at']) {
+    assert.match(validation, new RegExp(`${name}: \\$\\{\\{ steps\\.pull_request\\.outputs\\.${name} \\}\\}`, 'u'));
+  }
+  assert.match(validation, /ref: \$\{\{ steps\.pull_request\.outputs\.base_sha \}\}/u);
+  for (const name of ['release-candidate', 'release', 'docs', 'recovery']) {
+    assert.match(workflowJob(workflow, name), /ref: \$\{\{ needs\.validation\.outputs\.merge_sha \}\}/u);
+  }
+  for (const name of ['release', 'docs']) {
+    assert.match(workflowJob(workflow, name), /gh api "repos\/\$GITHUB_REPOSITORY\/pulls\/\$PR_NUMBER" --jq '\{action: "closed", number: \.number, pull_request: \.\}' > "\$RUNNER_TEMP\/post-merge-release-event\.json"/u);
+  }
+  assert.match(workflowJob(workflow, 'docs'), /needs\.validation\.outputs\.merged == 'true'/u);
+  assert.match(workflowJob(workflow, 'recovery'), /needs\.validation\.outputs\.merged == 'true'/u);
+});
+
+test('post-merge release publishes only after validation and release-candidate succeed', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const release = workflowJob(workflow, 'release');
+  assert.match(release, /^  release:\n    needs: \[validation, release-candidate\]\n    if: \$\{\{ needs\.validation\.outputs\.release_required == 'true' \}\}\n/u);
+  const releaseIf = release.match(/^    if: (.*)$/mu)?.[1] ?? '';
+  assert.equal(releaseIf, "${{ needs.validation.outputs.release_required == 'true' }}");
+  assert.doesNotMatch(releaseIf, /always\(\)|failure\(\)|cancelled\(\)/u);
+  const docs = workflowJob(workflow, 'docs');
+  assert.match(docs, /^    needs: \[validation, release\]$/mu);
+  assert.match(docs, /needs\.release\.result == 'success'/u);
+});
+
+test('post-merge release dispatch binds RELEASE_SHA to the current main tip', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  assert.doesNotMatch(workflow, /inputs\./u);
+  assert.doesNotMatch(workflow, /merge_sha:\n\s+description:/u);
+  const validation = workflowJob(workflow, 'validation');
+  assert.match(validation, /MERGE_SHA: \$\{\{ github\.sha \}\}\n/u);
+  assert.match(validation, /echo "merge_sha=\$MERGE_SHA"/u);
+  assert.doesNotMatch(validation, /echo "merge_sha=\$COMMIT"/u);
+  assert.match(validation, /merge_sha: \$\{\{ steps\.pull_request\.outputs\.merge_sha \}\}/u);
+  for (const name of ['release-candidate', 'release']) {
+    const job = workflowJob(workflow, name);
+    assert.match(job, /RELEASE_SHA: \$\{\{ needs\.validation\.outputs\.merge_sha \}\}/u);
+    assert.match(job, /ref: \$\{\{ needs\.validation\.outputs\.merge_sha \}\}/u);
+    assert.match(job, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/u);
+  }
+  assert.match(validation, /id: dispatch_projection\n\s+if: \$\{\{ steps\.pull_request\.outputs\.merged == 'true' && github\.event_name == 'workflow_dispatch' \}\}/u);
+  assert.match(validation, /git show "\$MERGE_SHA:package\.json"/u);
+  assert.match(validation, /release_required: \$\{\{ steps\.projection\.outputs\.release_required \|\| steps\.dispatch_projection\.outputs\.release_required \}\}/u);
+});
+
+test('post-merge release dispatch resolves notes from the latest merged PR but releases the main tip', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const extracted = workflowJob(workflow, 'validation')
+    .match(/- name: Resolve merged pull request for the pushed commit[\s\S]*?run: \|\n([\s\S]*?)(?=\n      - )/u)?.[1];
+  assert.equal(typeof extracted, 'string');
+  const script = extracted.replace(/^ {10}/gmu, '');
+  const TIP = 'a'.repeat(40);
+  const PR_MERGE = 'b'.repeat(40);
+  const BASE = 'c'.repeat(40);
+  const HEAD = 'd'.repeat(40);
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-dispatch-'));
+  const gh = path.join(dir, 'gh');
+  await writeFile(gh, `#!/usr/bin/env bash
+set -euo pipefail
+path="$2"
+if [ "$path" = "repos/Unson-LLC/vibepro/commits/${TIP}/pulls" ]; then
+  exit 0
+fi
+if [ "$path" = "repos/Unson-LLC/vibepro/commits?sha=${TIP}&per_page=30" ]; then
+  echo "${PR_MERGE}"
+  exit 0
+fi
+if [ "$path" = "repos/Unson-LLC/vibepro/commits/${PR_MERGE}/pulls" ]; then
+  echo "596"
+  exit 0
+fi
+if [ "$path" = "repos/Unson-LLC/vibepro/pulls/596" ]; then
+  for arg in "$@"; do
+    case "$arg" in
+      *base_sha=*) printf 'base_sha=%s\\nhead_sha=%s\\nmerged_at=2026-10-18T00:00:00Z\\n' "${BASE}" "${HEAD}"; exit 0 ;;
+    esac
+  done
+  echo '{"action":"closed","number":596,"pull_request":{"number":596,"merge_commit_sha":"${PR_MERGE}"}}'
+  exit 0
+fi
+exit 1
+`);
+  await chmod(gh, 0o755);
+  const output = path.join(dir, 'output');
+  const summary = path.join(dir, 'summary');
+  await writeFile(output, '');
+  await writeFile(summary, '');
+  const run = spawnSync('bash', ['-euo', 'pipefail', '-c', script], {
+    encoding: 'utf8',
+    env: {
+      PATH: `${dir}:${process.env.PATH}`,
+      GITHUB_EVENT_NAME: 'workflow_dispatch',
+      GITHUB_REPOSITORY: 'Unson-LLC/vibepro',
+      MERGE_SHA: TIP,
+      GH_TOKEN: 'x',
+      GITHUB_OUTPUT: output,
+      GITHUB_STEP_SUMMARY: summary,
+      RUNNER_TEMP: dir
+    }
+  });
+  assert.equal(run.status, 0, run.stderr);
+  const outputs = Object.fromEntries(
+    (await readFile(output, 'utf8')).split('\n').filter(Boolean).map((line) => {
+      const index = line.indexOf('=');
+      return [line.slice(0, index), line.slice(index + 1)];
+    })
+  );
+  assert.equal(outputs.merged, 'true');
+  assert.equal(outputs.pr_number, '596');
+  assert.equal(outputs.merge_sha, TIP);
+  assert.equal(outputs.base_sha, BASE);
+  assert.notEqual(outputs.merge_sha, PR_MERGE);
+  const event = JSON.parse(await readFile(path.join(dir, 'post-merge-release-event.json'), 'utf8'));
+  assert.equal(event.number, 596);
+
+  const pushOutput = path.join(dir, 'output-push');
+  await writeFile(pushOutput, '');
+  const push = spawnSync('bash', ['-euo', 'pipefail', '-c', script], {
+    encoding: 'utf8',
+    env: {
+      PATH: `${dir}:${process.env.PATH}`,
+      GITHUB_EVENT_NAME: 'push',
+      GITHUB_REPOSITORY: 'Unson-LLC/vibepro',
+      MERGE_SHA: TIP,
+      GH_TOKEN: 'x',
+      GITHUB_OUTPUT: pushOutput,
+      GITHUB_STEP_SUMMARY: summary,
+      RUNNER_TEMP: dir
+    }
+  });
+  assert.equal(push.status, 0, push.stderr);
+  assert.equal((await readFile(pushOutput, 'utf8')).trim(), 'merged=false');
+});
+
+test('post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test', async () => {
+  const source = await readFile(new URL(import.meta.url), 'utf8');
+  const names = [...source.matchAll(/^test\('(PCR-CON-[0-9A-Z]+) ([^']*)'/gmu)]
+    .map((match) => `${match[1]} ${match[2]}`);
+  assert.deepEqual(
+    names.filter((name) => name.startsWith('PCR-CON-013 ')),
+    [
+      'PCR-CON-013 advances a stale documented channel without reading npm dist-tags',
+      'PCR-CON-013 does not treat a prerelease prefix as the documented channel version'
+    ]
+  );
+  assert.ok(names.includes('PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing'));
+  assert.ok(!names.includes('PCR-CON-013 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing'));
 });
 
 test('PCR-CON-011 no workflow installs dependencies with npm install', async () => {
@@ -1053,15 +1226,15 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
   const gitignore = await readFile(new URL('../.gitignore', import.meta.url), 'utf8');
-  assert.match(workflow, /pull_request_target:/);
+  assert.match(workflow, /^on:\n  push:\n    branches:\n      - main\n  workflow_dispatch:/mu);
   assert.doesNotMatch(workflow, /^\s+pull_request:\s*$/m);
-  assert.match(workflow, /pull_request\.merged == true/);
-  assert.match(workflow, /group: post-merge-release-pr-\$\{\{ github\.event\.pull_request\.number \}\}/);
+  assert.match(workflow, /needs\.validation\.outputs\.merged == 'true'/);
+  assert.match(workflow, /group: post-merge-release-\$\{\{ github\.sha \}\}/);
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
   assert.match(workflow, /post-merge-release\.mjs publish-npm/);
-  assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
-  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /needs\.validation\.outputs\.merge_sha/);
+  assert.match(workflow, /ref: \$\{\{ needs\.validation\.outputs\.merge_sha \}\}/);
   assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);
   assert.match(workflow, /post-merge-release\.mjs reconcile-github-release/);
   assert.match(workflow, /npm-release-lock\.mjs acquire/);
@@ -1405,17 +1578,17 @@ test('post-merge docs release is not gated by an approval environment', async ()
 
 test('post-merge release installs dependencies before unconditional docs projection', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
-  const projectionLoop = workflow.match(/for attempt in 1 2 3; do[\s\S]*?node scripts\/post-merge-release\.mjs project --event "\$GITHUB_EVENT_PATH"/)?.[0] ?? '';
+  const projectionLoop = workflow.match(/for attempt in 1 2 3; do[\s\S]*?node scripts\/post-merge-release\.mjs project --event "\$RUNNER_TEMP\/post-merge-release-event\.json"/)?.[0] ?? '';
   assert.match(projectionLoop, /git reset --hard origin\/main[\s\S]*npm ci --ignore-scripts[\s\S]*post-merge-release\.mjs project/);
 });
 
 test('post-merge release uses immutable pre-merge base code for fork validation', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /pull_request_target:[\s\S]*types:[\s\S]*- closed/);
-  assert.match(workflow, /validation:[\s\S]*ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
-  assert.match(workflow, /release:[\s\S]*ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
-  assert.match(workflow, /pull_request\.merged == true/);
-  assert.match(workflow, /pull_request\.base\.ref == 'main'/);
+  assert.match(workflow, /^on:\n  push:\n    branches:\n      - main/mu);
+  assert.match(workflow, /validation:[\s\S]*ref: \$\{\{ steps\.pull_request\.outputs\.base_sha \}\}/);
+  assert.match(workflow, /release:[\s\S]*ref: \$\{\{ needs\.validation\.outputs\.merge_sha \}\}/);
+  assert.match(workflow, /merge_commit_sha == \\"\$MERGE_SHA\\"/);
+  assert.match(workflow, /\.base\.ref == \\"main\\"/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('post-merge-release.mjs project'));
   assert.match(workflow, /git add[^\n]*docs\/\.vitepress\/config\.mjs/);
 });
@@ -1430,8 +1603,8 @@ test('post-merge first deployment executes the missing-selector fallback as full
   const executable = fallbackScript
     .replace(/^ {10}/gmu, '')
     .replace(/node scripts\/post-merge-release\.mjs validation-plan[^;]+/u, 'false')
-    .replace(/\$\{\{ github\.event\.pull_request\.head\.sha \}\}/gu, '2'.repeat(40))
-    .replace(/\$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/gu, '3'.repeat(40));
+    .replace(/\$\{\{ steps\.pull_request\.outputs\.head_sha \}\}/gu, '2'.repeat(40))
+    .replace(/\$\{\{ steps\.pull_request\.outputs\.merge_sha \}\}/gu, '3'.repeat(40));
   const run = spawnSync('bash', ['-euo', 'pipefail', '-c', executable], {
     encoding: 'utf8',
     env: {

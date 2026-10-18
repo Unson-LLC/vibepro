@@ -113,7 +113,7 @@ test('story-vibepro-release-exact-sha-fast-path replays real merge-tree binding 
   const workflow = await readFile(new URL('../../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const fastStep = workflow.match(/- name: Validate release candidate[\s\S]*?(?=\n      - name:|$)/u)?.[0] ?? '';
   const fallbackStep = workflow.match(/- name: Run full validation fallback[\s\S]*?(?=\n      - name:|$)/u)?.[0] ?? '';
-  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.match(workflow, /ref: \$\{\{ steps\.pull_request\.outputs\.base_sha \}\}/);
   assert.match(workflow, /validation:[\s\S]*?permissions:[\s\S]*?checks: read[\s\S]*?contents: read/u);
   assert.match(workflow, /release:[\s\S]*?permissions:[\s\S]*?contents: write/u);
   assert.match(workflow, /post-merge-release\.mjs validation-plan/);

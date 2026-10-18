@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-oidc-push-trigger",
+  "created_at": "2026-10-18T00:43:50.743Z",
+  "status": "ready",
+  "git": {
+    "head_sha": "3d2027989422fbc0ef705b43ffd16595b0763409"
+  },
+  "checks": [
+    {
+      "id": "story_selected",
+      "status": "pass",
+      "reason": "Story is registered in .vibepro/config.json (brainbase.stories[])"
+    },
+    {
+      "id": "graphify_context",
+      "status": "pass",
+      "reason": "Graphify graph has 27412 nodes and 31857 edges"
+    },
+    {
+      "id": "story_diagnosis",
+      "status": "pass",
+      "reason": "Story diagnosis run exists: 2026-10-18T002215Z"
+    }
+  ],
+  "graphify": {
+    "available": true,
+    "artifact": ".vibepro/graphify/graph.json",
+    "node_count": 27412,
+    "edge_count": 31857,
+    "edge_source_key": "links"
+  },
+  "diagnosis": {
+    "run_id": "2026-10-18T002215Z",
+    "gate_status": "needs_review",
+    "evidence_artifact": ".vibepro/diagnostics/2026-10-18T002215Z/evidence.json"
+  },
+  "engineering_judgment": null,
+  "pr_prepare": {
+    "created_at": "2026-10-18T00:43:50.576Z",
+    "artifact": ".vibepro/pr/story-vibepro-release-oidc-push-trigger/pr-prepare.json"
+  },
+  "next_actions": []
+}

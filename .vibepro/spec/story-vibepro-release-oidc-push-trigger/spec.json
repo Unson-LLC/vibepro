@@ -1,0 +1,459 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-oidc-push-trigger",
+  "story_context": "post-merge release workflow を pull_request_target から main への push と workflow_dispatch へ移し、npm Trusted Publishing (OIDC) で公開できるようにする。merge 済み PR は push された commit から解決し、validation・公開・docs 投影の順序と内容は変えない。",
+  "generated_by": {
+    "caller": "cursor-agent",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "post-merge release workflow は main への push と workflow_dispatch だけで起動し、pull_request_target・GITHUB_EVENT_PATH・github.event.pull_request を参照しない。",
+      "rationale": "AC-1。npm Trusted Publishing は pull_request_target の OIDC token を受け付けない（brainbase#824 の run 39046945726 / 39031355466 が ENEEDAUTH、npm/cli#8739）。concurrency は `github.sha` 単位。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "workflow_dispatch:"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "validation job は最初の step で push された commit（`github.sha`）に紐づく merge 済み main PR を GitHub API で解決し、PR 番号・merge SHA・base SHA・head SHA・merged_at を出力する。後続 job はこの出力に固定され、release と docs は同じ PR から event を再構成する。",
+      "rationale": "AC-1。pull_request イベントの値（merged 判定、merge SHA、PR 番号）を push / workflow_dispatch でも同じ意味で得るため。validation・publish・docs 投影の処理は変えない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "Resolve merged pull request for the pushed commit"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release uses immutable pre-merge base code for fork validation"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge first deployment executes the missing-selector fallback as full validation"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release installs dependencies before unconditional docs projection"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release uses immutable pre-merge base code for fork validation"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge first deployment executes the missing-selector fallback as full validation"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release installs dependencies before unconditional docs projection"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "merge 済み main PR に紐づかない commit（例: docs bot の直接 push）で起動した場合、validation は merged=false を出して後続 step を skip し、release・docs・recovery は動かない。",
+      "rationale": "AC-1 の負例。push トリガーは PR 以外の push でも起動するため。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "echo \"merged=false\""
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "release job は needs: [validation, release-candidate] と if: ${{ needs.validation.outputs.release_required == 'true' }} をこの順で持ち、if に always()・failure()・cancelled() を含まない。docs job は needs: [validation, release] で npm 公開成功後（または version 不変時）だけ動く。",
+      "rationale": "AC-2。release の if に always() が入ると release-candidate の失敗後にも公開が走るため、テストで固定する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-2"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "needs: [validation, release-candidate]"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release publishes only after validation and release-candidate succeed"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release publishes only after validation and release-candidate succeed"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "PCR-CON-013 のテストは version-history の 2 件だけで、#592 の Trusted Publishing テストは PCR-CON-014 を使う。",
+      "rationale": "AC-3。#592 が既存の PCR-CON-013 を別の契約に再利用していた。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-3"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "anchor": "PCR-CON-014 post-merge release validates"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-013 advances a stale documented channel without reading npm dist-tags"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-013 does not treat a prerelease prefix as the documented channel version"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "INV-005",
+      "type": "invariant",
+      "statement": "この Story の spec.json は全 clause に Story の AC id と、HEAD に実在する node:test のケース名を持つ test_refs を持ち、invariant は test_pattern を持つ。AC-1 から AC-5 のすべてに clause がある。",
+      "rationale": "AC-4。pr prepare の accepted_spec_lineage が全 AC で resolved になる前提を、リポジトリ内のテストで固定する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-4"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-release-oidc-push-trigger.md",
+            "anchor": "- AC-4:"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/story-vibepro-release-oidc-push-trigger.test.js",
+            "case": "story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/story-vibepro-release-oidc-push-trigger.test.js",
+            "must_contain": "story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "INV-006",
+      "type": "invariant",
+      "statement": "npm Trusted Publisher 登録が一致すべき値（workflow filename post-merge-release.yml と npm-publish.yml、post-merge の release job は environment なし・npm-publish の publish job は environment: npm、両 job の id-token: write、publish script の npm dist-tag add）はリポジトリ内で固定され、architecture doc の Security 節が両 workflow の登録と dist-tag 許可を述べる。",
+      "rationale": "AC-5。npm 側の登録は外部から確認できないため PR 本文で佐藤さんに確認を依頼する。その確認対象の値をテストで固定する。PR 本文の節そのものは PR レビューで確認する。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-5"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/npm-publish.yml",
+            "anchor": "environment: npm"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/story-vibepro-release-oidc-push-trigger.test.js",
+            "case": "npm Trusted Publisher registration values are pinned by the publishing workflows"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/story-vibepro-release-oidc-push-trigger.test.js",
+            "must_contain": "npm Trusted Publisher registration values are pinned by the publishing workflows"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "INV-007",
+      "type": "invariant",
+      "statement": "workflow_dispatch で起動した run の RELEASE_SHA は実行時点の main 先端 github.sha である。validation の merge_sha 出力は常に MERGE_SHA（= github.sha）で、release-candidate と release はこの SHA を checkout し git rev-parse HEAD と照合する。workflow_dispatch に SHA 入力は無い。",
+      "rationale": "AC-6。古い SHA を公開しようとすると VibePro の runtime manifest が behind で止まる（過去の run の失敗）。merge 後の beta.33 は dispatch run で初めて公開される。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-6"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "MERGE_SHA: ${{ github.sha }}"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release dispatch binds RELEASE_SHA to the current main tip"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release dispatch binds RELEASE_SHA to the current main tip"
+          },
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip"
+          }
+        ]
+      },
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "main 先端が merge 済み PR に紐づかない commit（docs bot の commit）のとき workflow_dispatch を実行すると、release notes はそれ以前の最新 merge 済み PR から取り、merge_sha（RELEASE_SHA）は main 先端のまま、version は main 先端の package.json から取り、release_required は true になる。",
+      "rationale": "AC-6 の正例。dispatch は main 先端を公開するための入口で、PR の merge SHA へ戻らない。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-6"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "Plan dispatched release of the main tip"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip"
+          },
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release dispatch binds RELEASE_SHA to the current main tip"
+          }
+        ]
+      },
+      "case_kind": "positive",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "push で起動した run は push された commit に紐づく PR だけを見て、古い PR へさかのぼらない。紐づく PR が無ければ merged=false で終わる。",
+      "rationale": "AC-6 の負例。さかのぼりは workflow_dispatch のときだけ。",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "AC-6"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "GITHUB_EVENT_NAME"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip"
+          }
+        ]
+      },
+      "case_kind": "negative",
+      "outcome_kind": "internal_output",
+      "confidence": 0.9,
+      "first_seen_at": "2026-10-18T00:43:57.518Z",
+      "last_revised_at": "2026-10-18T00:43:57.518Z"
+    }
+  ],
+  "guidance": {
+    "phase": "implementation",
+    "workflow": ".github/workflows/post-merge-release.yml",
+    "tests_file": "test/post-merge-release.test.js",
+    "story_tests_file": "test/story-vibepro-release-oidc-push-trigger.test.js",
+    "references": [
+      "https://docs.npmjs.com/trusted-publishers",
+      "https://github.blog/changelog/2026-10-02-unvalidated-npm-trusted-publishing-configurations-now-expire/",
+      "https://github.com/npm/cli/issues/8739"
+    ]
+  },
+  "open_questions": [],
+  "generated_at": "2026-10-18T00:43:57.518Z",
+  "previous_spec_id": null
+}
