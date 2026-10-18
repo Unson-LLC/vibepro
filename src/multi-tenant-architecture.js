@@ -16,241 +16,6 @@ const STRONG_SIGNALS = [
   ['cross_tenant_boundary', /cross[- ]?tenant|tenant isolation|テナント(?:間|境界|分離)/iu],
   ['deployment_variant', /byoc|self[- ]?hosted|customer[- ]?managed|顧客管理|顧客環境|テナント別配備/iu]
 ];
-
-export function detectStrongMultiTenantSignals(storyText = '') {
-  const text = String(storyText ?? '');
-  return STRONG_SIGNALS.filter(([, pattern]) => pattern.test(text)).map(([reason]) => reason);
-}
-
-function appendSemanticContractText(parts, value) {
-  if (typeof value === 'string' && value.trim()) {
-    parts.push(value);
-  } else if (value && typeof value === 'object') {
-    parts.push(JSON.stringify(value));
-  }
-}
-
-function appendClauseScanText(parts, clause) {
-  if (!clause || typeof clause !== 'object') return;
-  for (const field of ['statement', 'rationale', 'expected']) {
-    if (typeof clause[field] === 'string' && clause[field].trim()) parts.push(clause[field]);
-  }
-  const acceptanceCriteria = clause.acceptance_criteria;
-  if (typeof acceptanceCriteria === 'string' && acceptanceCriteria.trim()) {
-    parts.push(acceptanceCriteria);
-  } else if (Array.isArray(acceptanceCriteria)) {
-    parts.push(acceptanceCriteria.map((entry) => String(entry ?? '')).join('\n'));
-  }
-  appendSemanticContractText(parts, clause.semantic_contract);
-  const verifiableBy = clause.verifiable_by;
-  if (typeof verifiableBy === 'string' && verifiableBy.trim()) {
-    parts.push(verifiableBy);
-  } else if (verifiableBy && typeof verifiableBy === 'object') {
-    parts.push(JSON.stringify(verifiableBy));
-  }
-}
-
-export function collectMultiTenantSpecScanText(spec) {
-  if (!spec || typeof spec !== 'object') return '';
-  const parts = [];
-  if (typeof spec.story_context === 'string' && spec.story_context.trim()) {
-    parts.push(spec.story_context);
-  }
-  appendSemanticContractText(parts, spec.semantic_contract);
-  for (const clause of spec.clauses ?? []) {
-    appendClauseScanText(parts, clause);
-  }
-  return parts.join('\n');
-}
-
-export function buildStrongSignalScanText({ storyText = '', spec = null } = {}) {
-  return [storyText, collectMultiTenantSpecScanText(spec)]
-    .filter((part) => typeof part === 'string' && part.trim())
-    .join('\n');
-}
-
-const EMPTY_MEANING_EVIDENCE_REFS = new Set([
-  'n/a', 'na', 'none', 'tbd', 'tba', '-', '--', 'nil', 'null', 'unknown', '...', 'todo', 'wip'
-]);
-
-function isEmptyMeaningEvidenceToken(token) {
-  const normalized = String(token ?? '').toLowerCase().replace(/\//g, '').replace(/\s+/g, '');
-  return EMPTY_MEANING_EVIDENCE_REFS.has(String(token ?? '').toLowerCase())
-    || EMPTY_MEANING_EVIDENCE_REFS.has(normalized);
-}
-
-export function isPlausibleMultiTenantEvidenceRef(value) {
-  const ref = String(value ?? '').trim();
-  if (!ref) return false;
-
-  const collapsed = ref.toLowerCase().replace(/\//g, '').replace(/\s+/g, '');
-  if (isEmptyMeaningEvidenceToken(ref) || EMPTY_MEANING_EVIDENCE_REFS.has(collapsed)) {
-    return false;
-  }
-
-  if (ref.startsWith('..')) return false;
-  if (/^todo\//i.test(ref)) return false;
-  if (/^see\/below$/i.test(ref)) return false;
-  if (/^(TODO|NA)-\d+$/i.test(ref)) return false;
-  if (/^\/+$/.test(ref)) return false;
-  if (/^-\/?-$/.test(ref)) return false;
-  if (/^[a-zA-Z]-[a-zA-Z]$/.test(ref)) return false;
-  if (/^[a-zA-Z0-9]\.[a-zA-Z0-9]$/.test(ref)) return false;
-
-  if (/^https?:\/\//i.test(ref)) {
-    try {
-      const url = new URL(ref);
-      if (!url.hostname || isEmptyMeaningEvidenceToken(url.hostname)) return false;
-      const authorityCollapsed = `${url.hostname}${url.pathname}`.toLowerCase().replace(/\//g, '');
-      if (isEmptyMeaningEvidenceToken(authorityCollapsed) || authorityCollapsed === 'na') return false;
-      const pathCollapsed = url.pathname.toLowerCase().replace(/\//g, '');
-      if (pathCollapsed && isEmptyMeaningEvidenceToken(pathCollapsed)) return false;
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  if (ref.includes('/')) {
-    const segments = ref.split('/').filter((segment) => segment.length > 0);
-    if (segments.length === 0) return false;
-    if (segments.some((segment) => isEmptyMeaningEvidenceToken(segment))) return false;
-    const last = segments[segments.length - 1];
-    return last.length >= 2 && /[a-zA-Z0-9]/.test(last);
-  }
-
-  if (/^[A-Z][A-Z0-9]*-\d+[A-Z0-9-]*$/i.test(ref)) return true;
-
-  return false;
-}
-
-export function projectMultiTenantNonApplicabilityDeclaration({
-  spec = null,
-  multiTenantArchitecture = null,
-  headCommit = null,
-  storyId = null
-} = {}) {
-  const reasoned = multiTenantArchitecture?.reasoned_non_applicability;
-  if (!reasoned?.attempted) return null;
-  return {
-    schema_version: '0.1.0',
-    spec_id: spec?.story_id ?? storyId ?? null,
-    head_commit: headCommit ?? null,
-    declared_applicability: spec?.multi_tenancy?.applicability ?? null,
-    reason: reasoned.reason ?? null,
-    evidence_ref: reasoned.evidence_ref ?? null,
-    verdict: reasoned.accepted ? 'accepted' : 'rejected',
-    refusal_reason: reasoned.accepted ? null : (reasoned.refusal_reason ?? null),
-    strong_signals: reasoned.strong_signals ?? []
-  };
-}
-
-function isExplicitNonApplicability(contract) {
-  return contract?.applicability === false || contract?.applicability === 'not_applicable';
-}
-
-/**
- * Lighter auditable override: spec carries reason + evidence_ref (no caller HEAD evidence).
- * Attempted when either field is present on multi_tenancy; caller-evidence-only declarations omit both.
- */
-export function assessReasonedNonApplicabilityDeclaration(contract, context = {}) {
-  const storyText = typeof context === 'string' ? context : (context?.storyText ?? '');
-  const spec = typeof context === 'object' && context !== null && !Array.isArray(context) ? context.spec ?? null : null;
-  const storySourcePresent = typeof context === 'object' && context !== null && !Array.isArray(context)
-    ? context.storySourcePresent !== false
-    : true;
-
-  if (!isExplicitNonApplicability(contract)) {
-    return { attempted: false };
-  }
-  const hasReasonField = typeof contract?.reason === 'string';
-  const hasEvidenceRefField = typeof contract?.evidence_ref === 'string';
-  if (!hasReasonField && !hasEvidenceRefField) {
-    return { attempted: false };
-  }
-
-  const reason = hasReasonField ? contract.reason.trim() : '';
-  const evidenceRef = hasEvidenceRefField ? contract.evidence_ref.trim() : '';
-  const scanText = buildStrongSignalScanText({ storyText, spec });
-  const strongSignals = detectStrongMultiTenantSignals(scanText);
-
-  if (!storySourcePresent) {
-    return {
-      attempted: true,
-      accepted: false,
-      refusal_reason: 'story_missing',
-      reason,
-      evidence_ref: evidenceRef,
-      strong_signals: strongSignals
-    };
-  }
-
-  if (strongSignals.length > 0) {
-    return {
-      attempted: true,
-      accepted: false,
-      refusal_reason: 'strong_signal_present',
-      reason,
-      evidence_ref: evidenceRef,
-      strong_signals: strongSignals
-    };
-  }
-  if (!reason) {
-    return {
-      attempted: true,
-      accepted: false,
-      refusal_reason: 'reason_required',
-      reason,
-      evidence_ref: evidenceRef,
-      strong_signals: []
-    };
-  }
-  if (!evidenceRef) {
-    return {
-      attempted: true,
-      accepted: false,
-      refusal_reason: 'evidence_ref_required',
-      reason,
-      evidence_ref: evidenceRef,
-      strong_signals: []
-    };
-  }
-  if (!isPlausibleMultiTenantEvidenceRef(evidenceRef)) {
-    return {
-      attempted: true,
-      accepted: false,
-      refusal_reason: 'evidence_ref_invalid',
-      reason,
-      evidence_ref: evidenceRef,
-      strong_signals: []
-    };
-  }
-  return {
-    attempted: true,
-    accepted: true,
-    reason,
-    evidence_ref: evidenceRef,
-    strong_signals: []
-  };
-}
-
-function reasonedImplementationReadiness(reasoned) {
-  if (!reasoned?.attempted) return null;
-  if (reasoned.accepted) {
-    return {
-      status: 'ready',
-      evidence_status: 'reasoned_declaration',
-      required_surfaces: [],
-      reasons: ['reasoned_non_applicability']
-    };
-  }
-  return {
-    status: 'needs_review',
-    evidence_status: 'inconclusive',
-    required_surfaces: ['story', 'spec', 'implementation'],
-    reasons: [reasoned.refusal_reason]
-  };
-}
 const TENANT_ACTOR = /tenant|organization|workspace|account|customer|hotel|store|テナント|組織|ワークスペース|顧客|店舗|ホテル/iu;
 const BOUNDARY_SURFACE = /credential|secret|endpoint|project|tool|memory|storage|database|runtime|queue|job|workflow|sandbox|container|state|migration|export|delet|residency|認証情報|秘密情報|接続|保存|データベース|ランタイム|キュー|ジョブ|実行|状態|移行|削除|データ所在/iu;
 const COPY_ONLY = /文言|説明文|コピー|copy|ラベル|表示名/iu;
@@ -283,25 +48,10 @@ export function detectMultiTenantApplicability(storyText = '', options = {}) {
   return { applicable: false, status: 'not_applicable', reasons: ['no_multi_tenant_signal'] };
 }
 
-export function assessMultiTenantArchitecture({
-  storyText = '',
-  spec = null,
-  storySourcePresent = true,
-  contract = null,
-  evidence = null,
-  applicabilityEvidence = null,
-  expectedHeadCommit = null,
-  mode = 'final'
-} = {}) {
+export function assessMultiTenantArchitecture({ storyText = '', contract = null, evidence = null, applicabilityEvidence = null, expectedHeadCommit = null, mode = 'final' } = {}) {
   const applicability = detectMultiTenantApplicability(storyText, { explicit: contract?.applicability });
-  const reasonedDeclaration = assessReasonedNonApplicabilityDeclaration(contract, {
-    storyText,
-    spec,
-    storySourcePresent
-  });
   if (!applicability.applicable) {
-    const explicitlyNotApplicable = isExplicitNonApplicability(contract);
-    const reasonedReadiness = reasonedImplementationReadiness(reasonedDeclaration);
+    const explicitlyNotApplicable = contract?.applicability === false || contract?.applicability === 'not_applicable';
     return {
       applicable: false,
       activation_reasons: applicability.reasons,
@@ -309,14 +59,13 @@ export function assessMultiTenantArchitecture({
       findings: [],
       coverage: { status: 'not_applicable', scanners: {} },
       implementation_readiness: explicitlyNotApplicable
-        ? (reasonedReadiness ?? assessNonApplicabilityEvidence(applicabilityEvidence, expectedHeadCommit))
+        ? assessNonApplicabilityEvidence(applicabilityEvidence, expectedHeadCommit)
         : {
             status: 'needs_review',
             evidence_status: 'inconclusive',
             required_surfaces: ['story', 'spec', 'implementation'],
             reasons: ['explicit_non_applicability_required']
           },
-      reasoned_non_applicability: reasonedDeclaration.attempted ? reasonedDeclaration : undefined,
       views: {}
     };
   }
@@ -325,26 +74,11 @@ export function assessMultiTenantArchitecture({
   const review = (code, path, message, extra = {}) => findings.push({ severity: 'review', code, path, message, ...extra });
   if (applicability.status === 'needs_review') {
     review('applicability_ambiguous', 'story_context', 'マルチテナント適用要否を確定できる境界シグナルが不足しています');
-    if (isExplicitNonApplicability(contract)) {
-      if (reasonedDeclaration.attempted && !reasonedDeclaration.accepted) {
-        error(
-          'reasoned_non_applicability_refused',
-          'multi_tenancy',
-          `reasoned non-applicability refused: ${reasonedDeclaration.refusal_reason}`
-        );
-        return {
-          ...buildReport(applicability, contract, null, findings, mode),
-          implementation_readiness: reasonedImplementationReadiness(reasonedDeclaration),
-          reasoned_non_applicability: reasonedDeclaration
-        };
-      }
+    if (contract?.applicability === false || contract?.applicability === 'not_applicable') {
       if (applicabilityEvidence?.status === 'verified') {
         error('applicability_evidence_inconsistent', 'applicability_evidence', '強いmulti-tenantシグナルと非該当証拠が矛盾しています');
       }
-      return {
-        ...buildReport(applicability, contract, null, findings, mode),
-        reasoned_non_applicability: reasonedDeclaration.attempted ? reasonedDeclaration : undefined
-      };
+      return buildReport(applicability, contract, null, findings, mode);
     }
     if (!contract) {
       return {

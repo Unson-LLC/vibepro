@@ -17,7 +17,6 @@ const PARALLEL_ACCEPTED_DOCUMENT_FIELDS = new Set([
   'story_id',
   'plan_version',
   'intent',
-  'overlap_refs',
   'authority',
   'provenance',
   'tasks'
@@ -42,8 +41,7 @@ export async function bindTaskAuthority(repoRoot, { storyId, inputPath }) {
     ...(normalized.schema_version === TASK_PLAN_SCHEMA_VERSION ? {
       repository: normalized.repository,
       plan_version: normalized.plan_version,
-      intent: normalized.intent,
-      ...(normalized.overlap_refs === undefined ? {} : { overlap_refs: normalized.overlap_refs })
+      intent: normalized.intent
     } : {}),
     story_id: storyId,
     authority: { status: 'accepted', scope: 'story' },
@@ -291,7 +289,6 @@ function acceptedToInput(document) {
         story_id: document.story_id,
         plan_version: document.plan_version,
         intent: document.intent,
-        ...(document.overlap_refs === undefined ? {} : { overlap_refs: document.overlap_refs }),
         tasks
       }
     : {
@@ -366,8 +363,7 @@ async function validateAcceptedTaskAuthority(repoRoot, storyId, filePath, docume
       repository: canonicalAuthority.repository,
       story_id: canonicalAuthority.story_id,
       plan_version: canonicalAuthority.plan_version,
-      intent: canonicalAuthority.intent,
-      ...(canonicalAuthority.overlap_refs === undefined ? {} : { overlap_refs: canonicalAuthority.overlap_refs })
+      intent: canonicalAuthority.intent
     } : {}),
     task_count: canonicalAuthority.tasks.length,
     status_counts: countStatuses(canonicalAuthority.tasks.map((task) => ({ status: task.status ?? 'accepted' }))),

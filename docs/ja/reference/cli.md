@@ -79,7 +79,6 @@ Story・Specと検証結果を確認し、必要に応じて `review prepare` �
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
-  vibepro task plan decompose [repo] --story <path> [--repository <name>] [--json]
   vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]

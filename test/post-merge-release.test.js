@@ -969,59 +969,16 @@ test('PCR-CON-005 serializes an interleaved older release with an atomic lease',
   assert.deepEqual(sleeps, [1_000, 10_000]);
 });
 
-function workflowJob(workflow, name) {
-  const start = workflow.indexOf(`\n  ${name}:\n`);
-  assert.ok(start >= 0, `missing job ${name}`);
-  const rest = workflow.slice(start + 1);
-  const next = rest.slice(1).search(/\n  [a-z][a-z-]*:\n/u);
-  return next < 0 ? rest : rest.slice(0, next + 1);
-}
-
-const SELF_HOSTED_RUNNER = /runs-on: \[self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2\]/u;
-
-// npm Trusted Publishing: OIDC works only on GitHub-hosted runners, and no
-// long-lived token may remain as a silent fallback.
-function assertTrustedPublishingJob(job) {
-  assert.match(job, /runs-on: ubuntu-latest/u);
-  assert.doesNotMatch(job, /self-hosted/u);
-  assert.match(job, /permissions:[\s\S]*?id-token: write/u);
-  assert.match(job, /npm install --global npm@11\.21\.1$/mu);
-  assert.doesNotMatch(job, /NPM_TOKEN|NODE_AUTH_TOKEN|registry-url:/u);
-}
-
 test('PCR-CON-009 manual npm publish installs from the lockfile and proves a clean checkout before pack', async () => {
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
   assert.match(manualWorkflow, /^\s+- run: npm ci$/mu);
-  const verify = workflowJob(manualWorkflow, 'verify');
-  const publish = workflowJob(manualWorkflow, 'publish');
-  assert.match(verify, SELF_HOSTED_RUNNER);
-  assert.match(verify, /npm test[\s\S]*npm run pack:dry-run/u);
-  assert.doesNotMatch(verify, /id-token|npm publish|publish-npm/u);
-  assert.match(publish, /needs: verify/u);
-  assertTrustedPublishingJob(publish);
-  assert.doesNotMatch(manualWorkflow, /NPM_TOKEN|NODE_AUTH_TOKEN/u);
+  assert.doesNotMatch(manualWorkflow, /npm install\b/u);
+  assert.match(manualWorkflow, /runs-on: \[self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2\]/u);
+  assert.doesNotMatch(manualWorkflow, /--provenance|id-token/u);
   const cleanIndex = manualWorkflow.indexOf('- name: Assert clean checkout before publish');
   assert.ok(cleanIndex > manualWorkflow.indexOf('npm run pack:dry-run'));
   assert.ok(cleanIndex < manualWorkflow.indexOf('- name: Publish'));
   assert.match(manualWorkflow.slice(cleanIndex), /git status --porcelain[\s\S]*exit 1/u);
-});
-
-test('PCR-CON-013 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing', async () => {
-  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
-  const candidate = workflowJob(workflow, 'release-candidate');
-  const release = workflowJob(workflow, 'release');
-  const docs = workflowJob(workflow, 'docs');
-  assert.match(candidate, SELF_HOSTED_RUNNER);
-  assert.match(candidate, /Validate release candidate[\s\S]*Run full validation fallback/u);
-  assert.doesNotMatch(candidate, /id-token|publish-npm/u);
-  assert.match(release, /needs: \[validation, release-candidate\]/u);
-  assertTrustedPublishingJob(release);
-  assert.match(release, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"[\s\S]*publish-npm/u);
-  assert.match(release, /npm_published_at: \$\{\{ steps\.publish\.outputs\.npm_published_at \}\}/u);
-  assert.match(docs, SELF_HOSTED_RUNNER);
-  assert.match(docs, /needs\.validation\.outputs\.release_required != 'true' \|\| needs\.release\.result == 'success'/u);
-  assert.doesNotMatch(docs, /id-token|publish-npm/u);
-  assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/u);
 });
 
 test('PCR-CON-011 no workflow installs dependencies with npm install', async () => {
@@ -1031,10 +988,7 @@ test('PCR-CON-011 no workflow installs dependencies with npm install', async () 
   assert.ok(files.includes('ci.yml'));
   for (const name of files) {
     const text = await readFile(new URL(name, dir), 'utf8');
-    // The only allowed install is the pinned npm CLI itself, required by
-    // npm Trusted Publishing; package dependencies always come from npm ci.
-    const withoutNpmCli = text.replace(/^\s+run: npm install --global npm@\d+\.\d+\.\d+$/gmu, '');
-    assert.doesNotMatch(withoutNpmCli, /\bnpm (install|i)\b/u, `${name} must use npm ci`);
+    assert.doesNotMatch(text, /\bnpm (install|i)\b/u, `${name} must use npm ci`);
   }
   const ci = await readFile(new URL('ci.yml', dir), 'utf8');
   assert.match(ci, /^\s+- run: npm ci$/mu);

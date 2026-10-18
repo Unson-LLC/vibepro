@@ -1,4 +1,4 @@
-const ACCEPTANCE_CRITERIA_HEADING = /^#{1,6}\s+(?:(?:\d+(?:\.\d+)*)[.)]?\s+)?(?:acceptance\s+criteria|受け入れ基準|受入基準|受け入れ条件|受入条件|完了定義)(?:\s*(?:（[^）]*）|\([^)]*\)))?\s*[:：]?\s*$/i;
+const ACCEPTANCE_CRITERIA_HEADING = /^#{1,6}\s+(?:(?:\d+(?:\.\d+)*)[.)]?\s+)?(?:acceptance\s+criteria|受け入れ基準|受入基準|受け入れ条件|受入条件|完了定義)\s*[:：]?\s*$/i;
 const MARKDOWN_HEADING = /^#{1,6}\s+/;
 const BULLET = /^\s*-\s*(?:\[[ xX]\]\s*)?(.+?)\s*$/;
 const EXPLICIT_AC_ID = /^((?:[A-Za-z0-9]+-)*AC-[A-Za-z0-9-]+)\s*[:：]/i;
