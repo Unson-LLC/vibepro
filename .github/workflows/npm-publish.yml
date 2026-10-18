@@ -39,7 +39,8 @@ jobs:
     # npm Trusted Publishing accepts OIDC only from GitHub-hosted runners.
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    environment: npm
+    # No GitHub environment: the job needs no secret, and an environment claim
+    # in the OIDC token would have to match the npm Trusted Publisher entry.
     permissions:
       contents: write
       # npm Trusted Publishing exchanges the GitHub Actions OIDC token for a
@@ -73,8 +74,11 @@ jobs:
             exit 1
           fi
       # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
-      # no long-lived npm token is available to this job.
+      # no long-lived npm token is available to this job. npm logs why an OIDC
+      # exchange was refused only at verbose level, so keep it on here.
       - name: Publish
+        env:
+          NPM_CONFIG_LOGLEVEL: verbose
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             npm publish --access public --dry-run

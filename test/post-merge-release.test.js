@@ -988,6 +988,10 @@ function assertTrustedPublishingJob(job) {
   assert.doesNotMatch(job, /self-hosted/u);
   assert.match(job, /permissions:[\s\S]*?id-token: write/u);
   assert.match(job, /actions\/checkout@v7\n\s+with:\n(?:\s+[a-z-]+: .+\n)*?\s+fetch-depth: 0\n/u);
+  // An environment claim would also have to match the npm Trusted Publisher
+  // entry, and npm logs the refusal reason only at verbose level.
+  assert.doesNotMatch(job, /^ {4}environment:/mu);
+  assert.match(job, /NPM_CONFIG_LOGLEVEL: verbose[\s\S]*publish-npm/u);
   assert.match(job, /npm install --global npm@11\.21\.1$/mu);
   assert.doesNotMatch(job, /NPM_TOKEN|NODE_AUTH_TOKEN|registry-url:/u);
 }
