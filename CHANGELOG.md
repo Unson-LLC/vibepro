@@ -4108,3 +4108,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:596:end -->
+
+<!-- vibepro-release-pr:592:start -->
+## [#592](https://github.com/Unson-LLC/vibepro/pull/592) ci: npm公開をTrusted Publishing（OIDC）へ切り替える
+
+- Author: @sintariran
+- Merged: 2026-10-18T00:12:35Z
+- Commit: `81f235b31029a7fac66e2c2c96b09187252e2cac`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:592:end -->

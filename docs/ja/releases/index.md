@@ -794,3 +794,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:596:start -->
 - [PR #596](https://github.com/Unson-LLC/vibepro/pull/596) — [2026-10](/ja/releases/2026-10): fix(ac-parser): 受入条件見出しの括弧付き注記を認識する
 <!-- vibepro-release-index-pr:596:end -->
+
+<!-- vibepro-release-index-pr:592:start -->
+- [PR #592](https://github.com/Unson-LLC/vibepro/pull/592) — [2026-10](/ja/releases/2026-10): ci: npm公開をTrusted Publishing（OIDC）へ切り替える
+<!-- vibepro-release-index-pr:592:end -->
