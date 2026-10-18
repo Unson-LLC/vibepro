@@ -186,10 +186,12 @@ jobs:
         run: |
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '{action: "closed", number: .number, pull_request: .}' > "$RUNNER_TEMP/post-merge-release-event.json"
       # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
-      # no long-lived npm token is available to this job.
+      # no long-lived npm token is available to this job. npm logs why an OIDC
+      # exchange was refused only at verbose level, so keep it on here.
       - name: Publish npm and reconcile GitHub Release under package lease
         id: publish
         env:
+          NPM_CONFIG_LOGLEVEL: verbose
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.validation.outputs.version }}
           RELEASE_SHA: ${{ needs.validation.outputs.merge_sha }}

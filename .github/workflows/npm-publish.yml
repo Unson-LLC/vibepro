@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -38,16 +39,20 @@ jobs:
     # npm Trusted Publishing accepts OIDC only from GitHub-hosted runners.
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    environment: npm
+    # No GitHub environment: the job needs no secret, and an environment claim
+    # in the OIDC token would have to match the npm Trusted Publisher entry.
     permissions:
       contents: write
       # npm Trusted Publishing exchanges the GitHub Actions OIDC token for a
       # short-lived publish token; npm also signs provenance with it.
       id-token: write
     steps:
+      # Full history: the prepack runtime-manifest guard needs origin/main to
+      # prove the release commit is the same as or ahead of it.
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
       # Without a registry URL, setup-node writes no token-reading .npmrc, so a
       # failed OIDC exchange fails as ENEEDAUTH instead of falling back to a
       # stale token that fails as E404 on PUT.
@@ -69,8 +74,11 @@ jobs:
             exit 1
           fi
       # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
-      # no long-lived npm token is available to this job.
+      # no long-lived npm token is available to this job. npm logs why an OIDC
+      # exchange was refused only at verbose level, so keep it on here.
       - name: Publish
+        env:
+          NPM_CONFIG_LOGLEVEL: verbose
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             npm publish --access public --dry-run
