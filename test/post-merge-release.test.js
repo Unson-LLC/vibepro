@@ -980,11 +980,14 @@ function workflowJob(workflow, name) {
 const SELF_HOSTED_RUNNER = /runs-on: \[self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2\]/u;
 
 // npm Trusted Publishing: OIDC works only on GitHub-hosted runners, and no
-// long-lived token may remain as a silent fallback.
+// long-lived token may remain as a silent fallback. A fresh GitHub-hosted
+// checkout must fetch full history, or the prepack runtime-manifest guard
+// cannot see origin/main and refuses to pack.
 function assertTrustedPublishingJob(job) {
   assert.match(job, /runs-on: ubuntu-latest/u);
   assert.doesNotMatch(job, /self-hosted/u);
   assert.match(job, /permissions:[\s\S]*?id-token: write/u);
+  assert.match(job, /actions\/checkout@v7\n\s+with:\n(?:\s+[a-z-]+: .+\n)*?\s+fetch-depth: 0\n/u);
   assert.match(job, /npm install --global npm@11\.21\.1$/mu);
   assert.doesNotMatch(job, /NPM_TOKEN|NODE_AUTH_TOKEN|registry-url:/u);
 }
