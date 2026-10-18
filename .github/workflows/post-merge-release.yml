@@ -125,10 +125,12 @@ jobs:
           test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
           npm ci
       # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
-      # no long-lived npm token is available to this job.
+      # no long-lived npm token is available to this job. npm logs why an OIDC
+      # exchange was refused only at verbose level, so keep it on here.
       - name: Publish npm and reconcile GitHub Release under package lease
         id: publish
         env:
+          NPM_CONFIG_LOGLEVEL: verbose
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.validation.outputs.version }}
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
