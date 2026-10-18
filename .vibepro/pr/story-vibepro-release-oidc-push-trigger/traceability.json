@@ -35,44 +35,56 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release uses immutable pre-merge base code for fork validation",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge first deployment executes the missing-selector fallback as full validation",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release installs dependencies before unconditional docs projection",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+        },
+        {
+          "file": "test/post-merge-release.test.js",
+          "case": "post-merge release push path takes release_required only from the plan --event output",
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+        },
+        {
+          "file": "test/post-merge-release.test.js",
+          "case": "post-merge release push retries the merged PR lookup and warns when none is found",
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         }
       ],
       "mapped_evidence": [],
@@ -80,6 +92,8 @@
       "spec_clause_ids": [
         "INV-001",
         "INV-002",
+        "INV-008",
+        "INV-009",
         "S-001"
       ],
       "mapping_source": "accepted_spec",
@@ -143,6 +157,60 @@
         },
         {
           "index": 2,
+          "clause_id": "INV-008",
+          "status": "unavailable",
+          "outcome_kind": "internal_output",
+          "case_kind": "positive",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "verified",
+          "reason_codes": [
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 3,
+          "clause_id": "INV-009",
+          "status": "unavailable",
+          "outcome_kind": "internal_output",
+          "case_kind": "positive",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "verified",
+          "reason_codes": [
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 4,
           "clause_id": "S-001",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -192,14 +260,20 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release publishes only after validation and release-candidate succeed",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
+        },
+        {
+          "file": "test/post-merge-release.test.js",
+          "case": "post-merge release candidate runs only after validation planned a release",
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         }
       ],
       "mapped_evidence": [],
@@ -211,7 +285,7 @@
       "lineage_status": "resolved",
       "verification_status": "verified",
       "semantic_assessment": {
-        "index": 3,
+        "index": 5,
         "clause_id": "INV-003",
         "status": "unavailable",
         "outcome_kind": "internal_output",
@@ -239,7 +313,7 @@
       },
       "semantic_assessments": [
         {
-          "index": 3,
+          "index": 5,
           "clause_id": "INV-003",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -289,26 +363,26 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-013 advances a stale documented channel without reading npm dist-tags",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "PCR-CON-013 does not treat a prerelease prefix as the documented channel version",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         }
       ],
       "mapped_evidence": [],
@@ -320,7 +394,7 @@
       "lineage_status": "resolved",
       "verification_status": "verified",
       "semantic_assessment": {
-        "index": 4,
+        "index": 6,
         "clause_id": "INV-004",
         "status": "unavailable",
         "outcome_kind": "internal_output",
@@ -348,7 +422,7 @@
       },
       "semantic_assessments": [
         {
-          "index": 4,
+          "index": 6,
           "clause_id": "INV-004",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -398,7 +472,7 @@
         {
           "file": "test/story-vibepro-release-oidc-push-trigger.test.js",
           "case": "story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
           "blob_oid": "939556dbf527ba38875a5a11554b4251b2313f62"
         }
       ],
@@ -411,7 +485,7 @@
       "lineage_status": "resolved",
       "verification_status": "verified",
       "semantic_assessment": {
-        "index": 5,
+        "index": 7,
         "clause_id": "INV-005",
         "status": "unavailable",
         "outcome_kind": "internal_output",
@@ -439,7 +513,7 @@
       },
       "semantic_assessments": [
         {
-          "index": 5,
+          "index": 7,
           "clause_id": "INV-005",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -489,7 +563,7 @@
         {
           "file": "test/story-vibepro-release-oidc-push-trigger.test.js",
           "case": "npm Trusted Publisher registration values are pinned by the publishing workflows",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
           "blob_oid": "939556dbf527ba38875a5a11554b4251b2313f62"
         }
       ],
@@ -502,7 +576,7 @@
       "lineage_status": "resolved",
       "verification_status": "verified",
       "semantic_assessment": {
-        "index": 6,
+        "index": 8,
         "clause_id": "INV-006",
         "status": "unavailable",
         "outcome_kind": "internal_output",
@@ -530,7 +604,7 @@
       },
       "semantic_assessments": [
         {
-          "index": 6,
+          "index": 8,
           "clause_id": "INV-006",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -580,32 +654,32 @@
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch binds RELEASE_SHA to the current main tip",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch binds RELEASE_SHA to the current main tip",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         },
         {
           "file": "test/post-merge-release.test.js",
           "case": "post-merge release dispatch resolves notes from the latest merged PR but releases the main tip",
-          "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
-          "blob_oid": "0594d35683b7a2b7b9e35f24892aaf7b6d4e8bdd"
+          "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
+          "blob_oid": "c857e22a137cd5f78c9c9811f00161d29bd8579c"
         }
       ],
       "mapped_evidence": [],
@@ -621,7 +695,7 @@
       "semantic_assessment": null,
       "semantic_assessments": [
         {
-          "index": 7,
+          "index": 9,
           "clause_id": "INV-007",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -648,7 +722,7 @@
           "warnings": []
         },
         {
-          "index": 8,
+          "index": 10,
           "clause_id": "S-002",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -675,7 +749,7 @@
           "warnings": []
         },
         {
-          "index": 9,
+          "index": 11,
           "clause_id": "S-003",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -710,13 +784,13 @@
   "scenario_lineage": null,
   "accepted_spec_lineage": {
     "status": "resolved",
-    "head_sha": "e09d9a5f761769f234c58c10b6ce7b7dc3621ccd",
+    "head_sha": "4ec3e4033ad537eca5862a5e824ae94812d5f78f",
     "spec_path": ".vibepro/spec/story-vibepro-release-oidc-push-trigger/spec.json",
-    "spec_blob_oid": "6b21ee01a51fc4d3850cf0ce724849cc86106cef",
+    "spec_blob_oid": "d2761f86e6894f62e6602a303c2c5179e50efc7a",
     "story_path": "docs/management/stories/active/story-vibepro-release-oidc-push-trigger.md",
     "story_blob_oid": "fedaa630d492aa9d6c9fc51086cbe1baa927c096",
     "mapping_source": "accepted_spec",
-    "clause_count": 10,
+    "clause_count": 12,
     "resolved_clause_count": 6,
     "reason_codes": [],
     "failures": []
@@ -796,10 +870,10 @@
       },
       {
         "index": 2,
-        "clause_id": "S-001",
+        "clause_id": "INV-008",
         "status": "unavailable",
         "outcome_kind": "internal_output",
-        "case_kind": "negative",
+        "case_kind": "positive",
         "answer_status": "unavailable",
         "answer_resolution": "unresolved",
         "evaluation_declared": false,
@@ -823,7 +897,7 @@
       },
       {
         "index": 3,
-        "clause_id": "INV-003",
+        "clause_id": "INV-009",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -850,10 +924,10 @@
       },
       {
         "index": 4,
-        "clause_id": "INV-004",
+        "clause_id": "S-001",
         "status": "unavailable",
         "outcome_kind": "internal_output",
-        "case_kind": "positive",
+        "case_kind": "negative",
         "answer_status": "unavailable",
         "answer_resolution": "unresolved",
         "evaluation_declared": false,
@@ -877,7 +951,7 @@
       },
       {
         "index": 5,
-        "clause_id": "INV-005",
+        "clause_id": "INV-003",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -904,7 +978,7 @@
       },
       {
         "index": 6,
-        "clause_id": "INV-006",
+        "clause_id": "INV-004",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -931,7 +1005,7 @@
       },
       {
         "index": 7,
-        "clause_id": "INV-007",
+        "clause_id": "INV-005",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -958,7 +1032,7 @@
       },
       {
         "index": 8,
-        "clause_id": "S-002",
+        "clause_id": "INV-006",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -985,6 +1059,60 @@
       },
       {
         "index": 9,
+        "clause_id": "INV-007",
+        "status": "unavailable",
+        "outcome_kind": "internal_output",
+        "case_kind": "positive",
+        "answer_status": "unavailable",
+        "answer_resolution": "unresolved",
+        "evaluation_declared": false,
+        "checks": {
+          "relevant": null,
+          "directly_answers": null,
+          "applicable": null,
+          "current": null,
+          "non_conflicting": null,
+          "unambiguous": null,
+          "sufficient": null
+        },
+        "supporting_record_ids": [],
+        "verification_status": "verified",
+        "reason_codes": [
+          "semantic_evaluation_unavailable",
+          "semantic_answer_unavailable"
+        ],
+        "errors": [],
+        "warnings": []
+      },
+      {
+        "index": 10,
+        "clause_id": "S-002",
+        "status": "unavailable",
+        "outcome_kind": "internal_output",
+        "case_kind": "positive",
+        "answer_status": "unavailable",
+        "answer_resolution": "unresolved",
+        "evaluation_declared": false,
+        "checks": {
+          "relevant": null,
+          "directly_answers": null,
+          "applicable": null,
+          "current": null,
+          "non_conflicting": null,
+          "unambiguous": null,
+          "sufficient": null
+        },
+        "supporting_record_ids": [],
+        "verification_status": "verified",
+        "reason_codes": [
+          "semantic_evaluation_unavailable",
+          "semantic_answer_unavailable"
+        ],
+        "errors": [],
+        "warnings": []
+      },
+      {
+        "index": 11,
         "clause_id": "S-003",
         "status": "unavailable",
         "outcome_kind": "internal_output",
@@ -1015,14 +1143,16 @@
       "status": "partial",
       "internal_output": {
         "status": "verified",
-        "declared_count": 10,
+        "declared_count": 12,
         "answer_resolved_count": 0,
-        "answer_unresolved_count": 10,
+        "answer_unresolved_count": 12,
         "invalid_count": 0,
         "verification_status": "verified",
         "clause_ids": [
           "INV-001",
           "INV-002",
+          "INV-008",
+          "INV-009",
           "S-001",
           "INV-003",
           "INV-004",
@@ -1131,10 +1261,10 @@
     },
     {
       "index": 2,
-      "clause_id": "S-001",
+      "clause_id": "INV-008",
       "status": "unavailable",
       "outcome_kind": "internal_output",
-      "case_kind": "negative",
+      "case_kind": "positive",
       "answer_status": "unavailable",
       "answer_resolution": "unresolved",
       "evaluation_declared": false,
@@ -1158,7 +1288,7 @@
     },
     {
       "index": 3,
-      "clause_id": "INV-003",
+      "clause_id": "INV-009",
       "status": "unavailable",
       "outcome_kind": "internal_output",
       "case_kind": "positive",
@@ -1185,10 +1315,10 @@
     },
     {
       "index": 4,
-      "clause_id": "INV-004",
+      "clause_id": "S-001",
       "status": "unavailable",
       "outcome_kind": "internal_output",
-      "case_kind": "positive",
+      "case_kind": "negative",
       "answer_status": "unavailable",
       "answer_resolution": "unresolved",
       "evaluation_declared": false,
@@ -1212,7 +1342,7 @@
     },
     {
       "index": 5,
-      "clause_id": "INV-005",
+      "clause_id": "INV-003",
       "status": "unavailable",
       "outcome_kind": "internal_output",
       "case_kind": "positive",
@@ -1239,7 +1369,7 @@
     },
     {
       "index": 6,
-      "clause_id": "INV-006",
+      "clause_id": "INV-004",
       "status": "unavailable",
       "outcome_kind": "internal_output",
       "case_kind": "positive",
@@ -1266,7 +1396,7 @@
     },
     {
       "index": 7,
-      "clause_id": "INV-007",
+      "clause_id": "INV-005",
       "status": "unavailable",
       "outcome_kind": "internal_output",
       "case_kind": "positive",
@@ -1293,7 +1423,7 @@
     },
     {
       "index": 8,
-      "clause_id": "S-002",
+      "clause_id": "INV-006",
       "status": "unavailable",
       "outcome_kind": "internal_output",
       "case_kind": "positive",
@@ -1320,6 +1450,60 @@
     },
     {
       "index": 9,
+      "clause_id": "INV-007",
+      "status": "unavailable",
+      "outcome_kind": "internal_output",
+      "case_kind": "positive",
+      "answer_status": "unavailable",
+      "answer_resolution": "unresolved",
+      "evaluation_declared": false,
+      "checks": {
+        "relevant": null,
+        "directly_answers": null,
+        "applicable": null,
+        "current": null,
+        "non_conflicting": null,
+        "unambiguous": null,
+        "sufficient": null
+      },
+      "supporting_record_ids": [],
+      "verification_status": "verified",
+      "reason_codes": [
+        "semantic_evaluation_unavailable",
+        "semantic_answer_unavailable"
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "index": 10,
+      "clause_id": "S-002",
+      "status": "unavailable",
+      "outcome_kind": "internal_output",
+      "case_kind": "positive",
+      "answer_status": "unavailable",
+      "answer_resolution": "unresolved",
+      "evaluation_declared": false,
+      "checks": {
+        "relevant": null,
+        "directly_answers": null,
+        "applicable": null,
+        "current": null,
+        "non_conflicting": null,
+        "unambiguous": null,
+        "sufficient": null
+      },
+      "supporting_record_ids": [],
+      "verification_status": "verified",
+      "reason_codes": [
+        "semantic_evaluation_unavailable",
+        "semantic_answer_unavailable"
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "index": 11,
       "clause_id": "S-003",
       "status": "unavailable",
       "outcome_kind": "internal_output",
@@ -1350,14 +1534,16 @@
     "status": "partial",
     "internal_output": {
       "status": "verified",
-      "declared_count": 10,
+      "declared_count": 12,
       "answer_resolved_count": 0,
-      "answer_unresolved_count": 10,
+      "answer_unresolved_count": 12,
       "invalid_count": 0,
       "verification_status": "verified",
       "clause_ids": [
         "INV-001",
         "INV-002",
+        "INV-008",
+        "INV-009",
         "S-001",
         "INV-003",
         "INV-004",
@@ -1478,10 +1664,10 @@
         },
         {
           "index": 2,
-          "clause_id": "S-001",
+          "clause_id": "INV-008",
           "status": "unavailable",
           "outcome_kind": "internal_output",
-          "case_kind": "negative",
+          "case_kind": "positive",
           "answer_status": "unavailable",
           "answer_resolution": "unresolved",
           "evaluation_declared": false,
@@ -1505,7 +1691,7 @@
         },
         {
           "index": 3,
-          "clause_id": "INV-003",
+          "clause_id": "INV-009",
           "status": "unavailable",
           "outcome_kind": "internal_output",
           "case_kind": "positive",
@@ -1532,10 +1718,10 @@
         },
         {
           "index": 4,
-          "clause_id": "INV-004",
+          "clause_id": "S-001",
           "status": "unavailable",
           "outcome_kind": "internal_output",
-          "case_kind": "positive",
+          "case_kind": "negative",
           "answer_status": "unavailable",
           "answer_resolution": "unresolved",
           "evaluation_declared": false,
@@ -1559,7 +1745,7 @@
         },
         {
           "index": 5,
-          "clause_id": "INV-005",
+          "clause_id": "INV-003",
           "status": "unavailable",
           "outcome_kind": "internal_output",
           "case_kind": "positive",
@@ -1586,7 +1772,7 @@
         },
         {
           "index": 6,
-          "clause_id": "INV-006",
+          "clause_id": "INV-004",
           "status": "unavailable",
           "outcome_kind": "internal_output",
           "case_kind": "positive",
@@ -1613,7 +1799,7 @@
         },
         {
           "index": 7,
-          "clause_id": "INV-007",
+          "clause_id": "INV-005",
           "status": "unavailable",
           "outcome_kind": "internal_output",
           "case_kind": "positive",
@@ -1640,7 +1826,7 @@
         },
         {
           "index": 8,
-          "clause_id": "S-002",
+          "clause_id": "INV-006",
           "status": "unavailable",
           "outcome_kind": "internal_output",
           "case_kind": "positive",
@@ -1667,6 +1853,60 @@
         },
         {
           "index": 9,
+          "clause_id": "INV-007",
+          "status": "unavailable",
+          "outcome_kind": "internal_output",
+          "case_kind": "positive",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "verified",
+          "reason_codes": [
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 10,
+          "clause_id": "S-002",
+          "status": "unavailable",
+          "outcome_kind": "internal_output",
+          "case_kind": "positive",
+          "answer_status": "unavailable",
+          "answer_resolution": "unresolved",
+          "evaluation_declared": false,
+          "checks": {
+            "relevant": null,
+            "directly_answers": null,
+            "applicable": null,
+            "current": null,
+            "non_conflicting": null,
+            "unambiguous": null,
+            "sufficient": null
+          },
+          "supporting_record_ids": [],
+          "verification_status": "verified",
+          "reason_codes": [
+            "semantic_evaluation_unavailable",
+            "semantic_answer_unavailable"
+          ],
+          "errors": [],
+          "warnings": []
+        },
+        {
+          "index": 11,
           "clause_id": "S-003",
           "status": "unavailable",
           "outcome_kind": "internal_output",
@@ -1697,14 +1937,16 @@
         "status": "partial",
         "internal_output": {
           "status": "verified",
-          "declared_count": 10,
+          "declared_count": 12,
           "answer_resolved_count": 0,
-          "answer_unresolved_count": 10,
+          "answer_unresolved_count": 12,
           "invalid_count": 0,
           "verification_status": "verified",
           "clause_ids": [
             "INV-001",
             "INV-002",
+            "INV-008",
+            "INV-009",
             "S-001",
             "INV-003",
             "INV-004",
@@ -1813,10 +2055,10 @@
       },
       {
         "index": 2,
-        "clause_id": "S-001",
+        "clause_id": "INV-008",
         "status": "unavailable",
         "outcome_kind": "internal_output",
-        "case_kind": "negative",
+        "case_kind": "positive",
         "answer_status": "unavailable",
         "answer_resolution": "unresolved",
         "evaluation_declared": false,
@@ -1840,7 +2082,7 @@
       },
       {
         "index": 3,
-        "clause_id": "INV-003",
+        "clause_id": "INV-009",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -1867,10 +2109,10 @@
       },
       {
         "index": 4,
-        "clause_id": "INV-004",
+        "clause_id": "S-001",
         "status": "unavailable",
         "outcome_kind": "internal_output",
-        "case_kind": "positive",
+        "case_kind": "negative",
         "answer_status": "unavailable",
         "answer_resolution": "unresolved",
         "evaluation_declared": false,
@@ -1894,7 +2136,7 @@
       },
       {
         "index": 5,
-        "clause_id": "INV-005",
+        "clause_id": "INV-003",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -1921,7 +2163,7 @@
       },
       {
         "index": 6,
-        "clause_id": "INV-006",
+        "clause_id": "INV-004",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -1948,7 +2190,7 @@
       },
       {
         "index": 7,
-        "clause_id": "INV-007",
+        "clause_id": "INV-005",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -1975,7 +2217,7 @@
       },
       {
         "index": 8,
-        "clause_id": "S-002",
+        "clause_id": "INV-006",
         "status": "unavailable",
         "outcome_kind": "internal_output",
         "case_kind": "positive",
@@ -2002,6 +2244,60 @@
       },
       {
         "index": 9,
+        "clause_id": "INV-007",
+        "status": "unavailable",
+        "outcome_kind": "internal_output",
+        "case_kind": "positive",
+        "answer_status": "unavailable",
+        "answer_resolution": "unresolved",
+        "evaluation_declared": false,
+        "checks": {
+          "relevant": null,
+          "directly_answers": null,
+          "applicable": null,
+          "current": null,
+          "non_conflicting": null,
+          "unambiguous": null,
+          "sufficient": null
+        },
+        "supporting_record_ids": [],
+        "verification_status": "verified",
+        "reason_codes": [
+          "semantic_evaluation_unavailable",
+          "semantic_answer_unavailable"
+        ],
+        "errors": [],
+        "warnings": []
+      },
+      {
+        "index": 10,
+        "clause_id": "S-002",
+        "status": "unavailable",
+        "outcome_kind": "internal_output",
+        "case_kind": "positive",
+        "answer_status": "unavailable",
+        "answer_resolution": "unresolved",
+        "evaluation_declared": false,
+        "checks": {
+          "relevant": null,
+          "directly_answers": null,
+          "applicable": null,
+          "current": null,
+          "non_conflicting": null,
+          "unambiguous": null,
+          "sufficient": null
+        },
+        "supporting_record_ids": [],
+        "verification_status": "verified",
+        "reason_codes": [
+          "semantic_evaluation_unavailable",
+          "semantic_answer_unavailable"
+        ],
+        "errors": [],
+        "warnings": []
+      },
+      {
+        "index": 11,
         "clause_id": "S-003",
         "status": "unavailable",
         "outcome_kind": "internal_output",
@@ -2032,14 +2328,16 @@
       "status": "partial",
       "internal_output": {
         "status": "verified",
-        "declared_count": 10,
+        "declared_count": 12,
         "answer_resolved_count": 0,
-        "answer_unresolved_count": 10,
+        "answer_unresolved_count": 12,
         "invalid_count": 0,
         "verification_status": "verified",
         "clause_ids": [
           "INV-001",
           "INV-002",
+          "INV-008",
+          "INV-009",
           "S-001",
           "INV-003",
           "INV-004",
@@ -2082,5 +2380,5 @@
     "examples": []
   },
   "created_at": "2026-10-18T00:45:02.155Z",
-  "updated_at": "2026-10-18T00:45:59.591Z"
+  "updated_at": "2026-10-18T01:22:11.263Z"
 }

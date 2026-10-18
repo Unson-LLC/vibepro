@@ -2,378 +2,393 @@ TAP version 13
 # Subtest: RELFAST-AC-001/002/003 selects fast only for bound tree and exact-SHA trusted checks
 ok 1 - RELFAST-AC-001/002/003 selects fast only for bound tree and exact-SHA trusted checks
   ---
-  duration_ms: 2.889641
+  duration_ms: 2.448269
   ...
 # Subtest: RELFAST-AC-004 falls back for missing, failed, or pending exact-SHA checks
     # Subtest: missing
     ok 1 - missing
       ---
-      duration_ms: 0.362739
+      duration_ms: 0.326936
       ...
     # Subtest: failed
     ok 2 - failed
       ---
-      duration_ms: 0.16625
+      duration_ms: 0.1727
       ...
     # Subtest: pending
     ok 3 - pending
       ---
-      duration_ms: 0.239755
+      duration_ms: 0.222944
       ...
     1..3
 ok 2 - RELFAST-AC-004 falls back for missing, failed, or pending exact-SHA checks
   ---
-  duration_ms: 1.388524
+  duration_ms: 1.281597
   ...
 # Subtest: RELFAST-AC-004 rejects stale evidence and exact-SHA mismatch
     # Subtest: stale
     ok 1 - stale
       ---
-      duration_ms: 0.258075
+      duration_ms: 0.239646
       ...
     # Subtest: SHA mismatch
     ok 2 - SHA mismatch
       ---
-      duration_ms: 0.248602
+      duration_ms: 0.279183
       ...
     1..2
 ok 3 - RELFAST-AC-004 rejects stale evidence and exact-SHA mismatch
   ---
-  duration_ms: 0.864145
+  duration_ms: 0.865817
   ...
 # Subtest: RELFAST-AC-004 falls back when check provenance or the Checks API is untrusted
     # Subtest: foreign check app
     ok 1 - foreign check app
       ---
-      duration_ms: 0.450423
+      duration_ms: 0.413055
       ...
     # Subtest: Checks API error
     ok 2 - Checks API error
       ---
-      duration_ms: 0.476114
+      duration_ms: 0.476504
       ...
     # Subtest: mismatched current base SHA
     ok 3 - mismatched current base SHA
       ---
-      duration_ms: 0.462091
+      duration_ms: 0.409298
       ...
     # Subtest: mismatched workflow path
     ok 4 - mismatched workflow path
       ---
-      duration_ms: 0.244875
+      duration_ms: 0.191979
       ...
     # Subtest: mismatched workflow event
     ok 5 - mismatched workflow event
       ---
-      duration_ms: 0.300301
+      duration_ms: 0.223632
       ...
     # Subtest: newer rerun is pending
     ok 6 - newer rerun is pending
       ---
-      duration_ms: 0.302591
+      duration_ms: 0.297475
       ...
     1..6
 ok 4 - RELFAST-AC-004 falls back when check provenance or the Checks API is untrusted
   ---
-  duration_ms: 3.054889
+  duration_ms: 2.701369
   ...
 # Subtest: RELFAST-AC-002/004 loads every Checks page and binds each check to its workflow run
 ok 5 - RELFAST-AC-002/004 loads every Checks page and binds each check to its workflow run
   ---
-  duration_ms: 0.741847
+  duration_ms: 0.757424
   ...
 # Subtest: RELFAST-AC-001/004 falls back when merge parents or reconstructed tree do not bind
     # Subtest: parent mismatch
     ok 1 - parent mismatch
       ---
-      duration_ms: 0.335024
+      duration_ms: 0.261795
       ...
     # Subtest: tree mismatch
     ok 2 - tree mismatch
       ---
-      duration_ms: 0.270345
+      duration_ms: 0.233383
       ...
     # Subtest: required CI workflow changed by the pull request
     ok 3 - required CI workflow changed by the pull request
       ---
-      duration_ms: 0.211346
+      duration_ms: 0.200158
       ...
     1..3
 ok 6 - RELFAST-AC-001/004 falls back when merge parents or reconstructed tree do not bind
   ---
-  duration_ms: 1.361917
+  duration_ms: 1.248315
   ...
 # Subtest: RELFAST-AC-007/008 separates release stages and evaluates the 120 second target
 ok 7 - RELFAST-AC-007/008 separates release stages and evaluates the 120 second target
   ---
-  duration_ms: 0.754745
+  duration_ms: 0.61291
   ...
 # Subtest: RELFAST-AC-007/008 timing CLI writes the decision surface to the workflow summary
 ok 8 - RELFAST-AC-007/008 timing CLI writes the decision surface to the workflow summary
   ---
-  duration_ms: 119.029492
+  duration_ms: 149.01592
   ...
 # Subtest: RNLN-SEC-001 escapes backslashes before serializing a bare Markdown destination
 ok 9 - RNLN-SEC-001 escapes backslashes before serializing a bare Markdown destination
   ---
-  duration_ms: 0.324951
+  duration_ms: 0.373828
   ...
 # Subtest: LRCL-001/002 locks the Linux Rollup binary as a root optional dependency
 ok 10 - LRCL-001/002 locks the Linux Rollup binary as a root optional dependency
   ---
-  duration_ms: 3.34494
+  duration_ms: 3.643259
   ...
 # Subtest: RNLN-001/002/003 normalizes only repo-root docs markdown destinations
 ok 11 - RNLN-001/002/003 normalizes only repo-root docs markdown destinations
   ---
-  duration_ms: 31.61292
+  duration_ms: 31.645897
   ...
 # Subtest: RNLN-007 initializes the Markdown renderer only for projection commands
 ok 12 - RNLN-007 initializes the Markdown renderer only for projection commands
   ---
-  duration_ms: 914.627009
+  duration_ms: 857.792966
   ...
 # Subtest: RNLN-008 reprojects a trusted live PR payload through the real docs-only subprocess
 ok 13 - RNLN-008 reprojects a trusted live PR payload through the real docs-only subprocess
   ---
-  duration_ms: 905.142671
+  duration_ms: 843.976595
   ...
 # Subtest: RNLN-007 projects and renders a release body through their real CLI subprocesses
 ok 14 - RNLN-007 projects and renders a release body through their real CLI subprocesses
   ---
-  duration_ms: 951.9789
+  duration_ms: 890.838429
   ...
 # Subtest: RNLN-008 rejects untrusted reproject payloads before release docs mutation
 ok 15 - RNLN-008 rejects untrusted reproject payloads before release docs mutation
   ---
-  duration_ms: 2236.881014
+  duration_ms: 2449.031735
   ...
 # Subtest: RNLN-001 preserves VitePress destination semantics across escape and entity normalization
 ok 16 - RNLN-001 preserves VitePress destination semantics across escape and entity normalization
   ---
-  duration_ms: 1.50522
+  duration_ms: 1.687698
   ...
 # Subtest: PCR-CON-001 extracts stable release sections and normalizes blanks
 ok 17 - PCR-CON-001 extracts stable release sections and normalizes blanks
   ---
-  duration_ms: 2.745594
+  duration_ms: 3.558075
   ...
 # Subtest: RNLN-004/005 preserves protected code contexts through production extraction
 ok 18 - RNLN-004/005 preserves protected code contexts through production extraction
   ---
-  duration_ms: 1.524519
+  duration_ms: 1.799338
   ...
 # Subtest: RNLN-004 derives release section boundaries from rendered Markdown blocks
 ok 19 - RNLN-004 derives release section boundaries from rendered Markdown blocks
   ---
-  duration_ms: 1.26591
+  duration_ms: 1.5949
   ...
 # Subtest: RNLN-006 ignores container headings when extracting top-level release sections
 ok 20 - RNLN-006 ignores container headings when extracting top-level release sections
   ---
-  duration_ms: 2.572097
+  duration_ms: 2.525232
   ...
 # Subtest: PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose
 ok 21 - PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose
   ---
-  duration_ms: 0.220317
+  duration_ms: 0.170399
   ...
 # Subtest: PCR-CON-002/003 projects a PR \#350-shaped entry idempotently into docs and changelog
 ok 22 - PCR-CON-002/003 projects a PR \#350-shaped entry idempotently into docs and changelog
   ---
-  duration_ms: 31.742593
+  duration_ms: 27.249686
   ...
 # Subtest: PCR-CON-004 only releases an increasing semantic version
 ok 23 - PCR-CON-004 only releases an increasing semantic version
   ---
-  duration_ms: 0.635463
+  duration_ms: 0.574488
   ...
 # Subtest: PCR-CON-005 maps prerelease channels to explicit dist tags
 ok 24 - PCR-CON-005 maps prerelease channels to explicit dist tags
   ---
-  duration_ms: 0.241113
+  duration_ms: 0.244732
   ...
 # Subtest: PCR-CON-005 converges channels to the highest visible eligible SemVer
 ok 25 - PCR-CON-005 converges channels to the highest visible eligible SemVer
   ---
-  duration_ms: 0.605574
+  duration_ms: 0.356613
   ...
 # Subtest: PCR-CON-005 treats current dist-tags as a monotonic floor when versions is stale
 ok 26 - PCR-CON-005 treats current dist-tags as a monotonic floor when versions is stale
   ---
-  duration_ms: 1.205576
+  duration_ms: 0.900757
   ...
 # Subtest: PCR-CON-005 serializes an interleaved older release with an atomic lease
 ok 27 - PCR-CON-005 serializes an interleaved older release with an atomic lease
   ---
-  duration_ms: 0.941307
+  duration_ms: 0.725158
   ...
 # Subtest: PCR-CON-009 manual npm publish installs from the lockfile and proves a clean checkout before pack
 ok 28 - PCR-CON-009 manual npm publish installs from the lockfile and proves a clean checkout before pack
   ---
-  duration_ms: 2.539324
+  duration_ms: 2.51537
   ...
 # Subtest: PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing
 ok 29 - PCR-CON-014 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing
   ---
-  duration_ms: 1.060743
+  duration_ms: 0.849125
   ...
 # Subtest: PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target
 ok 30 - PCR-CON-001B post-merge release starts on push to main and workflow_dispatch instead of pull_request_target
   ---
-  duration_ms: 0.981252
+  duration_ms: 0.759271
   ...
 # Subtest: PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit
 ok 31 - PCR-CON-001B post-merge release resolves the merged pull request from the pushed commit
   ---
-  duration_ms: 2.100176
+  duration_ms: 0.933571
   ...
 # Subtest: post-merge release publishes only after validation and release-candidate succeed
 ok 32 - post-merge release publishes only after validation and release-candidate succeed
   ---
-  duration_ms: 1.098005
+  duration_ms: 0.859006
   ...
 # Subtest: post-merge release dispatch binds RELEASE_SHA to the current main tip
 ok 33 - post-merge release dispatch binds RELEASE_SHA to the current main tip
   ---
-  duration_ms: 1.017998
+  duration_ms: 0.772062
   ...
 # Subtest: post-merge release dispatch resolves notes from the latest merged PR but releases the main tip
 ok 34 - post-merge release dispatch resolves notes from the latest merged PR but releases the main tip
   ---
-  duration_ms: 20.405903
+  duration_ms: 31.904251
+  ...
+# Subtest: post-merge release push path takes release_required only from the plan --event output
+ok 35 - post-merge release push path takes release_required only from the plan --event output
+  ---
+  duration_ms: 1.194464
+  ...
+# Subtest: post-merge release candidate runs only after validation planned a release
+ok 36 - post-merge release candidate runs only after validation planned a release
+  ---
+  duration_ms: 0.865491
+  ...
+# Subtest: post-merge release push retries the merged PR lookup and warns when none is found
+ok 37 - post-merge release push retries the merged PR lookup and warns when none is found
+  ---
+  duration_ms: 28.287869
   ...
 # Subtest: post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test
-ok 35 - post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test
+ok 38 - post-merge release tests do not reuse PCR-CON-013 for the Trusted Publishing workflow test
   ---
-  duration_ms: 1.339865
+  duration_ms: 1.278414
   ...
 # Subtest: PCR-CON-011 no workflow installs dependencies with npm install
-ok 36 - PCR-CON-011 no workflow installs dependencies with npm install
+ok 39 - PCR-CON-011 no workflow installs dependencies with npm install
   ---
-  duration_ms: 2.14264
+  duration_ms: 1.967864
   ...
 # Subtest: PCR-CON-010 npm ci leaves the committed lockfile unchanged so the runtime-manifest dirty guard passes
-ok 37 - PCR-CON-010 npm ci leaves the committed lockfile unchanged so the runtime-manifest dirty guard passes
+ok 40 - PCR-CON-010 npm ci leaves the committed lockfile unchanged so the runtime-manifest dirty guard passes
   ---
-  duration_ms: 2.423064
+  duration_ms: 2.534889
   ...
 # Subtest: PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release
-ok 38 - PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release
+ok 41 - PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release
   ---
-  duration_ms: 9.602999
+  duration_ms: 1.410743
   ...
 # Subtest: PCR-CON-006 reconciles an existing immutable version and converges all tags
-ok 39 - PCR-CON-006 reconciles an existing immutable version and converges all tags
+ok 42 - PCR-CON-006 reconciles an existing immutable version and converges all tags
   ---
-  duration_ms: 0.512763
+  duration_ms: 0.556577
   ...
 # Subtest: PCR-CON-006 rejects an existing version with another gitHead
-ok 40 - PCR-CON-006 rejects an existing version with another gitHead
+ok 43 - PCR-CON-006 rejects an existing version with another gitHead
   ---
-  duration_ms: 0.660911
+  duration_ms: 0.500461
   ...
 # Subtest: PCR-CON-006 an older completing run cannot regress tags after a newer version is visible
-ok 41 - PCR-CON-006 an older completing run cannot regress tags after a newer version is visible
+ok 44 - PCR-CON-006 an older completing run cannot regress tags after a newer version is visible
   ---
-  duration_ms: 0.540086
+  duration_ms: 0.41321
   ...
 # Subtest: PCR-CON-007 publishes once and bounds registry convergence retries
-ok 42 - PCR-CON-007 publishes once and bounds registry convergence retries
+ok 45 - PCR-CON-007 publishes once and bounds registry convergence retries
   ---
-  duration_ms: 0.397431
+  duration_ms: 0.29519
   ...
 # Subtest: PCR-CON-007 retries metadata read failures without publishing
-ok 43 - PCR-CON-007 retries metadata read failures without publishing
+ok 46 - PCR-CON-007 retries metadata read failures without publishing
   ---
-  duration_ms: 0.314004
+  duration_ms: 0.210759
   ...
 # Subtest: PCR-CON-007 retries post-publish metadata exceptions with bounded backoff
-ok 44 - PCR-CON-007 retries post-publish metadata exceptions with bounded backoff
+ok 47 - PCR-CON-007 retries post-publish metadata exceptions with bounded backoff
   ---
-  duration_ms: 0.371861
+  duration_ms: 0.354184
   ...
 # Subtest: PCR-CON-007 retries dist-tag verification exceptions
-ok 45 - PCR-CON-007 retries dist-tag verification exceptions
+ok 48 - PCR-CON-007 retries dist-tag verification exceptions
   ---
-  duration_ms: 0.437006
+  duration_ms: 0.432665
   ...
 # Subtest: PCR-CON-004 appends published-version history across sequential idempotent projections
-ok 46 - PCR-CON-004 appends published-version history across sequential idempotent projections
+ok 49 - PCR-CON-004 appends published-version history across sequential idempotent projections
   ---
-  duration_ms: 15.242846
+  duration_ms: 23.267538
   ...
 # Subtest: PCR-CON-013 advances a stale documented channel without reading npm dist-tags
-ok 47 - PCR-CON-013 advances a stale documented channel without reading npm dist-tags
+ok 50 - PCR-CON-013 advances a stale documented channel without reading npm dist-tags
   ---
-  duration_ms: 5.671716
+  duration_ms: 5.56477
   ...
 # Subtest: PCR-CON-013 does not treat a prerelease prefix as the documented channel version
-ok 48 - PCR-CON-013 does not treat a prerelease prefix as the documented channel version
+ok 51 - PCR-CON-013 does not treat a prerelease prefix as the documented channel version
   ---
-  duration_ms: 2.446485
+  duration_ms: 2.357292
   ...
 # Subtest: post-merge docs release is not gated by an approval environment
-ok 49 - post-merge docs release is not gated by an approval environment
+ok 52 - post-merge docs release is not gated by an approval environment
   ---
-  duration_ms: 0.628652
+  duration_ms: 0.699751
   ...
 # Subtest: post-merge release installs dependencies before unconditional docs projection
-ok 50 - post-merge release installs dependencies before unconditional docs projection
+ok 53 - post-merge release installs dependencies before unconditional docs projection
   ---
-  duration_ms: 0.66009
+  duration_ms: 0.641651
   ...
 # Subtest: post-merge release uses immutable pre-merge base code for fork validation
-ok 51 - post-merge release uses immutable pre-merge base code for fork validation
+ok 54 - post-merge release uses immutable pre-merge base code for fork validation
   ---
-  duration_ms: 0.786362
+  duration_ms: 0.709782
   ...
 # Subtest: post-merge first deployment executes the missing-selector fallback as full validation
-ok 52 - post-merge first deployment executes the missing-selector fallback as full validation
+ok 55 - post-merge first deployment executes the missing-selector fallback as full validation
   ---
-  duration_ms: 6.197659
+  duration_ms: 6.856653
   ...
 # Subtest: PCR-CON-012 npm view readback revalidates with --prefer-online and no cache by default
-ok 53 - PCR-CON-012 npm view readback revalidates with --prefer-online and no cache by default
+ok 56 - PCR-CON-012 npm view readback revalidates with --prefer-online and no cache by default
   ---
-  duration_ms: 0.828361
+  duration_ms: 0.695944
   ...
 # Subtest: PCR-CON-012 bypassCache uses a throwaway --cache dir and removes it
-ok 54 - PCR-CON-012 bypassCache uses a throwaway --cache dir and removes it
+ok 57 - PCR-CON-012 bypassCache uses a throwaway --cache dir and removes it
   ---
-  duration_ms: 1.672525
+  duration_ms: 1.580486
   ...
 # Subtest: PCR-CON-012 convergence window is 15 attempts / 301 s, longer than packument max-age 300 s
-ok 55 - PCR-CON-012 convergence window is 15 attempts / 301 s, longer than packument max-age 300 s
+ok 58 - PCR-CON-012 convergence window is 15 attempts / 301 s, longer than packument max-age 300 s
   ---
-  duration_ms: 0.356444
+  duration_ms: 0.2811
   ...
 # Subtest: PCR-CON-012 default readback waits the full window and bypasses the cache after the first attempt
-ok 56 - PCR-CON-012 default readback waits the full window and bypasses the cache after the first attempt
+ok 59 - PCR-CON-012 default readback waits the full window and bypasses the cache after the first attempt
   ---
-  duration_ms: 0.685617
+  duration_ms: 0.748719
   ...
 # Subtest: PCR-CON-012 converges past a cached pre-publish 404 and reads dist-tags with --prefer-online
-ok 57 - PCR-CON-012 converges past a cached pre-publish 404 and reads dist-tags with --prefer-online
+ok 60 - PCR-CON-012 converges past a cached pre-publish 404 and reads dist-tags with --prefer-online
   ---
-  duration_ms: 0.496189
+  duration_ms: 0.391658
   ...
 # Subtest: story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test
-ok 58 - story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test
+ok 61 - story-vibepro-release-oidc-push-trigger spec maps every clause to an acceptance criterion and a concrete test
   ---
-  duration_ms: 8.413556
+  duration_ms: 10.340805
   ...
 # Subtest: npm Trusted Publisher registration values are pinned by the publishing workflows
-ok 59 - npm Trusted Publisher registration values are pinned by the publishing workflows
+ok 62 - npm Trusted Publisher registration values are pinned by the publishing workflows
   ---
-  duration_ms: 3.626081
+  duration_ms: 2.486145
   ...
-1..59
-# tests 73
+1..62
+# tests 76
 # suites 0
-# pass 73
+# pass 76
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 5960.552339
+# duration_ms 5847.175376
