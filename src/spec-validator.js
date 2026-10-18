@@ -1,6 +1,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
+import { recordMultiTenantApplicabilityDeclarationAudit } from './multi-tenant-applicability-audit.js';
 import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
 import { assessSemanticContract } from './semantic-contract.js';
 
@@ -122,13 +123,58 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     }
   }
 
+  const applicabilityStoryText = options.storyContext ?? spec.story_context ?? '';
+  const storySourcePresent = options.storyContext !== undefined
+    ? options.storyContext.trim() !== ''
+    : false;
   const multiTenantArchitecture = assessMultiTenantArchitecture({
-    storyText: options.storyContext ?? spec.story_context ?? '',
+    storyText: applicabilityStoryText,
+    spec,
+    storySourcePresent,
     contract: spec.multi_tenancy ?? null,
     applicabilityEvidence: options.multiTenantApplicabilityEvidence,
     expectedHeadCommit: options.expectedHeadCommit,
     mode: options.mode ?? 'final'
   });
+  const declaredNonApplicability = spec.multi_tenancy?.applicability === false
+    || spec.multi_tenancy?.applicability === 'not_applicable';
+  const reasoned = multiTenantArchitecture.reasoned_non_applicability;
+  if (reasoned?.attempted) {
+    await recordMultiTenantApplicabilityDeclarationAudit(root, {
+      story_id: spec.story_id,
+      declared_applicability: spec.multi_tenancy?.applicability,
+      reason: reasoned.reason ?? null,
+      evidence_ref: reasoned.evidence_ref ?? null,
+      accepted: reasoned.accepted === true,
+      refusal_reason: reasoned.accepted ? null : reasoned.refusal_reason,
+      strong_signals: reasoned.strong_signals ?? [],
+      head_commit: options.expectedHeadCommit ?? options.headCommit ?? null,
+      reasoned_attempted: true
+    }, { mode: options.mode ?? 'final' });
+  }
+  if (reasoned?.attempted && !reasoned.accepted) {
+    const refusalMessages = {
+      reason_required: 'multi_tenancy.reason must be a non-empty string for a reasoned not_applicable declaration',
+      evidence_ref_required: 'multi_tenancy.evidence_ref must be a non-empty string for a reasoned not_applicable declaration',
+      evidence_ref_invalid: 'multi_tenancy.evidence_ref must be a plausible path, URL, or identifier reference',
+      story_missing: 'reasoned not_applicable requires a Story document; empty story context is rejected fail-safe',
+      strong_signal_present: `strong multi-tenant signals override not_applicable: ${reasoned.strong_signals.join(', ')}`
+    };
+    const refusalCodes = {
+      reason_required: 'multi_tenant_applicability_reason_required',
+      evidence_ref_required: 'multi_tenant_applicability_evidence_ref_required',
+      evidence_ref_invalid: 'multi_tenant_applicability_evidence_ref_invalid',
+      story_missing: 'multi_tenant_applicability_story_missing',
+      strong_signal_present: 'multi_tenant_applicability_strong_signal_conflict'
+    };
+    const issue = {
+      code: refusalCodes[reasoned.refusal_reason] ?? 'multi_tenant_applicability_declaration_refused',
+      message: refusalMessages[reasoned.refusal_reason] ?? `reasoned non-applicability refused: ${reasoned.refusal_reason}`,
+      path: 'multi_tenancy.applicability'
+    };
+    if (options.mode === 'draft') warnings.push(issue);
+    else errors.push(issue);
+  }
   if (multiTenantArchitecture.applicable) {
     for (const finding of multiTenantArchitecture.findings) {
       const issue = {
@@ -140,8 +186,9 @@ export async function validateSpec(repoRoot, spec, options = {}) {
       else warnings.push(issue);
     }
   }
-  if ((spec.multi_tenancy?.applicability === false || spec.multi_tenancy?.applicability === 'not_applicable')
-      && multiTenantArchitecture.implementation_readiness?.status !== 'ready') {
+  if (declaredNonApplicability
+      && multiTenantArchitecture.implementation_readiness?.status !== 'ready'
+      && !(reasoned?.attempted && !reasoned.accepted)) {
     const issue = {
       code: 'multi_tenant_applicability_evidence_inconclusive',
       message: `implementation readiness: ${multiTenantArchitecture.implementation_readiness?.reasons?.join(', ') ?? 'unknown'}`,

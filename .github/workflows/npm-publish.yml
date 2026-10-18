@@ -16,20 +16,53 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  verify:
     runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
     timeout-minutes: 90
-    environment: npm
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run pack:dry-run
+
+  publish:
+    needs: verify
+    # npm Trusted Publishing accepts OIDC only from GitHub-hosted runners.
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: npm
+    permissions:
+      contents: write
+      # npm Trusted Publishing exchanges the GitHub Actions OIDC token for a
+      # short-lived publish token; npm also signs provenance with it.
+      id-token: write
+    steps:
+      # Full history: the prepack runtime-manifest guard needs origin/main to
+      # prove the release commit is the same as or ahead of it.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      # Without a registry URL, setup-node writes no token-reading .npmrc, so a
+      # failed OIDC exchange fails as ENEEDAUTH instead of falling back to a
+      # stale token that fails as E404 on PUT.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # Trusted Publishing needs npm >= 11.5.1; dist-tag add through OIDC
+      # needs npm >= 11.21.0.
+      - name: Install trusted-publishing npm CLI
+        run: npm install --global npm@11.21.1
+      - run: npm ci
       - name: Assert clean checkout before publish
         run: |
           DIRTY=$(git status --porcelain)
@@ -39,9 +72,9 @@ jobs:
             git diff --stat
             exit 1
           fi
+      # Authenticates only through npm Trusted Publishing (GitHub Actions OIDC);
+      # no long-lived npm token is available to this job.
       - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             npm publish --access public --dry-run

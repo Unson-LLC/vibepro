@@ -1528,6 +1528,42 @@
         "started_at": "2026-10-15",
         "due_at": null,
         "contract_type": "feature"
+      },
+      {
+        "story_id": "story-vibepro-task-plan-overlap-refs",
+        "title": "task-plan 0.2.0 に overlap_refs を追加する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-task-plan-decomposer",
+        "title": "Storyからtask-planを作る",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-ac-heading-paren-suffix",
+        "title": "受入条件見出しの括弧サフィックスを認識する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
       }
     ],
     "current_story_id": "story-vibepro-disposition-reviewed-by"
