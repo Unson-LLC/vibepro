@@ -1013,7 +1013,7 @@ test('PCR-CON-009 manual npm publish installs from the lockfile and proves a cle
   assert.match(manualWorkflow.slice(cleanIndex), /git status --porcelain[\s\S]*exit 1/u);
 });
 
-test('PCR-CON-013 post-merge release validates on the self-hosted runner and publishes through npm Trusted Publishing', async () => {
+test('PCR-CON-013 post-merge release validates on the self-hosted runner and publishes by dispatching the npm Trusted Publisher workflow', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const candidate = workflowJob(workflow, 'release-candidate');
   const release = workflowJob(workflow, 'release');
@@ -1022,8 +1022,14 @@ test('PCR-CON-013 post-merge release validates on the self-hosted runner and pub
   assert.match(candidate, /Validate release candidate[\s\S]*Run full validation fallback/u);
   assert.doesNotMatch(candidate, /id-token|publish-npm/u);
   assert.match(release, /needs: \[validation, release-candidate\]/u);
-  assertTrustedPublishingJob(release);
-  assert.match(release, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"[\s\S]*publish-npm/u);
+  // npm refuses the OIDC token of a pull_request_target run, so the release job
+  // never publishes itself: it dispatches npm-publish.yml and waits for it.
+  assert.match(release, SELF_HOSTED_RUNNER);
+  assert.match(release, /permissions:[\s\S]*?actions: write/u);
+  assert.doesNotMatch(release, /id-token|publish-npm|npm publish/u);
+  assert.match(release, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"[\s\S]*gh workflow run npm-publish\.yml --repo "\$GITHUB_REPOSITORY" --ref main -f dry_run=false/u);
+  assert.match(release, /"\$RUN_SHA" != "\$RELEASE_SHA"[\s\S]*exit 1[\s\S]*gh run watch "\$RUN_ID"[^\n]*--exit-status/u);
+  assert.ok(release.indexOf('gh run watch') < release.indexOf('reconcile-github-release'));
   assert.match(release, /npm_published_at: \$\{\{ steps\.publish\.outputs\.npm_published_at \}\}/u);
   assert.match(docs, SELF_HOSTED_RUNNER);
   assert.match(docs, /needs\.validation\.outputs\.release_required != 'true' \|\| needs\.release\.result == 'success'/u);
@@ -1066,17 +1072,16 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /group: post-merge-release-pr-\$\{\{ github\.event\.pull_request\.number \}\}/);
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
-  assert.match(workflow, /post-merge-release\.mjs publish-npm/);
+  assert.match(workflow, /gh workflow run npm-publish\.yml/);
+  assert.doesNotMatch(workflow, /post-merge-release\.mjs publish-npm/);
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
   assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
   assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);
   assert.match(workflow, /post-merge-release\.mjs reconcile-github-release/);
-  assert.match(workflow, /npm-release-lock\.mjs acquire/);
-  assert.match(workflow, /trap release_lock EXIT/);
   assert.match(workflow, /timeout-minutes: 90/);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('reconcile-github-release'));
+  assert.ok(workflow.indexOf('gh workflow run npm-publish.yml') < workflow.indexOf('Project PR body into release history'));
+  assert.ok(workflow.indexOf('gh workflow run npm-publish.yml') < workflow.indexOf('reconcile-github-release'));
   assert.ok(workflow.indexOf('reconcile-github-release') < workflow.indexOf('Project PR body into release history'));
   const deployStep = workflow.match(/- name: Deploy VitePress manual[\s\S]*?(?=\n      - name:|$)/)?.[0] ?? '';
   assert.match(deployStep, /git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
@@ -1087,7 +1092,7 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.match(manualWorkflow, /npm-release-lock\.mjs acquire/);
   assert.match(manualWorkflow, /timeout-minutes: 90/);
-  assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
+  assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 1);
 });
 
 test('PCR-CON-006 reconciles an existing immutable version and converges all tags', async () => {
@@ -1423,7 +1428,7 @@ test('post-merge release uses immutable pre-merge base code for fork validation'
   assert.match(workflow, /release:[\s\S]*ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
   assert.match(workflow, /pull_request\.merged == true/);
   assert.match(workflow, /pull_request\.base\.ref == 'main'/);
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('post-merge-release.mjs project'));
+  assert.ok(workflow.indexOf('gh workflow run npm-publish.yml') < workflow.indexOf('post-merge-release.mjs project'));
   assert.match(workflow, /git add[^\n]*docs\/\.vitepress\/config\.mjs/);
 });
 
