@@ -29,6 +29,22 @@
 
 視覚的不具合では、ユーザーが指摘したviewportを幅・高さまで記録し、同じ条件の修正前後スクリーンショットを確認します。DOM寸法、`overflow: 0`、自動テスト成功だけで表示品質を合格にしません。
 
+### 非決定的画面とピクセル差分（`verify` / UIUX）
+
+Spec の `ui_verification.nondeterministic_surfaces[]` に列挙した画面だけ、
+computed-style パス一致を pass/fail の正とします。列挙前に before-a と
+before-b でピクセル差分が出た場合はその画面を非決定的とみなします。列挙した
+画面では exclude rect 外のピクセル差分は参考情報のみとし、単独では不合格や
+再計測ループの理由にしません。
+
+**列挙していない画面**では、従来どおりピクセル差分も pass/fail 基準です
+（グローバルに「ピクセルは参考のみ」とは扱いません）。
+
+機械的な localized `bug_fix`（`docs/architecture/vibepro-localized-bugfix-ui-evidence.md`）
+では git 必須は `*-summary.json`、計測スクリプト、単体テスト、代表 PNG
+（≤4、viewport×state ≤6）に限定し、フル computed-style ダンプや全幅×状態
+PNG マトリクスは git 必須にしません（digest は summary に記録）。
+
 ## 4. チェックリストテンプレート
 
 ```md

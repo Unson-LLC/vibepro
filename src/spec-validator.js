@@ -2,6 +2,10 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { recordMultiTenantApplicabilityDeclarationAudit } from './multi-tenant-applicability-audit.js';
+import {
+  assessLocalizedBugFixEvidenceWarnings,
+  assessMechanicalLocalizedBugFixProfile
+} from './localized-bugfix-evidence.js';
 import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
 import { assessSemanticContract } from './semantic-contract.js';
 
@@ -207,6 +211,15 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     };
     if (options.mode === 'draft') warnings.push(issue);
     else errors.push(issue);
+  }
+
+  const mechanicalProfile = assessMechanicalLocalizedBugFixProfile(options.changePaths ?? []);
+  for (const issue of assessLocalizedBugFixEvidenceWarnings(spec, {
+    storyContractType: options.storyContractType,
+    mechanicalProfile,
+    changePaths: options.changePaths
+  })) {
+    warnings.push(issue);
   }
 
   return {

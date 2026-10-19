@@ -89,6 +89,26 @@ UI primitive、レイアウト、入力欄など、見た目や操作を変更�
 - CSS調整を2回行っても解消しない場合は追加の微調整を止め、DOM構造または標準部品の選択から再検討する
 - この判断ノードはUI変更時だけの小さな確認であり、旧Gate DAG、強制並列レビュー、証跡収集ループを要求しない
 
+### 4.3 小さな bug_fix の証跡上限（将来の Spec AC）
+
+機械的条件（product source ≤2 ファイル、product LOC ≤80、共有 layout/CSS
+glob 非接触 — 定数は `src/localized-bugfix-evidence.js`）を満たす
+localized `bug_fix` では、Spec の既定証跡 tier は `primary` とする。
+
+| 種別 | git 必須 | ローカル/CI のみ可 |
+|---|---|---|
+| 配置・計測 | `*-summary.json`、計測スクリプト、単体テスト | フル computed-style ダンプ |
+| 画像 | ≤4 枚の代表 before/after（指摘 viewport + 幅≥760 の sanity） | 全画面フルピクセルマトリクス、全幅×状態 PNG グリッド |
+| グリッド | viewport×state ≤6 | それ以上のマトリクス |
+
+`regression_matrix` は multi-route 影響または共有 layout/CSS 変更時のみ。
+
+非決定的画面（例: world キャンバス）は Spec で
+`nondeterministic_surfaces` に明示する。列挙した画面のみ computed-style
+一致が pass/fail。未列挙画面はピクセル差分も pass/fail のまま。
+
+詳細: [Localized UI bug_fix evidence caps](../../../architecture/vibepro-localized-bugfix-ui-evidence.md)
+
 ## 5. 画面ごとの目的
 
 ### [画面名]

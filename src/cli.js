@@ -107,6 +107,7 @@ import {
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { collectGitContext } from './git-fingerprint.js';
+import { collectWorkingTreeChangePaths } from './localized-bugfix-evidence.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
 import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
@@ -1855,11 +1856,17 @@ if (command === 'integration') {
           title: storyId
         }).catch(() => null);
         const gitContext = await collectGitContext(path.resolve(repoRoot)).catch(() => ({ head_sha: null }));
+        const changeObservation = await collectWorkingTreeChangePaths(path.resolve(repoRoot));
+        const storyContractType = storySource?.frontmatter?.contract_type
+          ?? storySource?.frontmatter?.story_type
+          ?? null;
         const validation = await validateSpec(repoRoot, parsed, {
           expectedStoryId: storyId,
           mode: draft ? 'draft' : 'final',
           storyContext: storySource?.content ?? '',
-          headCommit: gitContext.head_sha ?? null
+          headCommit: gitContext.head_sha ?? null,
+          storyContractType,
+          changePaths: changeObservation.paths
         });
         if (!validation.ok) {
           write(stdout, `${JSON.stringify({

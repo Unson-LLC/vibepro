@@ -41,3 +41,10 @@ test('UI判断ノードは旧Gateや証跡収集ループを復活させない',
   assert.match(template, /旧Gate DAG、強制並列レビュー、証跡収集ループを要求しない/);
   assert.doesNotMatch(template, /ready判定.*Gate DAG/);
 });
+
+test('小さな bug_fix テンプレは primary 証跡上限と非決定的画面の列挙を案内する', async () => {
+  const template = await readRepoFile('docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md');
+  assert.match(template, /primary/);
+  assert.match(template, /nondeterministic_surfaces/);
+  assert.match(template, /viewport×state ≤6/);
+});

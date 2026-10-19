@@ -165,6 +165,73 @@ Example diagrams[] entry:
 If no trigger fires, omit `diagrams[]` entirely. Do not add a diagram just because
 it might be nice — only the triggered MUST-HAVE kinds should be present.
 
+## Localized UI `bug_fix` evidence tier (future AC authoring)
+
+This guidance applies to **future** Spec acceptance criteria for small UI bug fixes.
+It does not retroactively change in-flight deliveries.
+
+### Mechanical `localized_bug_fix` profile (git/diff only)
+
+A change meets the mechanical profile when **all** of the following hold on the
+current working tree / PR diff:
+
+| Rule | Threshold |
+|---|---|
+| Product source files changed | ≤ `2` |
+| Product source LOC changed (add+del) | ≤ `80` |
+| Shared layout/CSS touch | **none** of the paths match the fixed glob list in `src/localized-bugfix-evidence.js` (`SHARED_LAYOUT_CSS_PATH_GLOBS`) |
+
+Product source paths are under `src/`, `app/`, `lib/`, or `packages/*/src/`,
+excluding test/spec/e2e paths. When line stats are unavailable, the mechanical
+profile is **not** assumed.
+
+### Default evidence tier: `primary`
+
+When the mechanical profile applies and the Story `contract_type` is
+`bug_fix` / `regression_fix`, default `ui_verification.evidence_tier` to
+`primary` unless the Story or DevDirector explicitly escalates.
+
+`primary` requires in git:
+
+- One `*-summary.json` per measured surface (counts, `outsidePixels`, digests,
+  excluded rects)
+- The measure script + unit tests exercising the fix
+- ≤ `4` representative before/after PNGs (bug viewport + at least one
+  viewport ≥ `760px` wide)
+- Viewport×state cells ≤ `6` (no full width×state PNG grid; no other-screen
+  full-pixel matrix)
+
+Escalate to `regression_matrix` only when the diff hits a shared layout/CSS
+glob or the Story documents multi-route blast radius.
+
+Optional Spec field:
+
+```jsonc
+"ui_verification": {
+  "evidence_tier": "primary",
+  "nondeterministic_surfaces": ["world"]
+}
+```
+
+The validator emits a **non-blocking warning** when AC text or
+`ui_verification` demands exceed the `primary` cap while the mechanical profile
+applies.
+
+### Nondeterministic screens vs pixel diff
+
+- List nondeterministic surfaces explicitly in `nondeterministic_surfaces[]`
+  (e.g. `["world"]` for a canvas).
+- **Only for listed surfaces:** if before-a vs before-b pixel drift &gt; 0,
+  mark the surface nondeterministic; **computed-style path equality** is then
+  the pass/fail criterion. Pixel diff outside the exclude rect is advisory and
+  must not alone fail or force remeasure loops.
+- **For surfaces not listed:** pixel diff remains a pass/fail criterion (not
+  advisory).
+
+Evidence-only maintainer sendback must name the missing slim artifact cell
+(e.g. summary JSON field, unit test, specific PNG), not “re-add the whole
+matrix”.
+
 ## BDD-style scenario guidance
 
 VibePro does not require an external BDD runner. Do not output free-form Gherkin

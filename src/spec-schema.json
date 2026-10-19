@@ -75,6 +75,38 @@
         "$ref": "#/$defs/diagram"
       }
     },
+    "ui_verification": {
+      "type": "object",
+      "description": "Optional UI verification contract for bug_fix-scoped evidence tiers and nondeterministic surfaces. Used for authoring guidance and non-blocking validator warnings only.",
+      "properties": {
+        "evidence_tier": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "regression_matrix"
+          ]
+        },
+        "nondeterministic_surfaces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required_png_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_viewport_state_cells": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statement": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "open_questions": {
       "type": "array",
       "items": {
