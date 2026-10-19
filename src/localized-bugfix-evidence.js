@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
-import { normalizeChangedPath } from './docs-only-change.js';
+import { classifyEvidenceChangeSurface, normalizeChangedPath } from './docs-only-change.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -14,6 +14,13 @@ export const LOCALIZED_BUGFIX_MAX_PRODUCT_SOURCE_LOC = 80;
  * Match is path-glob semantics (see `pathMatchesGlob`).
  */
 export const SHARED_LAYOUT_CSS_PATH_GLOBS = [
+  'tailwind.config.js',
+  'tailwind.config.ts',
+  'tailwind.config.mjs',
+  'tailwind.config.cjs',
+  'globals.css',
+  'global.css',
+  'styles/**',
   '**/globals.css',
   '**/global.css',
   '**/app.css',
@@ -38,8 +45,10 @@ export const PRIMARY_EVIDENCE_MAX_PNG = 4;
 export const PRIMARY_EVIDENCE_MAX_VIEWPORT_STATE_CELLS = 6;
 export const PRIMARY_EVIDENCE_MIN_WIDTH_SANITY_PX = 760;
 
-const PRODUCT_SOURCE_PREFIXES = ['src/', 'app/', 'lib/', 'packages/'];
 const TEST_PATH_PATTERN = /(^|[\\/])(test|tests|__tests__|e2e)([\\/]|$)|\.(test|spec)\.[cm]?[jt]sx?$/i;
+const MEASURE_SCRIPT_PATTERN = /(^|\/)(measure[-_][^/]+|[^/]*-measure)\.[cm]?[jt]sx?$/i;
+const NON_PRODUCT_SURFACES = new Set(['docs', 'evidence_artifacts']);
+const EVIDENCE_FILE_PATTERN = /\.(png|jpe?g|gif|webp|pdf)$/i;
 
 const REGRESSION_MATRIX_DEMAND_PATTERN = new RegExp(
   [
@@ -63,15 +72,26 @@ const PNG_TOKEN_PATTERN = /\.png\b/gi;
 const VIEWPORT_STATE_GRID_PATTERN = /(\d+)\s*(?:viewports?|widths?).{0,40}?(\d+)\s*(?:states?|modes?)/i;
 
 /**
+ * Product source = any changed path except tests, docs, evidence artifacts,
+ * measure-only scripts, and other excluded non-product paths.
+ *
  * @param {string} filePath
  * @returns {boolean}
  */
 export function isProductSourcePath(filePath) {
   const normalized = normalizeChangedPath(filePath);
-  if (!normalized || TEST_PATH_PATTERN.test(normalized)) return false;
-  if (!PRODUCT_SOURCE_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return false;
-  if (normalized.startsWith('packages/') && !/\/src\//.test(normalized)) return false;
-  return true;
+  if (!normalized) return false;
+  if (normalized.startsWith('.vibepro/') || normalized.startsWith('.worktrees/vibepro/')) return false;
+  if (TEST_PATH_PATTERN.test(normalized)) return false;
+  if (MEASURE_SCRIPT_PATTERN.test(normalized)) return false;
+  if (normalized.endsWith('-summary.json')) return false;
+  if (EVIDENCE_FILE_PATTERN.test(normalized)) return false;
+
+  const surface = classifyEvidenceChangeSurface(normalized);
+  if (NON_PRODUCT_SURFACES.has(surface)) return false;
+  if (surface === 'product_code') return true;
+  if (surface === 'unknown') return true;
+  return false;
 }
 
 /**
@@ -81,19 +101,30 @@ export function isProductSourcePath(filePath) {
 export function pathMatchesGlob(filePath, glob) {
   const normalized = normalizeChangedPath(filePath);
   const g = glob.replaceAll('\\', '/');
-  if (g.includes('**')) {
-    const escaped = g
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-      .replace(/\*\*/g, '§§')
-      .replace(/\*/g, '[^/]*')
-      .replace(/§§/g, '.*');
-    return new RegExp(`^${escaped}$`, 'i').test(normalized);
+  const candidates = g.startsWith('**/') ? [g, g.slice(3)] : [g];
+  for (const candidate of candidates) {
+    if (candidate.includes('**')) {
+      const escaped = candidate
+        .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+        .replace(/\*\*/g, '§§')
+        .replace(/\*/g, '[^/]*')
+        .replace(/§§/g, '.*');
+      if (new RegExp(`^${escaped}$`, 'i').test(normalized)) return true;
+      continue;
+    }
+    if (candidate.includes('*')) {
+      const escaped = candidate.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*');
+      if (new RegExp(`^${escaped}$`, 'i').test(normalized)) return true;
+      continue;
+    }
+    if (normalized === candidate) return true;
+    if (candidate.endsWith('/**')) {
+      const prefix = candidate.slice(0, -3);
+      if (normalized === prefix || normalized.startsWith(`${prefix}/`)) return true;
+    }
+    if (normalized.endsWith(`/${candidate}`)) return true;
   }
-  if (g.includes('*')) {
-    const escaped = g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*');
-    return new RegExp(`^${escaped}$`, 'i').test(normalized);
-  }
-  return normalized === g || normalized.endsWith(`/${g}`);
+  return false;
 }
 
 export function touchesSharedLayoutCssPath(filePath) {
@@ -202,11 +233,6 @@ export function assessUiEvidenceDemands(spec) {
 
 /**
  * Non-blocking Spec warnings for localized bug_fix evidence bloat (future AC authoring).
- *
- * @param {object} spec
- * @param {object} options
- * @param {string} [options.storyContractType]
- * @param {ReturnType<typeof assessMechanicalLocalizedBugFixProfile>} [options.mechanicalProfile]
  */
 export function assessLocalizedBugFixEvidenceWarnings(spec, options = {}) {
   const warnings = [];
@@ -266,29 +292,63 @@ export function assessLocalizedBugFixEvidenceWarnings(spec, options = {}) {
   return warnings;
 }
 
-export async function collectWorkingTreeChangePaths(repoRoot) {
+export async function resolveDefaultPrBaseRef(repoRoot) {
   const root = String(repoRoot ?? '').trim();
-  if (!root) return { paths: [], source: 'unavailable' };
-  try {
-    const [unstaged, staged, untracked] = await Promise.all([
-      gitLines(root, ['diff', '--name-only', 'HEAD']),
-      gitLines(root, ['diff', '--cached', '--name-only', 'HEAD']),
-      gitLines(root, ['ls-files', '--others', '--exclude-standard'])
-    ]);
-    const names = [...new Set([...unstaged, ...staged, ...untracked])]
-      .map((p) => normalizeChangedPath(p))
-      .filter(Boolean);
-    if (names.length === 0) return { paths: [], source: 'changed_files' };
+  const symbolic = await gitOptional(root, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']);
+  if (symbolic) return symbolic;
+  if (await gitRefExists(root, 'origin/main')) return 'origin/main';
+  if (await gitRefExists(root, 'origin/master')) return 'origin/master';
+  return 'main';
+}
 
-    const numstat = await gitLines(root, ['diff', '--numstat', 'HEAD']);
+/**
+ * Collect changed paths from the PR diff range `base...head` (not the working tree).
+ */
+export async function collectPrRangeChangePaths(repoRoot, { baseRef = null, headRef = 'HEAD' } = {}) {
+  const root = String(repoRoot ?? '').trim();
+  if (!root) return { paths: [], source: 'unavailable', range: null, base_ref: null, head_ref: headRef };
+  try {
+    const base = baseRef ?? await resolveDefaultPrBaseRef(root);
+    const range = `${base}...${headRef}`;
+    const names = await gitLines(root, ['diff', '--name-only', range]);
+    if (names.length === 0) {
+      return { paths: [], source: 'pr_range_diff', range, base_ref: base, head_ref: headRef };
+    }
+    const numstat = await gitLines(root, ['diff', '--numstat', range]);
     const statMap = parseNumstat(numstat);
     const paths = names.map((filePath) => ({
-      path: filePath,
-      changed_lines: statMap.has(filePath) ? statMap.get(filePath) : null
+      path: normalizeChangedPath(filePath),
+      changed_lines: statMap.has(normalizeChangedPath(filePath))
+        ? statMap.get(normalizeChangedPath(filePath))
+        : null
     }));
-    return { paths, source: statMap.size > 0 ? 'diff_line_stats' : 'changed_files' };
+    return {
+      paths,
+      source: 'pr_range_diff',
+      range,
+      base_ref: base,
+      head_ref: headRef
+    };
   } catch {
-    return { paths: [], source: 'unavailable' };
+    return { paths: [], source: 'unavailable', range: null, base_ref: baseRef, head_ref: headRef };
+  }
+}
+
+async function gitRefExists(repoRoot, ref) {
+  try {
+    await execFileAsync('git', ['rev-parse', '--verify', ref], { cwd: repoRoot, encoding: 'utf8' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function gitOptional(repoRoot, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+    return stdout.trim();
+  } catch {
+    return '';
   }
 }
 

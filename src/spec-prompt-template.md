@@ -173,7 +173,7 @@ It does not retroactively change in-flight deliveries.
 ### Mechanical `localized_bug_fix` profile (git/diff only)
 
 A change meets the mechanical profile when **all** of the following hold on the
-current working tree / PR diff:
+PR diff range `base...head` (not uncommitted working-tree changes):
 
 | Rule | Threshold |
 |---|---|
@@ -181,9 +181,10 @@ current working tree / PR diff:
 | Product source LOC changed (add+del) | ≤ `80` |
 | Shared layout/CSS touch | **none** of the paths match the fixed glob list in `src/localized-bugfix-evidence.js` (`SHARED_LAYOUT_CSS_PATH_GLOBS`) |
 
-Product source paths are under `src/`, `app/`, `lib/`, or `packages/*/src/`,
-excluding test/spec/e2e paths. When line stats are unavailable, the mechanical
-profile is **not** assumed.
+Product source paths are all changed paths except tests, docs, evidence
+artifacts, measure-only scripts, and binary/summary evidence files (see
+`isProductSourcePath` in `src/localized-bugfix-evidence.js`). When line stats
+are unavailable, the mechanical profile is **not** assumed.
 
 ### Default evidence tier: `primary`
 

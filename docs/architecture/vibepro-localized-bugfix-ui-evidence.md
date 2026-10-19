@@ -25,8 +25,14 @@ Classification uses **git/diff metrics only** (implemented in
 | `LOCALIZED_BUGFIX_MAX_PRODUCT_SOURCE_FILES` | `2` |
 | `LOCALIZED_BUGFIX_MAX_PRODUCT_SOURCE_LOC` | `80` (additions + deletions on product source paths) |
 
-Product source paths: `src/`, `app/`, `lib/`, `packages/*/src/`, excluding
-test/spec/e2e paths.
+Product source paths: **all changed paths in the PR diff** `base...head`
+except tests, docs, evidence artifacts (including `.vibepro/`), measure-only
+scripts (`measure-*` / `*-measure`), image/summary evidence files, and shared
+layout/CSS glob hits. Example: `apps/web/public/meeting-triage.js` counts as
+product source for brainbase #615.
+
+The mechanical classifier reads `git diff --numstat <base>...<head>` (same range
+as `pr prepare`), not uncommitted working-tree changes.
 
 Disqualifiers: any changed path matching `SHARED_LAYOUT_CSS_PATH_GLOBS` (shared
 layout, global CSS, tailwind/postcss config, design-system/theme/styles trees,
@@ -78,6 +84,10 @@ Policy:
    outside exclude rects is advisory only.
 3. **Unlisted surfaces:** pixel diff remains pass/fail (no global “pixel is
    advisory” rule).
+
+Enforced in `src/ui-visual-verify-policy.js` via `verify record` observation
+keys (`ui_visual_surface_id`, `ui_visual_pixel_diff_pass`,
+`ui_visual_computed_style_pass`, `ui_visual_nondeterministic_surfaces`).
 
 ## Maintainer sendback
 

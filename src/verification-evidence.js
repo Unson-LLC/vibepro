@@ -12,6 +12,7 @@ import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRuntimeIntegrity } from './runtime-info.js';
 import { enqueueBrainbaseLearningCandidate } from './brainbase-integration.js';
 import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
+import { applyUiVisualMeasurePolicy } from './ui-visual-verify-policy.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -582,6 +583,7 @@ export function buildObservation(options, artifactObservedValues = {}, { receipt
       );
     }
   }
+  applyUiVisualMeasurePolicy(values, { status: options.status });
   return { targets, scenarios, values };
 }
 
