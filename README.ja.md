@@ -37,6 +37,8 @@ npm install -g vibepro@beta
 
 ## 最小ワークフロー
 
+コーディングエージェントは、下の手順の前に同梱の `vibepro-workflow` スキル（`skills/vibepro-workflow/SKILL.md`）を読んでください。同梱スキルは `vibepro skills install [repo] [--dry-run] [--force] [--json]` で対象リポジトリへインストールします（`vibepro skills list [--json]` も参照）。
+
 ```bash
 # 1. 意図した変更をStoryとして登録
 vibepro init /path/to/repo \
@@ -45,7 +47,7 @@ vibepro init /path/to/repo \
   --language ja
 
 # 2. コードベースを調査し、追跡可能なSpecを書く
-vibepro story diagnose /path/to/repo --id story-example --run-graphify
+vibepro story diagnose /path/to/repo --id story-example
 vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 
 # 3. 検証証跡を実行または記録
@@ -60,6 +62,8 @@ vibepro review record /path/to/repo --id story-example --role reviewer \
 # 5. 意図から実装までの証跡をPR向けに要約
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
+
+検証は主張を支える最小限にとどめ、VibeProは証跡収集ゲームではありません。
 
 `pr prepare` は `.vibepro/pr/<story-id>/` に機械可読な要約とPR本文を書きます。そこでは記録された内容と、実装がStory / Specへどう紐づいているかを要約しますが、自律的な安全性承認ではありません。`pr create` は選択したbranchをpushしてGitHub CLIを呼べますが、最終レビューとmerge権限はVibeProの外にあります。
 
