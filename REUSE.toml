@@ -13,3 +13,9 @@ path = "LICENSE"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "none"
 SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "third_party/yomiyasu/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 nanaism"
+SPDX-License-Identifier = "MIT"
