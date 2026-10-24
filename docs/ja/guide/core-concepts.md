@@ -18,4 +18,4 @@ VibeProは変更の意図、実装への参照、検証証跡、人によるレ�
 
 Task計画は版付きの計画artifactであり、実行台帳ではありません。Task計画は外部実行側が守る作業範囲と契約を記録します。前提依存を解除できるのは、計画版、成果物revision、証拠参照が一致する観測がある場合だけです。Taskのstatusだけでは前提依存を解除できません。接続契約の合意と実装milestoneの検証は別の観測として扱います。そのため、契約を決めてから実装を並行できます。
 
-TLはこの技術計画面を担当します。TLは既存Taskへの分割、`prerequisite`・`interface`・`overlap`の依存分類、接続契約、割当計画、統合順、再計画を判断します。Codex親などの外部hostはセッション配布、worktree、占有、再試行、復旧、実行進捗を担当します。VibeProの計画と観測はレディネスを示せます。ただし、merge・deploy権限を与えません。Brainbase接続時、VibeProは参照と進捗を投影できます。ただし、第二のTask正本を作りません。
+TLはこの技術計画面を担当します。TLは既存Taskへの分割、`prerequisite`・`interface`・`overlap`の依存分類、接続契約、割当計画、統合順、再計画を判断します。Codex親などの外部hostはセッション配布、worktree、占有、再試行、復旧、実行進捗を担当します。VibeProの計画と観測はレディネスを示せます。ただし、merge・deploy権限を与えません。Brainbase接続時は参照と進捗を投影できます。ただし、VibeProは第二のTask正本を作りません。

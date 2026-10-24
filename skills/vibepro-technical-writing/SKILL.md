@@ -36,14 +36,16 @@ pstack の `/technical-writing` が使える環境では、先にそれを読み
 scripts/docs-ja-check.sh <原文の写し> <書き直した文書> [manual|article]
 ```
 
-このスクリプトは次の2つを実行します。
+このスクリプトは次の3つを順に実行し、1つでも 0 以外なら止まります。
 
-1. `python3 third_party/yomiyasu/scripts/yomiyasu_diff.py 原文 最終稿 --doc-type 種類 --fail-on meaning-risk`
+1. `python3 scripts/docs-ja-invariants.py 原文 最終稿`
+   文書全体で、数値の並び、否定の形（ません、ない、ず、不可、未 など）の数、「〜は」「〜が」の主語の数を比べます。数値か否定の数が変わるか、主語が減ると終了コード 1 です。増えた主語は `REVIEW` として表示します。yomiyasu_diff は文ごとに比べるので、同じ文に別の否定があると否定の反転を見落とすことがあり、この検査がそれを補います。
+2. `python3 third_party/yomiyasu/scripts/yomiyasu_diff.py 原文 最終稿 --doc-type 種類 --fail-on meaning-risk`
    数値、否定、主語と目的語の入れ替え（「が」「を」など）、文の種類、確度の変化があると終了コード 1 で止まります。
-2. `python3 third_party/yomiyasu/scripts/yomiyasu_check.py run --source 原文 --final 最終稿 --doc-type 種類 --fail-on meaning-risk`
+3. `python3 third_party/yomiyasu/scripts/yomiyasu_check.py run --source 原文 --final 最終稿 --doc-type 種類 --fail-on meaning-risk`
    lint と diff をまとめて実行し、記録を残します。意味が変わる恐れがあれば終了コード 1 で止まります。出力は最後まで読みます。
 
-道具は主語の抜けを見落とすことがあります。そのため、主語が書かれた文が書き直したあとも同じ主語を持つことを、全文差分を見て人か別のモデルが確かめます。結果は PR 本文に「数値・否定・主語: 変化なし（docs-ja-check.sh exit 0、差分を目視）」のように書きます。
+道具は、主語を別の語に置き換えた文を見落とすことがあります。そのため、`REVIEW` に出た主語と、主語が書かれた文が書き直したあとも同じ主語を持つことを、全文差分を見て人か別のモデルが確かめます。結果は PR 本文に「数値・否定・主語: 変化なし（docs-ja-check.sh exit 0、差分を目視）」のように書きます。
 
 意図して数値や否定を変えたとき（事実の誤りを直したときなど）は、その行と理由を PR 本文に書きます。
 

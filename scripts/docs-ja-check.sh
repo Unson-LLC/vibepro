@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mandatory check after rewriting a Japanese doc: numbers, negations and
+# Mandatory check (all three steps must exit 0) after rewriting a Japanese doc: numbers, negations and
 # subjects must not change. Usage: scripts/docs-ja-check.sh <original> <final> [manual|article]
 set -euo pipefail
 if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
@@ -15,6 +15,9 @@ case "$doc_type" in
 esac
 export PYTHONDONTWRITEBYTECODE=1
 dir="$(cd "$(dirname "$0")/../third_party/yomiyasu/scripts" && pwd)"
+
+echo "== docs-ja-invariants (numbers, negations, subjects)"
+python3 "$(dirname "$0")/docs-ja-invariants.py" "$src" "$final"
 
 echo "== yomiyasu_diff --fail-on=meaning-risk"
 python3 "$dir/yomiyasu_diff.py" "$src" "$final" --doc-type "$doc_type" --fail-on meaning-risk
