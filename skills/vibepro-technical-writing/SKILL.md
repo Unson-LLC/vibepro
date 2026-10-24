@@ -38,10 +38,10 @@ scripts/docs-ja-check.sh <原文の写し> <書き直した文書> [manual|artic
 
 このスクリプトは次の2つを実行します。
 
-1. `python3 third_party/yomiyasu/scripts/yomiyasu_diff.py 原文 最終稿 --fail-on=meaning-risk`
+1. `python3 third_party/yomiyasu/scripts/yomiyasu_diff.py 原文 最終稿 --doc-type 種類 --fail-on meaning-risk`
    数値、否定、主語と目的語の入れ替え（「が」「を」など）、文の種類、確度の変化があると終了コード 1 で止まります。
-2. `python3 third_party/yomiyasu/scripts/yomiyasu_check.py run --source 原文 --final 最終稿 --doc-type 種類`
-   lint と diff をまとめて実行し、記録を残します。出力は最後まで読みます。
+2. `python3 third_party/yomiyasu/scripts/yomiyasu_check.py run --source 原文 --final 最終稿 --doc-type 種類 --fail-on meaning-risk`
+   lint と diff をまとめて実行し、記録を残します。意味が変わる恐れがあれば終了コード 1 で止まります。出力は最後まで読みます。
 
 道具は主語の抜けを見落とすことがあります。そのため、主語が書かれた文が書き直したあとも同じ主語を持つことを、全文差分を見て人か別のモデルが確かめます。結果は PR 本文に「数値・否定・主語: 変化なし（docs-ja-check.sh exit 0、差分を目視）」のように書きます。
 

@@ -13,10 +13,11 @@ case "$doc_type" in
 	manual|article) ;;
 	*) echo "doc type must be manual or article" >&2; exit 2 ;;
 esac
+export PYTHONDONTWRITEBYTECODE=1
 dir="$(cd "$(dirname "$0")/../third_party/yomiyasu/scripts" && pwd)"
 
 echo "== yomiyasu_diff --fail-on=meaning-risk"
-python3 "$dir/yomiyasu_diff.py" "$src" "$final" --fail-on=meaning-risk
+python3 "$dir/yomiyasu_diff.py" "$src" "$final" --doc-type "$doc_type" --fail-on meaning-risk
 
 echo "== yomiyasu_check run"
-python3 "$dir/yomiyasu_check.py" run --source "$src" --final "$final" --doc-type "$doc_type"
+python3 "$dir/yomiyasu_check.py" run --source "$src" --final "$final" --doc-type "$doc_type" --fail-on meaning-risk

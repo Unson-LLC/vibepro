@@ -19,3 +19,9 @@ path = "third_party/yomiyasu/**"
 precedence = "override"
 SPDX-FileCopyrightText = "2026 nanaism"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["third_party/yomiyasu/scripts/yomiyasu_lint.py", "third_party/yomiyasu/UNICODE-LICENSE.txt"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 nanaism", "1991-2026 Unicode, Inc."]
+SPDX-License-Identifier = "MIT AND Unicode-3.0"
