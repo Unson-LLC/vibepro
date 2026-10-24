@@ -20,6 +20,7 @@ Keep: Story registration + Story→Spec→code traceability, Spec validation (co
 | Work type | Skill |
 |---|---|
 | Publishing VibePro to npm, release monitoring, dist-tag / GitHub Release reconciliation | `skills/vibepro-npm-publish` |
+| Writing or rewriting technical docs (structure per pstack `/technical-writing` Diátaxis; Japanese prose polished with vendored yomiyasu; numbers/negations/subjects check) | `skills/vibepro-technical-writing` |
 
 ## 4. Development Commands
 
