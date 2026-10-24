@@ -19,15 +19,21 @@ from collections import Counter
 
 NEGATIONS = ["ません", "ない", "なく", "ず", "不可", "不要", "未"]
 NUM = re.compile(r"[0-9０-９]+(?:[.．][0-9０-９]+)?")
-# A subject candidate: a run of kanji, katakana, latin, digits or backticked
-# code, directly before は or が, and not part of a longer kana word.
-SUBJ = re.compile(r"(`[^`]+`|[A-Za-z0-9_\-\u30A0-\u30FF\u4E00-\u9FFF]+)(?:は|が)(?![\u3041-\u3093])")
+# A subject candidate: the whole noun phrase directly before は or が.
+# A word is a run of kanji, katakana, latin, digits or backticked code; words
+# joined by の, と or ・ stay one phrase ("VibeProの計画と観測"), so swapping
+# any word in the phrase changes the subject.
+_WORD = r"(?:`[^`]+`|[A-Za-z0-9_\-\u30A0-\u30FF\u4E00-\u9FFF]+)"
+SUBJ = re.compile(rf"({_WORD}(?:[のと・]{_WORD})*)(?:は|が)(?![\u3041-\u3093])")
 CODE = re.compile(r"```.*?```", re.S)
 
 
 def load(path):
 	with open(path, encoding="utf-8") as f:
-		return CODE.sub("", f.read())
+		text = CODE.sub("", f.read())
+	# Join hard-wrapped lines inside a paragraph, so a phrase split across
+	# lines still reads as one subject. Tables, headings and lists stay.
+	return re.sub(r"(?<=[^\n|])\n(?=[^\n|#\-*`0-9])", "", text)
 
 
 def main():
