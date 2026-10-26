@@ -1111,8 +1111,8 @@ async function dispatchCli(argv, io = {}) {
           effect: getOption(rest, '--effect'),
           summary: getOption(rest, '--summary'),
           evidenceRefs: getOptions(rest, '--evidence'),
-          recordedBy: getOption(rest, '--recorded-by'),
-          reviewedBy: getOption(rest, '--reviewed-by')
+          recordedBy: getDispositionActorOption(rest, '--recorded-by'),
+          reviewedBy: getDispositionActorOption(rest, '--reviewed-by')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
@@ -2400,6 +2400,20 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
+}
+
+// disposition record actor flags (--reviewed-by / --recorded-by): treat a
+// missing, empty, or valueless flag as null. getOption returns the next token
+// verbatim, so `--reviewed-by --recorded-by x` would otherwise adopt the
+// following flag (`--recorded-by`) as the actor. A value that begins with `--`
+// is a flag, not an actor, so it is dropped — matching RQ-001's rule that a
+// missing, empty, or valueless trailing flag resolves to null (RQ-002).
+function getDispositionActorOption(args, name) {
+  const value = getOption(args, name);
+  if (value === null) return null;
+  if (value.startsWith('--')) return null;
+  if (value.trim() === '') return null;
+  return value;
 }
 
 async function readDeployHandoffInput(inputPath) {

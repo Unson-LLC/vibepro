@@ -158,6 +158,80 @@ test('disposition record treats a trailing --reviewed-by without a value as null
   assert.equal(stored.reviewed_by, null);
 });
 
+test('disposition record does not adopt a following flag as --reviewed-by (RQ-002)', async () => {
+  const root = await setupRepo();
+  const runId = 'run-reviewed-by-next-flag';
+  await seedEvaluation(root, runId);
+
+  // --reviewed-by has no value; the next token is another flag and must not be
+  // taken as the reviewer.
+  const disposition = await recordDisposition(root, runId, [
+    '--reviewed-by', '--recorded-by', 'recorder'
+  ]);
+  assert.equal(disposition.exitCode, 0);
+  assert.equal(disposition.result.disposition.reviewed_by, null);
+  assert.equal(disposition.result.disposition.recorded_by, 'recorder');
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.reviewed_by, null);
+  assert.equal(stored.recorded_by, 'recorder');
+});
+
+test('disposition record does not adopt a following flag as --recorded-by (RQ-002)', async () => {
+  const root = await setupRepo();
+  const runId = 'run-recorded-by-next-flag';
+  await seedEvaluation(root, runId);
+
+  // --recorded-by has no value; the trailing --json flag must not become the
+  // recorder, so it falls back to the 'unknown' default.
+  const disposition = await recordDisposition(root, runId, ['--recorded-by', '--json']);
+  assert.equal(disposition.exitCode, 0);
+  assert.equal(disposition.result.disposition.recorded_by, 'unknown');
+  assert.equal(disposition.result.disposition.reviewed_by, null);
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.recorded_by, 'unknown');
+});
+
+test('disposition record keeps a real --reviewed-by value even when --recorded-by follows (RQ-002)', async () => {
+  const root = await setupRepo();
+  const runId = 'run-reviewed-by-value-with-recorder';
+  await seedEvaluation(root, runId);
+
+  const disposition = await recordDisposition(root, runId, [
+    '--reviewed-by', 'reviewer', '--recorded-by', 'recorder'
+  ]);
+  assert.equal(disposition.exitCode, 0);
+  assert.equal(disposition.result.disposition.reviewed_by, 'reviewer');
+  assert.equal(disposition.result.disposition.recorded_by, 'recorder');
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.reviewed_by, 'reviewer');
+  assert.equal(stored.recorded_by, 'recorder');
+});
+
+test('disposition record treats a trailing --recorded-by without a value as the unknown default (RQ-002)', async () => {
+  const root = await setupRepo();
+  const runId = 'run-trailing-recorded-by';
+  await seedEvaluation(root, runId);
+
+  const disposition = await runCli([
+    'judgment', 'disposition', 'record', root,
+    '--id', STORY_ID,
+    '--run', runId,
+    '--human-decision', 'accepted',
+    '--effect', 'changed_plan',
+    '--summary', 'Accepted the optional reviewed_by field.',
+    '--recorded-by'
+  ], silentIo());
+  assert.equal(disposition.exitCode, 0);
+  assert.equal(disposition.result.disposition.recorded_by, 'unknown');
+  assert.equal(disposition.result.disposition.reviewed_by, null);
+
+  const stored = await readCurrentDisposition(root, runId);
+  assert.equal(stored.recorded_by, 'unknown');
+});
+
 test('judgment outcome record stores reviewed_by on the disposition it writes', async () => {
   const root = await setupRepo();
   const runId = 'run-outcome-reviewed-by';
