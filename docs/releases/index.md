@@ -13,6 +13,9 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-10-18 | [`0.2.0-beta.34`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.34) | npm `beta` / `latest` | Post-merge continuous release |
+| 2026-10-16 | [`0.2.0-beta.32`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.32) | npm `beta` / `latest` | Post-merge continuous release |
+| 2026-10-15 | [`0.2.0-beta.31`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.31) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-10-15 | [`0.2.0-beta.30`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.30) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | Post-merge continuous release |
