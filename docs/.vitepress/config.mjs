@@ -3,10 +3,12 @@ import { mermaidPlugin } from '../../scripts/manual-mermaid.mjs';
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
+const gtmContainerId = resolveGtmContainerId();
 const productDescription = 'Investigate what should change with your AI host, then connect the reasoning to implementation and PR review.';
 
 export default {
   markdown: { config: (md) => md.use(mermaidPlugin) },
+  vite: { define: { __GTM_CONTAINER_ID__: JSON.stringify(gtmContainerId) } },
   title: 'VibePro',
   description: productDescription,
   cleanUrls: true,
@@ -26,6 +28,7 @@ export default {
     'stories/**'
   ],
   head: [
+    ...gtmHeadEntries(gtmContainerId),
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'VibePro Manual' }],
     ['meta', { property: 'og:title', content: 'VibePro — Bring the reason for a change into its PR' }],
@@ -193,6 +196,25 @@ function referenceSidebar(locale) {
         { text: locale === 'ja' ? 'バージョン履歴' : 'Version History', link: `${prefix}/reference/version-history` }
       ]
     }
+  ];
+}
+
+function resolveGtmContainerId() {
+  for (const value of [process.env.VITEPRESS_GTM_ID, process.env.GTM_CONTAINER_ID]) {
+    const candidate = value?.trim();
+    if (candidate) return candidate;
+  }
+  return '';
+}
+
+function gtmHeadEntries(containerId) {
+  if (!containerId) return [];
+  return [
+    ['script', {}, `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer',${JSON.stringify(containerId)});`]
   ];
 }
 
