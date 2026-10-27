@@ -13,6 +13,9 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-10-18 | [`0.2.0-beta.34`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.34) | npm `beta` / `latest` | PRマージ後のcontinuous release |
+| 2026-10-16 | [`0.2.0-beta.32`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.32) | npm `beta` / `latest` | PRマージ後のcontinuous release |
+| 2026-10-15 | [`0.2.0-beta.31`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.31) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-10-15 | [`0.2.0-beta.30`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.30) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | PRマージ後のcontinuous release |
