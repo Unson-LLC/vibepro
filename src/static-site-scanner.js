@@ -14,7 +14,7 @@ const IGNORED_DIRS = new Set([
   'node_modules',
   'graphify-out'
 ]);
-const IGNORED_FILES = new Set(['.gitignore', '.vibeproignore']);
+const IGNORED_FILES = new Set(['.gitignore', '.gitattributes', '.vibeproignore']);
 const TEXT_EXTENSIONS = new Set([
   '.css',
   '.env',

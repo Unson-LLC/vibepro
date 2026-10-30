@@ -1,3 +1,4 @@
+import { detectDocsOnlyChange, classifyEvidenceChangeSurface } from './docs-only-change.js';
 // pr-manager.js — minimal-core rebuild (Slice 6a).
 //
 // This module used to carry a Gate DAG, readiness evaluation, risk/route
@@ -47,6 +48,26 @@ import { buildDeployHandoff, validateDeployHandoffInput } from './deploy-handoff
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
 
+const LARGE_CHANGE_PRODUCT_LINE_THRESHOLD = 300;
+const RISKY_PATH_PATTERNS = [
+  /(^|\/)(migrations|migrate)\/|\.sql$/i,
+  /(^|\/)(auth|authn|authz|session|credential|credentials|secret|secrets|token)\//i,
+  /^\.github\/workflows\/|(^|\/)Dockerfile(?:\.[^/]*)?$|(^|\/)docker-compose[^/]*\.ya?ml$|\.tf$|(^|\/)(deploy|k8s|helm)\/|^\.circleci\//i
+];
+
+function assertDevelopmentJudgmentForLargeChange({ git, developmentJudgment, storyId }) {
+  const sizing = detectDocsOnlyChange({ diffStats: git.diff_line_stats, changedFiles: git.changed_files, diffStatsStatus: git.diff_line_stats_status });
+  const countedLines = sizing.product_code_changed_lines;
+  const large = git.diff_line_stats_status === 'available' && countedLines !== null && countedLines >= LARGE_CHANGE_PRODUCT_LINE_THRESHOLD;
+  const riskyPath = git.changed_files.map(({ path }) => path.replaceAll('\\', '/')).find((file) =>
+    !['docs', 'evidence_artifacts'].includes(classifyEvidenceChangeSurface(file)) && RISKY_PATH_PATTERNS.some((pattern) => pattern.test(file))) ?? null;
+  const triggers = [large ? `large: ${countedLines} product-code lines changed (threshold 300)` : null, riskyPath ? `risky path: ${riskyPath}` : null].filter(Boolean);
+  if (triggers.length && developmentJudgment.lifecycle === 'not_started') {
+    throw new Error(`${triggers.join('; ')}; no development judgment is recorded (lifecycle=not_started). Run: vibepro judgment applicability record . --id ${storyId} --applicable yes|no --reason <text>\nRecording --applicable no with a reason is a valid way to proceed.`);
+  }
+  return { product_code_changed_lines: countedLines, threshold: LARGE_CHANGE_PRODUCT_LINE_THRESHOLD, large, risky_path: riskyPath, judgment_required: Boolean(triggers.length), triggers };
+}
+
 // ---------------------------------------------------------------------------
 // preparePullRequest
 // ---------------------------------------------------------------------------
@@ -70,6 +91,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     readReviewSummary(root, storyId),
     readOperationalJudgmentProjection(root, storyId)
   ]);
+  const changeSize = assertDevelopmentJudgmentForLargeChange({ git, developmentJudgment, storyId });
   const { story, outcomeCaseProjection } = storyRecord;
   assertRecordedRuntimeIdentities(verification);
 
@@ -142,6 +164,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     verification,
     review,
     development_judgment: developmentJudgment,
+    change_size: changeSize,
     multi_tenant_architecture: {
       ...multiTenantArchitecture,
       review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
@@ -605,6 +628,20 @@ async function collectGitState(repoRoot, options) {
   const baseRef = await resolveBaseRef(repoRoot, options.baseRef);
   const headRef = options.headRef ?? 'HEAD';
   const changedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
+  let diffLineStats = {};
+  let diffLineStatsStatus = 'unavailable';
+  try {
+    const { stdout } = await execFileAsync('git', ['diff', '--numstat', '-z', `${baseRef}...${headRef}`], { cwd: repoRoot, encoding: 'utf8' });
+    const rows = stdout.split('\0');
+    for (let i = 0; i < rows.length; i++) {
+      if (!rows[i]) continue;
+      const [additions, deletions, ...parts] = rows[i].split('\t');
+      let file = parts.join('\t');
+      if (!file) { i++; file = rows[++i]; } // numstat -z emits old and new paths for renames.
+      diffLineStats[file] = { additions: additions === '-' ? null : Number(additions), deletions: deletions === '-' ? null : Number(deletions) };
+    }
+    diffLineStatsStatus = 'available';
+  } catch { /* Missing base: size is unmeasurable. */ }
   const dirtyFiles = await getDirtyFiles(repoRoot);
   const commitCount = await gitOptional(repoRoot, ['rev-list', '--count', `${baseRef}..${headRef}`]);
   return {
@@ -613,6 +650,8 @@ async function collectGitState(repoRoot, options) {
     base_ref: baseRef,
     head_ref: headRef,
     changed_files: changedFiles,
+    diff_line_stats: diffLineStats,
+    diff_line_stats_status: diffLineStatsStatus,
     dirty_files: dirtyFiles,
     commit_count: commitCount ? Number.parseInt(commitCount, 10) || 0 : 0
   };
@@ -906,6 +945,9 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
   lines.push(renderGeneratedTaskAuthority(taskAuthorities?.generated));
   lines.push('');
   lines.push('### Development Judgment');
+  lines.push(`- change sizing: ${preparation.change_size?.product_code_changed_lines ?? 'unmeasured'} product-code lines; judgment required: ${preparation.change_size?.judgment_required ?? false}; triggers: ${preparation.change_size?.triggers.join('; ') || 'none'}`);
+  // linguist-generated collapses display only; gitignore exclusions reduce tracked diff lines.
+  lines.push('- .vibepro records: linguist-generated collapses display only; changed-line counts shrink only when generated bulk is left untracked.');
   lines.push(`- available: ${developmentJudgment?.available ?? false}`);
   lines.push(`- status: ${developmentJudgment?.status ?? 'not_recorded'}`);
   lines.push(`- lifecycle: ${developmentJudgment?.lifecycle ?? 'not_started'}`);

@@ -9,3 +9,7 @@
 node_modules/
 docs/.vitepress/dist/
 .vibepro-store/
+.vibepro/reviews/**/transcripts/
+.vibepro/reviews/**/subagent-results/
+.vibepro/reviews/**/*.jsonl
+.vibepro/reviews/**/gate/
