@@ -9,3 +9,6 @@
 node_modules/
 docs/.vitepress/dist/
 .vibepro-store/
+
+# Python bytecode from running vendored tools
+__pycache__/
