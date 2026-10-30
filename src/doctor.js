@@ -4,6 +4,8 @@ import path from 'node:path';
 import { buildRuntimeDoctorCheck, collectRuntimeInfo } from './runtime-info.js';
 import {
   getWorkspaceDir,
+  ensureGitAttributes,
+  VIBEPRO_GITATTRIBUTES_LINE,
   gitignoreTracksVibeproReviews,
   JUDGMENT_GITIGNORE_MIGRATION_NOTE,
   MANIFEST_FILE,
@@ -269,6 +271,15 @@ export async function runDoctor(repoRoot, options = {}) {
         detail: `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} を設定した。`,
         path: '.gitignore'
       });
+    }
+  }
+
+  const attributes = await readFile(path.join(root, '.gitattributes'), 'utf8').catch((error) => { if (error.code === 'ENOENT') return ''; throw error; });
+  if (!attributes.split(/\r?\n/).some((line) => line.trim() === VIBEPRO_GITATTRIBUTES_LINE)) {
+    result.checks.push({ id: 'VP-DOCTOR-GITATTRIBUTES', severity: 'warning', status: options.fix ? 'fixed' : 'missing', fixable: true, detail: 'Missing .vibepro linguist-generated attribute.', recommendation: 'vibepro doctor --fix' });
+    if (options.fix) {
+      await ensureGitAttributes(root);
+      result.repairs.push({ id: 'ensure-gitattributes-vibepro', detail: 'Marked .vibepro records as linguist-generated.', path: '.gitattributes' });
     }
   }
 

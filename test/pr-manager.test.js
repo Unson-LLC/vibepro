@@ -1,3 +1,4 @@
+import { recordJudgmentApplicability } from '../src/judgment-operations.js';
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
@@ -757,4 +758,63 @@ test('concrete unresolved review findings block PR creation until the same revie
   await recordReview(root, { storyId, role: 'reviewer', status: 'pass', summary: '空入力の修正を確認しました', inspectionInputs: ['widget.js'] });
   const result = await createPullRequest(root, { storyId, baseRef: 'main', repository: 'example/project', dryRun: true });
   assert.equal(result.preparation.gate_status, 'ready');
+});
+
+async function commitSizingFiles(root, files) {
+  for (const [file, content] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true });
+    await writeFile(path.join(root, file), content);
+    await git(root, ['add', '-f', file]);
+  }
+  await git(root, ['commit', '-m', 'change sizing fixture']);
+}
+const sizingOptions = { storyId: 'story-pr-manager-ac', baseRef: 'main' };
+const largeSource = Array.from({ length: 300 }, (_, i) => `export const value${i} = ${i};`).join('\n') + '\n';
+
+test('pr prepare fails for a large change when no development judgment is recorded', async () => {
+  const root = await setupRepo();
+  await commitSizingFiles(root, { 'src/large.js': largeSource });
+  await assert.rejects(preparePullRequest(root, sizingOptions), /large: 300.*vibepro judgment applicability record/);
+  await assert.rejects(readFile(path.join(root, '.vibepro/pr/story-pr-manager-ac/pr-prepare.json')), { code: 'ENOENT' });
+});
+
+test('pr prepare succeeds for a large change once judgment applicability is recorded', async () => {
+  const root = await setupRepo();
+  await commitSizingFiles(root, { 'src/large.js': largeSource });
+  for (const applicable of ['no', 'yes']) {
+    await recordJudgmentApplicability(root, { storyId: sizingOptions.storyId, applicable, reason: 'Reviewed scope' });
+    const result = await preparePullRequest(root, sizingOptions);
+    assert.equal(result.preparation.change_size.product_code_changed_lines, 300);
+    assert.match(await readFile(path.join(root, '.vibepro/pr/story-pr-manager-ac/pr-body.md'), 'utf8'), /Development Judgment/);
+  }
+});
+
+test('pr prepare does not require development judgment for a small change', async () => {
+  const root = await setupRepo();
+  await commitSizingFiles(root, { 'src/small.js': 'export const small = true;\n' });
+  const result = await preparePullRequest(root, sizingOptions);
+  assert.equal(result.preparation.change_size.judgment_required, false);
+  assert.match(await readFile(path.join(root, '.vibepro/pr/story-pr-manager-ac/pr-body.md'), 'utf8'), /status: not_recorded/);
+});
+
+test('pr prepare fails for a small change that touches a risky path without recorded judgment', async () => {
+  const root = await setupRepo();
+  await commitSizingFiles(root, { '.github/workflows/check.yml': 'name: check\n' });
+  await assert.rejects(preparePullRequest(root, sizingOptions), /risky path: .github\/workflows\/check.yml/);
+});
+
+test('pr prepare excludes .vibepro, docs, and lockfile lines when sizing a change', async () => {
+  const root = await setupRepo();
+  await commitSizingFiles(root, { '.vibepro/reviews/bulk.json': largeSource, 'docs/large.md': largeSource, 'package-lock.json': largeSource, 'src/small.js': 'export default true;\n' });
+  const result = await preparePullRequest(root, sizingOptions);
+  assert.equal(result.preparation.change_size.product_code_changed_lines, 1);
+});
+
+test('pr prepare does not block when the change size cannot be measured and no risky path is touched', async () => {
+  const root = await setupRepo();
+  await commitSizingFiles(root, { 'src/binary.dat': Buffer.from([0, 1, 2]) });
+  const binary = await preparePullRequest(root, sizingOptions);
+  assert.equal(binary.preparation.change_size.product_code_changed_lines, null);
+  const lostBase = await preparePullRequest(root, { ...sizingOptions, baseRef: 'missing-base' });
+  assert.equal(lostBase.preparation.git.diff_line_stats_status, 'unavailable');
 });

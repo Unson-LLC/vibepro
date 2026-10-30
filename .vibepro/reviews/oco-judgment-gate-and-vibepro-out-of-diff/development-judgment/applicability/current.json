@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1.0",
+  "record_id": "applicability-2026-10-30T10-49-52-157Z-52da539f",
+  "story_id": "oco-judgment-gate-and-vibepro-out-of-diff",
+  "applicable": true,
+  "reason": "Scope in docs/management/decisions/2026-10-30-pr-prepare-large-change-judgment.md: pr prepare requires a recorded development judgment only for large/risky changes (>=300 product-code lines or migration/auth/deploy path); .vibepro artifacts kept out of PR diffs via gitignore+linguist. Rejected: gate_status exit driver, full evaluate chain, config flag, file-count, linguist-only.",
+  "recorded_by": "agent:codex",
+  "recorded_at": "2026-10-30T10:49:52.157Z",
+  "artifact": ".vibepro/reviews/oco-judgment-gate-and-vibepro-out-of-diff/development-judgment/applicability/history/applicability-2026-10-30T10-49-52-157Z-52da539f.json",
+  "advisory": true,
+  "blocking": false
+}

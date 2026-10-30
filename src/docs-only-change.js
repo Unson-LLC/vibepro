@@ -13,6 +13,7 @@
 export const DOCS_ONLY_CHANGE_SCHEMA_VERSION = '0.1.0';
 
 const SAMPLE_PATH_LIMIT = 5;
+const LOCKFILES = new Set(['package-lock.json', 'npm-shrinkwrap.json', 'pnpm-lock.yaml', 'yarn.lock']);
 
 // VibePro-managed evidence/record surfaces. Changing these alone never
 // constitutes a product change, and they are what a docs/roadmap Story
@@ -175,6 +176,7 @@ export function detectDocsOnlyChange({
   let lineDataAvailable = observation.source === 'diff_line_stats';
 
   for (const entry of observation.paths) {
+    if (LOCKFILES.has(entry.path.split('/').at(-1))) continue;
     const surface = classifyEvidenceChangeSurface(entry.path);
     counts[surface] += 1;
     if (entry.changed_lines === null) {
