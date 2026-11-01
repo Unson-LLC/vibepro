@@ -4276,3 +4276,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:616:end -->
+
+<!-- vibepro-release-pr:617:start -->
+## [#617](https://github.com/Unson-LLC/vibepro/pull/617) 【worker】fix(verify): 同じ kind の記録を別の command で置き換えたら警告する（#447）
+
+- Author: @sintariran
+- Merged: 2026-11-01T05:55:10Z
+- Commit: `f9fba867ba0ff134bf8295aa4f584649ab6c213b`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:617:end -->

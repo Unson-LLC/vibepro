@@ -829,3 +829,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:616:start -->
 - [PR #616](https://github.com/Unson-LLC/vibepro/pull/616) — [2026-11](/ja/releases/2026-11): 【worker】fix(pr): 遅れている手元の --base ブランチを origin 側に置き換える（#423）
 <!-- vibepro-release-index-pr:616:end -->
+
+<!-- vibepro-release-index-pr:617:start -->
+- [PR #617](https://github.com/Unson-LLC/vibepro/pull/617) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 同じ kind の記録を別の command で置き換えたら警告する（#447）
+<!-- vibepro-release-index-pr:617:end -->
