@@ -837,3 +837,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:618:start -->
 - [PR #618](https://github.com/Unson-LLC/vibepro/pull/618) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 合格の記録で存在しない --target のパスに警告を付ける（#447）
 <!-- vibepro-release-index-pr:618:end -->
+
+<!-- vibepro-release-index-pr:619:start -->
+- [PR #619](https://github.com/Unson-LLC/vibepro/pull/619) — [2026-11](/ja/releases/2026-11): 【worker】chore(deps-dev): vite を脆弱性の直った 6.4.5 にそろえる
+<!-- vibepro-release-index-pr:619:end -->
