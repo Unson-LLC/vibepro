@@ -110,8 +110,10 @@ const REQUIRED_FILES = [
 export function findUnlistedPublishedVersions(historyMarkdownOrHtml, npmTime, sourceVersion) {
   const headings = new Set([
     ...[...historyMarkdownOrHtml.matchAll(/^## ([^\s]+)\s*$/gmu)].map((match) => match[1]),
+    // Read the version token inside each <h2>; no tag stripping (the text is only compared, never rendered).
     ...[...historyMarkdownOrHtml.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/giu)]
-      .map((match) => match[1].replace(/<a\b[^>]*class=["'][^"']*header-anchor[^"']*["'][^>]*>[\s\S]*?<\/a>/giu, '').replace(/<[^>]*>/gu, '').trim())
+      .map((match) => match[1].match(/\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?/u)?.[0])
+      .filter(Boolean)
   ]);
   return publishedVersions(npmTime, headings).filter((version) => compareSemver(version, sourceVersion) <= 0 && !headings.has(version));
 }
