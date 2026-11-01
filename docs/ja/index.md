@@ -28,6 +28,13 @@ features:
     details: 検証とレビューの記録を変更と一緒に残し、実装がStoryとSpecにどうつながるかをPR本文へ要約します。
 ---
 
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
+
+現在のバージョン: <code>{{ site.themeConfig.npmLatest }}</code>
+
 ## 作るものを決める前から、レビューまで
 
 依頼を受けても、すぐに新機能を足すとは限りません。[シニアエンジニア判断](/ja/guide/senior-engineering-judgment)では、`judgment investigate` を使い、ホストAIが目的・範囲から問いを立て、既存のGraphify成果物やソースを読み、追加の証拠で問題設定・選択肢・推薦を見直せます。その候補を明示的な採択手順へ渡し、何を作るか、減らすか、先に確かめるかを検討します。すべての変更にこの調査を必須とするものではありません。
