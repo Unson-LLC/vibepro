@@ -833,3 +833,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:617:start -->
 - [PR #617](https://github.com/Unson-LLC/vibepro/pull/617) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 同じ kind の記録を別の command で置き換えたら警告する（#447）
 <!-- vibepro-release-index-pr:617:end -->
+
+<!-- vibepro-release-index-pr:618:start -->
+- [PR #618](https://github.com/Unson-LLC/vibepro/pull/618) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 合格の記録で存在しない --target のパスに警告を付ける（#447）
+<!-- vibepro-release-index-pr:618:end -->
