@@ -4255,3 +4255,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:615:end -->
+
+<!-- vibepro-release-pr:616:start -->
+## [#616](https://github.com/Unson-LLC/vibepro/pull/616) 【worker】fix(pr): 遅れている手元の --base ブランチを origin 側に置き換える（#423）
+
+- Author: @sintariran
+- Merged: 2026-11-01T05:54:33Z
+- Commit: `fd9b8ab2ca8a265ebb5e11c090780ee59dbd88c7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:616:end -->

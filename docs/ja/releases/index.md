@@ -825,3 +825,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:615:start -->
 - [PR #615](https://github.com/Unson-LLC/vibepro/pull/615) — [2026-11](/ja/releases/2026-11): 【worker】fix(docs): 公開履歴を npm の公開時刻と突き合わせ、beta.31〜34 の抜けを直す
 <!-- vibepro-release-index-pr:615:end -->
+
+<!-- vibepro-release-index-pr:616:start -->
+- [PR #616](https://github.com/Unson-LLC/vibepro/pull/616) — [2026-11](/ja/releases/2026-11): 【worker】fix(pr): 遅れている手元の --base ブランチを origin 側に置き換える（#423）
+<!-- vibepro-release-index-pr:616:end -->

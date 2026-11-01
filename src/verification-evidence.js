@@ -96,6 +96,14 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
     previousCommand = existing.commands.find((item) => item.kind === options.kind) ?? null;
+    const sameKindWarning = previousCommand && (previousCommand.command ?? null) !== (options.command ?? null)
+      ? {
+          id: 'verification_same_kind_replaced',
+          command_name: 'verify record',
+          reason: `replaced ${previousCommand.command == null ? 'a record without a command' : JSON.stringify(previousCommand.command)} (executed_at: ${previousCommand.executed_at}) for kind ${options.kind}; `
+            + 'the evidence keeps one record per kind, so the earlier result is no longer counted.'
+        }
+      : null;
     const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
     const observationWarning = observationCheck.status === 'missing'
       ? {
@@ -143,7 +151,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       runtime_identity: runtimeIdentity,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
-        [managedWorktreeWarning, observationWarning, targetPathWarning, ...callerKeyWarnings].filter(Boolean),
+        [managedWorktreeWarning, observationWarning, targetPathWarning, sameKindWarning, ...callerKeyWarnings].filter(Boolean),
         computedRecording.additionalWarnings
       )
     };
