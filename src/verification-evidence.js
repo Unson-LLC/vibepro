@@ -72,6 +72,17 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const observation = buildObservation(options, artifactObservedValues, { receiptBacked });
   assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
   assertCommandNamedTestPathsExist(root, options.command, options.status);
+  // CI import targets are check names (e.g. codecov/patch), not repository paths.
+  const missingTargets = computedRecording.source === 'ci_import'
+    ? []
+    : missingTargetPaths(root, observation.targets, options.status);
+  const targetPathWarning = missingTargets.length > 0
+    ? {
+        id: 'verification_target_path_missing',
+        command_name: 'verify record',
+        reason: `targets do not exist in the repository and were recorded unverified: ${missingTargets.join(', ')}; each may be a check name such as codecov/patch or a wrong path`
+      }
+    : null;
   const observationCheck = buildObservationCheck({ status: options.status, observation });
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
   await mkdir(path.dirname(evidencePath), { recursive: true });
@@ -140,7 +151,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       runtime_identity: runtimeIdentity,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
-        [managedWorktreeWarning, observationWarning, sameKindWarning, ...callerKeyWarnings].filter(Boolean),
+        [managedWorktreeWarning, observationWarning, targetPathWarning, sameKindWarning, ...callerKeyWarnings].filter(Boolean),
         computedRecording.additionalWarnings
       )
     };
@@ -330,14 +341,32 @@ function missingNamedTestPaths(repoRoot, command) {
       continue;
     }
     if (!TEST_FILE_ARGUMENT.test(value)) continue;
-    if (/[*?[\]{}]/.test(value)) continue;
-    if (/^[a-z][a-z0-9+.-]*:/i.test(value)) continue;
-    const absolute = path.resolve(repoRoot, value);
-    const relative = path.relative(path.resolve(repoRoot), absolute);
-    if (relative.startsWith('..') || path.isAbsolute(relative)) continue;
-    if (!existsSync(absolute)) missing.push(value);
+    const absolute = resolveRepositoryPath(repoRoot, value);
+    if (absolute && !existsSync(absolute)) missing.push(value);
   }
   return missing;
+}
+
+// Share glob, scheme, and repository-boundary handling with named test paths.
+function resolveRepositoryPath(repoRoot, value) {
+  if (/[*?[\]{}]/.test(value)) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return null;
+  const absolute = path.resolve(repoRoot, value);
+  const relative = path.relative(path.resolve(repoRoot), absolute);
+  if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return null;
+  return absolute;
+}
+
+function missingTargetPaths(repoRoot, targets, status) {
+  if (!PASS_STATUSES.has(status)) return [];
+  return targets.filter((value) => {
+    // Only slash-bearing, whitespace-free values are paths: labels such as auth_denied,
+    // POST /api/x, vibepro.unson.jp, or v1.2 are not checked, nor are bare root file names.
+    if (/\s/.test(value) || !value.includes('/') || path.isAbsolute(value)) return false;
+    // src/foo.js:42, src/foo.js:10-20, and src/foo.js#L10 all name src/foo.js.
+    const absolute = resolveRepositoryPath(repoRoot, value.replace(/(?::\d+(?:-\d+)?|#.*)$/, ''));
+    return absolute && !existsSync(absolute);
+  });
 }
 
 function tokenizeCommand(command) {

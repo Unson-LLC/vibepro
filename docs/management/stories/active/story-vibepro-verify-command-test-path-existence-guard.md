@@ -36,6 +36,8 @@ VibePro は、検証コマンドが repo 相対の test パスを名指しする
 - glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。
 - 実在する test パスを名指しした passing record は従来どおり受理される。
 
+Issue #447 に従い、manual/legacy escape hatch の `verify record` は、passing の `--target` が存在しない場合も拒否せず、未検証path は verification_target_path_missing 警告付きで記録する（`codecov/patch` のような check 名も対象）。空白のない slash 付き repo 相対値のみを判定し、`:line`・`:a-b`・`#L..` を除去する。glob・scheme・repo 外・絶対パス・non-pass・ci_import は対象外。CLI は警告を stderr に表示し、`--json` の stdout は有効な JSON を維持する。コマンドが名指しする欠損 test ファイルの拒否は変更しない。
+
 ## Inherited Behavior
 
 - Kind/command compatibility checks (assertCommandMatchesVerificationKind), artifact cross-check contradictions, and shell-substitution rejection are unchanged/existing; verify run additionally rejects nonexistent named test paths pre-flight before executing the command.

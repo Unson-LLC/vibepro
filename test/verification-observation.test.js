@@ -32,6 +32,10 @@ async function setupRepo() {
     await mkdir(path.join(root, path.dirname(testFile)), { recursive: true });
     await writeFile(path.join(root, testFile), "import test from 'node:test';\ntest('x', () => {});\n");
   }
+  await mkdir(path.join(root, 'src'));
+  for (const file of ['widgets.js', 'usage-report.js', 'build.js']) {
+    await writeFile(path.join(root, 'src', file), 'export {};\n');
+  }
   await git(root, ['init', '-b', 'main']);
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);
@@ -248,3 +252,24 @@ test('observation_check is not_applicable for needs_setup claims', async () => {
   assert.equal(command.observation_check.status, 'not_applicable');
 });
 
+test('verify record prints missing-target warnings to stderr and preserves JSON stdout', async () => {
+  const root = await setupRepo();
+  for (const json of [false, true]) {
+    let stdout = '';
+    let stderr = '';
+    const result = await runCli([
+      'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+      '--command', 'npm test', '--target', 'codecov/patch', ...(json ? ['--json'] : [])
+    ], {
+      stdout: { write: (value) => { stdout += value; } },
+      stderr: { write: (value) => { stderr += value; } }
+    });
+    assert.equal(result.exitCode, 0);
+    assert.match(stderr, /warning: .*recorded unverified: codecov\/patch/);
+    if (json) {
+      const evidence = JSON.parse(stdout);
+      assert.equal(evidence.commands[0].status, 'pass');
+      assert.ok(evidence.commands[0].warnings.some((item) => item.id === 'verification_target_path_missing'));
+    }
+  }
+});
