@@ -1,17 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import siteConfig from '../docs/.vitepress/config.mjs';
-
-const { version: packageVersion } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+import { siteConfig, registryTags } from './support/docs-site-config.js';
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 const pullRequestNumbers = (content) => [...content.matchAll(/https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/(\d+)/g)]
   .map((match) => Number(match[1]));
 const releaseChannels = (content) => Object.fromEntries(
-  [...content.matchAll(/^\| npm `(latest|beta)` \| <code>\{\{ site\.themeConfig\.version \}\}<\/code> \|/gmu)]
-    .map((match) => [match[1], siteConfig.themeConfig.version])
+  [...content.matchAll(/^\| npm `(latest|beta)` \| <code>\{\{ site\.themeConfig\.(npmLatest|npmBeta) \}\}<\/code> \|/gmu)]
+    .map((match) => [match[1], siteConfig.themeConfig[match[2]]])
 );
 const softwareVersion = () => JSON.parse(siteConfig.head.find(([tag, attrs]) => tag === 'script' && attrs.type === 'application/ld+json')[2]).softwareVersion;
 const publishedVersions = (content) => [
@@ -81,9 +79,10 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   const enChannels = releaseChannels(enVersion);
   assert.deepEqual(enChannels, jaChannels, 'published npm channels must match across locales');
   assert.deepEqual(Object.keys(enChannels).sort(), ['beta', 'latest']);
-  assert.equal(enChannels.latest, packageVersion);
-  assert.equal(enChannels.latest, enChannels.beta, 'the documented beta is also the current latest');
-  assert.equal(softwareVersion(config), enChannels.latest, 'VitePress metadata must identify the published version');
+  assert.equal(enChannels.latest, registryTags.latest);
+  assert.equal(enChannels.beta, registryTags.beta);
+  assert.notEqual(enChannels.latest, enChannels.beta, 'distinct registry channels must remain distinct');
+  assert.equal(softwareVersion(), enChannels.latest, 'VitePress metadata must identify the published version');
   for (const [channel, version] of Object.entries(enChannels)) {
     assert.match(
       version,

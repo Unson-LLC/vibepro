@@ -4,6 +4,25 @@ import { mermaidPlugin } from '../../scripts/manual-mermaid.mjs';
 
 const { version } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
 
+const npmTags = await resolveNpmTags(version);
+
+export async function resolveNpmTags(sourceVersion, fetchImpl = globalThis.fetch) {
+  try {
+    const response = await fetchImpl('https://registry.npmjs.org/-/package/vibepro/dist-tags', {
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!response.ok) throw new Error('npm registry request failed');
+    const tags = await response.json();
+    if (typeof tags.latest !== 'string' || !tags.latest.trim() ||
+        typeof tags.beta !== 'string' || !tags.beta.trim()) {
+      throw new Error('npm registry dist-tags are missing');
+    }
+    return { npmLatest: tags.latest, npmBeta: tags.beta, npmTagsSource: 'npm registry' };
+  } catch {
+    return { npmLatest: sourceVersion, npmBeta: sourceVersion, npmTagsSource: 'package.json (offline fallback)' };
+  }
+}
+
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
 const productDescription = 'Investigate what should change with your AI host, then connect the reasoning to implementation and PR review.';
@@ -45,7 +64,7 @@ export default {
       name: 'VibePro',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Linux, Windows',
-      softwareVersion: version,
+      softwareVersion: npmTags.npmLatest,
       url: siteUrl,
       codeRepository: 'https://github.com/Unson-LLC/vibepro',
       license: 'https://www.apache.org/licenses/LICENSE-2.0'
@@ -53,6 +72,7 @@ export default {
   ],
   themeConfig: {
     version,
+    ...npmTags,
     siteTitle: 'VibePro Manual',
     nav: [
       { text: 'Guide', link: '/guide/what-is-vibepro' },

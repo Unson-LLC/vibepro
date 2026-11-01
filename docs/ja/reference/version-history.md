@@ -9,8 +9,8 @@ source versionの正本は `package.json` で、installed binaryは `vibepro ver
 
 | Channel | このrelease後の期待値 | 正本 |
 | --- | --- | --- |
-| npm `latest` | <code>{{ site.themeConfig.version }}</code> | liveなnpm registry dist-tag |
-| npm `beta` | <code>{{ site.themeConfig.version }}</code> | liveなnpm registry dist-tag |
+| npm `latest` | <code>{{ site.themeConfig.npmLatest }}</code> | {{ site.themeConfig.npmTagsSource }} |
+| npm `beta` | <code>{{ site.themeConfig.npmBeta }}</code> | {{ site.themeConfig.npmTagsSource }} |
 | Repository `main` | <code>{{ site.themeConfig.version }}</code> release source | Git commitと `package.json` |
 | Manual build | footer/metaのsource commit | deployed VitePress artifact |
 

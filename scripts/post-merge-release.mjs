@@ -424,10 +424,14 @@ export async function projectPublishedVersion(root, before, after, mergedAt) {
 
 function projectVersionHistory(content, before, after, locale) {
   const lines = content.split('\n');
-  for (const prefix of ['| npm `latest` |', '| npm `beta` |', '| Repository `main` |']) {
+  for (const [prefix, binding] of [
+    ['| npm `latest` |', 'npmLatest'],
+    ['| npm `beta` |', 'npmBeta'],
+    ['| Repository `main` |', 'version']
+  ]) {
     const index = lines.findIndex((line) => line.startsWith(prefix));
     if (index < 0) throw new Error(`Published-version field is missing: ${prefix}`);
-    if (!lines[index].includes('{{ site.themeConfig.version }}')) {
+    if (!lines[index].includes(`{{ site.themeConfig.${binding} }}`)) {
       lines[index] = replaceCurrentVersion(lines[index], before, after, prefix);
     }
   }
@@ -529,8 +533,8 @@ function projectUpgradeHeading(content, before, after, locale) {
 }
 
 function projectSoftwareVersion(content, before, after) {
-  // Build-time package metadata already follows the source version.
-  if (/^\s+softwareVersion: version,?$/mu.test(content)) return content;
+  // Build-time metadata resolves the published npm version.
+  if (/^\s+softwareVersion: (?:version|npmTags\.npmLatest),?$/mu.test(content)) return content;
   const lines = content.split('\n');
   const index = lines.findIndex((line) => /^\s+softwareVersion: '[^']+',?$/u.test(line));
   if (index < 0) throw new Error('VitePress softwareVersion field is missing');

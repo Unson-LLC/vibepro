@@ -9,8 +9,8 @@ The authoritative source version is `package.json`; an installed binary reports 
 
 | Channel | Expected after this release | Authority |
 | --- | --- | --- |
-| npm `latest` | <code>{{ site.themeConfig.version }}</code> | Live npm registry dist-tag |
-| npm `beta` | <code>{{ site.themeConfig.version }}</code> | Live npm registry dist-tag |
+| npm `latest` | <code>{{ site.themeConfig.npmLatest }}</code> | {{ site.themeConfig.npmTagsSource }} |
+| npm `beta` | <code>{{ site.themeConfig.npmBeta }}</code> | {{ site.themeConfig.npmTagsSource }} |
 | Repository `main` | <code>{{ site.themeConfig.version }}</code> release source | Git commit and `package.json` |
 | Manual build | Source commit in footer/meta | Deployed VitePress artifact |
 

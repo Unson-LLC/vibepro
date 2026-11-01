@@ -33,7 +33,7 @@ import { useData } from 'vitepress';
 const { site } = useData();
 </script>
 
-Current version: <code>{{ site.themeConfig.version }}</code>
+Current version: <code>{{ site.themeConfig.npmLatest }}</code>
 
 ## From deciding what to build to reviewing the change
 
