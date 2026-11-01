@@ -821,3 +821,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:614:start -->
 - [PR #614](https://github.com/Unson-LLC/vibepro/pull/614) — [2026-11](/ja/releases/2026-11): fix(docs): サイトの版表記を npm（package.json）の版に合わせ、ビルド時に自動でそろえる
 <!-- vibepro-release-index-pr:614:end -->
+
+<!-- vibepro-release-index-pr:615:start -->
+- [PR #615](https://github.com/Unson-LLC/vibepro/pull/615) — [2026-11](/ja/releases/2026-11): 【worker】fix(docs): 公開履歴を npm の公開時刻と突き合わせ、beta.31〜34 の抜けを直す
+<!-- vibepro-release-index-pr:615:end -->
