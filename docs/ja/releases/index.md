@@ -817,3 +817,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:610:start -->
 - [PR #610](https://github.com/Unson-LLC/vibepro/pull/610) — [2026-10](/ja/releases/2026-10): (やり直し r2)【要件】RQ-002 値なしの --reviewed-by が次のフラグを採択者として取り込まない(vibepro、Draft PR まで)
 <!-- vibepro-release-index-pr:610:end -->
+
+<!-- vibepro-release-index-pr:614:start -->
+- [PR #614](https://github.com/Unson-LLC/vibepro/pull/614) — [2026-11](/ja/releases/2026-11): fix(docs): サイトの版表記を npm（package.json）の版に合わせ、ビルド時に自動でそろえる
+<!-- vibepro-release-index-pr:614:end -->
