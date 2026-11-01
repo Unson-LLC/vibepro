@@ -1,10 +1,9 @@
 import './support/scratch-tmpdir.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, mkdir, cp, rm } from 'node:fs/promises';
 import config from '../docs/.vitepress/config.mjs';
 import { projectPublishedVersion } from '../scripts/post-merge-release.mjs';
-import { mkdtemp, mkdir, cp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
