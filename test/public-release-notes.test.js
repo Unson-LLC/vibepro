@@ -1,16 +1,19 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import siteConfig from '../docs/.vitepress/config.mjs';
+
+const { version: packageVersion } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 const pullRequestNumbers = (content) => [...content.matchAll(/https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/(\d+)/g)]
   .map((match) => Number(match[1]));
 const releaseChannels = (content) => Object.fromEntries(
-  [...content.matchAll(/^\| npm `(latest|beta)` \| `([^`]+)` \|/gmu)]
-    .map((match) => [match[1], match[2]])
+  [...content.matchAll(/^\| npm `(latest|beta)` \| <code>\{\{ site\.themeConfig\.version \}\}<\/code> \|/gmu)]
+    .map((match) => [match[1], siteConfig.themeConfig.version])
 );
-const softwareVersion = (config) => config.match(/softwareVersion: '([^']+)'/u)?.[1];
+const softwareVersion = () => JSON.parse(siteConfig.head.find(([tag, attrs]) => tag === 'script' && attrs.type === 'application/ld+json')[2]).softwareVersion;
 const publishedVersions = (content) => [
   ...content.matchAll(/^\| \d{4}-\d{2}-\d{2} \| \[`([^`]+)`\]\(https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/[^)]+\)/gmu)
 ].map((match) => match[1]);
@@ -78,6 +81,7 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   const enChannels = releaseChannels(enVersion);
   assert.deepEqual(enChannels, jaChannels, 'published npm channels must match across locales');
   assert.deepEqual(Object.keys(enChannels).sort(), ['beta', 'latest']);
+  assert.equal(enChannels.latest, packageVersion);
   assert.equal(enChannels.latest, enChannels.beta, 'the documented beta is also the current latest');
   assert.equal(softwareVersion(config), enChannels.latest, 'VitePress metadata must identify the published version');
   for (const [channel, version] of Object.entries(enChannels)) {
@@ -89,7 +93,7 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   }
 });
 
-test('VRNH-CON-007 published version ledgers are a bilingual prefix of the release index', async () => {
+test('VRNH-CON-007 published version ledgers preserve bilingual historical order in the release index', async () => {
   const [jaIndex, enIndex, jaHistory, enHistory] = await Promise.all([
     read('docs/ja/releases/index.md'),
     read('docs/releases/index.md'),
@@ -105,7 +109,7 @@ test('VRNH-CON-007 published version ledgers are a bilingual prefix of the relea
   assert.equal(new Set(historyVersions[0]).size, historyVersions[0].length, 'published ledger headings must be unique');
   assert.deepEqual(
     historyVersions[0],
-    indexVersions[0].slice(0, historyVersions[0].length),
-    'the version ledger must match the newest published releases without gaps'
+    indexVersions[0].filter(version => historyVersions[0].includes(version)),
+    'historical prose must retain release order; newer factual rows need no invented prose'
   );
 });

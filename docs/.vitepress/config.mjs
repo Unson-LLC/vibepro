@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { mermaidPlugin } from '../../scripts/manual-mermaid.mjs';
+
+const { version } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
 
 const siteUrl = 'https://vibepro.pages.dev';
 const sourceCommit = resolveSourceCommit();
@@ -42,13 +45,14 @@ export default {
       name: 'VibePro',
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Linux, Windows',
-      softwareVersion: '0.2.0-beta.30',
+      softwareVersion: version,
       url: siteUrl,
       codeRepository: 'https://github.com/Unson-LLC/vibepro',
       license: 'https://www.apache.org/licenses/LICENSE-2.0'
     })]
   ],
   themeConfig: {
+    version,
     siteTitle: 'VibePro Manual',
     nav: [
       { text: 'Guide', link: '/guide/what-is-vibepro' },

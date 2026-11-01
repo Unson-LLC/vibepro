@@ -427,7 +427,9 @@ function projectVersionHistory(content, before, after, locale) {
   for (const prefix of ['| npm `latest` |', '| npm `beta` |', '| Repository `main` |']) {
     const index = lines.findIndex((line) => line.startsWith(prefix));
     if (index < 0) throw new Error(`Published-version field is missing: ${prefix}`);
-    lines[index] = replaceCurrentVersion(lines[index], before, after, prefix);
+    if (!lines[index].includes('{{ site.themeConfig.version }}')) {
+      lines[index] = replaceCurrentVersion(lines[index], before, after, prefix);
+    }
   }
 
   const headings = versionHistoryHeadings(lines.join('\n'));
@@ -527,6 +529,8 @@ function projectUpgradeHeading(content, before, after, locale) {
 }
 
 function projectSoftwareVersion(content, before, after) {
+  // Build-time package metadata already follows the source version.
+  if (/^\s+softwareVersion: version,?$/mu.test(content)) return content;
   const lines = content.split('\n');
   const index = lines.findIndex((line) => /^\s+softwareVersion: '[^']+',?$/u.test(line));
   if (index < 0) throw new Error('VitePress softwareVersion field is missing');

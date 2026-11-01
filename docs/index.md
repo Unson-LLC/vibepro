@@ -28,6 +28,13 @@ features:
     details: Keep verification and review records with the change, then prepare a PR summary that shows how the implementation connects back to the Story and Spec.
 ---
 
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
+
+Current version: <code>{{ site.themeConfig.version }}</code>
+
 ## From deciding what to build to reviewing the change
 
 A request does not always call for a new feature. With [Senior Engineering Judgment](/guide/senior-engineering-judgment), `judgment investigate` helps the AI host frame questions from the goal and scope, inspect existing Graphify artifacts and source, and revisit the problem, options, and recommendations as evidence changes. Candidates can then enter explicit input adoption and evaluation to consider what to build, simplify, or validate first. This investigation is optional, not a requirement for every change.

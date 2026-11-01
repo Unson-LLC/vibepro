@@ -1,12 +1,17 @@
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
+
 # バージョンとリリースチャネル
 
 source versionの正本は `package.json` で、installed binaryは `vibepro version` で表示します。
 
 | Channel | このrelease後の期待値 | 正本 |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.30` | liveなnpm registry dist-tag |
-| npm `beta` | `0.2.0-beta.30` | liveなnpm registry dist-tag |
-| Repository `main` | `0.2.0-beta.30` release source | Git commitと `package.json` |
+| npm `latest` | <code>{{ site.themeConfig.version }}</code> | liveなnpm registry dist-tag |
+| npm `beta` | <code>{{ site.themeConfig.version }}</code> | liveなnpm registry dist-tag |
+| Repository `main` | <code>{{ site.themeConfig.version }}</code> release source | Git commitと `package.json` |
 | Manual build | footer/metaのsource commit | deployed VitePress artifact |
 
 表は現在のrelease channelを示します。以下のsectionは公開済みversionの追記専用ledgerで、PRごとの詳細な根拠は[リリースノート](/ja/releases/)に保持します。
