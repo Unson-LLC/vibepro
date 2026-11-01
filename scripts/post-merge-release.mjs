@@ -1,3 +1,4 @@
+import { compareSemver, parseSemver, publishedVersions } from './published-versions.mjs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
@@ -389,6 +390,51 @@ async function upsertIndexEntry(root, pr, month) {
   }
 }
 
+const VERSION_HISTORY_DETAILS = {
+  en: 'Detailed changes for this published version are recorded in [Release Notes](/releases/).',
+  ja: 'この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。'
+};
+
+function publishedReleaseRow(version, date, locale) {
+  const summary = locale === 'ja' ? 'PRマージ後のcontinuous release' : 'Post-merge continuous release';
+  return `| ${date} | [\`${version}\`](https://www.npmjs.com/package/vibepro/v/${version}) | npm \`${npmDistTags(version).join('` / `')}\` | ${summary} |`;
+}
+
+export async function reconcilePublishedVersions(root, npmTime) {
+  const projections = [];
+  const sequences = [];
+  for (const locale of ['en', 'ja']) {
+    const prefix = locale === 'ja' ? 'docs/ja' : 'docs';
+    const historyFile = path.join(root, prefix, 'reference/version-history.md');
+    let history = await readFile(historyFile, 'utf8');
+    const ledger = versionHistoryHeadings(history);
+    assertUniqueVersionHeadings(ledger, historyFile);
+    if (!ledger.length) throw new Error(`${historyFile} has no published-version heading`);
+    // Only versions newer than the ledger's oldest heading; each always has an older heading to insert above.
+    for (const version of publishedVersions(npmTime, ledger)) {
+      if (versionHistoryHeadings(history).includes(version)) continue;
+      const headings = [...history.matchAll(new RegExp(`^## (${SEMVER_TOKEN})$`, 'gmu'))];
+      const offset = headings.find((match) => compareSemver(match[1], version) < 0).index;
+      history = `${history.slice(0, offset)}## ${version}\n\n${VERSION_HISTORY_DETAILS[locale]}\n\n${history.slice(offset)}`;
+    }
+    const indexFile = path.join(root, prefix, 'releases/index.md');
+    let index = await readFile(indexFile, 'utf8');
+    const indexed = [...index.matchAll(/^\|.*https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/([^)]*)\)/gmu)].map((match) => match[1]);
+    for (const version of publishedVersions(npmTime, indexed.length ? indexed : ledger)) {
+      const date = new Date(npmTime[version]).toISOString().slice(0, 10);
+      index = projectPublishedReleaseIndex(index, version, publishedReleaseRow(version, date, locale));
+    }
+    sequences.push(versionHistoryHeadings(history));
+    projections.push([historyFile, history], [indexFile, index]);
+  }
+  if (JSON.stringify(sequences[0]) !== JSON.stringify(sequences[1])) {
+    throw new Error('English and Japanese published-version histories must match');
+  }
+  for (const [file, content] of projections) {
+    if (await readFile(file, 'utf8') !== content) await writeFile(file, content);
+  }
+}
+
 export async function projectPublishedVersion(root, before, after, mergedAt) {
   if (!shouldReleaseVersion(before, after)) return false;
   const targets = [
@@ -406,8 +452,8 @@ export async function projectPublishedVersion(root, before, after, mergedAt) {
   }
   const date = new Date(mergedAt).toISOString().slice(0, 10);
   const rows = [
-    ['docs/ja/releases/index.md', `| ${date} | [\`${after}\`](https://www.npmjs.com/package/vibepro/v/${after}) | npm \`${npmDistTags(after).join('` / `')}\` | PRマージ後のcontinuous release |`],
-    ['docs/releases/index.md', `| ${date} | [\`${after}\`](https://www.npmjs.com/package/vibepro/v/${after}) | npm \`${npmDistTags(after).join('` / `')}\` | Post-merge continuous release |`]
+    ['docs/ja/releases/index.md', publishedReleaseRow(after, date, 'ja')],
+    ['docs/releases/index.md', publishedReleaseRow(after, date, 'en')]
   ];
   for (const [relative, row] of rows) {
     const file = path.join(root, relative);
@@ -445,9 +491,7 @@ function projectVersionHistory(content, before, after, locale) {
     throw new Error(`Current published-version heading identifies ${headings[0]}; expected ${before} or ${after}`);
   }
   if (!headings.includes(after)) {
-    const details = locale === 'ja'
-      ? `この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。`
-      : `Detailed changes for this published version are recorded in [Release Notes](/releases/).`;
+    const details = VERSION_HISTORY_DETAILS[locale];
     lines.splice(currentHeading, 0, `## ${after}`, '', details, '');
   }
   return lines.join('\n');
@@ -457,7 +501,13 @@ function projectPublishedReleaseIndex(content, after, row) {
   if (content.includes(`/v/${after})`)) return content;
   const separator = /^\| ---.*$/mu;
   if (!separator.test(content)) throw new Error('Published release index table separator is missing');
-  return content.replace(separator, (match) => `${match}\n${row}`);
+  const lines = content.split('\n');
+  const rows = lines.map((line, index) => ({ index, version: line.match(/https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/([^)]*)\)/u)?.[1] }))
+    .filter(({ version }) => version);
+  const older = rows.find(({ version }) => compareSemver(version, after) < 0);
+  const offset = older?.index ?? (rows.length ? rows.at(-1).index + 1 : lines.findIndex((line) => separator.test(line)) + 1);
+  lines.splice(offset, 0, row);
+  return lines.join('\n');
 }
 
 function validatePublishedVersionProjection(projections, before, after) {
@@ -815,33 +865,6 @@ export function shouldReleaseVersion(before, after) {
   return compareSemver(after, before) > 0;
 }
 
-function compareSemver(a, b) {
-  const left = parseSemver(a);
-  const right = parseSemver(b);
-  for (const key of ['major', 'minor', 'patch']) {
-    if (left[key] !== right[key]) return left[key] > right[key] ? 1 : -1;
-  }
-  if (!left.pre.length && right.pre.length) return 1;
-  if (left.pre.length && !right.pre.length) return -1;
-  for (let index = 0; index < Math.max(left.pre.length, right.pre.length); index += 1) {
-    if (left.pre[index] === undefined) return -1;
-    if (right.pre[index] === undefined) return 1;
-    if (left.pre[index] === right.pre[index]) continue;
-    const ln = /^\d+$/.test(left.pre[index]);
-    const rn = /^\d+$/.test(right.pre[index]);
-    if (ln && rn) return Number(left.pre[index]) > Number(right.pre[index]) ? 1 : -1;
-    if (ln !== rn) return ln ? -1 : 1;
-    return left.pre[index] > right.pre[index] ? 1 : -1;
-  }
-  return 0;
-}
-
-function parseSemver(value) {
-  const match = `${value}`.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/u);
-  if (!match) throw new Error(`Invalid SemVer: ${value}`);
-  return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), pre: match[4]?.split('.') ?? [] };
-}
-
 export function releaseClassification(version) {
   const { pre } = parseSemver(version);
   const prerelease = pre.length > 0;
@@ -1188,6 +1211,11 @@ async function main(args) {
     await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after, month: result.month, pr_number: result.number });
     return;
   }
+  if (command === 'reconcile-published-versions') {
+    const npmTime = JSON.parse(await readFile(option('--npm-time'), 'utf8'));
+    await reconcilePublishedVersions(rootDefault, npmTime);
+    return;
+  }
   if (command === 'reproject') {
     const event = JSON.parse(await readFile(option('--event'), 'utf8'));
     validateMergedPullRequest(event);
@@ -1225,7 +1253,7 @@ async function main(args) {
     await appendReleaseTimingSummary(timing);
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <plan|validation-plan|project|reproject|release-body|publish-npm|reconcile-github-release|timing>');
+  throw new Error('Usage: post-merge-release.mjs <plan|validation-plan|project|reconcile-published-versions|reproject|release-body|publish-npm|reconcile-github-release|timing>');
 }
 
 if (isDirectInvocation()) {

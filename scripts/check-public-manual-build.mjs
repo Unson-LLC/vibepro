@@ -1,3 +1,4 @@
+import { compareSemver, publishedVersions } from './published-versions.mjs';
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -106,7 +107,31 @@ const REQUIRED_FILES = [
   'sitemap.xml'
 ];
 
-export async function checkPublicManualBuild(distDir) {
+export function findUnlistedPublishedVersions(historyMarkdownOrHtml, npmTime, sourceVersion) {
+  const headings = new Set([
+    ...[...historyMarkdownOrHtml.matchAll(/^## ([^\s]+)\s*$/gmu)].map((match) => match[1]),
+    // Read the version token inside each <h2>; no tag stripping (the text is only compared, never rendered).
+    ...[...historyMarkdownOrHtml.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/giu)]
+      .map((match) => match[1].match(/\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?/u)?.[0])
+      .filter(Boolean)
+  ]);
+  return publishedVersions(npmTime, headings).filter((version) => compareSemver(version, sourceVersion) <= 0 && !headings.has(version));
+}
+
+async function fetchNpmTime() {
+  try {
+    const response = await fetch('https://registry.npmjs.org/vibepro', { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`npm registry returned ${response.status}`);
+    const { time } = await response.json();
+    if (!time || typeof time !== 'object' || Array.isArray(time)) throw new Error('npm registry time is missing');
+    return time;
+  } catch (error) {
+    console.warn(`Warning: skipping published version history check: ${error.message}`);
+    return null;
+  }
+}
+
+export async function checkPublicManualBuild(distDir, { loadNpmTime = fetchNpmTime } = {}) {
   for (const relativePath of REQUIRED_FILES) {
     await requireFile(distDir, relativePath);
   }
@@ -179,6 +204,14 @@ export async function checkPublicManualBuild(distDir) {
     }
   }
 
+  const npmTime = await loadNpmTime();
+  if (npmTime) {
+    const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+    for (const relative of ['reference/version-history.html', 'ja/reference/version-history.html']) {
+      const missing = findUnlistedPublishedVersions(await readFile(path.join(distDir, relative), 'utf8'), npmTime, version);
+      if (missing.length) throw new Error(`Published version history lags npm in ${relative}: missing ${missing.join(', ')}`);
+    }
+  }
   return { status: 'pass', files: files.length };
 }
 

@@ -5,10 +5,13 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
-  checkPublicManualBuild,
+  checkPublicManualBuild as checkBuild,
+  findUnlistedPublishedVersions,
   FORBIDDEN_PUBLIC_CORPORA,
   REQUIRED_PUBLIC_ROUTES
 } from '../scripts/check-public-manual-build.mjs';
+
+const checkPublicManualBuild = (dist) => checkBuild(dist, { loadNpmTime: async () => ({}) });
 
 test('built public surface requires discovery files, social asset, provenance, and no internal routes', async (t) => {
   const dist = await createValidBuild(t);
@@ -119,3 +122,32 @@ async function createValidBuild(t) {
   }));
   return dist;
 }
+
+const npmTime = Object.fromEntries([31, 32, 34, 35].map((n) => [`0.2.0-beta.${n}`, '2026-10-18T00:00:00Z']));
+
+test('version history check fails when the history lags npm', () => {
+  const expected = [31, 32, 34].map((n) => `0.2.0-beta.${n}`);
+  assert.deepEqual(findUnlistedPublishedVersions('## 0.2.0-beta.30', npmTime, '0.2.0-beta.34'), expected);
+  assert.deepEqual(findUnlistedPublishedVersions(expected.map((v) => `## ${v}`).join('\n'), npmTime, '0.2.0-beta.34'), []);
+  const html = expected.map((v) => `<h2 id="${v}">${v}<a class="header-anchor" href="#${v}" aria-label="Permalink">&#8203;</a></h2>`).join('');
+  assert.deepEqual(findUnlistedPublishedVersions(html, npmTime, '0.2.0-beta.34'), []);
+  assert.deepEqual(findUnlistedPublishedVersions(`<p>${expected.join(' ')}</p>`, npmTime, '0.2.0-beta.34'), expected);
+});
+
+test('version history check ignores npm versions older than the oldest ledger heading', () => {
+  const withPreLedger = { ...npmTime, '0.1.0-alpha.0': '2026-06-07T00:00:00Z', '0.2.0-beta.1': '2026-07-18T00:00:00Z' };
+  const ledger = [34, 32, 31, 30].map((n) => `## 0.2.0-beta.${n}`).join('\n');
+  assert.deepEqual(findUnlistedPublishedVersions(ledger, withPreLedger, '0.2.0-beta.34'), []);
+  assert.deepEqual(findUnlistedPublishedVersions('<h2>0.2.0-beta.30</h2>', withPreLedger, '0.2.0-beta.34'), [31, 32, 34].map((n) => `0.2.0-beta.${n}`));
+});
+
+test('built version history rejects missing npm versions in either locale', async (t) => {
+  const dist = await createValidBuild(t);
+  const options = { loadNpmTime: async () => npmTime };
+  await assert.rejects(checkBuild(dist, options), /history lags npm in reference\/version-history.html.*beta.31/);
+  const html = [31, 32, 34].map((n) => `<h2>0.2.0-beta.${n}</h2>`).join('');
+  await writeFile(path.join(dist, 'reference/version-history.html'), html);
+  await assert.rejects(checkBuild(dist, options), /history lags npm in ja\/reference\/version-history.html/);
+  await writeFile(path.join(dist, 'ja/reference/version-history.html'), html);
+  assert.equal((await checkBuild(dist, options)).status, 'pass');
+});
