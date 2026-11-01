@@ -32,6 +32,10 @@ async function setupRepo() {
     await mkdir(path.join(root, path.dirname(testFile)), { recursive: true });
     await writeFile(path.join(root, testFile), "import test from 'node:test';\ntest('x', () => {});\n");
   }
+  await mkdir(path.join(root, 'src'));
+  for (const file of ['widgets.js', 'usage-report.js', 'build.js']) {
+    await writeFile(path.join(root, 'src', file), 'export {};\n');
+  }
   await git(root, ['init', '-b', 'main']);
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);

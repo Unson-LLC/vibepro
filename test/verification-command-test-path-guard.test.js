@@ -174,3 +174,54 @@ test('failing recordはコマンドのパス実在に関係なく従来どおり
   });
   assert.equal(result.evidence.commands[0].status, 'fail');
 });
+
+test('verify record rejects a passing claim whose --target file does not exist', async () => {
+  const repo = await makeWorkspaceRepo();
+  await mkdir(path.join(repo, 'scripts'));
+  await writeFile(path.join(repo, 'scripts/check.sh'), 'exit 0\n');
+
+  for (const status of ['pass', 'passed', 'success', 'ok']) {
+    await assert.rejects(
+      recordVerificationEvidence(repo, {
+        storyId: 'story-a', kind: 'unit', status, command: 'npm test',
+        targets: ['scripts/check.ts', 'scripts/check.sh', 'scripts/missing.js:42']
+      }),
+      (error) => {
+        assert.match(error.message, /--target paths do not exist/);
+        assert.match(error.message, /scripts\/check\.ts/);
+        assert.match(error.message, /scripts\/missing\.js:42/);
+        assert.doesNotMatch(error.message, /check\.sh/);
+        return true;
+      }
+    );
+  }
+  assert.equal(await evidenceFileExists(repo, 'story-a'), false);
+});
+
+test('verify record accepts non-path targets and existing target files', async () => {
+  const repo = await makeWorkspaceRepo();
+  await addTestFile(repo, 'test/existing.test.js');
+  await writeFile(path.join(repo, 'existing.js'), '');
+  const targets = [
+    'auth_denied', 'surface', 'POST /api/x', 'vibepro.unson.jp', 'v1.2', 'missing-root.js',
+    'test/existing.test.js', 'test/existing.test.js:42', 'test/existing.test.js:10-20',
+    'test/existing.test.js#L10', './existing.js', 'existing.js', 'test/*.js', 'https://example.invalid/missing.js',
+    'custom:missing.js', '../outside.js', '/outside/missing.js'
+  ];
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'npm test', targets
+  });
+  assert.deepEqual(result.evidence.commands[0].observation.targets, targets);
+});
+
+test('verify record keeps failing claims with a missing --target recordable', async () => {
+  const repo = await makeWorkspaceRepo();
+  for (const status of ['fail', 'failed', 'error', 'needs_setup']) {
+    const result = await recordVerificationEvidence(repo, {
+      storyId: 'story-a', kind: 'unit', status, command: 'npm test',
+      targets: ['scripts/missing.ts']
+    });
+    assert.equal(result.evidence.commands[0].status, status);
+    assert.deepEqual(result.evidence.commands[0].observation.targets, ['scripts/missing.ts']);
+  }
+});

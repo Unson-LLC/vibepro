@@ -21,6 +21,11 @@ async function makeWorkspaceRepo() {
     path.join(root, '.vibepro', 'vibepro-manifest.json'),
     JSON.stringify({ schema_version: '0.1.0', runs: [], latest_run_by_story: {} }, null, 2)
   );
+  // Passing evidence below names these as --target paths, which must exist.
+  for (const file of ['test/decision-records.test.js', 'e2e/decision.spec.ts']) {
+    await mkdir(path.join(root, path.dirname(file)), { recursive: true });
+    await writeFile(path.join(root, file), '');
+  }
   return root;
 }
 
