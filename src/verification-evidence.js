@@ -73,7 +73,16 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
   assertCommandNamedTestPathsExist(root, options.command, options.status);
   // CI import targets are check names (e.g. codecov/patch), not repository paths.
-  if (computedRecording.source !== 'ci_import') assertTargetPathsExist(root, observation.targets, options.status);
+  const missingTargets = computedRecording.source === 'ci_import'
+    ? []
+    : missingTargetPaths(root, observation.targets, options.status);
+  const targetPathWarning = missingTargets.length > 0
+    ? {
+        id: 'verification_target_path_missing',
+        command_name: 'verify record',
+        reason: `targets do not exist in the repository and were recorded unverified: ${missingTargets.join(', ')}; each may be a check name such as codecov/patch or a wrong path`
+      }
+    : null;
   const observationCheck = buildObservationCheck({ status: options.status, observation });
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
   await mkdir(path.dirname(evidencePath), { recursive: true });
@@ -134,7 +143,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       runtime_identity: runtimeIdentity,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
-        [managedWorktreeWarning, observationWarning, ...callerKeyWarnings].filter(Boolean),
+        [managedWorktreeWarning, observationWarning, targetPathWarning, ...callerKeyWarnings].filter(Boolean),
         computedRecording.additionalWarnings
       )
     };
@@ -340,9 +349,9 @@ function resolveRepositoryPath(repoRoot, value) {
   return absolute;
 }
 
-function assertTargetPathsExist(repoRoot, targets, status) {
-  if (!PASS_STATUSES.has(status)) return;
-  const missing = targets.filter((value) => {
+function missingTargetPaths(repoRoot, targets, status) {
+  if (!PASS_STATUSES.has(status)) return [];
+  return targets.filter((value) => {
     // Only slash-bearing, whitespace-free values are paths: labels such as auth_denied,
     // POST /api/x, vibepro.unson.jp, or v1.2 are not checked, nor are bare root file names.
     if (/\s/.test(value) || !value.includes('/') || path.isAbsolute(value)) return false;
@@ -350,9 +359,6 @@ function assertTargetPathsExist(repoRoot, targets, status) {
     const absolute = resolveRepositoryPath(repoRoot, value.replace(/(?::\d+(?:-\d+)?|#.*)$/, ''));
     return absolute && !existsSync(absolute);
   });
-  if (missing.length > 0) {
-    throw new Error(`passing --target paths do not exist in the repository: ${missing.join(', ')}`);
-  }
 }
 
 function tokenizeCommand(command) {
