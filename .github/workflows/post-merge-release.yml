@@ -192,6 +192,8 @@ jobs:
             git reset --hard origin/main
             npm ci --ignore-scripts
             node scripts/post-merge-release.mjs project --event "$GITHUB_EVENT_PATH"
+            npm view vibepro time --json --prefer-online > "$RUNNER_TEMP/npm-time.json"
+            node scripts/post-merge-release.mjs reconcile-published-versions --npm-time "$RUNNER_TEMP/npm-time.json"
             git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md docs/.vitepress/config.mjs
             if git diff --cached --quiet; then
               pushed=true

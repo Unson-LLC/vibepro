@@ -7,6 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { createMarkdownRenderer } from 'vitepress';
 import { acquireLease } from '../scripts/npm-release-lock.mjs';
+import { publishedVersions } from '../scripts/published-versions.mjs';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const releaseTestParser = await createMarkdownRenderer(repositoryRoot);
@@ -22,6 +23,7 @@ import {
   projectPublishedVersion,
   projectReleaseNote,
   reconcileNpmRelease,
+  reconcilePublishedVersions,
   serializeBareMarkdownDestination,
   desiredDistTags,
   sanitizeReleaseContent,
@@ -538,6 +540,7 @@ test('RNLN-007 initializes the Markdown renderer only for projection commands', 
 
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-renderer-boundary-'));
   await mkdir(path.join(root, 'scripts'));
+  await writeFile(path.join(root, 'scripts/published-versions.mjs'), await readFile(path.join(repositoryRoot, 'scripts/published-versions.mjs'), 'utf8'));
   const isolatedScript = path.join(root, 'scripts', 'post-merge-release.mjs');
   await writeFile(isolatedScript, await readFile(path.join(repositoryRoot, 'scripts/post-merge-release.mjs'), 'utf8'));
   await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vibepro', version: '1.0.0' }));
@@ -708,6 +711,7 @@ function livePullRequestEvent(override = {}) {
 async function createReprojectFixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reproject-'));
   await mkdir(path.join(root, 'scripts'));
+  await writeFile(path.join(root, 'scripts/published-versions.mjs'), await readFile(path.join(repositoryRoot, 'scripts/published-versions.mjs'), 'utf8'));
   await mkdir(path.join(root, 'docs/releases'), { recursive: true });
   await mkdir(path.join(root, 'docs/ja/releases'), { recursive: true });
   await symlink(path.join(repositoryRoot, 'node_modules'), path.join(root, 'node_modules'), 'dir');
@@ -1542,4 +1546,66 @@ test('PCR-CON-012 converges past a cached pre-publish 404 and reads dist-tags wi
   assert.deepEqual(versionOptions[0], { bypassCache: false });
   assert.ok(views.length > 0);
   for (const args of views) assert.ok(args.includes('--prefer-online'), args.join(' '));
+});
+
+test('reconcilePublishedVersions adds npm-published versions missing from the version history', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reconcile-'));
+  const files = ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md', 'docs/releases/index.md', 'docs/ja/releases/index.md'];
+  for (const file of files) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true });
+    await writeFile(path.join(root, file), file.includes('version-history')
+      ? '# History\n\n## 0.2.0-beta.30\n\nExisting details.\n'
+      : '# Releases\n\n| Published | Version | Channel | Summary |\n| --- | --- | --- | --- |\n');
+  }
+  const npmTime = { created: '2026-01-01', modified: '2026-10-18', invalid: '2026-10-18', '01.2.3': '2026-10-18', '0.2.0-beta.01': '2026-10-18',
+    '0.2.0-beta.31': '2026-10-15T23:30:00-02:00', '0.2.0-beta.32': '2026-10-17T00:00:00Z', '0.2.0-beta.34': '2026-10-18T00:00:00Z' };
+  await reconcilePublishedVersions(root, npmTime);
+  const first = await Promise.all(files.map((file) => readFile(path.join(root, file), 'utf8')));
+  const headings = (content) => [...content.matchAll(/^## (.+)$/gmu)].map((m) => m[1]);
+  assert.deepEqual(headings(first[0]), [34, 32, 31, 30].map((n) => `0.2.0-beta.${n}`));
+  assert.deepEqual(headings(first[0]), headings(first[1]));
+  for (const content of first) assert.ok(!content.includes('0.2.0-beta.33'));
+  for (const content of first.slice(2)) {
+    assert.match(content, /\| 2026-10-16 \| \[`0.2.0-beta.31`\]/u);
+    assert.ok(content.indexOf('/v/0.2.0-beta.34') < content.indexOf('/v/0.2.0-beta.32'));
+    assert.match(content, /npm `beta` \/ `latest`/u);
+  }
+  await reconcilePublishedVersions(root, npmTime);
+  assert.deepEqual(await Promise.all(files.map((file) => readFile(path.join(root, file), 'utf8'))), first);
+});
+
+test('reconcilePublishedVersions ignores npm versions older than the ledger and fills gaps in order', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reconcile-floor-'));
+  const files = ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md', 'docs/releases/index.md', 'docs/ja/releases/index.md'];
+  const row = (n) => `| 2026-10-15 | [\`0.2.0-beta.${n}\`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.${n}) | npm \`beta\` | Existing |`;
+  for (const file of files) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true });
+    await writeFile(path.join(root, file), file.includes('version-history')
+      ? '# History\n\n## 0.2.0-beta.32\n\nKept.\n\n## 0.2.0-beta.30\n\nKept.\n\nFooter paragraph.\n'
+      : `# Releases\n\n| Published | Version | Channel | Summary |\n| --- | --- | --- | --- |\n${row(32)}\n${row(30)}\n`);
+  }
+  const npmTime = Object.fromEntries(['0.1.0-alpha.0', '0.2.0-beta.0', '0.2.0-beta.29', '0.2.0-beta.31', '0.2.0-beta.32', '0.2.0-beta.34']
+    .map((version) => [version, '2026-10-15T00:00:00Z']));
+  await reconcilePublishedVersions(root, npmTime);
+  const [en, ja, ...indexes] = await Promise.all(files.map((file) => readFile(path.join(root, file), 'utf8')));
+  for (const history of [en, ja]) {
+    assert.deepEqual([...history.matchAll(/^## (.+)$/gmu)].map((m) => m[1]), [34, 32, 31, 30].map((n) => `0.2.0-beta.${n}`));
+    assert.ok(history.endsWith('Footer paragraph.\n'));
+  }
+  for (const index of indexes) {
+    assert.deepEqual([...index.matchAll(/\/v\/([^)]*)\)/gu)].map((m) => m[1]), [34, 32, 31, 30].map((n) => `0.2.0-beta.${n}`));
+  }
+});
+
+test('committed version history lists every release-index npm version newer than its oldest heading', async () => {
+  const index = await readFile(path.join(repositoryRoot, 'docs/releases/index.md'), 'utf8');
+  const npmTime = Object.fromEntries([...index.matchAll(/^\|.*https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/([^)]*)\)/gmu)].map((match) => [match[1], '']));
+  for (const relative of ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md']) {
+    const history = await readFile(path.join(repositoryRoot, relative), 'utf8');
+    const headings = [...history.matchAll(/^## (\d\S*)$/gmu)].map((match) => match[1]);
+    assert.equal(headings.at(-1), '0.2.0-beta.2', `${relative} ledger must start at 0.2.0-beta.2`);
+    const expected = publishedVersions(npmTime, headings);
+    assert.ok(expected.includes('0.2.0-beta.34'));
+    for (const version of expected) assert.ok(headings.includes(version), `${relative} missing ${version}`);
+  }
 });

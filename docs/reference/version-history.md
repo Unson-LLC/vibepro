@@ -16,6 +16,18 @@ The authoritative source version is `package.json`; an installed binary reports 
 
 The table identifies the current release channels. The sections below are an append-only ledger of published versions; detailed PR evidence remains in [Release Notes](/releases/).
 
+## 0.2.0-beta.34
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.32
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.31
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
 ## 0.2.0-beta.30
 
 Detailed changes for this published version are recorded in [Release Notes](/releases/).

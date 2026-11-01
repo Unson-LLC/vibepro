@@ -16,6 +16,18 @@ source versionの正本は `package.json` で、installed binaryは `vibepro ver
 
 表は現在のrelease channelを示します。以下のsectionは公開済みversionの追記専用ledgerで、PRごとの詳細な根拠は[リリースノート](/ja/releases/)に保持します。
 
+## 0.2.0-beta.34
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.32
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.31
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
 ## 0.2.0-beta.30
 
 この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
