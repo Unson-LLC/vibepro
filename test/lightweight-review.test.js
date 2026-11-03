@@ -38,3 +38,12 @@ test('corrupt review is not reported as missing or passing', async () => {
   await writeFile(result.artifact, '{');
   await assert.rejects(getReviewStatus(root, { storyId }));
 });
+
+test('prepared AI review points to the shared ADR policy without copying its rules', async () => {
+  const root = await setup();
+  const { plan, artifacts } = await prepareReview(root, { storyId });
+  const persisted = JSON.parse(await readFile(artifacts.plan, 'utf8'));
+  assert.equal(persisted.instructions, plan.instructions);
+  assert.match(persisted.instructions, /brainbase-project\/blob\/main\/docs\/architecture\/adr-authoring\.md/);
+  assert.match(persisted.instructions, /採用前の規約案/);
+});
