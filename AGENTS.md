@@ -34,3 +34,7 @@ Never start a second suite in the same worktree while one is running, and never 
 ## 5. Archive pointers
 
 `.vibepro/`, `docs/management/audit-artifacts/`, and `.vibepro-store/` are a read-only archive of the old machine (adjudication records, gap analyses, rescued diffs). Salvage design lessons from them; do not restore code from them.
+
+## ADR
+
+ADR を書く・変更する・レビューする際は、[共通ADR規約案](https://github.com/Unson-LLC/brainbase-project/blob/main/docs/architecture/adr-authoring.md)を参照する。採用前は[提案中の版](https://github.com/Unson-LLC/brainbase-project/blob/docs/uns-294-adr-conventions/docs/architecture/adr-authoring.md)を参照する。

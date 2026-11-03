@@ -27,7 +27,7 @@ export async function prepareReview(repoRoot, options = {}) {
   const plan = {
     story_id: options.storyId,
     roles,
-    instructions: '変更箇所と受入条件を一度確認し、具体的な未解決事項と検証結果を記録してください。追加のレビュー段階は要求しません。'
+    instructions: '変更箇所と受入条件を一度確認し、具体的な未解決事項と検証結果を記録してください。追加のレビュー段階は要求しません。ADRを扱う場合は https://github.com/Unson-LLC/brainbase-project/blob/main/docs/architecture/adr-authoring.md を参照してください（採用前の規約案: https://github.com/Unson-LLC/brainbase-project/blob/docs/uns-294-adr-conventions/docs/architecture/adr-authoring.md）。'
   };
   await mkdir(directory, { recursive: true });
   const planPath = path.join(directory, 'plan.json');
