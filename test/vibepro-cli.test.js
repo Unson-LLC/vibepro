@@ -541,6 +541,14 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.match(gitignore, /^!\.vibepro\/reviews\/$/m);
   assert.ok(gitignore.indexOf('.vibepro/*') < gitignore.indexOf('!.vibepro/reviews/'));
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
+  await git(repo, ['init']);
+  for (const file of ['.vibepro/pr/body.md', '.vibepro/spec/spec.json', '.vibepro/evidence/evidence.json', '.vibepro/reviews/story/transcripts/raw.txt', '.vibepro/reviews/story/subagent-results/result.json', '.vibepro/reviews/story/run.jsonl', '.vibepro/reviews/story/gate/current.json']) {
+    await git(repo, ['check-ignore', file]);
+  }
+  for (const file of ['.vibepro/config.json', '.vibepro/reviews/story/review-code.json', '.vibepro/reviews/story/development-judgment/applicability/current.json']) {
+    await assert.rejects(git(repo, ['check-ignore', file]), (error) => error.code === 1);
+  }
+
 });
 
 test('init help aliases print help without creating a flag-named workspace', async () => {
@@ -6430,7 +6438,7 @@ test('vibepro commands only write files under .vibepro/ in the target repo', asy
   await runCli(['doctor', repo, '--fix']);
 
   const after = new Set(await readdirSafe(repo));
-  const allowed = new Set([...before, '.vibepro', '.gitignore', 'graphify-out']);
+  const allowed = new Set([...before, '.vibepro', '.gitignore', '.gitattributes', 'graphify-out']);
   for (const entry of after) {
     assert.equal(allowed.has(entry), true, `Unexpected top-level entry "${entry}" written by vibepro outside .vibepro/`);
   }
@@ -6483,4 +6491,18 @@ test('env graph command runs end-to-end and derives an environment graph', async
   const status = await coreRunCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--json']);
   assert.equal(status.exitCode, 0);
   assert.equal(status.result.complete, true);
+});
+
+test('init and doctor --fix mark committed .vibepro records as linguist-generated', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, '.gitattributes'), '*.js text\n');
+  await runCli(['init', repo]);
+  const expected = '*.js text\n.vibepro/** linguist-generated\n';
+  assert.equal(await readFile(path.join(repo, '.gitattributes'), 'utf8'), expected);
+  await writeFile(path.join(repo, '.gitattributes'), '*.js text\n');
+  const result = await runCli(['doctor', repo, '--fix']);
+  assert.ok(result.result.repairs.some((repair) => repair.id === 'ensure-gitattributes-vibepro'));
+  assert.equal(await readFile(path.join(repo, '.gitattributes'), 'utf8'), expected);
+  await runCli(['doctor', repo, '--fix']);
+  assert.equal(await readFile(path.join(repo, '.gitattributes'), 'utf8'), expected);
 });

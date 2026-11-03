@@ -50,6 +50,7 @@ export async function initWorkspace(repoRoot, options = {}) {
 
   await writeJsonIfMissing(path.join(workspaceDir, MANIFEST_FILE), createManifest(root), 'VibePro manifest');
   await ensureGitIgnore(root);
+  await ensureGitAttributes(root);
 
   return { repoRoot: root, workspaceDir };
 }
@@ -145,10 +146,14 @@ async function writeJsonIfMissing(filePath, value, label = 'VibePro JSON') {
 export const VIBEPRO_GITIGNORE_REVIEW_LINES = Object.freeze([
   '.vibepro/*',
   '!.vibepro/config.json',
-  '!.vibepro/reviews/'
+  '!.vibepro/reviews/',
+  '.vibepro/reviews/**/transcripts/',
+  '.vibepro/reviews/**/subagent-results/',
+  '.vibepro/reviews/**/*.jsonl',
+  '.vibepro/reviews/**/gate/'
 ]);
 
-export const JUDGMENT_GITIGNORE_MIGRATION_NOTE = 'Existing repositories whose .gitignore has `.vibepro/*` and only `!.vibepro/config.json` leave `.vibepro/reviews/**` untracked, so drafts, runs, inputs, adoptions, and evaluations never reach CI. Add `!.vibepro/reviews/` after `.vibepro/*`. `vibepro init` and `vibepro doctor --fix` write that exception. Repositories that already use the old pattern, including brainbase-organization, update `.gitignore` in their own change.';
+export const JUDGMENT_GITIGNORE_MIGRATION_NOTE = 'Existing repositories whose .gitignore has `.vibepro/*` and only `!.vibepro/config.json` leave `.vibepro/reviews/**` untracked, so drafts, runs, inputs, adoptions, and evaluations never reach CI. Add `!.vibepro/reviews/` after `.vibepro/*`, then re-exclude transcripts/, subagent-results/, *.jsonl, and legacy gate/ under reviews. Add `.vibepro/** linguist-generated` to .gitattributes (display only; it does not reduce changed-line counts). Already tracked generated files must be untracked in the repository’s own change. `vibepro init` and `vibepro doctor --fix` write that exception. Repositories that already use the old pattern, including brainbase-organization, update `.gitignore` in their own change.';
 
 export function gitignoreTracksVibeproReviews(content) {
   const lines = String(content ?? '')
@@ -200,4 +205,16 @@ async function ensureGitIgnore(repoRoot) {
   const updated = renderGitignoreUpdate(existing, required);
   if (updated === null) return;
   await writeFile(ignorePath, updated);
+}
+
+export const VIBEPRO_GITATTRIBUTES_LINE = '.vibepro/** linguist-generated';
+
+export async function ensureGitAttributes(repoRoot) {
+  const file = path.join(repoRoot, '.gitattributes');
+  let content = '';
+  try { content = await readFile(file, 'utf8'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  if (content.split(/\r?\n/).some((line) => line.trim() === VIBEPRO_GITATTRIBUTES_LINE)) return false;
+  // This collapses GitHub display only; ignoring generated bulk reduces diff line counts.
+  await writeFile(file, `${content.trimEnd()}${content.trim() ? '\n' : ''}${VIBEPRO_GITATTRIBUTES_LINE}\n`);
+  return true;
 }
