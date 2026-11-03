@@ -4339,3 +4339,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 不要
 
 <!-- vibepro-release-pr:619:end -->
+
+<!-- vibepro-release-pr:577:start -->
+## [#577](https://github.com/Unson-LLC/vibepro/pull/577) test: find Brainbase producer modules in separate directories
+
+- Author: @sintariran
+- Merged: 2026-11-03T09:19:33Z
+- Commit: `227b36dfe79f163260e0b9e5cb0a3f4de8b21fc8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:577:end -->

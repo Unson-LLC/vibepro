@@ -841,3 +841,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:619:start -->
 - [PR #619](https://github.com/Unson-LLC/vibepro/pull/619) — [2026-11](/releases/2026-11): 【worker】chore(deps-dev): vite を脆弱性の直った 6.4.5 にそろえる
 <!-- vibepro-release-index-pr:619:end -->
+
+<!-- vibepro-release-index-pr:577:start -->
+- [PR #577](https://github.com/Unson-LLC/vibepro/pull/577) — [2026-11](/releases/2026-11): test: find Brainbase producer modules in separate directories
+<!-- vibepro-release-index-pr:577:end -->
