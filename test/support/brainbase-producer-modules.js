@@ -108,7 +108,15 @@ async function findNamedFiles(root, filename, limits) {
   const matches = [];
   let visited = 0;
   async function walk(directory, depth) {
-    if (depth > limits.maxDirectoryDepth) return;
+    if (depth > limits.maxDirectoryDepth) {
+      const error = new Error(
+        `stopped searching for ${filename} below directory depth ${limits.maxDirectoryDepth} under ${root}. `
+        + 'A deeper directory was left unsearched, so any candidate inside it is unknown and a match '
+        + `cannot be declared unique. Set the explicit module path or raise maxDirectoryDepth.`,
+      );
+      error.code = 'BRAINBASE_PRODUCER_SEARCH_LIMIT';
+      throw error;
+    }
     visited += 1;
     if (visited > limits.maxVisitedDirectories) {
       const error = new Error(

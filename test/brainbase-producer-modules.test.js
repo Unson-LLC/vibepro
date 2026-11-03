@@ -159,6 +159,28 @@ test('a search that exceeds the directory limit fails instead of guessing', asyn
   );
 });
 
+test('a depth-truncated search fails instead of accepting a shallow match as unique', async () => {
+  const { root, producerModulePath } = await layout(async ({ root: base }) => {
+    await writeModule(path.join(base, 'tree', 'shallow', OUTCOME_CASE_SERVICE_FILENAME));
+    await writeModule(path.join(base, 'tree', 'deep', 'nested', OUTCOME_CASE_SERVICE_FILENAME));
+    await writeModule(path.join(base, 'tree', 'issuer', HANDOFF_ISSUER_FILENAME));
+  });
+
+  await assert.rejects(
+    resolveBrainbaseProducerModules(envFor(producerModulePath, {
+      [PRODUCER_ROOT_ENV]: path.join(root, 'tree'),
+    }), {
+      limits: { maxDirectoryDepth: 1 },
+    }),
+    (error) => {
+      assert.equal(error.code, 'BRAINBASE_PRODUCER_SEARCH_LIMIT');
+      assert.match(error.message, new RegExp(OUTCOME_CASE_SERVICE_FILENAME));
+      assert.match(error.message, /depth/);
+      return true;
+    },
+  );
+});
+
 test('a symlink to an issuer in another directory is accepted', async () => {
   const { root, producerModulePath } = await layout(async ({ root: base, producerModulePath: producer }) => {
     const directory = path.dirname(producer);
