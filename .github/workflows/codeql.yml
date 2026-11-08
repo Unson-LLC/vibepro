@@ -16,7 +16,7 @@ permissions:
 jobs:
   analyze:
     if: ${{ github.event.repository.private == false }}
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     steps:
       - uses: actions/checkout@v7
       - uses: github/codeql-action/init@v4

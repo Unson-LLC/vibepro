@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     strategy:
       matrix:
         node-version:
