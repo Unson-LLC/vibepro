@@ -845,3 +845,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:577:start -->
 - [PR #577](https://github.com/Unson-LLC/vibepro/pull/577) — [2026-11](/releases/2026-11): test: find Brainbase producer modules in separate directories
 <!-- vibepro-release-index-pr:577:end -->
+
+<!-- vibepro-release-index-pr:621:start -->
+- [PR #621](https://github.com/Unson-LLC/vibepro/pull/621) — [2026-11](/releases/2026-11): UNS-523: CI runner backup with self-hosted defaults
+<!-- vibepro-release-index-pr:621:end -->

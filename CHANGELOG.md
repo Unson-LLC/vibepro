@@ -4360,3 +4360,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:577:end -->
+
+<!-- vibepro-release-pr:621:start -->
+## [#621](https://github.com/Unson-LLC/vibepro/pull/621) UNS-523: CI runner backup with self-hosted defaults
+
+- Author: @sintariran
+- Merged: 2026-11-08T15:14:05Z
+- Commit: `9b0c089249978e0be63932d117c8f4fb30b3e3a8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:621:end -->
