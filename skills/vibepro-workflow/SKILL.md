@@ -1,6 +1,6 @@
 ---
 name: vibepro-workflow
-description: Use only when a target repository explicitly uses VibePro's current lightweight Story-to-Spec helpers. VibePro itself uses its normal plain-git workflow.
+description: Use when you run the VibePro CLI or its Story -> Spec -> implement -> verify -> PR flow, write acceptance criteria, or judge or send back a change based on its verification evidence. VibePro itself uses its normal plain-git workflow.
 ---
 
 # VibePro Workflow
@@ -11,7 +11,7 @@ description: Use only when a target repository explicitly uses VibePro's current
 
 ## When to Use
 
-対象リポジトリが現在の軽量なVibePro Story／Spec運用を明示している場合だけ使う。対象の `AGENTS.md` と通常のGit運用を優先し、VibePro本体には通常のbranch → test → GitHub PR → review → mergeを使う。
+VibePro CLIを動かすとき、Story → Spec → 実装 → 検証 → PRの流れを進めるとき、受け入れ条件を書くとき、または検証証跡に基づいて変更を判断・差し戻すとき。対象の `AGENTS.md` と通常のGit運用を優先し、VibePro本体には通常のbranch → test → GitHub PR → review → mergeを使う。
 
 ## Process
 

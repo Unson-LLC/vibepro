@@ -37,6 +37,8 @@ npm install -g vibepro@beta
 
 ## Minimal workflow
 
+Coding agents should read the bundled `vibepro-workflow` skill (`skills/vibepro-workflow/SKILL.md`) before the steps below. Install bundled skills into the target repo with `vibepro skills install [repo] [--dry-run] [--force] [--json]` (see also `vibepro skills list [--json]`).
+
 ```bash
 # 1. Register the intended change as a Story
 vibepro init /path/to/repo \
@@ -45,7 +47,7 @@ vibepro init /path/to/repo \
   --language en
 
 # 2. Investigate the codebase and write a traceable Spec
-vibepro story diagnose /path/to/repo --id story-example --run-graphify
+vibepro story diagnose /path/to/repo --id story-example
 vibepro spec write /path/to/repo --id story-example --draft --input spec.json
 
 # 3. Run or record verification evidence
@@ -60,6 +62,8 @@ vibepro review record /path/to/repo --id story-example --role reviewer \
 # 5. Summarize the intent-to-implementation evidence for a PR
 vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
 ```
+
+Keep verification at the minimum needed to support your claim; VibePro is not an evidence-collection game.
 
 `pr prepare` writes a machine-readable summary and PR body under `.vibepro/pr/<story-id>/`. It reports what was recorded and how the implementation is linked back to the Story and Spec; it is not an autonomous safety approval. `pr create` can push the selected branch and call GitHub CLI, but final review and merge authority remain outside VibePro.
 
