@@ -845,6 +845,10 @@ async function dispatchCli(argv, io = {}) {
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
+        for (const warning of result.evidence.commands[0].warnings ?? []) {
+          if (warning.id !== 'verification_target_path_missing') continue;
+          write(stderr, `warning: ${warning.reason}\n`);
+        }
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.evidence, null, 2)}\n`
           : renderVerificationEvidenceSummary(result));

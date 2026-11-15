@@ -87,6 +87,48 @@ async function addGitHubRemote(root, name, repository) {
   await git(root, ['remote', 'add', name, `https://github.com/${repository}.git`]);
 }
 
+test('pr prepare resolves a stale local base branch to its origin counterpart', async () => {
+  const root = await setupRepo();
+  await git(root, ['switch', '-c', 'upstream-work', 'main']);
+  await writeFile(path.join(root, 'upstream-only.js'), 'export const upstream = true;\n');
+  await git(root, ['add', 'upstream-only.js']);
+  await git(root, ['commit', '-m', 'add upstream change']);
+  await git(root, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+  await git(root, ['switch', 'feature/ac-coverage']);
+  await git(root, ['merge', '--no-edit', 'upstream-work']);
+
+  const result = await preparePullRequest(root, { storyId: 'story-pr-manager-ac', baseRef: 'main' });
+  assert.equal(result.preparation.git.base_ref, 'origin/main');
+  assert.equal(result.preparation.git.base_ref_requested, 'main');
+  assert.deepEqual(result.preparation.git.changed_files.map((file) => file.path), ['widget.js']);
+  assert.match(renderPrPrepareSummary(result), /- requested base: main \(stale local branch\)/);
+});
+
+test('pr prepare keeps a diverged local base branch as given', async () => {
+  const root = await setupRepo();
+  await git(root, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+  await git(root, ['switch', 'main']);
+  await writeFile(path.join(root, 'local-only.js'), 'export const local = true;\n');
+  await git(root, ['add', 'local-only.js']);
+  await git(root, ['commit', '-m', 'add local change']);
+  await git(root, ['switch', 'feature/ac-coverage']);
+
+  const result = await preparePullRequest(root, { storyId: 'story-pr-manager-ac', baseRef: 'main' });
+  assert.equal(result.preparation.git.base_ref, 'main');
+  assert.equal(result.preparation.git.base_ref_requested, undefined);
+  assert.doesNotMatch(renderPrPrepareSummary(result), /- requested base:/);
+});
+
+test('pr prepare keeps an up-to-date local base branch as given', async () => {
+  const root = await setupRepo();
+  await git(root, ['update-ref', 'refs/remotes/origin/main', 'main']);
+
+  const result = await preparePullRequest(root, { storyId: 'story-pr-manager-ac', baseRef: 'main' });
+  assert.equal(result.preparation.git.base_ref, 'main');
+  assert.equal(result.preparation.git.base_ref_requested, undefined);
+  assert.deepEqual(result.preparation.git.changed_files.map((file) => file.path), ['widget.js']);
+});
+
 test('pr prepareは未検証のStory成果ケースを権威あるメタデータとして投影しない', async () => {
   const storyId = 'story-pr-manager-outcome-case';
   const root = await setupRepo({ storyId, storyDoc: STORY_DOC.replaceAll('story-pr-manager-ac', storyId) });
