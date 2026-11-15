@@ -1,6 +1,6 @@
 {
   "name": "vibepro",
-  "version": "0.2.0-beta.33",
+  "version": "0.2.0-beta.34",
   "description": "Repository-local Story, Spec, verification, review, and PR evidence for AI coding agents",
   "type": "module",
   "license": "Apache-2.0",
@@ -60,6 +60,9 @@
   "devDependencies": {
     "mermaid": "11.17.2",
     "vitepress": "1.6.4"
+  },
+  "overrides": {
+    "vite": "6.4.5"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.62.2"

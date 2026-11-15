@@ -15,8 +15,10 @@ const PLAN_FIELDS = new Set([
   'story_id',
   'plan_version',
   'intent',
-  'tasks'
+  'tasks',
+  'overlap_refs'
 ]);
+const OVERLAP_REF_FIELDS = new Set(['completion_contract_ref', 'task_ids']);
 const INTENT_FIELDS = new Set(['purpose', 'priority', 'delegated_scope', 'acceptance_criteria']);
 const TASK_FIELDS = new Set([
   'task_id',
@@ -87,6 +89,8 @@ export function validateTaskPlan(document, { storyId = null, repository = null }
     tasks: normalizeTasks(document.tasks, normalizedStoryId, normalizedRepository, document.plan_version)
   };
   if (plan.tasks.length === 0) throw new Error('task plan requires a nonempty tasks array');
+  const overlapRefs = normalizeOverlapRefs(document.overlap_refs, plan.tasks);
+  if (overlapRefs !== undefined) plan.overlap_refs = overlapRefs;
   return plan;
 }
 
@@ -380,6 +384,41 @@ function normalizeIntent(intent) {
   };
 }
 
+function normalizeOverlapRefs(value, tasks) {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) throw new Error('task plan overlap_refs must be an array');
+  const taskIds = new Set(tasks.map((task) => task.task_id));
+  const seenRefs = new Set();
+  const normalized = value.map((entry, index) => {
+    if (!entry || Array.isArray(entry) || typeof entry !== 'object') {
+      throw new Error(`task plan overlap_refs at index ${index} must be an object`);
+    }
+    const unknown = Object.keys(entry).filter((key) => !OVERLAP_REF_FIELDS.has(key));
+    if (unknown.length > 0) throw new Error(`unknown task plan overlap_refs field: ${unknown.join(', ')}`);
+    const parsedContractRef = parseStrictCompletionContractRef(entry.completion_contract_ref, index);
+    if (seenRefs.has(parsedContractRef.ref)) {
+      throw new Error(`duplicate task plan overlap_refs completion_contract_ref: ${parsedContractRef.ref}`);
+    }
+    seenRefs.add(parsedContractRef.ref);
+    const rawTaskIds = normalizeStringList(entry.task_ids, `task plan overlap_refs ${index} task_ids`);
+    const uniqueTaskIds = new Set(rawTaskIds);
+    if (uniqueTaskIds.size !== rawTaskIds.length) {
+      throw new Error(`task plan overlap_refs ${index} task_ids must not contain duplicates`);
+    }
+    if (rawTaskIds.length < 2) {
+      throw new Error(`task plan overlap_refs ${index} task_ids must contain at least two task ids`);
+    }
+    for (const taskId of rawTaskIds) {
+      if (!taskIds.has(taskId)) throw new Error(`task plan overlap_refs ${index} references unknown task_id: ${taskId}`);
+    }
+    return {
+      completion_contract_ref: parsedContractRef.ref,
+      task_ids: [...rawTaskIds].sort()
+    };
+  });
+  return normalized.sort((left, right) => left.completion_contract_ref.localeCompare(right.completion_contract_ref));
+}
+
 function normalizeTasks(tasks, storyId, repository, planVersion) {
   if (!Array.isArray(tasks)) throw new Error('task plan tasks must be an array');
   const ids = new Set();
@@ -573,6 +612,26 @@ function observationMatches(observation, target, planVersion, local) {
   return expectedPlanVersion != null && observation.plan_version === expectedPlanVersion;
 }
 
+function parseStrictCompletionContractRef(value, index) {
+  const label = `task plan overlap_refs ${index} completion_contract_ref`;
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${label} must be a nonempty string`);
+  }
+  const separator = value.lastIndexOf('@');
+  if (separator <= 0 || separator === value.length - 1) {
+    throw new Error(`${label} must pin id@version`);
+  }
+  const id = value.slice(0, separator);
+  const version = value.slice(separator + 1);
+  if (!id || !version) {
+    throw new Error(`${label} must pin id@version`);
+  }
+  if (containsForbiddenCompletionContractRefChar(id) || containsForbiddenCompletionContractRefChar(version)) {
+    throw new Error(`${label} id and version must not contain whitespace`);
+  }
+  return { id, version, ref: `${id}@${version}` };
+}
+
 /**
  * Interface references are pinned to the declared contract version. A bare
  * contract id is ambiguous when a provider has published more than one
@@ -586,6 +645,10 @@ function parseContractRef(value) {
   const version = value.slice(separator + 1).trim();
   if (!id || !version) return null;
   return { id, version };
+}
+
+function containsForbiddenCompletionContractRefChar(value) {
+  return /[\s\u200b\ufeff]/i.test(value);
 }
 
 function requiredString(value, label) {

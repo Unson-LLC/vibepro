@@ -13,6 +13,9 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-10-18 | [`0.2.0-beta.34`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.34) | npm `beta` / `latest` | PRマージ後のcontinuous release |
+| 2026-10-15 | [`0.2.0-beta.32`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.32) | npm `beta` / `latest` | PRマージ後のcontinuous release |
+| 2026-10-15 | [`0.2.0-beta.31`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.31) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-10-15 | [`0.2.0-beta.30`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.30) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -774,3 +777,75 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:588:start -->
 - [PR #588](https://github.com/Unson-LLC/vibepro/pull/588) — [2026-10](/ja/releases/2026-10): fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
 <!-- vibepro-release-index-pr:588:end -->
+
+<!-- vibepro-release-index-pr:591:start -->
+- [PR #591](https://github.com/Unson-LLC/vibepro/pull/591) — [2026-10](/ja/releases/2026-10): feat: CLI-usable reasoned not_applicable exemption for multi-tenant applicability gate
+<!-- vibepro-release-index-pr:591:end -->
+
+<!-- vibepro-release-index-pr:589:start -->
+- [PR #589](https://github.com/Unson-LLC/vibepro/pull/589) — [2026-10](/ja/releases/2026-10): feat(task-plan): add overlap_refs to schema 0.2.0
+<!-- vibepro-release-index-pr:589:end -->
+
+<!-- vibepro-release-index-pr:594:start -->
+- [PR #594](https://github.com/Unson-LLC/vibepro/pull/594) — [2026-10](/ja/releases/2026-10): [trial-opencode-deepseek] pr prepare: show draft spec (#439)
+<!-- vibepro-release-index-pr:594:end -->
+
+<!-- vibepro-release-index-pr:595:start -->
+- [PR #595](https://github.com/Unson-LLC/vibepro/pull/595) — [2026-10](/ja/releases/2026-10): feat: Storyからtask-planを作る分解器 (T4)
+<!-- vibepro-release-index-pr:595:end -->
+
+<!-- vibepro-release-index-pr:596:start -->
+- [PR #596](https://github.com/Unson-LLC/vibepro/pull/596) — [2026-10](/ja/releases/2026-10): fix(ac-parser): 受入条件見出しの括弧付き注記を認識する
+<!-- vibepro-release-index-pr:596:end -->
+
+<!-- vibepro-release-index-pr:592:start -->
+- [PR #592](https://github.com/Unson-LLC/vibepro/pull/592) — [2026-10](/ja/releases/2026-10): ci: npm公開をTrusted Publishing（OIDC）へ切り替える
+<!-- vibepro-release-index-pr:592:end -->
+
+<!-- vibepro-release-index-pr:597:start -->
+- [PR #597](https://github.com/Unson-LLC/vibepro/pull/597) — [2026-10](/ja/releases/2026-10): ci: 手動npm公開のcheckoutで全履歴を取る
+<!-- vibepro-release-index-pr:597:end -->
+
+<!-- vibepro-release-index-pr:599:start -->
+- [PR #599](https://github.com/Unson-LLC/vibepro/pull/599) — [2026-10](/ja/releases/2026-10): ci: OIDC公開ジョブからnpm環境を外し、断られた理由をログに出す
+<!-- vibepro-release-index-pr:599:end -->
+
+<!-- vibepro-release-index-pr:601:start -->
+- [PR #601](https://github.com/Unson-LLC/vibepro/pull/601) — [2026-10](/ja/releases/2026-10): ci: post-mergeの公開をnpm-publish.ymlの呼び出しにする
+<!-- vibepro-release-index-pr:601:end -->
+
+<!-- vibepro-release-index-pr:610:start -->
+- [PR #610](https://github.com/Unson-LLC/vibepro/pull/610) — [2026-10](/ja/releases/2026-10): (やり直し r2)【要件】RQ-002 値なしの --reviewed-by が次のフラグを採択者として取り込まない(vibepro、Draft PR まで)
+<!-- vibepro-release-index-pr:610:end -->
+
+<!-- vibepro-release-index-pr:614:start -->
+- [PR #614](https://github.com/Unson-LLC/vibepro/pull/614) — [2026-11](/ja/releases/2026-11): fix(docs): サイトの版表記を npm（package.json）の版に合わせ、ビルド時に自動でそろえる
+<!-- vibepro-release-index-pr:614:end -->
+
+<!-- vibepro-release-index-pr:615:start -->
+- [PR #615](https://github.com/Unson-LLC/vibepro/pull/615) — [2026-11](/ja/releases/2026-11): 【worker】fix(docs): 公開履歴を npm の公開時刻と突き合わせ、beta.31〜34 の抜けを直す
+<!-- vibepro-release-index-pr:615:end -->
+
+<!-- vibepro-release-index-pr:616:start -->
+- [PR #616](https://github.com/Unson-LLC/vibepro/pull/616) — [2026-11](/ja/releases/2026-11): 【worker】fix(pr): 遅れている手元の --base ブランチを origin 側に置き換える（#423）
+<!-- vibepro-release-index-pr:616:end -->
+
+<!-- vibepro-release-index-pr:617:start -->
+- [PR #617](https://github.com/Unson-LLC/vibepro/pull/617) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 同じ kind の記録を別の command で置き換えたら警告する（#447）
+<!-- vibepro-release-index-pr:617:end -->
+
+<!-- vibepro-release-index-pr:618:start -->
+- [PR #618](https://github.com/Unson-LLC/vibepro/pull/618) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 合格の記録で存在しない --target のパスに警告を付ける（#447）
+<!-- vibepro-release-index-pr:618:end -->
+
+<!-- vibepro-release-index-pr:619:start -->
+- [PR #619](https://github.com/Unson-LLC/vibepro/pull/619) — [2026-11](/ja/releases/2026-11): 【worker】chore(deps-dev): vite を脆弱性の直った 6.4.5 にそろえる
+<!-- vibepro-release-index-pr:619:end -->
+
+<!-- vibepro-release-index-pr:577:start -->
+- [PR #577](https://github.com/Unson-LLC/vibepro/pull/577) — [2026-11](/ja/releases/2026-11): test: find Brainbase producer modules in separate directories
+<!-- vibepro-release-index-pr:577:end -->
+
+<!-- vibepro-release-index-pr:621:start -->
+- [PR #621](https://github.com/Unson-LLC/vibepro/pull/621) — [2026-11](/ja/releases/2026-11): UNS-523: CI runner backup with self-hosted defaults
+<!-- vibepro-release-index-pr:621:end -->

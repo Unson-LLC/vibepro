@@ -1,10 +1,11 @@
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
@@ -112,6 +113,151 @@ test('shared Acceptance Criteria parser handles numbered/case/Japanese variants 
     assert.ok(criteria.every((item) => !item.text.includes('BACKGROUND-ONLY')));
     assert.ok(criteria.every((item) => !item.text.includes('BOUNDARY-ONLY')));
   }
+});
+
+test('shared Acceptance Criteria parser accepts a single parenthetical suffix on the heading', () => {
+  for (const heading of [
+    '## 受入条件（Brainbase 完了契約 criteria 原文）',
+    '## 受入条件 (Brainbase criteria)',
+    '## Acceptance Criteria (draft)'
+  ]) {
+    const criteria = extractMarkdownAcceptanceCriteria(storyDocument(heading));
+    assert.equal(criteria.length, 12, heading);
+    assert.deepEqual(criteria.map((item) => item.id), Array.from(
+      { length: 12 },
+      (_, index) => `DSS-AC-${String(index + 1).padStart(3, '0')}`
+    ));
+    assert.ok(criteria.every((item) => !item.text.includes('BACKGROUND-ONLY')));
+    assert.ok(criteria.every((item) => !item.text.includes('BOUNDARY-ONLY')));
+  }
+
+  for (const heading of ['## 受入条件の背景', '## Acceptance Criteria notes']) {
+    assert.equal(extractMarkdownAcceptanceCriteria(storyDocument(heading)).length, 0, heading);
+  }
+});
+
+function assertTwelveAcceptanceCriteria(heading) {
+  const criteria = extractMarkdownAcceptanceCriteria(storyDocument(heading));
+  assert.equal(criteria.length, 12, heading);
+  assert.deepEqual(criteria.map((item) => item.id), Array.from(
+    { length: 12 },
+    (_, index) => `DSS-AC-${String(index + 1).padStart(3, '0')}`
+  ));
+  assert.ok(criteria.every((item) => !item.text.includes('BACKGROUND-ONLY')));
+  assert.ok(criteria.every((item) => !item.text.includes('BOUNDARY-ONLY')));
+}
+
+test('shared Acceptance Criteria parser recognizes a full-width parenthetical suffix', () => {
+  for (const heading of ['## 受入条件（補足）']) {
+    assertTwelveAcceptanceCriteria(heading);
+  }
+});
+
+test('shared Acceptance Criteria parser recognizes an ASCII parenthetical suffix', () => {
+  for (const heading of [
+    '## 受入条件 (補足)',
+    '## 受入条件(補足)',
+    '## Acceptance Criteria (draft)'
+  ]) {
+    assertTwelveAcceptanceCriteria(heading);
+  }
+});
+
+test('shared Acceptance Criteria parser recognizes 受入条件（Brainbase 完了契約 criteria 原文）', () => {
+  for (const heading of ['## 受入条件（Brainbase 完了契約 criteria 原文）']) {
+    assertTwelveAcceptanceCriteria(heading);
+  }
+});
+
+test('shared Acceptance Criteria parser does not recognize 受入条件外（x）', () => {
+  for (const heading of ['## 受入条件外（x）']) {
+    assert.equal(extractMarkdownAcceptanceCriteria(storyDocument(heading)).length, 0, heading);
+  }
+});
+
+test('shared Acceptance Criteria parser rejects a nested parenthetical suffix', () => {
+  for (const heading of ['## 受入条件（外（内））', '## Acceptance Criteria (outer (inner))']) {
+    assert.equal(extractMarkdownAcceptanceCriteria(storyDocument(heading)).length, 0, heading);
+  }
+});
+
+test('shared Acceptance Criteria parser rejects two parenthetical groups', () => {
+  for (const heading of ['## 受入条件（一）（二）', '## Acceptance Criteria (one) (two)']) {
+    assert.equal(extractMarkdownAcceptanceCriteria(storyDocument(heading)).length, 0, heading);
+  }
+});
+
+test('shared Acceptance Criteria parser rejects mixed full-width and ASCII parentheses', () => {
+  for (const heading of [
+    '## 受入条件（補足)',
+    '## 受入条件 (補足）',
+    '## Acceptance Criteria（draft)',
+    '## Acceptance Criteria (draft）'
+  ]) {
+    assert.equal(extractMarkdownAcceptanceCriteria(storyDocument(heading)).length, 0, heading);
+  }
+});
+
+const OLD_ACCEPTANCE_CRITERIA_HEADING = /^#{1,6}\s+(?:(?:\d+(?:\.\d+)*)[.)]?\s+)?(?:acceptance\s+criteria|受け入れ基準|受入基準|受け入れ条件|受入条件|完了定義)\s*[:：]?\s*$/i;
+
+function oldAcceptanceCriteriaCount(content) {
+  const lines = String(content ?? '').split(/\r?\n/);
+  const criteria = [];
+  let inSection = false;
+  for (const [index, line] of lines.entries()) {
+    const trimmed = line.trim();
+    if (OLD_ACCEPTANCE_CRITERIA_HEADING.test(trimmed)) {
+      inSection = true;
+      continue;
+    }
+    if (inSection && /^#{1,6}\s+/.test(trimmed)) break;
+    if (!inSection) continue;
+    const match = line.match(/^\s*-\s*(?:\[[ xX]\]\s*)?(.+?)\s*$/);
+    if (!match) continue;
+    const text = match[1].trim();
+    if (!text) continue;
+    criteria.push({ text });
+  }
+  return criteria.length;
+}
+
+async function collectStoryMarkdownFiles(directory) {
+  const entries = (await readdir(directory, { withFileTypes: true }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+  const files = [];
+  for (const entry of entries) {
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await collectStoryMarkdownFiles(absolute));
+    } else if (entry.name.endsWith('.md')) {
+      files.push(absolute);
+    }
+  }
+  return files;
+}
+
+test('acceptance-criteria counts change only for the T4 and T3 stories', async () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const files = await collectStoryMarkdownFiles(path.join(repoRoot, 'docs', 'management', 'stories'));
+  const differences = [];
+  for (const file of files) {
+    const content = await readFile(file, 'utf8');
+    const oldCount = oldAcceptanceCriteriaCount(content);
+    const newCount = extractMarkdownAcceptanceCriteria(content).length;
+    if (oldCount !== newCount) {
+      differences.push({
+        file: path.relative(repoRoot, file).split(path.sep).join('/'),
+        old_count: oldCount,
+        new_count: newCount
+      });
+    }
+  }
+  differences.sort((left, right) => left.file.localeCompare(right.file));
+  assert.ok(files.length > 0);
+  assert.deepEqual(differences, [
+    { file: 'docs/management/stories/active/story-vibepro-task-plan-decomposer.md', old_count: 0, new_count: 4 },
+    { file: 'docs/management/stories/active/story-vibepro-task-plan-overlap-refs.md', old_count: 0, new_count: 4 }
+  ]);
 });
 
 test('pr prepare projects one exact clause map, computed counts, and distinct task authorities', async () => {

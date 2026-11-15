@@ -106,9 +106,11 @@ import {
 } from './decision-records.js';
 import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
+import { collectGitContext } from './git-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { findStorySource } from './requirement-consistency.js';
 import { bindTaskAuthority, readAcceptedTaskAuthorityStrict, readTaskAuthorities } from './task-authority.js';
+import { decomposeStoryToTaskPlan } from './task-plan-decomposer.js';
 import { analyzeTaskPlan, readTrackedTaskObservations, readTrackedTaskPlan, validateTaskPlan } from './task-plan.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
@@ -270,6 +272,7 @@ Usage:
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan decompose [repo] --story <path> [--repository <name>] [--json]
   vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
@@ -392,6 +395,7 @@ Usage:
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle <declared_not_started|unknown> [--reason <text>] [--json]
   vibepro task plan validate [repo] --input <tracked-json> [--observations <tracked-json>] [--id <story-id>] [--repository <repo>] [--json]
+  vibepro task plan decompose [repo] --story <path> [--repository <name>] [--json]
   vibepro task plan read [repo] --id <story-id> [--observations <tracked-json>] [--json]
   vibepro task bind [repo] --id <story-id> --input <tracked-json> [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--language ja|en] [--deploy-handoff <JSON input file>] [--json]
@@ -841,6 +845,10 @@ async function dispatchCli(argv, io = {}) {
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
+        for (const warning of result.evidence.commands[0].warnings ?? []) {
+          if (warning.id !== 'verification_target_path_missing') continue;
+          write(stderr, `warning: ${warning.reason}\n`);
+        }
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.evidence, null, 2)}\n`
           : renderVerificationEvidenceSummary(result));
@@ -1107,8 +1115,8 @@ async function dispatchCli(argv, io = {}) {
           effect: getOption(rest, '--effect'),
           summary: getOption(rest, '--summary'),
           evidenceRefs: getOptions(rest, '--evidence'),
-          recordedBy: getOption(rest, '--recorded-by'),
-          reviewedBy: getOption(rest, '--reviewed-by')
+          recordedBy: getDispositionActorOption(rest, '--recorded-by'),
+          reviewedBy: getDispositionActorOption(rest, '--reviewed-by')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}
@@ -1513,6 +1521,18 @@ ${renderHelp()}`);
             : renderTaskPlanSummary('validate', result));
           return { exitCode: 0, command, subcommand: 'plan validate', result };
         }
+        if (planCommand === 'decompose') {
+          const storyPath = getOption(rest, '--story');
+          if (!storyPath) throw new Error('task plan decompose requires --story <path>');
+          const storyText = await readFile(path.resolve(repoRoot, storyPath), 'utf8');
+          const plan = decomposeStoryToTaskPlan(storyText, {
+            repository: getOption(rest, '--repository')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(plan, null, 2)}\n`
+            : renderTaskPlanDecomposeSummary(plan));
+          return { exitCode: 0, command, subcommand: 'plan decompose', result: { plan } };
+        }
         if (planCommand === 'read') {
           const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
           if (!storyId) throw new Error('task plan read requires --id <story-id>');
@@ -1838,10 +1858,12 @@ if (command === 'integration') {
           story_id: storyId,
           title: storyId
         }).catch(() => null);
+        const gitContext = await collectGitContext(path.resolve(repoRoot)).catch(() => ({ head_sha: null }));
         const validation = await validateSpec(repoRoot, parsed, {
           expectedStoryId: storyId,
           mode: draft ? 'draft' : 'final',
-          storyContext: storySource?.content ?? ''
+          storyContext: storySource?.content ?? '',
+          headCommit: gitContext.head_sha ?? null
         });
         if (!validation.ok) {
           write(stdout, `${JSON.stringify({
@@ -2272,6 +2294,15 @@ function acceptedAuthorityToPlan(accepted) {
   };
 }
 
+function renderTaskPlanDecomposeSummary(plan) {
+  return [
+    'task plan decompose: accepted',
+    `story: ${plan.story_id}`,
+    `plan version: ${plan.plan_version}`,
+    `tasks: ${plan.tasks.length}`
+  ].join('\n') + '\n';
+}
+
 function renderTaskPlanSummary(command, result) {
   const plan = result.plan ?? acceptedAuthorityToPlan(result.accepted);
   const analysis = result.analysis;
@@ -2373,6 +2404,20 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
+}
+
+// disposition record actor flags (--reviewed-by / --recorded-by): treat a
+// missing, empty, or valueless flag as null. getOption returns the next token
+// verbatim, so `--reviewed-by --recorded-by x` would otherwise adopt the
+// following flag (`--recorded-by`) as the actor. A value that begins with `--`
+// is a flag, not an actor, so it is dropped — matching RQ-001's rule that a
+// missing, empty, or valueless trailing flag resolves to null (RQ-002).
+function getDispositionActorOption(args, name) {
+  const value = getOption(args, name);
+  if (value === null) return null;
+  if (value.startsWith('--')) return null;
+  if (value.trim() === '') return null;
+  return value;
 }
 
 async function readDeployHandoffInput(inputPath) {
