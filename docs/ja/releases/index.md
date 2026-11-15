@@ -13,6 +13,9 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-10-18 | [`0.2.0-beta.34`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.34) | npm `beta` / `latest` | PRマージ後のcontinuous release |
+| 2026-10-15 | [`0.2.0-beta.32`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.32) | npm `beta` / `latest` | PRマージ後のcontinuous release |
+| 2026-10-15 | [`0.2.0-beta.31`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.31) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-10-15 | [`0.2.0-beta.30`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.30) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-22 | [`0.2.0-beta.29`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.29) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-09-20 | [`0.2.0-beta.28`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.28) | npm `beta` / `latest` | PRマージ後のcontinuous release |
@@ -814,3 +817,35 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:610:start -->
 - [PR #610](https://github.com/Unson-LLC/vibepro/pull/610) — [2026-10](/ja/releases/2026-10): (やり直し r2)【要件】RQ-002 値なしの --reviewed-by が次のフラグを採択者として取り込まない(vibepro、Draft PR まで)
 <!-- vibepro-release-index-pr:610:end -->
+
+<!-- vibepro-release-index-pr:614:start -->
+- [PR #614](https://github.com/Unson-LLC/vibepro/pull/614) — [2026-11](/ja/releases/2026-11): fix(docs): サイトの版表記を npm（package.json）の版に合わせ、ビルド時に自動でそろえる
+<!-- vibepro-release-index-pr:614:end -->
+
+<!-- vibepro-release-index-pr:615:start -->
+- [PR #615](https://github.com/Unson-LLC/vibepro/pull/615) — [2026-11](/ja/releases/2026-11): 【worker】fix(docs): 公開履歴を npm の公開時刻と突き合わせ、beta.31〜34 の抜けを直す
+<!-- vibepro-release-index-pr:615:end -->
+
+<!-- vibepro-release-index-pr:616:start -->
+- [PR #616](https://github.com/Unson-LLC/vibepro/pull/616) — [2026-11](/ja/releases/2026-11): 【worker】fix(pr): 遅れている手元の --base ブランチを origin 側に置き換える（#423）
+<!-- vibepro-release-index-pr:616:end -->
+
+<!-- vibepro-release-index-pr:617:start -->
+- [PR #617](https://github.com/Unson-LLC/vibepro/pull/617) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 同じ kind の記録を別の command で置き換えたら警告する（#447）
+<!-- vibepro-release-index-pr:617:end -->
+
+<!-- vibepro-release-index-pr:618:start -->
+- [PR #618](https://github.com/Unson-LLC/vibepro/pull/618) — [2026-11](/ja/releases/2026-11): 【worker】fix(verify): 合格の記録で存在しない --target のパスに警告を付ける（#447）
+<!-- vibepro-release-index-pr:618:end -->
+
+<!-- vibepro-release-index-pr:619:start -->
+- [PR #619](https://github.com/Unson-LLC/vibepro/pull/619) — [2026-11](/ja/releases/2026-11): 【worker】chore(deps-dev): vite を脆弱性の直った 6.4.5 にそろえる
+<!-- vibepro-release-index-pr:619:end -->
+
+<!-- vibepro-release-index-pr:577:start -->
+- [PR #577](https://github.com/Unson-LLC/vibepro/pull/577) — [2026-11](/ja/releases/2026-11): test: find Brainbase producer modules in separate directories
+<!-- vibepro-release-index-pr:577:end -->
+
+<!-- vibepro-release-index-pr:621:start -->
+- [PR #621](https://github.com/Unson-LLC/vibepro/pull/621) — [2026-11](/ja/releases/2026-11): UNS-523: CI runner backup with self-hosted defaults
+<!-- vibepro-release-index-pr:621:end -->
