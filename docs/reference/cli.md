@@ -103,6 +103,35 @@ A passing record requires an existing `--inspection-input` outside `.vibepro`. C
   vibepro report show [repo] --kind <kind> --id <story-id>
 ```
 
+## Judgment Receipt HMAC Key Location
+
+`vibepro judgment prepare` signs receipts with `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY`. The value is never committed or printed; it lives only in Infisical.
+
+| Item | Value |
+| --- | --- |
+| Infisical | `https://infisical.unson.jp` |
+| projectId | `ce20541c-02b9-4523-bbe0-49d50b2fcc19` (Brainbase, org `unson`) |
+| env | `dev` |
+| path | `/vibepro` |
+| Key | `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` (base64, 64 chars) |
+| Wrapper target (Mac mini) | `brainbase-vibepro-writer` in `~/.brainbase/infisical-targets.json` |
+
+Run prepare with the key injected (from `brainbase-unson`; the value stays in the child process environment):
+
+```bash
+~/workspace/repos/brainbase-unson/scripts/infisical-target-run.sh \
+  --target brainbase-vibepro-writer -- \
+  env VIBEPRO_JUDGMENT_PR_NUMBER=<pr> vibepro judgment prepare <repo> --id <story-id>
+```
+
+Check presence without printing the value:
+
+```bash
+~/workspace/repos/brainbase-unson/scripts/infisical-target-run.sh \
+  --target brainbase-vibepro-writer -- \
+  bash -c 'printf "len=%s\n" "${#VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY}"'
+```
+
 ## Drift Check
 
 ```bash
