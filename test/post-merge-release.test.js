@@ -981,7 +981,7 @@ function workflowJob(workflow, name) {
   return next < 0 ? rest : rest.slice(0, next + 1);
 }
 
-const SELF_HOSTED_RUNNER = /runs-on: \[self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2\]/u;
+const SELF_HOSTED_RUNNER = /runs-on: \$\{\{ fromJSON\(vars\.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' \|\| '\["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"\]'\) \}\}/u;
 
 // npm Trusted Publishing: OIDC works only on GitHub-hosted runners, and no
 // long-lived token may remain as a silent fallback. A fresh GitHub-hosted
