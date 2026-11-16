@@ -61,6 +61,9 @@
     "mermaid": "11.17.2",
     "vitepress": "1.6.4"
   },
+  "overrides": {
+    "vite": "6.4.5"
+  },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.62.2"
   },
