@@ -4,13 +4,14 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
+import { assertManagedWorktreeCommandAllowed } from './managed-worktree.js';
 import { collectGitContext } from './git-fingerprint.js';
 import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
-import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
-import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
+import { assertRuntimeIntegrity } from './runtime-info.js';
+import { enqueueBrainbaseLearningCandidate } from './brainbase-integration.js';
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -40,6 +41,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   if (!ALLOWED_STATUSES.has(options.status)) {
     throw new Error(`verify record --status must be one of: ${[...ALLOWED_STATUSES].join(', ')}`);
   }
+  const runtimeIdentity = await assertRuntimeIntegrity({
+    purpose: 'evidence_generation',
+    env: options.env
+  });
   const computedRecording = resolveComputedRecording(options);
   // The receipt decides whether the computed keys on this record are the recording path's own
   // or a caller's, so it also decides whether either producer of observation.values may carry
@@ -53,12 +58,6 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   });
   const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(root, { storyId });
   const gitContext = await collectGitContext(root, { userExcludePaths: generatedProjectionPaths });
-  const lineage = resolveRecorderLineage(options, {
-    story_id: storyId,
-    worktree_root: root,
-    branch: gitContext.current_branch,
-    head_sha: gitContext.head_sha
-  }, `verification-${options.kind}`);
   const { check: artifactCheck, observedValues: liftedArtifactValues } = await crossCheckArtifact(root, {
     artifact: options.artifact,
     status: options.status
@@ -73,6 +72,17 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const observation = buildObservation(options, artifactObservedValues, { receiptBacked });
   assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
   assertCommandNamedTestPathsExist(root, options.command, options.status);
+  // CI import targets are check names (e.g. codecov/patch), not repository paths.
+  const missingTargets = computedRecording.source === 'ci_import'
+    ? []
+    : missingTargetPaths(root, observation.targets, options.status);
+  const targetPathWarning = missingTargets.length > 0
+    ? {
+        id: 'verification_target_path_missing',
+        command_name: 'verify record',
+        reason: `targets do not exist in the repository and were recorded unverified: ${missingTargets.join(', ')}; each may be a check name such as codecov/patch or a wrong path`
+      }
+    : null;
   const observationCheck = buildObservationCheck({ status: options.status, observation });
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
   await mkdir(path.dirname(evidencePath), { recursive: true });
@@ -82,8 +92,18 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     targets: observation.targets,
     artifacts: [options.artifact].filter(Boolean)
   });
+  let previousCommand = null;
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
+    previousCommand = existing.commands.find((item) => item.kind === options.kind) ?? null;
+    const sameKindWarning = previousCommand && (previousCommand.command ?? null) !== (options.command ?? null)
+      ? {
+          id: 'verification_same_kind_replaced',
+          command_name: 'verify record',
+          reason: `replaced ${previousCommand.command == null ? 'a record without a command' : JSON.stringify(previousCommand.command)} (executed_at: ${previousCommand.executed_at}) for kind ${options.kind}; `
+            + 'the evidence keeps one record per kind, so the earlier result is no longer counted.'
+        }
+      : null;
     const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
     const observationWarning = observationCheck.status === 'missing'
       ? {
@@ -128,10 +148,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       content_binding: contentBinding,
-      ...(lineage ? { lineage } : {}),
+      runtime_identity: runtimeIdentity,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
-        [managedWorktreeWarning, observationWarning, ...callerKeyWarnings].filter(Boolean),
+        [managedWorktreeWarning, observationWarning, targetPathWarning, sameKindWarning, ...callerKeyWarnings].filter(Boolean),
         computedRecording.additionalWarnings
       )
     };
@@ -143,19 +163,46 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       schema_version: '0.1.0',
       story_id: storyId,
       updated_at: new Date().toISOString(),
+      runtime_identity: runtimeIdentity,
       warnings: mergeWarnings([], commands.flatMap((item) => item.warnings ?? [])),
       commands
     };
     await writeJsonAtomic(evidencePath, nextEvidence);
     return nextEvidence;
   });
-  await refreshActiveRunContextCapsule(root, {
-    storyId,
-    reason: 'verification_recorded'
-  });
+  let brainbaseLearning = null;
+  if (computedRecording.source !== SELF_REPORTED_EVIDENCE_SOURCE && PASS_STATUSES.has(String(options.status).toLowerCase())) {
+    // Candidate generation and delivery are deliberately best-effort from the
+    // verification path: a verified command remains a pass even when Brainbase
+    // is unavailable. The durable outbox records the pending/retry state.
+    try {
+      brainbaseLearning = await enqueueBrainbaseLearningCandidate(root, {
+        storyId,
+        command: evidence.commands.find((item) => item.kind === options.kind),
+        previousCommand,
+        evidence,
+        gitContext,
+        now: options.now,
+        repositoryRef: options.repositoryRef,
+        send: options.brainbaseSend,
+        retryDelayMs: options.brainbaseRetryDelayMs
+      });
+    } catch {
+      // Candidate/outbox persistence is intentionally fail-soft. Keep the
+      // computed verification pass durable and expose an explicit retry state;
+      // never copy a transport or filesystem error into a learning artifact.
+      brainbaseLearning = {
+        status: 'pending',
+        story_id: storyId,
+        reason: 'candidate_enqueue_failed'
+      };
+    }
+  }
   return {
     evidence,
-    artifact: toWorkspaceRelative(root, evidencePath)
+    runtime_identity: runtimeIdentity,
+    artifact: toWorkspaceRelative(root, evidencePath),
+    ...(brainbaseLearning ? { brainbase_learning: brainbaseLearning } : {})
   };
 }
 
@@ -186,25 +233,6 @@ function resolveComputedRecording(options) {
     observationOverrides: Array.isArray(options.observationOverrides) ? options.observationOverrides : [],
     additionalWarnings: Array.isArray(options.additionalWarnings) ? options.additionalWarnings : []
   };
-}
-
-function resolveRecorderLineage(options, recorderAuthority, dispatchId) {
-  const supplied = options.lineage ?? options.runLineage;
-  const runAuthority = options.runAuthority ?? options.activeRun ?? options.run ?? null;
-  if (!supplied && !runAuthority) return null;
-  const authority = runAuthority ? {
-    ...runAuthority,
-    story_id: runAuthority.story_id ?? runAuthority.storyId,
-    run_id: runAuthority.run_id ?? runAuthority.runId,
-    worktree_root: runAuthority.worktree_root ?? runAuthority.root_realpath ?? runAuthority.execution_context?.root_realpath,
-    branch: runAuthority.branch ?? runAuthority.current_branch,
-    head_sha: runAuthority.head_sha ?? runAuthority.current_head_sha
-  } : null;
-  const lineage = supplied
-    ? assertRunLineageBinding(supplied, authority)
-    : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
-  assertRunLineageBinding(lineage, recorderAuthority);
-  return lineage;
 }
 
 export function assertCommandMatchesVerificationKind(kind, command, status, observation = null, artifactCheck = null, artifactObservedValues = {}) {
@@ -313,14 +341,32 @@ function missingNamedTestPaths(repoRoot, command) {
       continue;
     }
     if (!TEST_FILE_ARGUMENT.test(value)) continue;
-    if (/[*?[\]{}]/.test(value)) continue;
-    if (/^[a-z][a-z0-9+.-]*:/i.test(value)) continue;
-    const absolute = path.resolve(repoRoot, value);
-    const relative = path.relative(path.resolve(repoRoot), absolute);
-    if (relative.startsWith('..') || path.isAbsolute(relative)) continue;
-    if (!existsSync(absolute)) missing.push(value);
+    const absolute = resolveRepositoryPath(repoRoot, value);
+    if (absolute && !existsSync(absolute)) missing.push(value);
   }
   return missing;
+}
+
+// Share glob, scheme, and repository-boundary handling with named test paths.
+function resolveRepositoryPath(repoRoot, value) {
+  if (/[*?[\]{}]/.test(value)) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return null;
+  const absolute = path.resolve(repoRoot, value);
+  const relative = path.relative(path.resolve(repoRoot), absolute);
+  if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return null;
+  return absolute;
+}
+
+function missingTargetPaths(repoRoot, targets, status) {
+  if (!PASS_STATUSES.has(status)) return [];
+  return targets.filter((value) => {
+    // Only slash-bearing, whitespace-free values are paths: labels such as auth_denied,
+    // POST /api/x, vibepro.unson.jp, or v1.2 are not checked, nor are bare root file names.
+    if (/\s/.test(value) || !value.includes('/') || path.isAbsolute(value)) return false;
+    // src/foo.js:42, src/foo.js:10-20, and src/foo.js#L10 all name src/foo.js.
+    const absolute = resolveRepositoryPath(repoRoot, value.replace(/(?::\d+(?:-\d+)?|#.*)$/, ''));
+    return absolute && !existsSync(absolute);
+  });
 }
 
 function tokenizeCommand(command) {
@@ -493,8 +539,8 @@ async function withEvidenceLock(evidencePath, action) {
 }
 
 async function acquireLock(lockPath) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < EVIDENCE_LOCK_TIMEOUT_MS) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < EVIDENCE_LOCK_TIMEOUT_MS) {
     try {
       await mkdir(lockPath);
       return;
@@ -618,6 +664,7 @@ export const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set([
   'timeout_ms',
   'max_output_bytes',
   'harness_env_removed',
+  'runner_node_version',
   'head_sha_before',
   'head_sha_after',
   'head_moved_during_run',

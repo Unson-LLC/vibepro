@@ -123,7 +123,9 @@ test('GUARD-E2E-004 story-vibepro-release-surface-guard ac:7 installed pre-push 
   const repo = await makeRepo();
   const origin = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guard-e2e-origin-'));
   await run('git', ['init', '--bare', '-b', 'main'], origin);
-  await run('git', ['remote', 'add', 'origin', origin], repo);
+  const fixtureRepository = 'example/guard-e2e-origin';
+  const fixtureUrl = `ssh://git@github.com/${fixtureRepository}.git`;
+  await run('git', ['remote', 'add', 'origin', fixtureUrl], repo);
 
   // ac:6: `vibepro guard install` はmarker付きpre-push hookを設置し、再実行は冪等
   const install = await vibepro(repo, ['guard', 'install', repo]);
@@ -136,31 +138,94 @@ test('GUARD-E2E-004 story-vibepro-release-surface-guard ac:7 installed pre-push 
   const shim = path.join(shimDir, 'vibepro');
   await writeFile(shim, `#!/bin/sh\nexec "${process.execPath}" "${VIBEPRO_BIN}" "$@"\n`, 'utf8');
   await chmod(shim, 0o755);
-  const hookEnv = { PATH: `${shimDir}:${process.env.PATH}` };
+  const sshShim = path.join(shimDir, 'ssh');
+  await writeFile(sshShim, `#!/bin/sh
+set -eu
+if [ "\${1:-}" = "-o" ] && [ "\${2:-}" = "SendEnv=GIT_PROTOCOL" ]; then
+  shift 2
+fi
+[ "\${1:-}" = "git@github.com" ] || { echo 'unexpected SSH host' >&2; exit 97; }
+shift
+[ "\$#" -eq 1 ] || { echo 'unexpected SSH command' >&2; exit 98; }
+case "\$1" in
+  "git-receive-pack '/${fixtureRepository}.git'") exec git-receive-pack "\$VIBEPRO_TEST_ORIGIN" ;;
+  *) echo 'unexpected SSH command' >&2; exit 99 ;;
+esac
+`, 'utf8');
+  await chmod(sshShim, 0o755);
+  const hookEnv = {
+    PATH: `${shimDir}:${process.env.PATH}`,
+    GIT_SSH_COMMAND: sshShim,
+    GIT_SSH_VARIANT: 'ssh',
+    VIBEPRO_TEST_ORIGIN: origin
+  };
+
+  // The installed hook must reject an unset target even when the guard bypass is present.
+  const missingExpected = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', {
+    ...hookEnv,
+    VIBEPRO_EXPECTED_REPOSITORY: '',
+    VIBEPRO_GUARD_BYPASS: 'test bypass'
+  });
+  assert.notEqual(missingExpected.code, 0);
+  assert.match(missingExpected.stderr, /explicit repository target|destination URL/);
+
+  // A mismatched target must stop before the bypass can allow the protected ref.
+  const mismatchedExpected = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', {
+    ...hookEnv,
+    VIBEPRO_EXPECTED_REPOSITORY: 'example/not-the-fixture',
+    VIBEPRO_GUARD_BYPASS: 'test bypass'
+  });
+  assert.notEqual(mismatchedExpected.code, 0);
+  assert.match(mismatchedExpected.stderr, /does not match the explicit repository target/);
 
   // ac:7: 設置されたpre-push hookは、protected branchへのpush refをguard checkへ委譲し、blocked時に非0で終了する
-  const blockedPush = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', hookEnv);
+  const blockedPush = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', {
+    ...hookEnv,
+    VIBEPRO_EXPECTED_REPOSITORY: fixtureRepository,
+    VIBEPRO_GUARD_BYPASS: ''
+  });
   assert.notEqual(blockedPush.code, 0);
   assert.match(blockedPush.stderr, /blocked|pre-push/);
 
-  // protected以外のbranch pushは通す
+  // Matching target + feature branch must pass through the hook and reach the local bare remote.
   await run('git', ['switch', '-c', 'feature/x'], repo);
   await writeFile(path.join(repo, 'f.txt'), 'x\n', 'utf8');
   await run('git', ['add', 'f.txt'], repo);
   await run('git', ['commit', '-m', 'feat: x'], repo);
-  const featurePush = await runWithStdin('git', ['push', 'origin', 'feature/x'], repo, '', hookEnv);
+  const featurePush = await runWithStdin('git', ['push', 'origin', 'feature/x'], repo, '', {
+    ...hookEnv,
+    VIBEPRO_EXPECTED_REPOSITORY: fixtureRepository,
+    VIBEPRO_GUARD_BYPASS: ''
+  });
   assert.equal(featurePush.code, 0);
+  const featureSha = (await run('git', ['rev-parse', 'feature/x'], repo)).stdout.trim();
+  const remoteFeatureSha = (await run('git', ['--git-dir', origin, 'rev-parse', 'refs/heads/feature/x'], repo)).stdout.trim();
+  assert.equal(remoteFeatureSha, featureSha);
 
-  // ac:3 / S-003: gate readinessが `ready_for_pr_create: true` のとき、release-surfaceコマンドでも exit 0 になる
-  // When the selected story is ready_for_pr_create the guard allows release-surface commands.
-  // guard.enabled=false でreadiness非依存のallowも確認する（ready状態の完全なfixtureはユニット層のGUARD-S-004でDI検証済み。ここでは実CLIの設定経路を検証する）
+  // The target match must not weaken the protected-branch guard.
   await run('git', ['switch', 'main'], repo);
+  const matchingBlockedPush = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', {
+    ...hookEnv,
+    VIBEPRO_EXPECTED_REPOSITORY: fixtureRepository,
+    VIBEPRO_GUARD_BYPASS: ''
+  });
+  assert.notEqual(matchingBlockedPush.code, 0);
+  assert.match(matchingBlockedPush.stderr, /blocked|pre-push/);
+
+  // With the guard explicitly disabled, the matching protected push is allowed and read back.
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));
   config.guard = { enabled: false };
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
-  const allowedPush = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', hookEnv);
+  const allowedPush = await runWithStdin('git', ['push', 'origin', 'main'], repo, '', {
+    ...hookEnv,
+    VIBEPRO_EXPECTED_REPOSITORY: fixtureRepository,
+    VIBEPRO_GUARD_BYPASS: ''
+  });
   assert.equal(allowedPush.code, 0);
+  const mainSha = (await run('git', ['rev-parse', 'main'], repo)).stdout.trim();
+  const remoteMainSha = (await run('git', ['--git-dir', origin, 'rev-parse', 'refs/heads/main'], repo)).stdout.trim();
+  assert.equal(remoteMainSha, mainSha);
 });
 
 // story-vibepro-release-surface-guard ac:8

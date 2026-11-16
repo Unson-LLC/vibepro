@@ -265,7 +265,12 @@ export async function evaluateManagedWorktreeCommandContext(repoRoot, options = 
       required: configuredMode === 'required',
       reason: configuredMode === 'disabled'
         ? 'managed worktree mode is disabled'
-        : 'no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands',
+        // `vibepro execute start` was removed with the Gate DAG / execution
+        // lifecycle machinery (docs/management/REBUILD.md minimal-core
+        // rebuild); no current CLI command creates managed worktree
+        // execution state. Point at the config knob that actually silences
+        // this instead of a command that no longer exists (issue #436 item 2).
+        : 'no managed worktree execution state is recorded for this checkout; no current VibePro command creates one, so set execution.managed_worktree to "disabled" in .vibepro/config.json unless this checkout was set up as a managed worktree by other tooling',
       command_name: options.commandName ?? null,
       repo_root: root,
       actual_root: actualRoot,
@@ -540,21 +545,13 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       reason: completedPhases.includes('verify') ? 'verification evidence exists' : 'verification evidence has not been recorded yet'
     },
     {
-      id: 'agent_review_recorded',
-      status: completedPhases.includes('agent_review') ? 'passed' : 'pending',
-      required: false,
-      reason: completedPhases.includes('agent_review')
-        ? 'required agent review evidence is complete'
-        : 'agent review is not complete yet'
-    },
-    {
       id: 'pr_prepare_ready',
       status: completedPhases.includes('ready_for_pr_create')
         ? 'passed'
         : deliveryObserved ? 'not_applicable' : 'pending',
       required: !deliveryObserved,
       reason: completedPhases.includes('ready_for_pr_create')
-        ? 'Gate DAG is ready for PR creation'
+        ? 'PR summary has no unresolved blockers'
         : deliveryObserved
           ? 'delivery was observed externally; historical PR readiness is not inferred from delivery'
           : 'PR prepare is not ready yet'
@@ -652,8 +649,7 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       ['head_bound', 'implementation_started'],
       ['implementation_started', 'implementation_complete'],
       ['implementation_complete', 'verification_recorded'],
-      ['verification_recorded', 'agent_review_recorded'],
-      ['agent_review_recorded', 'pr_prepare_ready'],
+      ['verification_recorded', 'pr_prepare_ready'],
       ['pr_prepare_ready', 'pr_created'],
       ['pr_created', 'merge_ready'],
       ['merge_ready', 'merged_or_closed'],

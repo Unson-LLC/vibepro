@@ -41,6 +41,14 @@ export async function validateReportNarrative(repoRoot, narrative, fingerprint, 
       message: `narrative.story_id "${narrative.story_id}" does not match expected "${options.expectedStoryId}"`
     });
   }
+  const caller = narrative.generated_by?.caller;
+  if (caller !== undefined
+    && (typeof caller !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$/.test(caller))) {
+    errors.push({
+      code: 'generated_by_caller',
+      message: 'generated_by.caller must be a single safe identifier of 1-64 characters'
+    });
+  }
   if (!Array.isArray(narrative.narrative_slots)) {
     errors.push({ code: 'slots_missing', message: 'narrative_slots must be an array' });
     return { ok: false, errors, warnings, narrative };
@@ -62,11 +70,25 @@ export async function validateReportNarrative(repoRoot, narrative, fingerprint, 
   const findingIds = new Set((fingerprint?.findings ?? []).map((entry) => entry.id));
   const clauseIds = new Set((fingerprint?.inferred_spec?.clauses ?? []).map((entry) => entry.id));
   const numericalTruth = fingerprint?.numerical_truth ?? {};
+  const seenSlotIds = new Set();
 
   for (let index = 0; index < narrative.narrative_slots.length; index += 1) {
     const slot = narrative.narrative_slots[index];
+    if (typeof slot?.id === 'string') {
+      if (seenSlotIds.has(slot.id)) {
+        errors.push({
+          code: 'slot_id_duplicate',
+          message: `narrative_slots[${index}] (${slot.id}).id must be unique`
+        });
+      }
+      seenSlotIds.add(slot.id);
+    }
     const slotErrors = await validateSlot(repoRoot, slot, index, {
-      driftIds, findingIds, clauseIds, numericalTruth
+      driftIds,
+      findingIds,
+      clauseIds,
+      numericalTruth,
+      allowTemporaryIds: options.allowTemporaryIds === true
     });
     errors.push(...slotErrors);
   }
@@ -95,8 +117,16 @@ async function validateSlot(repoRoot, slot, index, ctx) {
     errors.push({ code: 'slot_shape', message: `${locator} must be an object` });
     return errors;
   }
-  if (!slot.id || typeof slot.id !== 'string') {
-    errors.push({ code: 'slot_id', message: `${locator}.id required` });
+  const slotIdPattern = ctx.allowTemporaryIds
+    ? /^TP-(?:NEW-[1-9][0-9]*|[0-9]{3,})$/
+    : /^TP-[0-9]{3,}$/;
+  if (typeof slot.id !== 'string' || !slotIdPattern.test(slot.id)) {
+    errors.push({
+      code: 'slot_id',
+      message: ctx.allowTemporaryIds
+        ? `${locator}.id must be TP-<3 or more digits> or TP-NEW-<positive integer>`
+        : `${locator}.id must be a canonical TP-<3 or more digits> identifier`
+    });
   }
   if (!SLOT_KINDS.has(slot.slot)) {
     errors.push({
@@ -106,10 +136,34 @@ async function validateSlot(repoRoot, slot, index, ctx) {
   }
   if (typeof slot.text !== 'string' || slot.text.trim().length < 4) {
     errors.push({ code: 'slot_text', message: `${locator}.text must be a non-empty string` });
+  } else {
+    const rawText = slot.text;
+    const text = slot.text.trim();
+    if (rawText.length > 280) {
+      errors.push({ code: 'slot_text_length', message: `${locator}.text must be 280 characters or fewer` });
+    }
+    if (/\r|\n/.test(rawText)
+      || /^\s*(?:(?:[-*_]\s*){3,}$|#{1,6}\s|[-+*]\s|>\s|\d+[.)]\s|```|~~~|<)/.test(text)
+      || /<[^>]+>|\*\*|__|~~|\*[^*\r\n]+\*|(?:^|[^A-Za-z0-9])_[^_\r\n]+_(?:$|[^A-Za-z0-9])|`|!?\[[^\]\r\n]*\](?:\([^)]*\)|\[[^\]\r\n]*\])?/.test(text)) {
+      errors.push({
+        code: 'slot_text_structure',
+        message: `${locator}.text must be single-line prose without markdown structure`
+      });
+    }
   }
 
-  const citations = slot.citations ?? {};
-  for (const file of citations.files ?? []) {
+  const citations = slot.citations === undefined ? {} : slot.citations;
+  if (!citations || typeof citations !== 'object' || Array.isArray(citations)) {
+    errors.push({ code: 'citations_shape', message: `${locator}.citations must be an object` });
+    return errors;
+  }
+  const citationFields = ['files', 'finding_ids', 'clause_ids', 'drift_ids'];
+  for (const field of citationFields) {
+    if (citations[field] !== undefined && !Array.isArray(citations[field])) {
+      errors.push({ code: 'citations_shape', message: `${locator}.citations.${field} must be an array` });
+    }
+  }
+  for (const file of Array.isArray(citations.files) ? citations.files : []) {
     const fileResult = await fileExists(repoRoot, file);
     if (!fileResult) {
       errors.push({
@@ -118,7 +172,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       });
     }
   }
-  for (const id of citations.finding_ids ?? []) {
+  for (const id of Array.isArray(citations.finding_ids) ? citations.finding_ids : []) {
     if (!ctx.findingIds.has(id)) {
       errors.push({
         code: 'citation_finding_missing',
@@ -126,7 +180,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       });
     }
   }
-  for (const id of citations.clause_ids ?? []) {
+  for (const id of Array.isArray(citations.clause_ids) ? citations.clause_ids : []) {
     if (!ctx.clauseIds.has(id)) {
       errors.push({
         code: 'citation_clause_missing',
@@ -134,7 +188,7 @@ async function validateSlot(repoRoot, slot, index, ctx) {
       });
     }
   }
-  for (const id of citations.drift_ids ?? []) {
+  for (const id of Array.isArray(citations.drift_ids) ? citations.drift_ids : []) {
     if (!ctx.driftIds.has(id)) {
       errors.push({
         code: 'citation_drift_missing',
@@ -143,7 +197,10 @@ async function validateSlot(repoRoot, slot, index, ctx) {
     }
   }
 
-  for (const claim of slot.numerical_claims ?? []) {
+  if (slot.numerical_claims !== undefined && !Array.isArray(slot.numerical_claims)) {
+    errors.push({ code: 'numerical_claims_shape', message: `${locator}.numerical_claims must be an array` });
+  }
+  for (const claim of Array.isArray(slot.numerical_claims) ? slot.numerical_claims : []) {
     if (!claim || !NUMERICAL_FIELDS.has(claim.field)) {
       errors.push({
         code: 'numerical_field',

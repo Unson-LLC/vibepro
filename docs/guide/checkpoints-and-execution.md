@@ -1,23 +1,5 @@
 # Checkpoints and Execution
 
-VibePro checkpoints keep multi-step work auditable.
+This page describes the former checkpoint and managed-execution workflow. It is retained for older links, but that orchestration model is not part of VibePro's current minimal core.
 
-Typical checkpoints:
-
-- Story selected or created.
-- Architecture and Spec context checked.
-- Implementation completed.
-- Verification recorded.
-- Review recorded.
-- PR prepared.
-- Merge or release decision recorded.
-
-For managed execution, inspect `.vibepro/executions/` and the PR artifact directory before continuing from a paused or failed run.
-
-```bash
-vibepro execute status . --story-id <story-id>
-vibepro execute next . --story-id <story-id>
-vibepro execute reconcile . --story-id <story-id>
-```
-
-Reconciliation reads external state; it does not authorize a new release action. See [Managed Execution](/guide/managed-execution).
+Use the [Control Loop](/guide/control-loop) for the current Story, Spec, verification, review, and PR-preparation flow. The [Feature Map](/guide/feature-map) identifies the current commands and separates optional advisory context from retired lifecycle machinery.

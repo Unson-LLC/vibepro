@@ -1,0 +1,11 @@
+✔ DCS-S-8: the real conformance CLI persists one SCC violation and leaves the other dimensions unchanged (574.810208ms)
+✔ DCS-S-3: the persisted SCC violation is internally consistent with the mutual_dependency dimension (614.35625ms)
+✔ DCS-S-5: the rendered report surface shows the SCC, its mutual pairs and heuristic cut candidates (539.907875ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1925.742042

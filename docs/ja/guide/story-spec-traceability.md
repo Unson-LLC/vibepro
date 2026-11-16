@@ -8,4 +8,4 @@ vibepro story derive . --json
 vibepro story diagnose . --id <story-id>
 ```
 
-追跡性は、Story clause、Spec clause、変更ファイル、検証証跡、PR Gateを接続します。Impact Contextは関連コードを示せますが、プロダクト意図は決められません。
+追跡性は、StoryとSpecの条項、変更ファイル、検証結果、PRの要約をつなぎます。影響範囲の分析は関連コードを示せますが、プロダクトの意図は決められません。Specの下書きと参照の確認は、[ひとつの変更からPR準備まで](/ja/guide/control-loop)を参照してください。

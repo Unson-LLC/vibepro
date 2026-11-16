@@ -1,0 +1,468 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+  "updated_at": "2026-08-05T03:20:02.453Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+      "expected_root": null,
+      "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+      "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785900002453-512f068f",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "1人のreviewerが一貫した判断として読める粒度。owner は architecture モジュール、blast radius は conformance 計測経路に閉じる",
+      "reason": "scope_reviewed: 9ファイル・実装差分は src/architecture-conformance.js の [REDACTED:149cb522ce10] 周辺とdelta側1行に限定され、レビュー対象の判断は『SCC縮約が正しいか』『新規悪化が見えなくならないか』の2点に集約される。review_owner_map: 変更ファイルはすべて target-model.json の architecture モジュール所有 (src/architecture-conformance*.js) と、そのテスト。cli/gate-pr/story など他モジュールのソースは変更していない。related_file_blast_radius: graphify の関連ファイル分析は変更3 / 関連6で、関連先 (src/architecture-rebaseline-proposal.js, src/cli.js, src/review-surface-violations.js) はいずれも runArchitectureConformance の戻り値を読むだけで violation 形状の内部フィールドには依存しない (summary は加算のみ、kind は維持)。split_plan: 上記 gate:split_resolution の decision に記載のとおり分割しない",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/traceability.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "expected_root": null,
+          "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_branch": "codex/story-vibepro-dependency-cycle-scc-reduction",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-05T03:20:02.444Z"
+      },
+      "recorded_at": "2026-08-05T03:20:02.453Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785900000994-613ca3ef",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "bundled scope を明示的に正当化する: 単一の計測器変更と、その主張を支える証跡・登録のみで構成される",
+      "reason": "このPRは1つの決定しか含まない: dependency_cycle の violation 単位を全単純閉路からSCCへ変える。src/architecture-conformance.js への変更はすべてその決定の実装 (detectModuleSccs 追加、findDependencyCycles の切替、mutual_dependency 分離、feedback候補、summary加算、markdown描画)。無関係なリファクタリング・整形・他次元のロジック変更・target-model.json の変更は一切含まない (git diff で確認済み)。したがって clean_branch_or_split_pr の前提である『複数の無関係な決定が束ねられている』状態には該当しない",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "expected_root": null,
+          "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_branch": "codex/story-vibepro-dependency-cycle-scc-reduction",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-05T03:20:00.986Z"
+      },
+      "recorded_at": "2026-08-05T03:20:00.994Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785899999648-ed89a392",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "分割しない。9ファイルすべてが単一の意図（dependency_cycle をSCC単位へ縮約する）に属し、分割すると計測器と証跡が別PRに割れて検証不能になる",
+      "reason": "diffは9ファイル: 実装2 (src/architecture-conformance.js の SCC検出とmutual_dependency分離、src/architecture-conformance-delta.js の次元登録)、テスト3 (unit / integration / e2e)、doc 2 (Story / 設計doc)、registration 2 (design-ssot.json / .vibepro/config.json)。src/architecture-conformance-delta.js の1行 (DELTA_VIOLATION_KINDS への mutual_dependency 追加) だけを別PRにすると、新次元がdeltaに現れないまま計測器だけが変わり、by_kind集計が欠けた状態がmergeされる。テストを別PRにすると 69,490->1 という主張が証跡なしでmergeされる。docとregistrationはVibProのself-dogfoodフローが必須とする成果物であり、実装と同一PRでなければStory→Spec→Gateのtraceabilityが切れる",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "expected_root": null,
+          "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_branch": "codex/story-vibepro-dependency-cycle-scc-reduction",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-05T03:19:59.639Z"
+      },
+      "recorded_at": "2026-08-05T03:19:59.649Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785899998288-226ee2bb",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": ".vibepro からdiffに含めるのは .vibepro/config.json の brainbase.stories[] 登録と current_story_id 更新のみ。診断artifactはcommitしない",
+      "reason": "git diff --name-only origin/main...HEAD が示す .vibepro 配下の変更は .vibepro/config.json のみで、これは手書きStoryをVibeProに認識させるための必須registration（story derive は手書きStoryを拾わないため、CLAUDE.md §3 が明示的に要求している）。conformance.json / delta.json / pr-prepare.json / verification-runs / reviews などの診断artifactは .gitignore 済みで、いずれもcommitしていない。したがって『診断結果をPRに固定化する』というこのgateが防ぎたい事象は発生していない",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "expected_root": null,
+          "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_branch": "codex/story-vibepro-dependency-cycle-scc-reduction",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-05T03:19:58.279Z"
+      },
+      "recorded_at": "2026-08-05T03:19:58.289Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785899938091-68b85098",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "type": "intake_not_applicable",
+      "status": "accepted",
+      "source": null,
+      "source_status": null,
+      "summary": "UI/UX intake は適用外: 本storyはCLI計測器の内部アルゴリズム変更であり、UI/画面・ユーザー操作面を一切持たない",
+      "reason": "変更対象は src/architecture-conformance.js の循環検出アルゴリズムと src/architecture-conformance-delta.js の集計次元定義のみ。追加した出力面は conformance.md というCLI生成のMarkdownレポートで、HTML/画面/フォーム/ナビゲーション等のUI要素を含まない。story diagnose の Journey Context も Required=no / Reason='No UI/Journey signals were found in the Story metadata or tracked Story docs' と判定している",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "expected_root": null,
+          "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_branch": "codex/story-vibepro-dependency-cycle-scc-reduction",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-05T03:18:58.083Z"
+      },
+      "recorded_at": "2026-08-05T03:18:58.092Z"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4,
+      "intake_not_applicable": 1
+    },
+    "by_status": {
+      "accepted": 5
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+        "expected_root": null,
+        "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785900002453-512f068f",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "1人のreviewerが一貫した判断として読める粒度。owner は architecture モジュール、blast radius は conformance 計測経路に閉じる",
+      "reason": "scope_reviewed: 9ファイル・実装差分は src/architecture-conformance.js の [REDACTED:149cb522ce10] 周辺とdelta側1行に限定され、レビュー対象の判断は『SCC縮約が正しいか』『新規悪化が見えなくならないか』の2点に集約される。review_owner_map: 変更ファイルはすべて target-model.json の architecture モジュール所有 (src/architecture-conformance*.js) と、そのテスト。cli/gate-pr/story など他モジュールのソースは変更していない。related_file_blast_radius: graphify の関連ファイル分析は変更3 / 関連6で、関連先 (src/architecture-rebaseline-proposal.js, src/cli.js, src/review-surface-violations.js) はいずれも runArchitectureConformance の戻り値を読むだけで violation 形状の内部フィールドには依存しない (summary は加算のみ、kind は維持)。split_plan: 上記 gate:split_resolution の decision に記載のとおり分割しない",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/traceability.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-dependency-cycle-scc-reduction",
+          "expected_root": null,
+          "expected_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "current_head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "28598e24a62b6dc201d30e2fab14fe80496e6006",
+        "current_branch": "codex/story-vibepro-dependency-cycle-scc-reduction",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-05T03:20:02.444Z"
+      },
+      "recorded_at": "2026-08-05T03:20:02.453Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.json"
+}

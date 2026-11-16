@@ -3,6 +3,8 @@ import path from 'node:path';
 
 import { WORKSPACE_DIR } from './workspace.js';
 import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
+import { recordMultiTenantApplicabilityDeclarationAudit } from './multi-tenant-applicability-audit.js';
+import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
 
 export const SPEC_SCHEMA_VERSION = '0.1.0';
 const HISTORY_KEEP = 10;
@@ -55,6 +57,79 @@ export async function readInferredSpec(repoRoot, storyId) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+export async function readDraftSpec(repoRoot, storyId) {
+  if (!storyId) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(await readFile(getSpecDraftFile(repoRoot, storyId), 'utf8'));
+  } catch {
+    return null;
+  }
+  return isSpecShapedDraft(parsed) ? parsed : null;
+}
+
+function isSpecShapedDraft(value) {
+  return typeof value === 'object'
+    && value !== null
+    && !Array.isArray(value)
+    && Object.keys(value).length > 0;
+}
+
+export async function readMultiTenantContract(repoRoot, storyId) {
+  const spec = await readInferredSpec(repoRoot, storyId);
+  return spec?.multi_tenancy ?? null;
+}
+
+export async function writeMultiTenantContract(repoRoot, storyId, contract, options = {}) {
+  const spec = await readInferredSpec(repoRoot, storyId);
+  if (!spec) throw new Error(`accepted Spec not found for Story ${storyId}`);
+  if (contract?.applicability !== false && contract?.applicability !== 'not_applicable'
+      && options.applicabilityEvidence) {
+    throw new Error('multi-tenant Contract rejected: explicit_non_applicability_required');
+  }
+
+  const storyText = options.storyText ?? spec.story_context ?? '';
+  const assessment = assessMultiTenantArchitecture({
+    storyText,
+    spec,
+    storySourcePresent: options.storySourcePresent !== false && storyText.trim() !== '',
+    contract,
+    evidence: options.evidence,
+    applicabilityEvidence: options.applicabilityEvidence,
+    expectedHeadCommit: options.expectedHeadCommit,
+    mode: 'final'
+  });
+  const reasoned = assessment.reasoned_non_applicability;
+  if (reasoned?.attempted) {
+    await recordMultiTenantApplicabilityDeclarationAudit(repoRoot, {
+      story_id: storyId,
+      declared_applicability: contract?.applicability,
+      reason: reasoned.reason ?? null,
+      evidence_ref: reasoned.evidence_ref ?? null,
+      accepted: reasoned.accepted === true,
+      refusal_reason: reasoned.accepted ? null : reasoned.refusal_reason,
+      strong_signals: reasoned.strong_signals ?? [],
+      head_commit: options.expectedHeadCommit ?? null,
+      reasoned_attempted: true
+    }, { mode: 'final' });
+  }
+  const acceptedNonApplicability = assessment.status === 'not_applicable'
+    && assessment.implementation_readiness?.status === 'ready';
+  if (assessment.status !== 'ready' && !acceptedNonApplicability) {
+    const codes = assessment.findings.map((finding) => finding.code).join(', ')
+      || assessment.implementation_readiness?.reasons?.join(', ')
+      || assessment.status;
+    throw new Error(`multi-tenant Contract rejected: ${codes}`);
+  }
+
+  await writeInferredSpec(repoRoot, storyId, {
+    ...spec,
+    multi_tenancy: contract,
+    generated_at: new Date().toISOString()
+  });
+  return contract;
 }
 
 export async function readPreSpecReadiness(repoRoot, storyId) {

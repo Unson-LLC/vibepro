@@ -1,37 +1,40 @@
 # 機能マップ
 
-| 領域 | コマンド | 出力 |
+最初の変更は、[Story・Spec・検証・レビュー・PR準備](/ja/guide/control-loop)から始めてください。以下は任意の分析・判断支援・連携機能を含む一覧であり、すべての変更で完了するチェックリストではありません。
+
+| 目的 | コマンド群 | 保存結果 |
 | --- | --- | --- |
-| Story / Spec | `story list`, `story derive`, `story diagnose` | Story catalog、診断レポート、追跡性文脈 |
-| Graph artifact | `graph` | `.vibepro/graphify/` |
-| PR readiness | `pr prepare`, `check pr-readiness` | `.vibepro/pr/<story-id>/` |
-| 検証 / CI | `verify record`, `verify import-ci` | `.vibepro/verification-artifacts/`、CI evidence |
-| 独立レビュー | `review prepare`, `review start`, `review close`, `review record`, `review status` | `.vibepro/reviews/`、lifecycle / provenance |
-| Adjudication | `adjudicate prepare`, `adjudicate record` | Clause / Senior Judgment verdict |
-| 判断 | `decision record`, `decision status` | リスク受容とwaiver記録 |
-| Release guard | `guard check`, `guard status` | fail-closed release境界 |
-| Managed execution | `execute start`, `execute status`, `execute reconcile`, `execute merge` | `.vibepro/executions/`、監査済みmerge状態 |
-| Audit / ROI | `audit replay`, `audit session-cost`, `usage report` | canonical replay、cost、gate / subagent ROI |
-| UI/UX intake / IA | `journey handoff`, `story map`, `design-modernize plan` | Journey文脈、Storyリンク、routeとflowの仮説 |
-| Native Design System | `design-system init`, `design-system derive`, `design-system validate` | `.vibepro/design-system/<ds-id>/` |
-| UI modernization証跡 | `design-modernize derive-system`, `design-modernize plan`, `verify visual`, `uiux evidence` | `.vibepro/design-modernize/<story-id>/`、visual residual、responsive / accessibility証跡 |
-| UI/UX cockpit / PR連携 | `pr prepare`, `review prepare`, `review status` | `review-cockpit.html`、`gate-dag.html`、PR readiness gate |
-| Doctor | `doctor` | 作業領域の健康診断と修復候補 |
+| リポジトリの初期化と確認 | `init`, `doctor`, `status` | `.vibepro/` の設定とhealth context |
+| 影響範囲の文脈調査 | `graph`, `env graph`, `diagnose` | Graphとdiagnosis artifact |
+| プロダクト意図の保存 | `story`, `spec`, `trace` | Story、Spec、trace記録 |
+| 実行証跡の保存 | `verify` | リポジトリ状態に結びついた検証記録 |
+| 人間またはagentの判断保存 | `review`, `decision` | レビューと判断記録 |
+| 問いを立て、証拠で判断を見直す | `judgment investigate` | [ホストAI向け要求、調査の根拠、候補と未解決の問い](/ja/guide/senior-engineering-judgment) |
+| 調査を判断入力へ引き継ぐ | `judgment prepare --investigation` | 明示採択前の入力ドラフト |
+| 観測から専門判断を提案する | `judgment suggest` | [仮説、選択肢、次の確認](/ja/guide/expert-judgment-nodes) |
+| シニアエンジニア判断の評価 | `judgment evaluate` | 助言型の判断DAGと上書きしない実行履歴 |
+| command guardrailの追加 | `guard` | ローカルguard設定とreport |
+| PRへの引き渡し準備 | `pr prepare`, `pr create` | PR contextと人間向け本文 |
+| coding agentの設定 | `skills`, `codex`, `harness` | 導入済みinstructionsと学習記録 |
+| 連携・artifact保守 | `brainbase`, `artifacts` | integrationとmigrationの出力 |
 
-`codebase-memory-mcp` 専用のVibeProコマンドはありません。利用可能な場合、`pr prepare` が任意の topology provider として自動的に読みます。
+## 最小コアから廃止したもの
 
-## UI/UX Workflow Path
+過去のrelease noteには次の概念が登場しますが、現行機能ではありません。Gate DAG、check pack、checkpoint、managed execution/merge、自動adjudication、旧Gate DAGによるreadiness/blocking判定、review lifecycle会計、delivery-efficiency budget、design modernization pipeline、usage/ROI report、自動audit bundle。
 
-既存Storyから開始します。intake prompt や visual hypothesis は判断材料に限定し、ready判定は Story、Spec、Architecture、現行route code、VibePro-native Design System、現在の検証証跡、Gate DAG で行います。
+現行のSpec確定条件と、未解決のレビュー指摘の確認は残っています。`pr prepare` は `blocked` の結果も要約しますが、`pr create` はその状態でPRを作成しません。これはマージの承認ではありません。詳しくは[安全性の境界](/ja/guide/safety-model)を参照してください。
 
-```bash
-vibepro story list .
-vibepro journey handoff . --id <journey-id>
-vibepro design-system derive . --id <ds-id> --product <name> --routes <csv> --from-code
-vibepro design-modernize plan . --id <story-id> --product <name> --routes <csv> --base-url <url>
-vibepro verify visual . --id <story-id> --base-url <url>
-vibepro uiux evidence . --id <story-id>
-vibepro pr prepare . --story-id <story-id> --base origin/main
-```
+installed versionの正確なcommandは `vibepro help --language ja` で確認してください。
 
-関連するUI/UX Storyは `story-vibepro-uiux-structured-intake`、`story-vibepro-uiux-ia-flow-map`、`story-vibepro-uiux-style-preset-token-gate`、`story-vibepro-uiux-responsive-a11y-evidence-matrix`、`story-vibepro-uiux-one-command-cockpit` です。
+## Development Judgment運用ループ
+
+Development Judgmentは任意レポートではなく、明示的な非blockingループとして運用できます。
+
+1. 適用要否を記録する
+2. 必要に応じて調査・再判断を行い、入力ドラフトをレビューして意味を明示採択する
+3. Development Judgment DAGを評価する
+4. actionableな判断をStory planへbindingする
+5. 採否と後日のOutcomeを時間分離して記録する
+6. 観測Outcomeを次回判断へfeedbackする
+
+`pr prepare`はこのライフサイクルを投影するだけです。Development JudgmentはPRのreadiness、merge、release権限を変更しません。

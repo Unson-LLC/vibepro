@@ -1,7 +1,5 @@
 import crypto from 'node:crypto';
 
-import { projectDecisionOutcomeSummary } from './decision-outcome-ledger.js';
-
 /**
  * Per-artifact size budget for `pr prepare`.
  *
@@ -122,26 +120,6 @@ const KNOWN_EXTRACTORS = {
         decision_changed_count: ledger.decision_changed_count ?? 0,
         decision_change_unconfirmed_count: ledger.decision_change_unconfirmed_count ?? 0,
         unused_artifact_count: ledger.unused_artifact_count ?? 0
-      }
-    };
-  },
-  'decision-outcome-ledger.json'(parsed, { detailLimit = 5 } = {}) {
-    const projection = projectDecisionOutcomeSummary(parsed, { limit: detailLimit });
-    return {
-      status_fields: {
-        model: parsed?.model ?? null,
-        ledger_path: projection?.ledger_path ?? null,
-        ledger_digest: projection?.ledger_digest ?? null,
-        evidence_head_sha: projection?.evidence_head_sha ?? null
-      },
-      top_level_counts: {
-        total_count: projection?.total_count ?? 0,
-        returned_count: projection?.returned_count ?? 0,
-        omitted_count: projection?.omitted_count ?? 0
-      },
-      details: {
-        status_counts: projection?.status_counts ?? {},
-        entries: projection?.entries ?? []
       }
     };
   }

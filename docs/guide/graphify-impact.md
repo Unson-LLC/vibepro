@@ -1,11 +1,11 @@
 # Impact Context Integrations
 
-VibePro can read optional code-structure context before PR preparation. The two supported lenses have different roles.
+The following tools can help investigate code structure before PR preparation. Their connections to VibePro differ.
 
 | Lens | How it is read | What it is good for | Boundary |
 | --- | --- | --- | --- |
 | Graphify | Run explicitly with `vibepro graph . --run-graphify` or import artifacts with `vibepro graph . --from <graphify-out>` | Existing graph artifacts, visual inspection, broad dependency reading | Not automatic and not bundled |
-| codebase-memory-mcp | Read automatically by `vibepro pr prepare` when `codebase-memory-mcp` is on `PATH` | Related files, symbols, routes, call paths, changed-file blast radius | Optional and never a correctness proof |
+| codebase-memory-mcp | Use its external CLI or MCP tools manually after indexing | Related files, symbols, routes, call paths, changed-file blast radius | Optional external context; VibePro does not invoke it automatically or treat it as proof |
 
 ## Graphify
 
@@ -19,30 +19,18 @@ Imported files are stored under:
 ```text
 .vibepro/graphify/
   graph.json
-  graph.html
   GRAPH_REPORT.md
+  graph.html  (when supplied by Graphify)
 ```
 
 ## codebase-memory-mcp
 
-After installation and indexing, `pr prepare` runs a read-only `detect_changes` query and records the normalized result in `pr_context.code_topology_context`.
+`codebase-memory-mcp` is an optional external tool. VibePro does not invoke it from `pr prepare` or automatically write its results into `pr_context`. If it is available in your environment, index and query the repository manually, then use the returned files, symbols, routes, and call paths as context for human or AI review.
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 codebase-memory-mcp cli index_repository '{"repo_path":"'"$(pwd)"'"}'
-vibepro pr prepare . --story-id <story-id>
+# Run the provider's queries manually and inspect their results.
 ```
-
-VibePro passes both `repo_path` and the derived project name to the provider for compatibility with current `codebase-memory-mcp` CLI behavior.
-
-The normalized context includes availability, reason, matched files, related files, symbols, routes, call paths, risk hints, investigation files, and `code_topology:*` signals. When matched files exist, VibePro may render `code_topology_impact_scope` as optional matched evidence in the common judgment spine.
-
-Install bundled VibePro skills if agents should use this context consistently:
-
-```bash
-vibepro skills install .
-```
-
-The `vibepro-codebase-memory` skill explains when to use `list_projects`, `index_repository`, `detect_changes`, `search_graph`, `trace_path`, and `get_code_snippet`, and how to map results back to VibePro Gate evidence.
 
 Do not use either lens as proof that the change works. Use them to decide which files, paths, tests, and reviewers matter.

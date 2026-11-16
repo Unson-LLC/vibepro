@@ -57,6 +57,10 @@ async function main() {
     provider_session_id: observed.sessionId ?? null,
     ...(observed.usageAccounting ? { usage_accounting: observed.usageAccounting } : {})
   };
+  // Persist the provider session before exposing any event files. The host
+  // uses this value as the authoritative session_ref and must never substitute
+  // run_id or thread_id while the detached worker is being observed.
+  await writeJson(statePath, state);
   const output = JSON.parse(await readFile(outputPath, 'utf8'));
   const result = toCodexCompletionResult(request, state, output);
   const eventsDir = path.join(runDir, 'events');
@@ -79,12 +83,6 @@ async function main() {
   await writeJson(path.join(runDir, 'completion-event.json'), event);
   await writeJson(statePath, { ...state, status: 'delivery_pending', completion_observed_at: event.observed_at });
   await rm(outputPath, { force: true });
-  try {
-    for (const persistedEvent of [...partialEvents, event]) await deliverToRuntime(request, persistedEvent);
-    await writeJson(statePath, { ...state, status: 'completed', completed_at: event.observed_at });
-  } catch (error) {
-    await writeJson(path.join(runDir, 'delivery-error.json'), { observed_at: new Date().toISOString(), message: boundedMessage(error) });
-  }
   await writeJson(path.join(runDir, 'worker-finished.json'), { observed_at: new Date().toISOString() });
 }
 
@@ -168,22 +166,6 @@ function signalCodexTree(child, signal) {
     }
   }
   child.kill(signal);
-}
-
-async function deliverToRuntime(request, event) {
-  const eventPath = path.join(runDir, 'runtime-event.json');
-  await writeJson(eventPath, event);
-  const cliPath = path.join(repoRoot, 'bin', 'vibepro.js');
-  const args = [cliPath, 'execute', 'runtime-ingest', repoRoot, '--story-id', request.story_id, '--run-id', request.run_id,
-    '--dispatch-id', request.dispatch_id, '--event', eventPath, '--json'];
-  await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, args, { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'] });
-    let stderr = '';
-    child.stderr.setEncoding('utf8');
-    child.stderr.on('data', (chunk) => { stderr = boundedAppend(stderr, chunk); });
-    child.on('error', reject);
-    child.on('close', (code) => code === 0 ? resolve() : reject(new Error(`runtime-ingest exited ${code}: ${stderr.slice(-4096)}`)));
-  });
 }
 
 function boundedAppend(current, chunk) { return `${current}${chunk}`.slice(-1024 * 1024); }

@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-08-12T02:20:45.253Z",
+  "story": {
+    "story_id": "story-vibepro-release-exact-sha-fast-path",
+    "title": "exact-SHA CI証拠を再利用してnpm公開を短縮する"
+  },
+  "source_run": null,
+  "tasks": [
+    {
+      "id": "RELFAST-T-001",
+      "story_id": "story-vibepro-release-exact-sha-fast-path",
+      "title": "reviewed headのCI証拠とmerge treeを検証する",
+      "status": "done",
+      "source_type": "story_explicit_task",
+      "execution_policy": "implementation",
+      "mutates_repository": true,
+      "target_files": [
+        "scripts/post-merge-release.mjs",
+        ".github/workflows/ci.yml",
+        ".github/workflows/codeql.yml"
+      ],
+      "dependencies": [],
+      "acceptance_criteria": [
+        "RELFAST-AC-001、RELFAST-AC-002、RELFAST-AC-004を満たす"
+      ]
+    },
+    {
+      "id": "RELFAST-T-002",
+      "story_id": "story-vibepro-release-exact-sha-fast-path",
+      "title": "fast pathとfull fallbackを公開workflowへ接続する",
+      "status": "done",
+      "source_type": "story_explicit_task",
+      "execution_policy": "implementation",
+      "mutates_repository": true,
+      "target_files": [
+        ".github/workflows/post-merge-release.yml",
+        "scripts/post-merge-release.mjs"
+      ],
+      "dependencies": [
+        "RELFAST-T-001"
+      ],
+      "acceptance_criteria": [
+        "RELFAST-AC-003、RELFAST-AC-005、RELFAST-AC-007、RELFAST-AC-008を満たす"
+      ]
+    },
+    {
+      "id": "RELFAST-T-003",
+      "story_id": "story-vibepro-release-exact-sha-fast-path",
+      "title": "exact-SHA再利用とfail-closed境界を回帰テストで固定する",
+      "status": "done",
+      "source_type": "story_explicit_task",
+      "execution_policy": "verification",
+      "mutates_repository": true,
+      "target_files": [
+        "test/post-merge-release.test.js",
+        "test/e2e/story-vibepro-release-exact-sha-fast-path.test.js"
+      ],
+      "dependencies": [
+        "RELFAST-T-001",
+        "RELFAST-T-002"
+      ],
+      "acceptance_criteria": [
+        "RELFAST-AC-004、RELFAST-AC-006、RELFAST-AC-008を満たす"
+      ]
+    }
+  ]
+}

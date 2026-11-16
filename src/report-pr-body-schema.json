@@ -13,7 +13,11 @@
     "generated_by": {
       "type": "object",
       "properties": {
-        "caller": { "type": "string" },
+        "caller": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$",
+          "description": "Single safe identifier used in the fixed PR-body heading."
+        },
         "stage": { "type": "string", "enum": ["ai_synthesis", "static_fallback"] }
       }
     },
@@ -31,6 +35,7 @@
       "properties": {
         "id": {
           "type": "string",
+          "pattern": "^TP-(?:NEW-[1-9][0-9]*|[0-9]{3,})$",
           "description": "Talking-point id. Use TP-<n>. New slots may use TP-NEW-<n>; validator assigns stable ids."
         },
         "slot": {
@@ -41,7 +46,9 @@
         "text": {
           "type": "string",
           "minLength": 4,
-          "description": "Plain prose / single bullet. No markdown headings. <= 280 chars per slot item recommended."
+          "maxLength": 280,
+          "pattern": "^(?!.*(?:<[^>]+>|\\*\\*|__|~~|\\*[^*\\r\\n]+\\*|(?:^|[^A-Za-z0-9])_[^_\\r\\n]+_(?:$|[^A-Za-z0-9])|`|!?\\[[^\\]\\r\\n]*\\](?:\\([^)]*\\)|\\[[^\\]\\r\\n]*\\])?))(?!\\s*(?:(?:[-*_]\\s*){3,}$|#{1,6}\\s|[-+*]\\s|>\\s|[0-9]+[.)]\\s|```|~~~|<))[^\\r\\n]+$",
+          "description": "Single-line plain prose only. Markdown block structure is rejected. Maximum 280 characters."
         },
         "citations": {
           "type": "object",

@@ -66,21 +66,24 @@ test('records survive worktree deletion via snapshot then hydrate into a regener
   await writeRecord(worktree, `executions/${STORY}/runs/r1/decisions/d1.json`, '{"decision":"block"}\n');
   await writeRecord(worktree, `pr/${STORY}/verification-evidence.json`, '{"commands":[]}\n');
   await writeRecord(worktree, `pr/${STORY}/decision-outcome-ledger.json`, '{"entries":[]}\n');
+  await writeRecord(worktree, `bug-diagnosis/${STORY}/run-1/bug-diagnosis.json`, '{"status":"blocked"}\n');
 
   const snap = await snapshotProcessRecords({ repoRoot: worktree, storyId: STORY });
   assert.equal(snap.status, 'ok');
-  assert.equal(snap.copied.length, 7);
+  assert.equal(snap.copied.length, 8);
 
   // Simulate the incident: the worktree (and everything under .vibepro) vanishes.
   await rm(path.join(worktree, '.vibepro'), { recursive: true, force: true });
 
   const hydrate = await hydrateProcessRecords({ repoRoot: worktree, storyId: STORY });
   assert.equal(hydrate.status, 'ok');
-  assert.equal(hydrate.copied.length, 7);
+  assert.equal(hydrate.copied.length, 8);
   const restored = await readFile(path.join(worktree, '.vibepro', 'reviews', STORY, 'round-1', 'architect.json'), 'utf8');
   assert.equal(restored, '{"status":"block"}\n');
   const restoredEvidence = await readFile(path.join(worktree, '.vibepro', 'pr', STORY, 'verification-evidence.json'), 'utf8');
   assert.equal(restoredEvidence, '{"commands":[]}\n');
+  const restoredDiagnosis = await readFile(path.join(worktree, '.vibepro', 'bug-diagnosis', STORY, 'run-1', 'bug-diagnosis.json'), 'utf8');
+  assert.equal(restoredDiagnosis, '{"status":"blocked"}\n');
   assert.ok(hydrate.store_root.startsWith(path.join(main, '.vibepro-store')));
 });
 
@@ -175,4 +178,24 @@ test('snapshot rejects unsafe story ids and the fail-soft wrapper never throws',
   const soft = await snapshotProcessRecordsFailSoft({ repoRoot: worktree, storyId: '../evil', logger: { warn: (m) => warnings.push(m) } });
   assert.equal(soft.status, 'failed');
   assert.equal(warnings.length, 1);
+});
+
+// issue #436 item 3: `story add`/`story select` accept any non-empty --id
+// (no `story-` prefix requirement — the mana-runtime repro used
+// `slack-split-surrogate-safe`), but this store previously validated with
+// isSafeStoryId, which additionally requires a `story-` prefix. That
+// mismatch made every command for a non-`story-`-prefixed story log a
+// spurious `invalid_story_id` warning even though init/story add had
+// already accepted the id. Only unsafe path segments (traversal,
+// separators, percent-encoding) should be rejected here.
+test('snapshot accepts a CLI-accepted story id without a story- prefix', async () => {
+  const { worktree } = await makeRepoWithWorktree();
+  const storyId = 'slack-split-surrogate-safe';
+  await writeRecord(worktree, path.join('spec', storyId, 'spec.json'), '{}\n');
+  const result = await snapshotProcessRecords({ repoRoot: worktree, storyId });
+  assert.equal(result.status, 'ok');
+  const warnings = [];
+  const soft = await snapshotProcessRecordsFailSoft({ repoRoot: worktree, storyId, logger: { warn: (m) => warnings.push(m) } });
+  assert.notEqual(soft.status, 'failed');
+  assert.equal(warnings.length, 0);
 });

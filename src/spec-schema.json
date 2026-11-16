@@ -4,7 +4,11 @@
   "title": "VibePro Inferred Spec",
   "description": "AI-authored spec produced from Story+Code+Test fingerprints. VibePro CLI validates and stores this artifact; humans do not edit it directly.",
   "type": "object",
-  "required": ["schema_version", "story_id", "clauses"],
+  "required": [
+    "schema_version",
+    "story_id",
+    "clauses"
+  ],
   "properties": {
     "schema_version": {
       "type": "string",
@@ -27,39 +31,69 @@
         },
         "stage": {
           "type": "string",
-          "enum": ["ai_synthesis", "static_fallback"]
+          "enum": [
+            "ai_synthesis",
+            "static_fallback"
+          ]
         }
       }
     },
     "inputs_digest": {
       "type": "object",
       "properties": {
-        "story_sha": { "type": "string" },
-        "code_sha": { "type": "string" },
-        "test_sha": { "type": "string" }
+        "story_sha": {
+          "type": "string"
+        },
+        "code_sha": {
+          "type": "string"
+        },
+        "test_sha": {
+          "type": "string"
+        }
       }
     },
     "previous_spec_id": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "semantic_contract": {
+      "$ref": "#/$defs/semantic_contract",
+      "description": "Optional semantic sufficiency contract. When present, the model declares meaning and the host validates only its deterministic shape and contradictions. Legacy Specs remain valid but report semantic_contract_missing."
     },
     "clauses": {
       "type": "array",
-      "items": { "$ref": "#/$defs/clause" }
+      "items": {
+        "$ref": "#/$defs/clause"
+      }
     },
     "diagrams": {
       "type": "array",
       "description": "Design diagrams required by the change type. See diagram-requirement-resolver for which kinds are mandatory.",
-      "items": { "$ref": "#/$defs/diagram" }
+      "items": {
+        "$ref": "#/$defs/diagram"
+      }
     },
     "open_questions": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "question"],
+        "required": [
+          "id",
+          "question"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "question": { "type": "string", "minLength": 1 },
-          "blocker": { "type": "boolean" }
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocker": {
+            "type": "boolean"
+          }
         }
       }
     }
@@ -67,7 +101,12 @@
   "$defs": {
     "clause": {
       "type": "object",
-      "required": ["id", "type", "statement", "origin"],
+      "required": [
+        "id",
+        "type",
+        "statement",
+        "origin"
+      ],
       "properties": {
         "id": {
           "type": "string",
@@ -75,7 +114,12 @@
         },
         "type": {
           "type": "string",
-          "enum": ["invariant", "scenario", "contract", "sla"]
+          "enum": [
+            "invariant",
+            "scenario",
+            "contract",
+            "sla"
+          ]
         },
         "statement": {
           "type": "string",
@@ -94,14 +138,27 @@
               "type": "array",
               "items": {
                 "type": "object",
-                "required": ["kind"],
+                "required": [
+                  "kind"
+                ],
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["acceptance_criteria", "background", "policy", "frontmatter", "other"]
+                    "enum": [
+                      "acceptance_criteria",
+                      "background",
+                      "policy",
+                      "frontmatter",
+                      "other"
+                    ]
                   },
-                  "index": { "type": "integer", "minimum": 0 },
-                  "text_snippet": { "type": "string" }
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "text_snippet": {
+                    "type": "string"
+                  }
                 }
               }
             },
@@ -110,11 +167,20 @@
               "description": "Architecture, IA, route-flow, state, or boundary evidence that shaped this clause.",
               "items": {
                 "type": "object",
-                "required": ["file"],
+                "required": [
+                  "file"
+                ],
                 "properties": {
-                  "file": { "type": "string", "minLength": 1 },
-                  "section": { "type": "string" },
-                  "text_snippet": { "type": "string" }
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "section": {
+                    "type": "string"
+                  },
+                  "text_snippet": {
+                    "type": "string"
+                  }
                 }
               }
             },
@@ -122,14 +188,22 @@
               "type": "array",
               "items": {
                 "type": "object",
-                "required": ["file"],
+                "required": [
+                  "file"
+                ],
                 "properties": {
-                  "file": { "type": "string", "minLength": 1 },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
                   "anchor": {
                     "type": "string",
                     "description": "Identifier or substring that should appear in the file."
                   },
-                  "line": { "type": "integer", "minimum": 1 }
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
                 }
               }
             },
@@ -137,10 +211,17 @@
               "type": "array",
               "items": {
                 "type": "object",
-                "required": ["file"],
+                "required": [
+                  "file"
+                ],
                 "properties": {
-                  "file": { "type": "string", "minLength": 1 },
-                  "case": { "type": "string" }
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "case": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -151,31 +232,76 @@
           "minimum": 0,
           "maximum": 1
         },
+        "outcome_kind": {
+          "type": "string",
+          "enum": [
+            "internal_output",
+            "downstream_outcome",
+            "canonical_readback"
+          ],
+          "description": "The independently observable outcome boundary. Missing legacy values are projected as unknown."
+        },
+        "case_kind": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "ambiguous",
+            "conflicting",
+            "stale",
+            "unavailable"
+          ],
+          "description": "Whether this clause is a happy path or a declared counterexample/unavailable case."
+        },
+        "semantic_evaluation": {
+          "$ref": "#/$defs/semantic_evaluation",
+          "description": "Model-declared semantic assessment. It is not execution evidence or a proof of user-visible outcome."
+        },
         "verifiable_by": {
           "type": "object",
           "description": "Deterministic patterns the drift detector uses. Optional but recommended.",
           "properties": {
             "code_pattern": {
               "type": "array",
-              "items": { "$ref": "#/$defs/pattern" }
+              "items": {
+                "$ref": "#/$defs/pattern"
+              }
             },
             "test_pattern": {
               "type": "array",
-              "items": { "$ref": "#/$defs/pattern" }
+              "items": {
+                "$ref": "#/$defs/pattern"
+              }
             }
           }
         },
-        "first_seen_at": { "type": "string" },
-        "last_revised_at": { "type": "string" }
+        "first_seen_at": {
+          "type": "string"
+        },
+        "last_revised_at": {
+          "type": "string"
+        }
       }
     },
     "diagram": {
       "type": "object",
-      "required": ["kind", "mermaid"],
+      "required": [
+        "kind",
+        "mermaid"
+      ],
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["er", "state", "sequence", "flow", "c4_context", "deployment", "threat_model", "dfd"]
+          "enum": [
+            "er",
+            "state",
+            "sequence",
+            "flow",
+            "c4_context",
+            "deployment",
+            "threat_model",
+            "dfd"
+          ]
         },
         "mermaid": {
           "type": "string",
@@ -185,7 +311,10 @@
         "entities": {
           "type": "array",
           "description": "Names that appear in the diagram. Required non-empty for er/state/sequence/c4_context.",
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "rationale": {
           "type": "string",
@@ -195,7 +324,9 @@
     },
     "pattern": {
       "type": "object",
-      "required": ["file_glob"],
+      "required": [
+        "file_glob"
+      ],
       "properties": {
         "file_glob": {
           "type": "string",
@@ -214,6 +345,269 @@
           "description": "Identifier or substring that must appear in test names or assertion text across matched files."
         }
       }
+    },
+    "semantic_contract": {
+      "type": "object",
+      "required": [
+        "semantic_owner",
+        "deterministic_owner",
+        "core_hypothesis",
+        "strongest_counterexample",
+        "false_success_mode",
+        "unknown_representation",
+        "operational_definitions"
+      ],
+      "properties": {
+        "semantic_owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deterministic_owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "core_hypothesis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strongest_counterexample": {
+          "type": "string",
+          "minLength": 1
+        },
+        "false_success_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unknown_representation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operational_definitions": {
+          "type": "array",
+          "minItems": 7,
+          "description": "Operational definitions for sufficient, relevant, directly_answers, applicable, current, non_conflicting, and unambiguous.",
+          "items": {
+            "$ref": "#/$defs/operational_definition"
+          }
+        },
+        "unresolved_behavior": {
+          "$ref": "#/$defs/unresolved_behavior"
+        }
+      },
+      "additionalProperties": true
+    },
+    "operational_definition": {
+      "type": "object",
+      "required": [
+        "term",
+        "definition"
+      ],
+      "properties": {
+        "term": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "unresolved_behavior": {
+      "type": "object",
+      "required": [
+        "action",
+        "max_questions",
+        "automatic_continuation"
+      ],
+      "properties": {
+        "action": {
+          "const": "ask_once"
+        },
+        "max_questions": {
+          "const": 1
+        },
+        "automatic_continuation": {
+          "const": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "semantic_evaluation": {
+      "type": "object",
+      "required": [
+        "answer_status"
+      ],
+      "properties": {
+        "answer_status": {
+          "type": "string",
+          "enum": [
+            "resolved",
+            "ambiguous",
+            "no_answer",
+            "conflicting",
+            "stale",
+            "unavailable"
+          ]
+        },
+        "checks": {
+          "type": "object",
+          "required": [
+            "relevant",
+            "directly_answers",
+            "applicable",
+            "current",
+            "non_conflicting",
+            "unambiguous",
+            "sufficient"
+          ],
+          "properties": {
+            "relevant": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "directly_answers": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "applicable": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "current": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "non_conflicting": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "unambiguous": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "sufficient": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        "supporting_record_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "question_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_choices": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "selected_choice": {
+          "type": "string",
+          "minLength": 1
+        },
+        "derived_answer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relevance_explanation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "applicability_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "conflict_check": {
+          "type": "string",
+          "enum": [
+            "clear",
+            "conflicting",
+            "unknown"
+          ]
+        },
+        "freshness_check": {
+          "type": "string",
+          "enum": [
+            "current",
+            "stale",
+            "unknown"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "answer_status": {
+                "const": "resolved"
+              }
+            },
+            "required": [
+              "answer_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "question_digest",
+              "supporting_record_ids",
+              "relevance_explanation",
+              "applicability_scope",
+              "confidence",
+              "conflict_check",
+              "freshness_check",
+              "checks"
+            ],
+            "anyOf": [
+              {
+                "required": [
+                  "derived_answer"
+                ]
+              },
+              {
+                "required": [
+                  "normalized_choices",
+                  "selected_choice"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": true,
+      "description": "Minimal model-declared semantic assessment. Null preserves unknown."
     }
   }
 }

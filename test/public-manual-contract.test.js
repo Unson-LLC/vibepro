@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
+import { validateSpec } from '../src/spec-validator.js';
+import { runCli } from '../src/cli.js';
+import { parseUsageCommands } from '../scripts/generate-cli-reference.mjs';
 
 const root = process.cwd();
 
@@ -13,19 +16,78 @@ test('public manual states the current positioning and human authority boundary'
     readFile(path.join(root, 'docs/ja/guide/what-is-vibepro.md'), 'utf8')
   ]);
 
-  assert.match(english, /Make the product journey visible/);
-  assert.match(english, /Humans hold the entry and exit decisions/);
-  assert.match(japanese, /プロダクトジャーニーを可視化する/);
-  assert.match(japanese, /人間が入口と出口を握ります/);
-  assert.match(englishOverview, /repository-local control plane/);
-  assert.match(japaneseOverview, /リポジトリローカル制御基盤/);
+  assert.match(english, /Bring the reason for a change into its PR/);
+  assert.match(japanese, /変更の目的を、PRレビューまで届ける/);
+  for (const page of [english, japanese, englishOverview, japaneseOverview]) {
+    assert.match(page, /judgment investigate/);
+    assert.match(page, /senior-engineering-judgment/);
+    assert.match(page, /host|ホスト/i);
+  }
+  assert.match(englishOverview, /maintain|maintenance/i);
+  assert.match(japaneseOverview, /更新|維持|保守/);
   for (const overview of [englishOverview, japaneseOverview]) {
     assert.match(overview, /Story/);
-    assert.match(overview, /Architecture/);
     assert.match(overview, /Spec/);
-    assert.match(overview, /adjudicat/i);
-    assert.match(overview, /execute merge/);
+    assert.match(overview, /verification|検証/i);
+    assert.match(overview, /review|レビュー/i);
+    assert.match(overview, /PR/);
+    assert.match(overview, /Gate DAG/i);
+    assert.match(overview, /approval|approve|承認/i);
+    assert.match(overview, /merge|マージ/i);
+    assert.match(overview, /README/);
   }
+});
+
+test('first-change guide distinguishes draft records, finalization, and actual review', async () => {
+  for (const locale of ['', 'ja/']) {
+    const content = await readFile(path.join(root, `docs/${locale}guide/control-loop.md`), 'utf8');
+    assert.match(content, /--draft/);
+    assert.match(content, /--final/);
+    assert.match(content, /Graphify/);
+    assert.match(content, /needs_changes/);
+    assert.match(content, /pr-body\.md/);
+    assert.match(content, /no accepted spec found/);
+    assert.match(content, /docs\/management\/stories\/active\/story-example\.md/);
+    const example = content.match(/```json\n([\s\S]*?)\n```/);
+    assert.ok(example, 'Spec input is shown instead of referencing an unexplained file');
+    const spec = JSON.parse(example[1]);
+    assert.equal(spec.schema_version, '0.1.0');
+    assert.equal(spec.story_id, 'story-example');
+    assert.equal(spec.clauses[0].origin.story_refs[0].kind, 'acceptance_criteria');
+    const validation = await validateSpec(root, spec, { expectedStoryId: 'story-example' });
+    assert.equal(validation.ok, true, JSON.stringify(validation.errors));
+  }
+});
+
+test('public manual explains the advisory senior engineering judgment DAG in both locales', async () => {
+  const [config, english, japanese, englishMap, japaneseMap] = await Promise.all([
+    readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8'),
+    readFile(path.join(root, 'docs/guide/senior-engineering-judgment.md'), 'utf8'),
+    readFile(path.join(root, 'docs/ja/guide/senior-engineering-judgment.md'), 'utf8'),
+    readFile(path.join(root, 'docs/guide/feature-map.md'), 'utf8'),
+    readFile(path.join(root, 'docs/ja/guide/feature-map.md'), 'utf8')
+  ]);
+
+  assert.match(config, /Senior Engineering Judgment/);
+  assert.match(config, /シニアエンジニア判断/);
+  for (const guide of [english, japanese]) {
+    assert.match(guide, /vibepro judgment evaluate/);
+    assert.match(guide, /VALUE/);
+    assert.match(guide, /SIMPLIFY/);
+    assert.match(guide, /VALIDATE/);
+    assert.match(guide, /human_ci_repository_rules/);
+    assert.match(guide, /ready_for_pr_create/);
+    assert.match(guide, /merge_allowed/);
+    assert.match(guide, /judgment investigate/);
+    assert.match(guide, /prepare[^\n]*--investigation/);
+    assert.match(guide, /model_request/);
+    assert.match(guide, /partial/);
+    assert.match(guide, /expert-judgment-nodes/);
+  }
+  assert.match(english, /advisory decision support/i);
+  assert.match(japanese, /助言型の意思決定支援/);
+  assert.match(englishMap, /`judgment evaluate`/);
+  assert.match(japaneseMap, /`judgment evaluate`/);
 });
 
 test('public build configuration excludes internal operating corpora', async () => {
@@ -69,7 +131,44 @@ test('public guides do not use retired command argument contracts', async () => 
     const content = await readFile(file, 'utf8');
     assert.doesNotMatch(content, /vibepro pr prepare \. --id(?:\s|$)/, file);
     assert.doesNotMatch(content, /--status passed(?:\s|$)/, file);
+    for (const block of content.matchAll(/```(?:bash|sh|yaml)\n([\s\S]*?)```/g)) {
+      assert.doesNotMatch(block[1], /(?:vibepro|vibepro@beta)\s+(?:execute|gate|checkpoint|check-pack)\s/, file);
+    }
   }
+});
+
+test('public PR command examples use supported flags and explicit creation destinations', async () => {
+  let help = '';
+  const result = await runCli(['help', '--language', 'en'], {
+    stdout: { write: (chunk) => { help += chunk; } }
+  });
+  assert.equal(result.exitCode, 0);
+  const usage = parseUsageCommands(help);
+  const files = await markdownFiles([
+    path.join(root, 'docs/guide'),
+    path.join(root, 'docs/ja/guide')
+  ]);
+  let checked = 0;
+  for (const file of files) {
+    const content = await readFile(file, 'utf8');
+    for (const block of content.matchAll(/```(?:bash|sh)\n([\s\S]*?)```/g)) {
+      const joined = block[1].replace(/\\\r?\n\s*/g, ' ');
+      for (const match of joined.matchAll(/^\s*vibepro pr (prepare|create)\b([^\n]*)/gm)) {
+        const [, action, args] = match;
+        const contract = usage.find((line) => line.startsWith(`  vibepro pr ${action} `));
+        assert.ok(contract, `missing CLI help contract: pr ${action}`);
+        const flags = new Set(contract.match(/--[a-z][a-z-]*/g));
+        for (const flag of args.match(/--[a-z][a-z-]*/g) ?? []) {
+          assert.ok(flags.has(flag), `${file}: unsupported pr ${action} flag ${flag}`);
+        }
+        if (action === 'create') {
+          assert.match(args, /--repo\s+\S+/, `${file}: pr create requires an explicit repository`);
+        }
+        checked += 1;
+      }
+    }
+  }
+  assert.ok(checked > 0, 'expected public PR command examples');
 });
 
 async function markdownFiles(directories) {

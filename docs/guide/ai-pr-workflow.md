@@ -1,52 +1,32 @@
 # AI PR Workflow
 
-Run VibePro before the PR body becomes the only source of truth.
+Use VibePro to keep the reason for a change visible while an AI agent works. It prepares review material for the normal Git workflow; it does not approve or merge code.
+
+## Suggested flow
+
+Initialize the workspace and write the Story document first, as described in [One Change Through PR Preparation](/guide/control-loop). The commands below are an outline, not a script to run without authoring the inputs and performing the review.
 
 ```bash
-vibepro story list .
-vibepro check pr-readiness . --story-id <story-id> --base main
-vibepro pr prepare . --story-id <story-id> --summary-json
+vibepro story list /path/to/repo
+vibepro story diagnose /path/to/repo --id story-example
+vibepro spec write /path/to/repo --id story-example --draft --input /path/to/spec.json
+vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro pr prepare /path/to/repo --story-id story-example --base main --json
 ```
 
-`pr prepare` collects:
+The draft Spec in this outline is not included by `pr prepare`. To include it, satisfy Graphify, Story diagnosis, and readiness prerequisites and write an accepted Spec with `spec write --final`, following the [full workflow](/guide/control-loop). Likewise, `review prepare` does not perform a review; inspect the change and record the actual findings.
 
-- Story, Spec, and Architecture context.
-- Changed files and risk surfaces.
-- Graphify context when `.vibepro/graphify/graph.json` exists.
-- `codebase-memory-mcp` topology context when the command is available and the repository is indexed.
-- Verification, review, and decision records.
-- Gate DAG and human-readable review artifacts.
+The flow keeps these boundaries explicit:
 
-The generated GitHub PR body should be a self-contained judgment brief: Story interpretation, origin, root cause, solution, review focus, and final verification first. Detailed evidence belongs in `.vibepro/pr/<story-id>/`, especially `pr-prepare.json`, `gate-dag.html`, `review-cockpit.html`, and `split-plan.html`.
+- **Story** records why the change exists and the intended outcome.
+- **Spec** records testable behavior and references to the relevant files.
+- **Verification** records a command that was actually run, or an external result recorded with `verify record`.
+- **Review** records what a human or reviewer agent inspected and any findings.
+- **PR preparation** writes a summary and body under `.vibepro/pr/<story-id>/` for handoff.
 
-When `gate_status` is ready, use `vibepro pr create`; after CI, use `verify import-ci`, refresh `pr prepare` / `pr create`, and finish with `vibepro execute merge`. See the [Control Loop](/guide/control-loop) for the complete sequence.
+`pr prepare` can summarize partial evidence; its successful output is not proof that the work is complete, correct, safe to merge, or approved. Reference checks establish that declared files and supported anchors exist, not that the implementation satisfies the behavior. Optional Graphify or code-topology context can narrow what to inspect, but it is not correctness proof.
 
-If `code_topology_context.available=false`, inspect the `reason`. It may simply mean the provider is not installed, the repository is clean, or no changed files matched the indexed project.
+After reading `pr-prepare.json` and `pr-body.md`, use the repository's ordinary GitHub workflow: inspect the diff, push the branch, open or update the PR, and have the authorized humans review and merge it. `vibepro pr create` is an optional GitHub CLI handoff; VibePro remains outside merge authority.
 
-## Autopilot Preflight
-
-`vibepro pr autopilot` runs a deterministic preflight phase before anything
-else. Each registered recipe detects a known evidence-shape pitfall from
-on-disk state (no network, no LLM) and either applies an `auto_fix` whose
-artifacts are schema-identical to the manual commands operators previously
-ran, or emits an exact `next_command` to run. Preflight never creates or
-mutates gate verdicts, waivers, review lifecycles, or decision records.
-
-The six initial recipes:
-
-| Recipe | Action | Pitfall it closes |
-|---|---|---|
-| `verify-status-artifact` | auto_fix | A passing verify record without a durable status artifact stays `supporting`; the generated status JSON promotes it to `strong` |
-| `generic-token-clause-binding` | next_command | Generic-token records (e.g. `unit_regression`) only match when the record text binds a contract clause ID |
-| `architecture-reason-frontmatter` | next_command | The architecture gate's ADR-not-needed declaration lives in the story frontmatter `reason:` key |
-| `followup-decision-artifact` | next_command | Followup decisions need both `--reason` and `--artifact` to count as accepted |
-| `design-diagrams-final-spec` | next_command | Required diagrams are read only from the final spec's `diagrams[]`, not spec doc sections |
-| `story-catalog-registration` | auto_fix | Hand-written stories resolve in `story diagnose` only after registration in `.vibepro/config.json` `brainbase.stories[]` |
-
-Results appear in the autopilot report's machine-readable
-`preflight.results[]` (recipe_id, detected, action, action_taken, artifacts,
-next_command) and in the `## Preflight` section of the default CLI output,
-where each detected recipe renders as a bullet with its reason and an
-indented `next:` command line. In `--dry-run` mode auto-fixes report
-`planned` and write nothing. A recipe failure reports `action_taken:
-"failed"` and never aborts the run.
+For the complete command sequence, see the [Control Loop](/guide/control-loop). For the current feature boundary, see the [Feature Map](/guide/feature-map).

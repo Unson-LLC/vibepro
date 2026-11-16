@@ -1,0 +1,6 @@
+{
+  "base_fixture": "pooled",
+  "contract_path": "tenant_identity.canonical_key",
+  "value": "",
+  "expected_finding": "tenant_identity_key"
+}

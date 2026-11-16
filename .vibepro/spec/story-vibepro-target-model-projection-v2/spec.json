@@ -1,0 +1,363 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Machine projection of a human adjudication: how an approved answer can be widened, narrowed or forged on the way into the yardstick",
+      "mermaid": "flowchart LR\n    Cards[adjudication cards answered by sato_keigo] --> Proj[machine_projection]\n    Model[target-model.json model_version 1] --> Proj\n    Proj --> Model2[target-model.json model_version 2]\n    Model2 --> Conf[architecture conformance measurement]\n    Conf --> Delta[conformance delta with model_version_changed]\n\n    subgraph Threats\n        T1[projection widens the adjudication by declaring dependencies the human never approved]\n        T2[projection narrows the adjudication by silently dropping part of an approved batch]\n        T3[projection edits rules or budgets while claiming machine_projection authority]\n        T4[the answer is recorded only in the model so its provenance and channel cannot be audited later]\n        T5[assigning orphans induces new undeclared dependencies that get quietly absorbed into the declaration list]\n        T6[model revision between measurements makes the violation counts read as a code regression or improvement]\n    end\n\n    Proj -.-> T1\n    Proj -.-> T2\n    Proj -.-> T3\n    Cards -.-> T4\n    Proj -.-> T5\n    Delta -.-> T6\n\n    T1 -->|mitigation| M1[the resolve set of 19 pairs is pinned by a repository test that fails if any of them becomes declared]\n    T2 -->|mitigation| M2[all 22 declare pairs and all 22 file assignments are enumerated in a repository test]\n    T3 -->|mitigation| M3[rules scope_roots and budgets are frozen literals in the test and compared by deep equality]\n    T4 -->|mitigation| M4[the card carries status adjudicated answered_at adjudicator answer_channel and a per-question adoption record asserted by test]\n    T5 -->|mitigation| M5[induced dependencies stay undeclared and are reported as new adjudication debt rather than added to allowed_dependencies]\n    T6 -->|mitigation| M6[delta reports previous_model_version and model_version_changed true across the revision]\n"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Machine projection never widens the adjudication: allowed_dependencies contains exactly the 22 declare pairs approved in Q4 plus the 2 pairs approved in Q1, and none of the 19 resolve pairs is declared.",
+      "rationale": "The only thing that makes R-004 enforceable is that the declaration list is the human's answer and nothing else; a projection that quietly adds a pair converts approval into a rubber stamp.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "TMP-S-4: Q4 で承認された declare 候補22ペアがすべて allowed_dependencies で許可されている。resolve 対象19ペアは宣言されない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "\"allowed_dependencies\": {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-4: Q4 の declare 候補22件が宣言され resolve 19件は宣言されない"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "\"agent-runtime\": ["
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-4: Q4 の declare 候補22件が宣言され resolve 19件は宣言されない"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Machine projection leaves the normative core byte-identical: rules[], scope_roots, budgets and the three governance category lists are unchanged from the governance rebaseline state, and only governance.adjudicated_at and model_version move.",
+      "rationale": "governance.human_adjudicated reserves rules[] edits and budget changes for the human; a projection that touches them under machine authority is the exact subversion the governance block exists to prevent.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "TMP-S-6: rules[]・scope_roots・budgets は前段 story（governance rebaseline 時点、origin/main）の内容と完全一致する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "\"rules\": ["
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-6: rules[] / scope_roots / budgets は governance rebaseline 時点と一致する"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "\"machine_projection\": ["
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-6: rules[] / scope_roots / budgets は governance rebaseline 時点と一致する"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Dependencies induced by the projection itself remain undeclared and are reported as adjudication debt; they are never absorbed into allowed_dependencies as a side effect of the assignment that created them.",
+      "rationale": "Assigning orphans surfaces imports that were previously invisible. If the projection may declare its own induced edges, model cleanup becomes a self-legalising loop and R-004 stops meaning anything.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "TMP-S-8: 新規に誘発された未宣言依存があれば宣言済みリストと突合して報告する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "anchor": "Q1 の新モジュール新設によって誘発された新規3件"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-3: Q1 で承認された agent-runtime の2宣言が反映されている"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "must_contain": "agent-runtime -> run-session"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-3: Q1 で承認された agent-runtime の2宣言が反映されている"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given the adjudicated answer to Q1, when the projection is applied, then target-model.json contains a module named agent-runtime whose responsibility describes external agent process launch, output contract, completion notification and progress deadline, and whose paths hold exactly the eight adjudicated files.",
+      "rationale": "A new module is human_adjudicated authority; the projection must reproduce the approved shape exactly, not an agent's re-derivation of it.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "TMP-S-1: target-model.json は新モジュール agent-runtime を持ち、paths には Q1 の対象8ファイルがすべて含まれる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "\"name\": \"agent-runtime\""
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-1: agent-runtime モジュールが新設され Q1 の8ファイルを保持する"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "\"name\": \"agent-runtime\""
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-1: agent-runtime モジュールが新設され Q1 の8ファイルを保持する"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given the adjudicated answers to Q2, Q3 and Q5, when the projection is applied, then the fourteen named files resolve to workspace-infra, gate-pr and review exactly as adjudicated, and a conformance scan no longer reports any of them as orphans.",
+      "rationale": "The point of the adjudication was to remove invisible debt; an assignment that lands on the wrong module reintroduces it under a false clean reading.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "src/merge-gate-authorization.js"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映されている"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "src/dispatch-identity.js"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映されている"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Given a projection that reflects a human adjudication, when the model is written, then model_version is 2 and governance.adjudicated_at is 2026-08-04, and a subsequent architecture conformance delta against the previously persisted measurement reports previous_model_version 1 and model_version_changed true.",
+      "rationale": "Counting violations across a model revision is not a like-for-like comparison; the reader needs the revision flagged or model cleanup reads as code regression.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "TMP-S-5: model_version が 2 であり、governance.adjudicated_at が 2026-08-04 である"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "\"model_version\": 2"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-5: model_version が 2 で governance.adjudicated_at が 2026-08-04"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "\"model_version\": 2"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-5: model_version が 2 で governance.adjudicated_at が 2026-08-04"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "Given a card that has been answered by a human, when the projection records the answer, then the card frontmatter carries status adjudicated, answered_at 2026-08-04, adjudicator sato_keigo and the answer channel, and each of the five questions carries the adopted option inline so the provenance survives independently of the model file.",
+      "rationale": "If only the model changes, a later reader cannot tell an approved projection from an agent that edited the yardstick; the card is the audit surface that makes the two distinguishable.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "TMP-S-7: 裁定カードは status: adjudicated / answered_at: 2026-08-04 を持ち、5問すべてについて採択された選択肢と回答 provenance が記録される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "anchor": "answer_channel: coordinator session AskUserQuestion"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-7: 裁定カードが回答済みで provenance と全5問の採択が記録されている"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "must_contain": "status: adjudicated"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-7: 裁定カードが回答済みで provenance と全5問の採択が記録されている"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "target-model.json remains loadable by loadTargetModel after the projection: model_version is a positive integer, every module has a unique name and a non-empty paths array, and every key and value in allowed_dependencies names a declared module or the wildcard.",
+      "rationale": "The projection touches the single file that every conformance measurement depends on; a structurally invalid model turns the architecture gate into a silent no-op rather than a loud failure.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "TMP-S-3: allowed_dependencies に agent-runtime: [\"workspace-infra\"] が追加され、run-session の許可先に agent-runtime が含まれる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "export async function loadTargetModel"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/target-model-projection-v2.test.js",
+            "case": "TMP-S-3: Q1 で承認された agent-runtime の2宣言が反映されている"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "export async function loadTargetModel"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/target-model-projection-v2.test.js",
+            "must_cover": "TMP-S-3: Q1 で承認された agent-runtime の2宣言が反映されている"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T14:29:20.798Z",
+      "last_revised_at": "2026-08-04T14:29:20.798Z"
+    }
+  ],
+  "generated_at": "2026-08-04T14:29:20.797Z",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}

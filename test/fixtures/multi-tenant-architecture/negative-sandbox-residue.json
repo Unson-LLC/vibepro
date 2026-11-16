@@ -1,0 +1,6 @@
+{
+  "base_fixture": "pooled",
+  "resource_index": 2,
+  "resource_patch": { "residue_policy": "reuse_without_reset" },
+  "expected_finding": "sandbox_residue_policy"
+}

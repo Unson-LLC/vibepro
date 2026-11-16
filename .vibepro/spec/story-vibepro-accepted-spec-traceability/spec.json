@@ -1,0 +1,393 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-accepted-spec-traceability",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Canonical accepted-spec authority is resolved from the target HEAD tree and records HEAD SHA, path, and blob OID.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-001"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/traceability.js",
+            "anchor": "buildAcceptedSpecClauseMap"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "spec_blob_oid"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Story identity and stable AC ids resolve only by exact identity.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-002"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/traceability.js",
+            "anchor": "stableStoryRefId"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "unknown_story_ac"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Test file and case resolve against the named test blob at target HEAD.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-003"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/traceability.js",
+            "anchor": "nodeTestCaseExists"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "test_case_missing"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "Invariant test patterns are evaluated from target HEAD blobs and failed patterns never map.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-004"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/traceability.js",
+            "anchor": "testPatternMatchesHead"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "test_pattern_failed"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-005",
+      "type": "invariant",
+      "statement": "A scenario with an exact test reference remains eligible without a test_pattern.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-005"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/traceability.js",
+            "anchor": "buildAcceptedSpecClauseMap"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "index <= 9"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-006",
+      "type": "invariant",
+      "statement": "The regression fixture proves twelve one-to-one accepted-spec mappings, with nine invariant patterns and three patternless scenarios.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-006"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "clauses.filter((item) => item.lineage_status === 'resolved').length, 12"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-007",
+      "type": "invariant",
+      "statement": "PR prepare, canonical traceability, and PR body consume the same clause map and provenance.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-007"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "recordTraceabilityForPrepare"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "traceability.accepted_spec_lineage"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-008",
+      "type": "invariant",
+      "statement": "Unknown AC, missing test file, missing test case, and failed pattern produce explicit fail-closed reasons.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-008"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "test_file_missing"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "INV-009",
+      "type": "invariant",
+      "statement": "A worktree accepted-spec that differs from or is absent from target HEAD fails closed.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-009"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/accepted-spec-traceability.test.js",
+            "must_contain": "accepted_spec_diverged_from_head"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Lineage status remains resolved while untrusted verification receives its own untrusted status and reason.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-010"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 lineage resolver fails closed with explicit reasons and keeps verification separate"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Legacy mapped_tests string arrays and absent-spec heuristic behavior remain compatible.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-011"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 keeps legacy heuristic behavior when accepted-spec is absent"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Node 22 focused and related regression checks plus repository integrity checks pass.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "ASTR-AC-012"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/verification-runner.js",
+            "anchor": "runVerificationCommand"
+          },
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "CALLER_FORBIDDEN_OBSERVATION_KEYS"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/accepted-spec-traceability.test.js",
+            "case": "Issue #454 projects 12 accepted-spec clauses and provenance identically to all PR artifacts"
+          },
+          {
+            "file": "test/verification-runner.test.js",
+            "case": "verify run records the executed outcome without accepting agent status input"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-11T14:43:45.391Z",
+      "last_revised_at": "2026-08-11T14:43:45.391Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Target HEAD lineage resolution",
+      "mermaid": "flowchart LR\n  Spec[HEAD canonical accepted-spec blob] --> AC[HEAD Story AC ids]\n  Spec --> Test[HEAD test file and case blobs]\n  AC --> Map[Authoritative clause map]\n  Test --> Map\n  Map --> Prepare[pr-prepare.json]\n  Map --> Trace[traceability.json]\n  Map --> Body[pr-body.md]"
+    }
+  ],
+  "generated_at": "2026-08-11T14:43:45.390Z",
+  "previous_spec_id": null
+}

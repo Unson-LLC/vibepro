@@ -144,7 +144,21 @@
 - APIレスポンスに電話番号は含めない
 ````
 
-## 11. 関連資料
+## 11. テナント別の信頼・データ境界（該当する場合）
+
+| 資源 | sharing | tenant key | trust zone | credential scope | residue policy |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
+
+確認事項：
+
+- [ ] credential lookupにcanonical tenant keyを使う
+- [ ] cross-tenant fallbackを禁止する
+- [ ] raw secretを成果物・ログへ保存しない
+- [ ] data owner、residency、migration、rollbackを定義する
+- [ ] unknown / ambiguous / unavailable / no dataを区別する
+
+## 12. 関連資料
 
 * [認証・権限設計](./04_auth_permission.md)
 * [エラー設計](./05_error_design.md)

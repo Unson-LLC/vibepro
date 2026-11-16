@@ -88,7 +88,8 @@ test('story-vibepro-artifact-output-routing ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 a
 
   const guide = await readFile(path.join(repoRoot, 'docs/guide/artifact-output-routing.md'), 'utf8');
   assert.ok(
-    ['artifact_routing', 'backward-compatible', 'migration', 'roll back'].every((term) => guide.toLowerCase().includes(term)),
+    ['artifact_routing', 'backward-compatible', 'migration'].every((term) => guide.toLowerCase().includes(term))
+      && /roll ?back|rollback/i.test(guide),
     'AC-11 documents configuration, compatibility, migration, and rollback'
   );
   // ac:10 ac:11 the production CLI preserves the source and reports the required move.

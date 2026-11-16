@@ -1,7 +1,7 @@
 {
   "name": "vibepro",
-  "version": "0.2.0-beta.2",
-  "description": "Product-intent gates and review evidence for AI coding agents",
+  "version": "0.2.0-beta.34",
+  "description": "Repository-local Story, Spec, verification, review, and PR evidence for AI coding agents",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -30,6 +30,7 @@
     "agent-instructions",
     "bin",
     "src",
+    "runtime-manifest.json",
     "skills",
     "docs/assets/vibepro-header.png",
     "docs/playbooks",
@@ -50,10 +51,18 @@
     "test:e2e:ts": "node scripts/run-e2e-ts-specs.mjs",
     "lint:e2e-product-execution": "node scripts/lint-e2e-product-execution.mjs",
     "typecheck": "for f in bin/vibepro.js src/*.js scripts/*.mjs; do node --check \"$f\" || exit 1; done",
-    "pack:dry-run": "npm pack --dry-run"
+    "build:pack-dry-run": "npm run pack:dry-run",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepack": "node scripts/runtime-manifest.mjs generate",
+    "postpack": "node scripts/runtime-manifest.mjs clean",
+    "proof-ledger:check": "node scripts/check-proof-ledger.mjs"
   },
   "devDependencies": {
+    "mermaid": "11.17.2",
     "vitepress": "1.6.4"
+  },
+  "overrides": {
+    "vite": "6.4.5"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.62.2"

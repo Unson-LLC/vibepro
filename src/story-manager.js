@@ -7,12 +7,25 @@ import {
   normalizeGraphEdges
 } from './graph-context.js';
 import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-generator.js';
-import { bindStoryTraceability } from './traceability.js';
 import { renderStoryReportHtml } from './story-html.js';
 import { getJourneyStatus } from './journey-map.js';
 import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
+import {
+  applyDevelopmentJudgmentToPlan,
+  adoptJudgmentInput,
+  evaluateOperationalJudgmentWorkflow,
+  getJudgmentOperationalStatus,
+  prepareOperationalJudgmentInput,
+  readOperationalJudgmentProjection,
+  recordDevelopmentJudgmentPlanConsumption,
+  recordJudgmentApplicability,
+  recordJudgmentDisposition,
+  recordOperationalJudgmentOutcome,
+  renderDevelopmentJudgmentPlanMarkdown
+} from './judgment-operations.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { addBrainbaseBoundStory, ensureBrainbaseStoryBinding } from './brainbase-integration.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -21,7 +34,8 @@ const STORY_FIELDS = [
   ['--view', 'view'],
   ['--period', 'period'],
   ['--started-at', 'started_at'],
-  ['--due-at', 'due_at']
+  ['--due-at', 'due_at'],
+  ['--contract-type', 'contract_type']
 ];
 
 const DEFAULT_STORY_JOURNEY_ID = 'default-product-journey';
@@ -62,24 +76,7 @@ const STORY_JOURNEY_PATTERNS = [
 ];
 
 export async function addStory(repoRoot, options = {}) {
-  const root = path.resolve(repoRoot);
-  const config = await readConfig(root);
-  const story = buildStory(options);
-  const stories = getStories(config);
-  if (stories.some((item) => item.story_id === story.story_id)) {
-    throw new Error(`Story already exists: ${story.story_id}`);
-  }
-  config.brainbase = {
-    ...(config.brainbase ?? {}),
-    stories: [...stories, story]
-  };
-  await writeConfig(root, config);
-  await bindStoryTraceability(root, {
-    storyId: story.story_id,
-    source: 'story_add',
-    lifecycle: 'declared_not_started'
-  });
-  return story;
+  return addBrainbaseBoundStory(repoRoot, options);
 }
 
 export async function listStories(repoRoot, options = {}) {
@@ -92,13 +89,22 @@ export async function listStories(repoRoot, options = {}) {
   };
 }
 
-export async function selectStory(repoRoot, storyId) {
+export async function selectStory(repoRoot, storyId, options = {}) {
   if (!storyId) throw new Error('--id is required');
   const root = path.resolve(repoRoot);
   const config = await readConfig(root);
   const story = getStories(config).find((item) => item.story_id === storyId);
   if (!story) throw new Error(`Story not found: ${storyId}`);
   if (isArchived(story)) throw new Error(`Archived story cannot be selected: ${storyId}`);
+  const binding = await ensureBrainbaseStoryBinding(root, {
+    storyId,
+    config,
+    env: options.env,
+    now: options.now
+  });
+  if (binding?.outcome_case) {
+    story.outcome_case = binding.outcome_case;
+  }
   config.brainbase = {
     ...(config.brainbase ?? {}),
     current_story_id: storyId
@@ -341,16 +347,43 @@ export async function createStoryPlan(repoRoot, options = {}) {
   const config = await readConfig(root);
   const manifest = await readManifest(root);
   const { catalog, catalogPath } = await readStoryMap(root);
-  const graphIndex = await readStoryPlanGraphIndex(root, config.brainbase?.current_story_id ?? 'story-default');
+  const currentStoryId = config.brainbase?.current_story_id ?? null;
+  const judgmentProgress = currentStoryId
+    ? await advanceJudgmentBeforePlan(root, currentStoryId, options)
+    : [];
+  const graphIndex = await readStoryPlanGraphIndex(root, currentStoryId ?? 'story-default');
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
   const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
-  const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
+  const basePlan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
+  const judgmentProjection = currentStoryId
+    ? await readOperationalJudgmentProjection(root, currentStoryId)
+    : null;
+  const applied = applyDevelopmentJudgmentToPlan(basePlan, judgmentProjection, { storyId: currentStoryId });
+  const plan = applied.plan;
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });
   const planPath = path.join(storyDir, 'story-plan.json');
   const markdownPath = path.join(storyDir, 'story-plan.md');
-  await writeFile(planPath, `${JSON.stringify(plan, null, 2)}\n`);
-  await writeFile(markdownPath, renderStoryPlan(plan));
+  const planBinding = currentStoryId
+    ? await recordDevelopmentJudgmentPlanConsumption(root, {
+        storyId: currentStoryId,
+        binding: applied.binding,
+        planArtifact: toWorkspaceRelative(root, planPath),
+        planMarkdown: toWorkspaceRelative(root, markdownPath)
+      })
+    : null;
+  if (planBinding) {
+    plan.development_judgment = {
+      ...plan.development_judgment,
+      lifecycle_after_plan: 'consumed_by_plan',
+      binding_id: planBinding.binding_id,
+      binding_artifact: planBinding.artifact,
+      consumed_at: planBinding.consumed_at
+    };
+  }
+  await writeFile(planPath, `${JSON.stringify(plan, null, 2)}
+`);
+  await writeFile(markdownPath, `${renderStoryPlan(plan)}${renderDevelopmentJudgmentPlanMarkdown(plan.development_judgment)}`);
   manifest.artifacts = {
     ...(manifest.artifacts ?? {}),
     story_plan: toWorkspaceRelative(root, planPath),
@@ -361,10 +394,91 @@ export async function createStoryPlan(repoRoot, options = {}) {
     source_catalog: toWorkspaceRelative(root, catalogPath),
     priority_story_count: plan.priority_stories.length,
     question_count: plan.questions.length,
+    development_judgment: plan.development_judgment ?? null,
     artifact: toWorkspaceRelative(root, planPath)
   };
   await writeManifest(root, manifest);
-  return { plan, planPath, markdownPath };
+  const judgmentClosure = currentStoryId
+    ? await closeJudgmentAfterPlan(root, currentStoryId, planBinding, options)
+    : null;
+  return { plan, planPath, markdownPath, planBinding, judgmentProgress, judgmentClosure };
+}
+
+async function advanceJudgmentBeforePlan(root, storyId, options) {
+  const progress = [];
+  let status = await getJudgmentOperationalStatus(root, storyId);
+  if (status.lifecycle === 'not_started' && options.judgmentApplicable != null) {
+    const applicability = await recordJudgmentApplicability(root, {
+      storyId,
+      applicable: options.judgmentApplicable,
+      reason: options.judgmentReason,
+      recordedBy: options.judgmentActor
+    });
+    progress.push({ action: 'applicability_recorded', artifact: applicability.record.artifact });
+    status = applicability.status;
+  }
+  if (status.lifecycle === 'applicable_not_prepared') {
+    const prepared = await prepareOperationalJudgmentInput(root, { storyId, env: options.env });
+    progress.push({ action: 'input_prepared', artifact: prepared.artifact });
+    status = await getJudgmentOperationalStatus(root, storyId);
+  }
+  if (status.lifecycle === 'draft_prepared' && options.judgmentInput) {
+    const adopted = await adoptJudgmentInput(root, {
+      storyId,
+      inputPath: options.judgmentInput,
+      reviewedBy: options.judgmentReviewedBy,
+      authority: options.judgmentAuthority,
+      summary: options.judgmentReviewSummary,
+      env: options.env
+    });
+    progress.push({ action: 'input_adopted', artifact: adopted.adoption.artifact });
+    status = adopted.status;
+  }
+  if (status.lifecycle === 'input_reviewed') {
+    const evaluated = await evaluateOperationalJudgmentWorkflow(root, {
+      storyId,
+      inputPath: status.adoption.adopted_input,
+      env: options.env
+    });
+    progress.push({ action: 'judgment_evaluated', artifact: evaluated.operational.artifact });
+  }
+  return progress;
+}
+
+async function closeJudgmentAfterPlan(root, storyId, planBinding, options) {
+  let status = await getJudgmentOperationalStatus(root, storyId);
+  let disposition = null;
+  let outcome = null;
+  if (status.lifecycle === 'consumed_by_plan' && options.judgmentHumanDecision) {
+    disposition = await recordJudgmentDisposition(root, {
+      storyId,
+      runId: status.run_id,
+      humanDecision: options.judgmentHumanDecision,
+      effect: options.judgmentEffect ?? planBinding?.effect ?? 'no_effect',
+      summary: options.judgmentDispositionSummary,
+      evidenceRefs: options.judgmentEvidenceRefs,
+      recordedBy: options.judgmentActor
+    });
+    status = disposition.status;
+  }
+  if (status.lifecycle === 'outcome_pending' && options.judgmentOutcomeStatus) {
+    if (options.judgmentOutcomeStatus !== 'unknown' && !(options.judgmentEvidenceRefs?.length)) {
+      throw new Error('story plan requires --judgment-evidence for a confirmed, mixed, or falsified outcome');
+    }
+    outcome = await recordOperationalJudgmentOutcome(root, {
+      storyId,
+      runId: status.run_id,
+      status: options.judgmentOutcomeStatus,
+      summary: options.judgmentOutcomeSummary,
+      evidenceRefs: options.judgmentEvidenceRefs,
+      observedOutcomes: options.judgmentObservedOutcomes
+    });
+  }
+  return {
+    disposition: disposition?.disposition ?? null,
+    outcome: outcome?.outcome ?? null,
+    status: await getJudgmentOperationalStatus(root, storyId)
+  };
 }
 
 async function readStoryPlanGraphIndex(root, storyId) {
@@ -428,6 +542,8 @@ export function renderStoryPlanSummary(result) {
 | 優先Story | ${result.plan.priority_stories.length} |
 | Plan | ${toWorkspaceRelativeFromAny(result.planPath)} |
 | Markdown | ${toWorkspaceRelativeFromAny(result.markdownPath)} |
+| Judgment lifecycle | ${result.plan.development_judgment?.lifecycle_after_plan ?? result.plan.development_judgment?.lifecycle_before_plan ?? 'not_started'} |
+| Judgment plan effect | ${result.plan.development_judgment?.effect ?? 'no_effect'} |
 
 ${renderStoryPlan(result.plan)}`;
 }
@@ -524,6 +640,14 @@ export function renderStoryReport({ story, latestRun, runs, evidence, taskState 
 | Story run数 | ${runs.length} |
 
 ${renderStoryJourneyContext(journeyContext)}
+
+## Outcome Case Projection
+
+| 項目 | 内容 |
+|------|------|
+| Status | not_evaluated |
+| Reason | このStory診断レポートは成果ケースの署名、commit marker、ledgerを検証しない。 |
+| Verify | \`vibepro pr prepare <repo> --story-id ${story.story_id}\` |
 
 ## graphify集計
 
@@ -2278,6 +2402,7 @@ function toConfigStory(story) {
     started_at: story.started_at ?? null,
     due_at: story.due_at ?? null,
     category: story.category ?? null,
+    contract_type: story.contract_type ?? story.story_type ?? story.derived?.story_contract?.story_type ?? null,
     derived_by: 'vibepro-story-derive'
   };
 }
@@ -2311,22 +2436,6 @@ function toWorkspaceRelativeFromAny(filePath) {
   const index = filePath.indexOf(marker);
   if (index === -1) return filePath;
   return `.vibepro/${filePath.slice(index + marker.length).split(path.sep).join('/')}`;
-}
-
-function buildStory(options) {
-  if (!options.story_id) throw new Error('--id is required');
-  if (!options.title) throw new Error('--title is required');
-  return {
-    story_id: options.story_id,
-    title: options.title,
-    ssot: 'local',
-    status: 'active',
-    horizon: options.horizon ?? null,
-    view: options.view ?? null,
-    period: options.period ?? null,
-    started_at: options.started_at ?? null,
-    due_at: options.due_at ?? null
-  };
 }
 
 function getOption(args, name) {

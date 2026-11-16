@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "decision_id": "decision-1785858921183-54305dd5",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: 変更は6ファイル・コード変更ゼロで、reviewerが確認すべき問いは「裁定カードの5つの回答が target-model.json に過不足なく入っているか」の一点に還元される。review_owner_map: target-model.json の allowed_dependencies と modules は governance.human_adjudicated 領域であり、responsible reviewer は裁定者である sato_keigo（回答経路: coordinator session AskUserQuestion）。テスト2ファイルは同じ投影の検証面であり所有者は分かれない。decision_record: 分割しない判断は gate:pr_scope_judgment の decision record に、投影範囲の境界（rules[]本文変更なし・ratchet gate導入なし・resolve 19件のコード修正なし）は story frontmatter の reason.boundary に記録済み",
+      "artifact": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T15:56:41.426Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "decision_id": "decision-1785858919881-94b3d1b2",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "migration_plan: target-model.json のスキーマ（schema_version 0.1.0 相当のフィールド構成）は不変で、modules[] への要素追加・paths への文字列追加・allowed_dependencies への文字列追加・model_version の整数インクリメントのみ。読み手である loadTargetModel の検証（model_version は正の整数、欠落は null に degrade）を満たすため移行手順は存在しない。rollback_plan: 2ファイル (target-model.json / 裁定カード) を revert すれば model_version 1 の状態へ完全復帰し、副作用は conformance の計測値が旧モデル基準へ戻ることのみ（storyの reason.rollback に記載）。idempotency_test: 投影は宣言的な最終状態であり、TMP-S-1..S-7 が最終状態を直接assertするため再適用しても同じ状態に収束する（追加は includes ガード付きで重複しない）。query_semantics_test: conformance の import scan とクエリ経路は変更しておらず、実測で base/head 双方が同一物差しで計測されていることを delta artifact (previous_model_version 1 / head 2 / model_version_changed true) が示している",
+      "artifact": ".vibepro/architecture/conformance/delta.json",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T15:56:41.426Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

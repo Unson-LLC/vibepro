@@ -1,11 +1,23 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { siteConfig, registryTags } from './support/docs-site-config.js';
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 const pullRequestNumbers = (content) => [...content.matchAll(/https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/(\d+)/g)]
   .map((match) => Number(match[1]));
+const releaseChannels = (content) => Object.fromEntries(
+  [...content.matchAll(/^\| npm `(latest|beta)` \| <code>\{\{ site\.themeConfig\.(npmLatest|npmBeta) \}\}<\/code> \|/gmu)]
+    .map((match) => [match[1], siteConfig.themeConfig[match[2]]])
+);
+const softwareVersion = () => JSON.parse(siteConfig.head.find(([tag, attrs]) => tag === 'script' && attrs.type === 'application/ld+json')[2]).softwareVersion;
+const publishedVersions = (content) => [
+  ...content.matchAll(/^\| \d{4}-\d{2}-\d{2} \| \[`([^`]+)`\]\(https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/[^)]+\)/gmu)
+].map((match) => match[1]);
+const versionHistoryHeadings = (content) => [
+  ...content.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)$/gmu)
+].map((match) => match[1]);
 
 test('VRNH-AC-001/002/004 release index separates published versions from the PR snapshot', async () => {
   for (const [path, snapshotDate] of [
@@ -51,30 +63,52 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
     'releases/2026-05.html',
     'releases/2026-06.html',
     'releases/2026-07.html',
+    'releases/2026-08.html',
     'ja/releases/index.html',
     'ja/releases/2026-01.html',
     'ja/releases/2026-05.html',
     'ja/releases/2026-06.html',
-    'ja/releases/2026-07.html'
+    'ja/releases/2026-07.html',
+    'ja/releases/2026-08.html'
   ]) {
     assert.match(contract, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(jaVersion, /\/ja\/releases\//);
   assert.match(enVersion, /\/releases\//);
-  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.2`/);
-  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.2`/);
-  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.2`/);
-  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.2`/);
+  const jaChannels = releaseChannels(jaVersion);
+  const enChannels = releaseChannels(enVersion);
+  assert.deepEqual(enChannels, jaChannels, 'published npm channels must match across locales');
+  assert.deepEqual(Object.keys(enChannels).sort(), ['beta', 'latest']);
+  assert.equal(enChannels.latest, registryTags.latest);
+  assert.equal(enChannels.beta, registryTags.beta);
+  assert.notEqual(enChannels.latest, enChannels.beta, 'distinct registry channels must remain distinct');
+  assert.equal(softwareVersion(), enChannels.latest, 'VitePress metadata must identify the published version');
+  for (const [channel, version] of Object.entries(enChannels)) {
+    assert.match(
+      version,
+      /^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?$/u,
+      `${channel} must be SemVer`
+    );
+  }
 });
 
-test('PR release-note prose has an explicit Story source for every stable section', async () => {
-  const [story, manager] = await Promise.all([
-    read('docs/management/stories/active/story-vibepro-pr-driven-continuous-release.md'),
-    read('src/pr-manager.js')
+test('VRNH-CON-007 published version ledgers preserve bilingual historical order in the release index', async () => {
+  const [jaIndex, enIndex, jaHistory, enHistory] = await Promise.all([
+    read('docs/ja/releases/index.md'),
+    read('docs/releases/index.md'),
+    read('docs/ja/reference/version-history.md'),
+    read('docs/reference/version-history.md')
   ]);
-  assert.match(story, /## Solution\n\nmain向けPRのマージを起点に/);
-  assert.match(story, /## Compatibility\n\n既存CLIとversion不変PRの挙動は維持する/);
-  assert.match(story, /## User Action\n\nなし。PR作成者は/);
-  assert.match(manager, /compatibility: extractSectionText/);
-  assert.match(manager, /user_action: extractSectionText/);
+  const indexVersions = [publishedVersions(enIndex), publishedVersions(jaIndex)];
+  const historyVersions = [versionHistoryHeadings(enHistory), versionHistoryHeadings(jaHistory)];
+
+  assert.deepEqual(indexVersions[0], indexVersions[1], 'published release indexes must match across locales');
+  assert.deepEqual(historyVersions[0], historyVersions[1], 'published version ledgers must match across locales');
+  assert.ok(historyVersions[0].length >= 2, 'the append-only ledger must retain prior published versions');
+  assert.equal(new Set(historyVersions[0]).size, historyVersions[0].length, 'published ledger headings must be unique');
+  assert.deepEqual(
+    historyVersions[0],
+    indexVersions[0].filter(version => historyVersions[0].includes(version)),
+    'historical prose must retain release order; newer factual rows need no invented prose'
+  );
 });

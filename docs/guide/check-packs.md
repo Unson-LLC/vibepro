@@ -1,10 +1,5 @@
 # Check Packs
 
-Check Packs group repeatable verification checks for a repository or workflow.
+This page describes the former Check Packs workflow. It is retained so older links continue to resolve, but Check Packs and the broad gate machinery are not part of VibePro's current minimal core.
 
-```bash
-vibepro check pr-readiness . --story-id <story-id> --base main
-vibepro check regression-risk .
-```
-
-Use Check Packs to make evidence collection repeatable. Do not use a passing check as a substitute for missing runtime, security, data, or release evidence when those axes are active.
+For the current product surface, see the [Feature Map](/guide/feature-map) and the [Control Loop](/guide/control-loop). VibePro now keeps Story and Spec context, structural references, verification and review records, and PR preparation available for ordinary repository review. These records are evidence for human judgment, not a general safety or merge gate.

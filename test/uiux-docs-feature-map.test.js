@@ -10,7 +10,7 @@ async function readRepoFile(repoPath) {
   return readFile(path.join(PACKAGE_ROOT, repoPath), 'utf8');
 }
 
-test('UI/UX docs feature map remains available internally while the public build excludes playbooks', async () => {
+test('the public feature map describes the minimal core while legacy UI/UX playbooks stay internal', async () => {
   const [
     readme,
     readmeJa,
@@ -37,15 +37,17 @@ test('UI/UX docs feature map remains available internally while the public build
     readRepoFile('docs/playbooks/story-engineering-playbook/design/08_copy_guidelines.md')
   ]);
 
-  assert.match(readme, /Prepare A UI\/UX Modernization PR/);
+  assert.match(readme, /The current minimal core is intentionally small\./);
+  assert.match(readme, /former broad Gate DAG.*removed during the minimal-core rebuild/);
   assert.match(readme, /vibepro pr prepare/);
-  assert.match(readmeJa, /UI\/UX Modernization PR/);
+  assert.match(readmeJa, /現行の最小コアは意図的に小さく保っています。/);
+  assert.match(readmeJa, /広範なGate DAG.*最小コア再構築.*削除/);
   assert.match(readmeJa, /vibepro pr prepare/);
-  assert.match(featureMap, /UI\/UX/);
-  assert.match(featureMap, /design-modernize/);
-  assert.match(featureMap, /UI\/UX cockpit/);
-  assert.match(featureMapJa, /UI\/UX/);
-  assert.match(featureMapJa, /design-modernize/);
+  assert.match(featureMap, /Preserve product intent/);
+  assert.match(featureMap, /design-modernization pipelines/);
+  assert.match(featureMap, /not current features/);
+  assert.match(featureMapJa, /プロダクト意図の保存/);
+  assert.match(featureMapJa, /design modernization pipeline/);
   assert.match(playbookTemplate, /visual hypothesis/);
   assert.match(playbookTemplate, /VibePro-native Design System/);
   assert.match(storyDoc, /parent_design: vibepro-uiux-one-command-cockpit/);

@@ -1,24 +1,149 @@
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
+
 # Version and Release Channels
 
-The authoritative package version is `package.json`; the installed binary reports it with `vibepro version`.
+The authoritative source version is `package.json`; an installed binary reports it with `vibepro version`.
 
-| Channel | Current value | Authority |
+| Channel | Expected after this release | Authority |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.2` | Published registry state after the release workflow completes |
-| npm `beta` | `0.2.0-beta.2` | Published registry state after the release workflow completes |
-| Repository `main` | `0.2.0-beta.2` release source | Git commit and `CHANGELOG.md` |
-| Manual build | Footer/meta source commit | Deployed build artifact |
+| npm `latest` | <code>{{ site.themeConfig.npmLatest }}</code> | {{ site.themeConfig.npmTagsSource }} |
+| npm `beta` | <code>{{ site.themeConfig.npmBeta }}</code> | {{ site.themeConfig.npmTagsSource }} |
+| Repository `main` | <code>{{ site.themeConfig.version }}</code> release source | Git commit and `package.json` |
+| Manual build | Source commit in footer/meta | Deployed VitePress artifact |
 
-## Unreleased Manual-Visible Capabilities
+The table identifies the current release channels. The sections below are an append-only ledger of published versions; detailed PR evidence remains in [Release Notes](/releases/).
 
-- Risk-adaptive Gate DAG with independent review lifecycle and adjudication.
-- Managed execution through PR creation and audited merge.
-- CI evidence import, existing-PR refresh, canonical audit replay, and cost/ROI reports.
-- Journey, UI/UX intake and map, VibePro-native Design System, visual/responsive/a11y evidence, and design modernization flows.
-- Bounded summary/readiness views and explicit responsibility/authority contracts.
+## 0.2.0-beta.34
 
-Install the published beta explicitly with `npm install -g vibepro@beta`. When the installed help differs from this manual, the running binary's contract wins. See [Release and Audit](/guide/release-and-audit) and the repository `CHANGELOG.md` for the boundary.
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
 
-See [Release Notes](/releases/) for a reader-focused history that separates published versions from PR-derived development milestones.
+## 0.2.0-beta.32
 
-`0.1.0-alpha.0` introduced the OSS-ready package shape, phase checkpoints, Story/Spec review flow, and public discovery documentation.
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.31
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.30
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.29
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.28
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.27
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.26
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.25
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.24
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.23
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.22
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.21
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.20
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.19
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.18
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.17
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.16
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.15
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.14
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.13
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.12
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.11
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.10
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.9
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.8
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.7
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.6
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.5
+
+Detailed changes for this published version are recorded in [Release Notes](/releases/).
+
+## 0.2.0-beta.4
+
+Separates evidence that a problem exists from evidence for its solution direction in the Senior Engineering Judgment DAG. Structural excess routes to `SIMPLIFY`, value constraints to `VALUE`, and insufficient or unknown decision evidence to `VALIDATE`. This breaking beta updates the senior judgment input schema from `0.2.0` to `0.3.0`.
+
+## 0.2.0-beta.3
+
+Publishes the rebuilt minimal core and aligns the npm README, VitePress entry pages, generated CLI reference, and CI with that contract. This is a breaking beta change: commands and automatic control-plane mechanisms removed by the rebuild are not compatibility aliases.
+
+## 0.2.0-beta.2
+
+The previous published beta contained the broader evidence-gate and managed workflow. Pin this version only when migration time is required; it does not represent the current minimal-core direction.
+
+The installed binary's help output wins if documentation and a locally installed version differ.
+
+See [Release Notes](/releases/) for the chronological publication and development record.

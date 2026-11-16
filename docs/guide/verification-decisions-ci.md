@@ -14,7 +14,7 @@ vibepro verify record . \
   --observed "exit_code=0"
 ```
 
-`--kind` is required and accepts `unit`, `integration`, `e2e`, `typecheck`, or `build`. `--status` accepts `pass`, `fail`, or `needs_setup`. Preserve a durable status artifact and structured observations when the gate must rely on the result.
+`--kind` is required and accepts `unit`, `integration`, `e2e`, `typecheck`, or `build`. `--status` accepts `pass`, `fail`, or `needs_setup`. Record `pass` only after checking the actual result. Preserve an artifact and structured observations so a reviewer can inspect the evidence.
 
 Record residual risk as an attributable decision, not by changing a failed result to pass:
 
@@ -30,8 +30,8 @@ After the PR's CI finishes:
 
 ```bash
 vibepro verify import-ci . --id <story-id> --pr <number>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
+vibepro pr prepare . --story-id <story-id> --base origin/main --json
+vibepro pr create . --story-id <story-id> --base origin/main --repo <owner/name>
 ```
 
 CI is evidence only when it is tied to the reviewed commit and imported successfully. Authentication failure, missing checks, or an unknown mapping remains explicit and must not be converted to an empty successful result.

@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-0-2-0-beta-7",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "package.json and the package-lock root package declare 0.2.0-beta.7, and the CLI version output resolves to the same value.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL7-AC-001"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "package.json",
+            "anchor": "\"version\": \"0.2.0-beta.7\""
+          },
+          {
+            "file": "package-lock.json",
+            "anchor": "\"version\": \"0.2.0-beta.7\""
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "--version prints the package version"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "prints the package version"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T00:47:48.125Z",
+      "last_revised_at": "2026-08-12T01:01:02.285Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "The release change is metadata and release evidence only; it does not change src, bin, dependencies, or publication workflow behavior.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL7-AC-002"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-release-0-2-0-beta-7.md",
+            "anchor": "## 境界"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release uses the trusted default-branch workflow for fork merges"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "post-merge release"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T00:47:48.125Z",
+      "last_revised_at": "2026-08-12T01:01:02.285Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "When the version-bump PR merges, post-merge release validates the exact merge commit with typecheck, the full test suite, and npm pack dry-run before publishing npm and the GitHub prerelease.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL7-AC-003"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "publish-npm"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "post-merge release uses the trusted default-branch workflow for fork merges"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "publish-npm"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T00:47:48.125Z",
+      "last_revised_at": "2026-08-12T01:01:02.285Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Release completion requires npm gitHead, beta and latest dist-tags, and the GitHub Release target to identify the same release merge commit; rollback deprecates beta.7 and restores both tags without unpublishing.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "REL7-AC-004"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "assertGitHead"
+          },
+          {
+            "file": "docs/architecture/story-vibepro-release-0-2-0-beta-7.md",
+            "anchor": "## 可観測性"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-006 rejects an existing version with another gitHead"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "gitHead"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T00:47:48.125Z",
+      "last_revised_at": "2026-08-12T01:01:02.285Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Immutable beta publication",
+      "mermaid": "flowchart LR\n  PR[Version bump PR] --> Merge[Exact merge commit]\n  Merge --> Validate[Typecheck + full tests + pack]\n  Validate --> Npm[npm 0.2.0-beta.7]\n  Validate --> Release[GitHub prerelease]\n  Npm --> Verify[gitHead + beta/latest verification]\n  Release --> Verify"
+    }
+  ],
+  "generated_at": "2026-08-12T01:01:02.283Z",
+  "previous_spec_id": "2026-08-12T00:47:48.119Z"
+}

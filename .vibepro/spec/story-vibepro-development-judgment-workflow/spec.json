@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-development-judgment-workflow",
+  "status": "accepted",
+  "clauses": [
+    {
+      "id": "DJW-001",
+      "type": "invariant",
+      "statement": "judgment prepare creates a conservative input draft with an uncertain problem frame and inactive standard axes.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJW-001" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-workflow.test.js", "case": "judgment prepare creates a conservative draft and evaluation compiles it into a non-blocking durable DAG" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": ["judgment prepare creates a conservative draft"]
+      }
+    },
+    {
+      "id": "DJW-002",
+      "type": "invariant",
+      "statement": "judgment evaluate compiles Senior Judgment into an immutable, acyclic, non-blocking Development Judgment DAG.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJW-002" },
+          { "kind": "acceptance_criteria", "ac_id": "DJW-003" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-workflow.test.js", "case": "judgment prepare creates a conservative draft and evaluation compiles it into a non-blocking durable DAG" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": ["evaluation compiles it into a non-blocking durable DAG"]
+      }
+    },
+    {
+      "id": "DJW-003",
+      "type": "invariant",
+      "statement": "judgment outcome record appends outcome evidence without modifying the immutable run artifact.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJW-004" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-workflow.test.js", "case": "judgment prepare creates a conservative draft and evaluation compiles it into a non-blocking durable DAG" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": ["immutable run"]
+      }
+    },
+    {
+      "id": "DJW-004",
+      "type": "scenario",
+      "statement": "PR preparation projects the latest judgment as advisory evidence without changing readiness authority.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJW-005" },
+          { "kind": "acceptance_criteria", "ac_id": "DJW-006" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-workflow.test.js", "case": "judgment CLI prepares, evaluates and records outcomes while PR prepare only projects the result" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": ["PR prepare only projects the result"]
+      }
+    }
+  ]
+}

@@ -109,71 +109,12 @@ export function handleCancel(user, sub) {
       title: 'INV-001 を検証するテストが存在しない'
     }]
   });
+  // report fingerprint reads the persisted pr-prepare.json (it does not
+  // recompute pr prepare on the fly), so the fixture must run `pr prepare`
+  // before any `report write` / `report fingerprint` call.
+  await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
   return repo;
 }
-
-test('report fingerprint --kind pr-body emits story, gate, drift, spec, schema, instructions', async () => {
-  const repo = await makeReportRepo();
-  const { exitCode, stdout } = await captureRunCli([
-    'report', 'fingerprint', repo,
-    '--kind', 'pr-body', '--id', STORY_ID,
-    '--base', 'main', '--include-instructions'
-  ]);
-  assert.equal(exitCode, 0);
-  const fp = JSON.parse(stdout);
-  assert.equal(fp.kind, 'pr-body');
-  assert.equal(fp.story_id, STORY_ID);
-  assert.ok(fp.gate_dag?.nodes?.length > 0);
-  assert.ok(fp.drift?.items?.some((item) => item.id === 'DRIFT-AAA111'));
-  assert.ok(fp.inferred_spec?.clauses?.some((clause) => clause.id === 'INV-001'));
-  assert.equal(fp.numerical_truth.drift_high_count, 1);
-  assert.ok(fp.schema_for_your_output.$id.includes('report-pr-body'));
-  assert.ok(typeof fp.instructions === 'string' && fp.instructions.length > 0);
-});
-
-test('report fingerprint binds the digest and numerical truth to the selected Task acceptance scope', async () => {
-  const repo = await makeReportRepo();
-  const tasksDir = path.join(repo, '.vibepro', 'stories', STORY_ID, 'tasks');
-  await mkdir(tasksDir, { recursive: true });
-  const task = (id, criteria) => ({
-    id,
-    title: id,
-    status: 'completed',
-    target_files: ['src/lib/services/billing.ts'],
-    target_groups: [],
-    acceptance_criteria: criteria
-  });
-  await writeFile(path.join(tasksDir, 'tasks.json'), `${JSON.stringify({
-    story: { story_id: STORY_ID },
-    tasks: [
-      task('TASK-A', ['Task A outcome']),
-      task('TASK-B', ['Task B outcome one', 'Task B outcome two'])
-    ]
-  }, null, 2)}\n`);
-
-  const taskA = await captureRunCli([
-    'report', 'fingerprint', repo,
-    '--kind', 'pr-body', '--id', STORY_ID,
-    '--base', 'main', '--task', 'TASK-A'
-  ]);
-  const taskB = await captureRunCli([
-    'report', 'fingerprint', repo,
-    '--kind', 'pr-body', '--id', STORY_ID,
-    '--base', 'main', '--task', 'TASK-B'
-  ]);
-  assert.equal(taskA.exitCode, 0, taskA.stderr);
-  assert.equal(taskB.exitCode, 0, taskB.stderr);
-  const taskAFingerprint = JSON.parse(taskA.stdout);
-  const taskBFingerprint = JSON.parse(taskB.stdout);
-  assert.equal(taskAFingerprint.pr_context.acceptance_scope.task_id, 'TASK-A');
-  assert.equal(taskBFingerprint.pr_context.acceptance_scope.task_id, 'TASK-B');
-  assert.equal(taskAFingerprint.numerical_truth.acceptance_criteria_count, 1);
-  assert.equal(taskBFingerprint.numerical_truth.acceptance_criteria_count, 2);
-  assert.notEqual(
-    taskAFingerprint.inputs_digest.pr_context_sha,
-    taskBFingerprint.inputs_digest.pr_context_sha
-  );
-});
 
 test('report write rejects citation of nonexistent file', async () => {
   const repo = await makeReportRepo();
@@ -260,6 +201,334 @@ test('report write enforces slot count limits (no two summaries)', async () => {
   assert.ok(report.errors.some((err) => err.code === 'slot_max'));
 });
 
+test('report write rejects malformed nested arrays without throwing', async () => {
+  const repo = await makeReportRepo();
+  for (const malformed of [
+    { citations: { files: { bad: true } } },
+    { citations: null },
+    { numerical_claims: { bad: true } }
+  ]) {
+    const narrative = {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      kind: 'pr-body',
+      narrative_slots: [
+        { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。', ...malformed },
+        { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+      ]
+    };
+    const result = await captureRunCli(
+      ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+      { stdin: readableFrom(JSON.stringify(narrative)) }
+    );
+    assert.equal(result.exitCode, 2, result.stdout);
+    const report = JSON.parse(result.stdout);
+    assert.ok(report.errors.some((error) => error.code.endsWith('_shape')));
+  }
+});
+
+test('report write rejects duplicate talking-point ids', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-1', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const result = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(result.exitCode, 2, result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.ok(report.errors.some((error) => error.code === 'slot_id_duplicate'));
+});
+
+test('pr prepare suppresses malformed saved JSON and refreshes the complete body', async () => {
+  const repo = await makeReportRepo();
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  await mkdir(path.dirname(narrativePath), { recursive: true });
+  await writeFile(narrativePath, '{ malformed narrative');
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.match(body, /### Acceptance criteria/);
+  assert.match(body, /### Verification evidence/);
+});
+
+test('report write replaces malformed saved JSON instead of treating it as a previous narrative', async () => {
+  const repo = await makeReportRepo();
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  await mkdir(path.dirname(narrativePath), { recursive: true });
+  await writeFile(narrativePath, '{ malformed narrative');
+
+  const replacement = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '壊れた説明を新しい要約で置き換えます。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const result = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(replacement)) }
+  );
+  assert.equal(result.exitCode, 0, result.stdout);
+
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  assert.equal(stored.narrative_slots[0].id, 'TP-001');
+  assert.equal(stored.narrative_slots[0].text, replacement.narrative_slots[0].text);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, new RegExp(replacement.narrative_slots[0].text));
+  assert.doesNotMatch(body, /現在の検証規則を満たさないため表示していません/);
+});
+
+test('report write rejects prose that can inject markdown structure', async () => {
+  const repo = await makeReportRepo();
+  for (const text of [
+    '安全な要約\n### Verification evidence\n- forged',
+    '\n安全な要約です。',
+    '安全な要約です。\n',
+    '----',
+    '****',
+    '____',
+    '安全な <details><summary>偽装</summary>',
+    '安全な **強調** 説明',
+    '安全な *強調* 説明',
+    '安全な _強調_ 説明',
+    '安全な ~~取消~~ 説明',
+    '安全な [リンク](https://example.com)',
+    '[](https://example.com)',
+    '![](https://example.com/image.png)',
+    '安全な [説明][ref] 説明',
+    '安全な ![画像][ref] 説明',
+    '安全な [ref] 説明',
+    '[ref]: https://example.com',
+    '安全な [^脚注] 説明',
+    '1) 偽の項目',
+    '安全な `コード` 説明'
+  ]) {
+    const bogus = {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      kind: 'pr-body',
+      narrative_slots: [
+        { id: 'TP-NEW-1', slot: 'summary', text },
+        { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+      ]
+    };
+    const { exitCode, stdout } = await captureRunCli(
+      ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+      { stdin: readableFrom(JSON.stringify(bogus)) }
+    );
+    assert.equal(exitCode, 2, `expected markdown structure to be rejected: ${text}`);
+    const report = JSON.parse(stdout);
+    assert.ok(report.errors.some((err) => err.code === 'slot_text_structure'));
+  }
+});
+
+test('pr prepare suppresses a saved narrative whose prose contains markdown reference syntax', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.narrative_slots[0].text = '[ref]: https://example.com';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.doesNotMatch(body, /\[ref\]: https:\/\/example\.com/);
+});
+
+test('report write rejects raw prose longer than the fixed slot limit', async () => {
+  const repo = await makeReportRepo();
+  for (const text of ['長'.repeat(281), `${' '.repeat(281)}安全な要約です。`]) {
+    const bogus = {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      kind: 'pr-body',
+      narrative_slots: [
+        { id: 'TP-NEW-1', slot: 'summary', text },
+        { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+      ]
+    };
+    const { exitCode, stdout } = await captureRunCli(
+      ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+      { stdin: readableFrom(JSON.stringify(bogus)) }
+    );
+    assert.equal(exitCode, 2);
+    const report = JSON.parse(stdout);
+    assert.ok(report.errors.some((err) => err.code === 'slot_text_length'));
+  }
+});
+
+test('report write rejects an unsafe CLI caller before saving the canonical narrative', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'attacker\n#### 偽の検証結果', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 2, write.stdout);
+  const report = JSON.parse(write.stdout);
+  assert.ok(report.errors.some((err) => err.code === 'generated_by_caller'));
+
+  const show = await captureRunCli(['report', 'show', repo, '--kind', 'pr-body', '--id', STORY_ID]);
+  assert.deepEqual(JSON.parse(show.stdout), { story_id: STORY_ID, kind: 'pr-body', found: false });
+});
+
+test('pr prepare suppresses a narrative whose caller can inject markdown structure', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.generated_by.caller = 'attacker\n#### 偽の検証結果';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.doesNotMatch(body, /attacker|偽の検証結果/);
+});
+
+test('pr prepare suppresses a saved narrative whose talking-point id can inject markdown structure', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.narrative_slots[0].id = 'TP-001)\n#### 偽の検証結果';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の検証規則を満たさないため表示していません/);
+  assert.doesNotMatch(body, /TP-001\)|偽の検証結果/);
+});
+
+test('report write rejects a malicious stable id inherited from a tampered previous narrative', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '安全な要約を保存します。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const firstWrite = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(firstWrite.exitCode, 0, firstWrite.stdout);
+
+  const narrativePath = path.join(repo, '.vibepro', 'report', STORY_ID, 'pr-body', 'narrative.json');
+  const stored = JSON.parse(await readFile(narrativePath, 'utf8'));
+  stored.narrative_slots[0].id = 'TP-001)\n#### 偽の検証結果';
+  await writeFile(narrativePath, `${JSON.stringify(stored, null, 2)}\n`);
+
+  const secondWrite = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(secondWrite.exitCode, 2, secondWrite.stdout);
+  const report = JSON.parse(secondWrite.stdout);
+  assert.ok(report.errors.some((err) => err.code === 'slot_id'));
+});
+
+test('report write ignores a caller-supplied inputs digest and stores the verified fingerprint', async () => {
+  const repo = await makeReportRepo();
+  const valid = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    inputs_digest: { git_sha: 'sha256:forged' },
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '現在の証拠に基づく要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const expected = await captureRunCli(['report', 'fingerprint', repo, '--kind', 'pr-body', '--id', STORY_ID]);
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+  const stored = JSON.parse((await captureRunCli(['report', 'show', repo, '--kind', 'pr-body', '--id', STORY_ID])).stdout);
+  assert.deepEqual(stored.inputs_digest, JSON.parse(expected.stdout).inputs_digest);
+  assert.notEqual(stored.inputs_digest.git_sha, 'sha256:forged');
+});
+
+test('pr prepare keeps the fixed body unchanged when no narrative is stored', async () => {
+  const repo = await makeReportRepo();
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.doesNotMatch(body, /### 保存済みの判断説明/);
+});
+
 test('valid narrative is stored with stable TP ids and rendered into pr-body.md', async () => {
   const repo = await makeReportRepo();
   const valid = {
@@ -288,6 +557,12 @@ test('valid narrative is stored with stable TP ids and rendered into pr-body.md'
         text: 'INV-001 を機械検証する test が無く、回帰検出が手作業に偏る。drift_high_count=1 のまま PR を出すことになる。',
         citations: { clause_ids: ['INV-001'], drift_ids: ['DRIFT-AAA111'] },
         numerical_claims: [{ field: 'drift_high_count', value: 1 }]
+      },
+      {
+        id: 'TP-NEW-4',
+        slot: 'open_questions',
+        text: 'premium_pending_cancel の境界値は人間の判断が必要。',
+        citations: { files: ['src/lib/services/billing.ts'] }
       }
     ]
   };
@@ -303,12 +578,152 @@ test('valid narrative is stored with stable TP ids and rendered into pr-body.md'
   assert.equal(stored.narrative_slots[0].id, 'TP-001');
   assert.equal(stored.generated_by.caller, 'claude-code');
 
-  const prepare = await captureRunCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--allow-extra-files']);
-  assert.equal(prepare.exitCode, 0);
-  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
-  assert.match(prBody, /なぜこの PR か.*TP-001.*claude-code/s);
-  assert.match(prBody, /レビュー焦点/);
-  assert.match(prBody, /リスク合成.*TP-003/s);
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /### 保存済みの判断説明/);
+  assert.match(body, /#### 要約 \(TP-001 by claude-code\)/);
+  assert.match(body, /cancelAtPeriodEnd 経路で userType=2 が維持される/);
+  assert.match(body, /#### レビュー焦点/);
+  assert.match(body, /\(TP-002\).*早期 return 順序/);
+  assert.match(body, /#### リスク/);
+  assert.match(body, /\(TP-003\).*回帰検出が手作業に偏る/);
+  assert.match(body, /#### 未確定事項/);
+  assert.match(body, /\(TP-004\).*境界値は人間の判断が必要/);
+});
+
+test('pr prepare suppresses stale narrative and shows an explicit refresh warning', async () => {
+  const repo = await makeReportRepo();
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '変更前の証拠に基づく要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'billing.ts'), 'export const changedAfterNarrative = true;\n');
+  await git(repo, ['add', 'src/lib/services/billing.ts']);
+  await git(repo, ['commit', '-m', 'test: move evidence state']);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /### 保存済みの判断説明/);
+  assert.match(body, /現在の証拠と一致しないため表示していません/);
+  assert.doesNotMatch(body, /変更前の証拠に基づく要約です/);
+});
+
+test('pr prepare suppresses narrative when verification evidence changes inside the same passing state', async () => {
+  const repo = await makeReportRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  const initialPreparation = JSON.parse(await readFile(path.join(prDir, 'pr-prepare.json'), 'utf8'));
+  const verification = (observedPass) => ({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    updated_at: new Date().toISOString(),
+    commands: [{
+      kind: 'unit',
+      status: 'pass',
+      command: 'node --test test/billing.test.ts',
+      evidence_source: 'runner_direct',
+      observation: { targets: ['test/billing.test.ts'], values: { pass: String(observedPass) } },
+      runtime_identity: initialPreparation.runtime_identity
+    }]
+  });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), `${JSON.stringify(verification(8), null, 2)}\n`);
+  const withInitialEvidence = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(withInitialEvidence.exitCode, 0, withInitialEvidence.stderr);
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: '検証状態変更前の要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  await writeFile(path.join(prDir, 'verification-evidence.json'), `${JSON.stringify(verification(9), null, 2)}\n`);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(prDir, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の証拠と一致しないため表示していません/);
+  assert.doesNotMatch(body, /検証状態変更前の要約です/);
+});
+
+test('pr prepare suppresses narrative when one review role changes inside needs_review', async () => {
+  const repo = await makeReportRepo();
+  const reviewPrepare = await captureRunCli([
+    'review', 'prepare', repo, '--id', STORY_ID, '--stage', 'planning_spec', '--role', 'product_requirement'
+  ]);
+  assert.equal(reviewPrepare.exitCode, 0, reviewPrepare.stderr);
+  const transcriptDir = path.join(repo, '.vibepro', 'reviews', STORY_ID, 'planning_spec', 'transcripts');
+  await mkdir(transcriptDir, { recursive: true });
+  await writeFile(path.join(transcriptDir, 'product-requirement.md'), '# review\nstate transition\n');
+  const recordReview = (status) => captureRunCli([
+    'review', 'record', repo,
+    '--id', STORY_ID,
+    '--stage', 'planning_spec',
+    '--role', 'product_requirement',
+    '--status', status,
+    '--summary', status === 'pass' ? '要件と実装は一致' : 'レビュー対象に修正が必要',
+    '--inspection-summary', '要件と実装の差分を確認',
+    '--inspection-evidence', 'test fixture evidence',
+    '--inspection-input', 'src/lib/services/billing.ts',
+    '--judgment-delta', status === 'pass' ? '修正必要 -> 修正済み' : '未確認 -> 修正必要',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', `review-fixture-${status}`,
+    '--agent-thread-id', `review-fixture-thread-${status}`,
+    '--implementation-session-id', 'implementation-fixture',
+    '--reviewer-identity', 'separate_session',
+    '--agent-model', 'test-model',
+    '--agent-reasoning-effort', 'test',
+    '--agent-cost-tier', 'test',
+    '--agent-transcript', `.vibepro/reviews/${STORY_ID}/planning_spec/transcripts/product-requirement.md`,
+    '--agent-closed',
+    '--agent-close-evidence', 'fixture closed'
+  ]);
+  const initialReview = await recordReview('needs_changes');
+  assert.equal(initialReview.exitCode, 0, initialReview.stderr);
+  await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  const narrative = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    kind: 'pr-body',
+    narrative_slots: [
+      { id: 'TP-NEW-1', slot: 'summary', text: 'レビュー状態変更前の要約です。' },
+      { id: 'TP-NEW-2', slot: 'risks_synthesis', text: '特記事項なし' }
+    ]
+  };
+  const write = await captureRunCli(
+    ['report', 'write', repo, '--kind', 'pr-body', '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--base', 'main'],
+    { stdin: readableFrom(JSON.stringify(narrative)) }
+  );
+  assert.equal(write.exitCode, 0, write.stdout);
+
+  const changedReview = await recordReview('pass');
+  assert.equal(changedReview.exitCode, 0, changedReview.stderr);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const body = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(body, /現在の証拠と一致しないため表示していません/);
+  assert.doesNotMatch(body, /レビュー状態変更前の要約です/);
 });
 
 test('stabilizeTalkingPointIds reuses TP id across paraphrased writes', () => {

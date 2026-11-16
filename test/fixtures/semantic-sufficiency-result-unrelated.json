@@ -1,0 +1,7 @@
+{
+  "record_id": "result-only-001",
+  "subject": "other-account",
+  "result_exists": true,
+  "supports_requested_claim": false,
+  "note": "The record exists, but it answers a different account claim."
+}

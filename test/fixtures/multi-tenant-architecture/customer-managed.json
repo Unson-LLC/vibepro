@@ -1,0 +1,59 @@
+{
+  "schema_version": "0.1.0",
+  "tenancy_model": "customer_managed",
+  "tenant_identity": {
+    "canonical_key": "workspace_id",
+    "resolved_from": ["customer_configuration"],
+    "resolution_point": "connector_boot",
+    "missing_behavior": "deny",
+    "ambiguity_behavior": "deny"
+  },
+  "propagation": {
+    "required_surfaces": ["connector", "storage", "migration"],
+    "verified_surfaces": ["connector", "storage", "migration"]
+  },
+  "resources": [
+    { "name": "customer_database", "sharing": "connection_defined", "tenant_key": "workspace_id", "trust_zone": "customer_data", "residue_policy": "customer_retention_policy", "data_owner": "customer_database", "credential_scope": "customer_connection", "connection_modes": ["private_endpoint", "customer_vpn"] }
+  ],
+  "credentials": {
+    "lookup_key": "workspace_id",
+    "scope": "customer_connection",
+    "raw_secret_in_artifacts": "forbidden",
+    "cross_tenant_fallback": "forbidden"
+  },
+  "data": {
+    "canonical_owners": ["customer_database"],
+    "residency": "customer_managed",
+    "migration": "customer_approved_export_import",
+    "rollback": "restore_customer_managed_backup",
+    "operator_action": "customer_operator_restores_verified_backup"
+  },
+  "failure_semantics": {
+    "unknown_tenant": "deny",
+    "ambiguous_tenant": "deny",
+    "unavailable_connection": "unavailable",
+    "no_data": "empty",
+    "cross_tenant_candidate": "deny_and_audit"
+  },
+  "deployment_modes": ["customer_managed", "self_hosted"],
+  "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+  "graph_metadata": {
+    "tenant_entities": ["Workspace", "CustomerDatabase"],
+    "boundary_edges": ["Workspace->CustomerDatabase"]
+  },
+  "verification": {
+    "scanner_coverage": "verified",
+    "evidence": {
+      "propagation_surfaces": ["connector", "storage", "migration"],
+      "negative_scenarios": ["unknown_tenant", "ambiguous_tenant", "unavailable_connection", "no_data", "cross_tenant_candidate"],
+      "scanner_results": { "tenant_boundary": "pass", "tenant_key_propagation": "pass", "cross_tenant_authorization": "pass", "state_partitioning": "pass", "sandbox_isolation": "pass", "connection_routing": "pass", "secret_scope": "pass", "canonical_data_owner": "pass", "deployment_topology": "pass", "cross_tenant_negative_evidence": "pass" },
+      "graph": {
+        "tenant_key": "workspace_id", "sharing_modes": ["connection_defined"], "deployment_modes": ["customer_managed", "self_hosted"],
+        "tenant_entities": [{ "name": "Workspace", "tenant_scope": "tenant", "tenant_key_source": "customer_configuration", "trust_zone": "customer", "data_owner": "customer_database" }],
+        "boundary_edges": [{ "from": "Workspace", "to": "CustomerDatabase", "tenant_scope": "tenant", "tenant_key_source": "workspace_id", "sharing_mode": "connection_defined", "credential_scope": "customer_connection", "connection_mode": "private_endpoint", "deployment_mode": "customer_managed" }]
+      },
+      "spec": { "tenant_key": "workspace_id", "sharing_modes": ["connection_defined"], "deployment_modes": ["customer_managed", "self_hosted"] },
+      "implementation": { "tenant_key": "workspace_id", "sharing_modes": ["connection_defined"], "deployment_modes": ["customer_managed", "self_hosted"] }
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "created_at": "2026-08-04T16:43:44.645Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 6 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-target-model-projection-v2/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-target-model-projection-v2/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-target-model-projection-v2/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-target-model-projection-v2/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/adjudication/target-model-rebaseline-cards.md, docs/architecture/target-model.json)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "8 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5,
+        "intake_not_applicable": 1
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785858921183-54305dd5",
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "scope_reviewability: 1人のreviewerが一貫した判断として読める粒度。scope_reviewed 済み、review_owner は target model の裁定者である sato_keigo、decision_record はこの記録自体",
+        "reason": "scope_reviewed: 変更は6ファイル・コード変更ゼロで、reviewerが確認すべき問いは「裁定カードの5つの回答が target-model.json に過不足なく入っているか」の一点に還元される。review_owner_map: target-model.json の allowed_dependencies と modules は governance.human_adjudicated 領域であり、responsible reviewer は裁定者である sato_keigo（回答経路: coordinator session AskUserQuestion）。テスト2ファイルは同じ投影の検証面であり所有者は分かれない。decision_record: 分割しない判断は gate:pr_scope_judgment の decision record に、投影範囲の境界（rules[]本文変更なし・ratchet gate導入なし・resolve 19件のコード修正なし）は story frontmatter の reason.boundary に記録済み",
+        "reviewer": "codex",
+        "artifact": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+        "verification_evidence_summary": {
+          "count": 2,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+            "expected_root": null,
+            "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+            "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_branch": "codex/story-vibepro-target-model-projection-v2",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-04T15:55:21.175Z"
+        },
+        "recorded_at": "2026-08-04T15:55:21.184Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-04T16:43:41.617Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "branch": "codex/story-vibepro-target-model-projection-v2",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "cd0a38092d744c5a217ee2dfb3182e52b7a7ce37",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

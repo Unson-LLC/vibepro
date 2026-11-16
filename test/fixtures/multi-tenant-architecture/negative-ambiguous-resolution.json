@@ -1,0 +1,6 @@
+{
+  "base_fixture": "pooled",
+  "contract_path": "tenant_identity.ambiguity_behavior",
+  "value": "select_first",
+  "expected_finding": "tenant_ambiguity_behavior"
+}

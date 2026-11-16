@@ -1,6 +1,8 @@
+import { compareSemver, parseSemver, publishedVersions } from './published-versions.mjs';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { realpathSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,6 +14,16 @@ const DEFAULT_BRANCH = 'main';
 const REPOSITORY_WEB_ROOT = `https://github.com/${REPOSITORY}`;
 const REPOSITORY_SOURCE_ROOT = `${REPOSITORY_WEB_ROOT}/blob/${DEFAULT_BRANCH}/`;
 const REPOSITORY_RAW_ROOT = `https://raw.githubusercontent.com/${REPOSITORY}/${DEFAULT_BRANCH}/`;
+const REQUIRED_RELEASE_CHECKS = Object.freeze(['test (20)', 'test (22)', 'analyze']);
+const REQUIRED_CHECK_WORKFLOWS = Object.freeze({
+  'test (20)': { path: '.github/workflows/ci.yml', runName: 'CI' },
+  'test (22)': { path: '.github/workflows/ci.yml', runName: 'CI' },
+  analyze: { path: '.github/workflows/codeql.yml', runName: 'CodeQL' }
+});
+const REQUIRED_WORKFLOW_PATHS = Object.freeze([
+  ...new Set(Object.values(REQUIRED_CHECK_WORKFLOWS).map(({ path: workflowPath }) => workflowPath))
+]);
+const DEFAULT_EVIDENCE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const invokedCommand = isDirectInvocation()
   ? process.argv[2]
   : null;
@@ -378,30 +390,229 @@ async function upsertIndexEntry(root, pr, month) {
   }
 }
 
+const VERSION_HISTORY_DETAILS = {
+  en: 'Detailed changes for this published version are recorded in [Release Notes](/releases/).',
+  ja: 'この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。'
+};
+
+function publishedReleaseRow(version, date, locale) {
+  const summary = locale === 'ja' ? 'PRマージ後のcontinuous release' : 'Post-merge continuous release';
+  return `| ${date} | [\`${version}\`](https://www.npmjs.com/package/vibepro/v/${version}) | npm \`${npmDistTags(version).join('` / `')}\` | ${summary} |`;
+}
+
+export async function reconcilePublishedVersions(root, npmTime) {
+  const projections = [];
+  const sequences = [];
+  for (const locale of ['en', 'ja']) {
+    const prefix = locale === 'ja' ? 'docs/ja' : 'docs';
+    const historyFile = path.join(root, prefix, 'reference/version-history.md');
+    let history = await readFile(historyFile, 'utf8');
+    const ledger = versionHistoryHeadings(history);
+    assertUniqueVersionHeadings(ledger, historyFile);
+    if (!ledger.length) throw new Error(`${historyFile} has no published-version heading`);
+    // Only versions newer than the ledger's oldest heading; each always has an older heading to insert above.
+    for (const version of publishedVersions(npmTime, ledger)) {
+      if (versionHistoryHeadings(history).includes(version)) continue;
+      const headings = [...history.matchAll(new RegExp(`^## (${SEMVER_TOKEN})$`, 'gmu'))];
+      const offset = headings.find((match) => compareSemver(match[1], version) < 0).index;
+      history = `${history.slice(0, offset)}## ${version}\n\n${VERSION_HISTORY_DETAILS[locale]}\n\n${history.slice(offset)}`;
+    }
+    const indexFile = path.join(root, prefix, 'releases/index.md');
+    let index = await readFile(indexFile, 'utf8');
+    const indexed = [...index.matchAll(/^\|.*https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/([^)]*)\)/gmu)].map((match) => match[1]);
+    for (const version of publishedVersions(npmTime, indexed.length ? indexed : ledger)) {
+      const date = new Date(npmTime[version]).toISOString().slice(0, 10);
+      index = projectPublishedReleaseIndex(index, version, publishedReleaseRow(version, date, locale));
+    }
+    sequences.push(versionHistoryHeadings(history));
+    projections.push([historyFile, history], [indexFile, index]);
+  }
+  if (JSON.stringify(sequences[0]) !== JSON.stringify(sequences[1])) {
+    throw new Error('English and Japanese published-version histories must match');
+  }
+  for (const [file, content] of projections) {
+    if (await readFile(file, 'utf8') !== content) await writeFile(file, content);
+  }
+}
+
 export async function projectPublishedVersion(root, before, after, mergedAt) {
   if (!shouldReleaseVersion(before, after)) return false;
-  for (const relative of [
-    'docs/ja/reference/version-history.md', 'docs/reference/version-history.md',
-    'docs/ja/guide/release-and-audit.md', 'docs/guide/release-and-audit.md'
-  ]) {
+  const targets = [
+    ['docs/ja/reference/version-history.md', (content) => projectVersionHistory(content, before, after, 'ja')],
+    ['docs/reference/version-history.md', (content) => projectVersionHistory(content, before, after, 'en')],
+    ['docs/ja/guide/release-and-audit.md', (content) => projectUpgradeHeading(content, before, after, 'ja')],
+    ['docs/guide/release-and-audit.md', (content) => projectUpgradeHeading(content, before, after, 'en')],
+    ['docs/.vitepress/config.mjs', projectSoftwareVersion]
+  ];
+  const projections = [];
+  for (const [relative, project] of targets) {
     const file = path.join(root, relative);
     const content = await readFile(file, 'utf8');
-    await writeFile(file, content.replaceAll(before, after));
+    projections.push({ relative, file, content, projected: project(content, before, after) });
   }
   const date = new Date(mergedAt).toISOString().slice(0, 10);
   const rows = [
-    ['docs/ja/releases/index.md', `| ${date} | [\`${after}\`](https://www.npmjs.com/package/vibepro/v/${after}) | npm \`${npmDistTags(after).join('` / `')}\` | PRマージ後のcontinuous release |`],
-    ['docs/releases/index.md', `| ${date} | [\`${after}\`](https://www.npmjs.com/package/vibepro/v/${after}) | npm \`${npmDistTags(after).join('` / `')}\` | Post-merge continuous release |`]
+    ['docs/ja/releases/index.md', publishedReleaseRow(after, date, 'ja')],
+    ['docs/releases/index.md', publishedReleaseRow(after, date, 'en')]
   ];
   for (const [relative, row] of rows) {
     const file = path.join(root, relative);
     const content = await readFile(file, 'utf8');
-    if (!content.includes(`/v/${after})`)) {
-      const separator = /^\| ---.*$/mu;
-      await writeFile(file, content.replace(separator, (match) => `${match}\n${row}`));
-    }
+    projections.push({ relative, file, content, projected: projectPublishedReleaseIndex(content, after, row) });
+  }
+
+  validatePublishedVersionProjection(projections, before, after);
+  for (const { file, content, projected } of projections) {
+    if (content !== projected) await writeFile(file, projected);
   }
   return true;
+}
+
+function projectVersionHistory(content, before, after, locale) {
+  const lines = content.split('\n');
+  for (const [prefix, binding] of [
+    ['| npm `latest` |', 'npmLatest'],
+    ['| npm `beta` |', 'npmBeta'],
+    ['| Repository `main` |', 'version']
+  ]) {
+    const index = lines.findIndex((line) => line.startsWith(prefix));
+    if (index < 0) throw new Error(`Published-version field is missing: ${prefix}`);
+    if (!lines[index].includes(`{{ site.themeConfig.${binding} }}`)) {
+      lines[index] = replaceCurrentVersion(lines[index], before, after, prefix);
+    }
+  }
+
+  const headings = versionHistoryHeadings(lines.join('\n'));
+  if (headings.length === 0) throw new Error('Published-version heading is missing');
+  const currentHeading = lines.findIndex((line) => line === `## ${headings[0]}`);
+  // The newest heading is the last docs projection. A skipped release-history
+  // commit leaves it older than package.json `before`; still prepend `after`.
+  if (headings[0] !== before && headings[0] !== after && compareSemver(headings[0], after) > 0) {
+    throw new Error(`Current published-version heading identifies ${headings[0]}; expected ${before} or ${after}`);
+  }
+  if (!headings.includes(after)) {
+    const details = VERSION_HISTORY_DETAILS[locale];
+    lines.splice(currentHeading, 0, `## ${after}`, '', details, '');
+  }
+  return lines.join('\n');
+}
+
+function projectPublishedReleaseIndex(content, after, row) {
+  if (content.includes(`/v/${after})`)) return content;
+  const separator = /^\| ---.*$/mu;
+  if (!separator.test(content)) throw new Error('Published release index table separator is missing');
+  const lines = content.split('\n');
+  const rows = lines.map((line, index) => ({ index, version: line.match(/https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/([^)]*)\)/u)?.[1] }))
+    .filter(({ version }) => version);
+  const older = rows.find(({ version }) => compareSemver(version, after) < 0);
+  const offset = older?.index ?? (rows.length ? rows.at(-1).index + 1 : lines.findIndex((line) => separator.test(line)) + 1);
+  lines.splice(offset, 0, row);
+  return lines.join('\n');
+}
+
+function validatePublishedVersionProjection(projections, before, after) {
+  const histories = projections.filter(({ relative }) => relative.endsWith('reference/version-history.md'));
+  if (histories.length !== 2) throw new Error('English and Japanese version histories are required');
+
+  for (const { relative, content, projected } of histories) {
+    const prior = versionHistoryHeadings(content);
+    const next = versionHistoryHeadings(projected);
+    assertUniqueVersionHeadings(prior, `${relative} before projection`);
+    assertUniqueVersionHeadings(next, `${relative} after projection`);
+    const expected = prior.includes(after) ? prior : [after, ...prior];
+    if (JSON.stringify(next) !== JSON.stringify(expected)) {
+      throw new Error(`${relative} must prepend ${after} without changing published history`);
+    }
+    if (next[0] !== after || next.filter((version) => version === after).length !== 1) {
+      throw new Error(`${relative} must identify ${after} exactly once as the newest published version`);
+    }
+    if (!prior.includes(after) && prior[0] !== before && compareSemver(prior[0], after) > 0) {
+      throw new Error(`${relative} identifies ${prior[0]}; expected ${before} before projecting ${after}`);
+    }
+    for (const version of prior) {
+      if (next.filter((candidate) => candidate === version).length !== 1) {
+        throw new Error(`${relative} must preserve published version ${version} exactly once`);
+      }
+    }
+  }
+
+  const headingSequences = histories.map(({ projected }) => versionHistoryHeadings(projected));
+  if (JSON.stringify(headingSequences[0]) !== JSON.stringify(headingSequences[1])) {
+    throw new Error('English and Japanese published-version histories must match');
+  }
+}
+
+const SEMVER_TOKEN = String.raw`\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?(?:\+[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?`;
+
+function versionHistoryHeadings(content) {
+  return [...content.matchAll(new RegExp(`^## (${SEMVER_TOKEN})$`, 'gmu'))].map((match) => match[1]);
+}
+
+function assertUniqueVersionHeadings(headings, field) {
+  if (new Set(headings).size !== headings.length) {
+    throw new Error(`${field} contains duplicate published-version headings`);
+  }
+}
+
+function upgradeHeadingVersion(line, locale) {
+  const pattern = locale === 'ja'
+    ? new RegExp(`^## (${SEMVER_TOKEN})へのupgrade$`, 'u')
+    : new RegExp(`^## Upgrade to (${SEMVER_TOKEN})$`, 'u');
+  return line.match(pattern)?.[1] ?? null;
+}
+
+function projectUpgradeHeading(content, before, after, locale) {
+  const lines = content.split('\n');
+  const headings = lines
+    .map((line, index) => ({ index, version: upgradeHeadingVersion(line, locale) }))
+    .filter((entry) => entry.version);
+  const selected = headings.find((entry) => entry.version === after)
+    ?? headings.find((entry) => entry.version === before)
+    ?? headings
+      .filter((entry) => compareSemver(entry.version, after) < 0)
+      .sort((left, right) => compareSemver(right.version, left.version))[0];
+  if (!selected) {
+    const newer = headings.find((entry) => compareSemver(entry.version, after) > 0);
+    if (newer) {
+      throw new Error(`Current upgrade heading identifies ${newer.version}; expected ${before} or ${after}`);
+    }
+    throw new Error(`Current upgrade heading is missing for locale ${locale}`);
+  }
+  lines[selected.index] = locale === 'ja' ? `## ${after}へのupgrade` : `## Upgrade to ${after}`;
+  return lines.join('\n');
+}
+
+function projectSoftwareVersion(content, before, after) {
+  // Build-time metadata resolves the published npm version.
+  if (/^\s+softwareVersion: (?:version|npmTags\.npmLatest),?$/mu.test(content)) return content;
+  const lines = content.split('\n');
+  const index = lines.findIndex((line) => /^\s+softwareVersion: '[^']+',?$/u.test(line));
+  if (index < 0) throw new Error('VitePress softwareVersion field is missing');
+  lines[index] = replaceCurrentVersion(lines[index], before, after, 'VitePress softwareVersion');
+  return lines.join('\n');
+}
+
+function firstSemverToken(line) {
+  return line.match(new RegExp(`(?<![0-9A-Za-z.])(${SEMVER_TOKEN})(?![0-9A-Za-z.])`, 'u'))?.[1] ?? null;
+}
+
+function replaceSemverToken(line, from, to) {
+  return line.replace(new RegExp(`(?<![0-9A-Za-z.])${escapeRegExp(from)}(?![0-9A-Za-z.])`, 'u'), to);
+}
+
+// Channel rows are the last docs projection, not a live `npm view` dist-tag.
+// Match a whole SemVer token: `0.2.0-beta.3` is not `0.2.0-beta.30`. When a
+// previous release-history commit was skipped, the token can be older than
+// package.json `before`; advance that documented token to `after`.
+function replaceCurrentVersion(line, before, after, field) {
+  const current = firstSemverToken(line);
+  if (current === after) return line;
+  if (current === before || (current && compareSemver(current, after) < 0)) {
+    const replaced = replaceSemverToken(line, current, after);
+    if (replaced !== line) return replaced;
+  }
+  const actual = current ? ` identifies ${current};` : '';
+  throw new Error(`${field}${actual} must identify ${before} or ${after}`);
 }
 
 function releaseBlock(number, note) {
@@ -446,35 +657,328 @@ function validateMergedPullRequest(event) {
   return { ...pr, body: pr.body ?? '' };
 }
 
+export async function selectReleaseValidationPath({
+  event,
+  root = rootDefault,
+  repository = process.env.GITHUB_REPOSITORY || REPOSITORY,
+  maxEvidenceAgeMs = DEFAULT_EVIDENCE_MAX_AGE_MS,
+  execute = run,
+  listChecks = listGithubChecks
+}) {
+  const pr = validateMergedPullRequest(event);
+  const baseSha = pr?.base?.sha;
+  const reviewedHeadSha = pr?.head?.sha;
+  const mergeSha = pr?.merge_commit_sha;
+  const result = (mode, reasons = [], reusedChecks = []) => ({
+    mode,
+    reasons,
+    repository,
+    baseSha,
+    reviewedHeadSha,
+    mergeSha,
+    reusedChecks
+  });
+  const malformed = [
+    ['base_sha', baseSha],
+    ['reviewed_head_sha', reviewedHeadSha],
+    ['merge_sha', mergeSha]
+  ].filter(([, value]) => !isFullCommitSha(value));
+  if (malformed.length) {
+    return result('full', malformed.map(([name]) => `invalid_${name}`));
+  }
+  if (!Number.isFinite(maxEvidenceAgeMs) || maxEvidenceAgeMs < 0) {
+    throw new Error(`maxEvidenceAgeMs must be a non-negative finite number: ${maxEvidenceAgeMs}`);
+  }
+
+  const bindingReasons = [];
+  try {
+    const parents = execute('git', ['rev-list', '--parents', '-n', '1', mergeSha], root).trim().split(/\s+/u);
+    if (
+      parents.length !== 3
+      || parents[0] !== mergeSha
+      || parents[1] !== baseSha
+      || parents[2] !== reviewedHeadSha
+    ) {
+      bindingReasons.push('merge_parent_mismatch');
+    }
+    const mergeTree = firstObjectId(execute('git', ['rev-parse', `${mergeSha}^{tree}`], root));
+    const reconstructedTree = firstObjectId(execute('git', ['merge-tree', '--write-tree', baseSha, reviewedHeadSha], root));
+    if (!mergeTree || !reconstructedTree || mergeTree !== reconstructedTree) {
+      bindingReasons.push('merge_tree_mismatch');
+    }
+    for (const workflowPath of REQUIRED_WORKFLOW_PATHS) {
+      const baseWorkflowBlob = firstObjectId(execute('git', ['rev-parse', `${baseSha}:${workflowPath}`], root));
+      const headWorkflowBlob = firstObjectId(execute('git', ['rev-parse', `${reviewedHeadSha}:${workflowPath}`], root));
+      if (!baseWorkflowBlob || !headWorkflowBlob || baseWorkflowBlob !== headWorkflowBlob) {
+        bindingReasons.push(`required_workflow_changed:${workflowPath}`);
+      }
+    }
+  } catch {
+    bindingReasons.push('merge_binding_unavailable');
+  }
+  if (bindingReasons.length) return result('full', [...new Set(bindingReasons)]);
+
+  let checks;
+  try {
+    checks = await listChecks({ repository, sha: reviewedHeadSha, root });
+  } catch {
+    return result('full', ['check_evidence_unavailable']);
+  }
+  if (!Array.isArray(checks)) return result('full', ['invalid_check_evidence']);
+
+  const mergedAt = Date.parse(pr.merged_at);
+  if (!Number.isFinite(mergedAt)) return result('full', ['invalid_merged_at']);
+  const reasons = [];
+  const reusedChecks = [];
+  for (const name of REQUIRED_RELEASE_CHECKS) {
+    const check = latestCheck(checks.filter((candidate) => candidate?.name === name));
+    if (!check) {
+      reasons.push(`missing_check:${name}`);
+      continue;
+    }
+    if (check.head_sha !== reviewedHeadSha) reasons.push(`check_sha_mismatch:${name}`);
+    if (check.app?.slug !== 'github-actions') reasons.push(`untrusted_check_app:${name}`);
+    const expectedWorkflow = REQUIRED_CHECK_WORKFLOWS[name];
+    const workflowRun = check.workflow_run;
+    const expectedRunName = `${expectedWorkflow.runName} | pr=${pr.number} | base=${baseSha} | head=${reviewedHeadSha}`;
+    if (!workflowRun) reasons.push(`missing_workflow_provenance:${name}`);
+    else {
+      if (workflowRun.repository?.full_name !== repository) reasons.push(`workflow_repository_mismatch:${name}`);
+      if (workflowRun.event !== 'pull_request') reasons.push(`workflow_event_mismatch:${name}`);
+      if (workflowRun.path !== expectedWorkflow.path) reasons.push(`workflow_path_mismatch:${name}`);
+      if (workflowRun.head_sha !== reviewedHeadSha) reasons.push(`workflow_head_sha_mismatch:${name}`);
+      if (workflowRun.display_title !== expectedRunName) reasons.push(`workflow_binding_mismatch:${name}`);
+    }
+    if (check.status !== 'completed') reasons.push(`incomplete_check:${name}:${check.status ?? 'unknown'}`);
+    else if (check.conclusion !== 'success') reasons.push(`unsuccessful_check:${name}:${check.conclusion ?? 'unknown'}`);
+    const completedAt = Date.parse(check.completed_at);
+    if (!Number.isFinite(completedAt)) reasons.push(`invalid_check_time:${name}`);
+    else if (completedAt > mergedAt) reasons.push(`check_completed_after_merge:${name}`);
+    else if (mergedAt - completedAt > maxEvidenceAgeMs) reasons.push(`stale_check:${name}`);
+    reusedChecks.push({
+      name,
+      headSha: check.head_sha,
+      completedAt: check.completed_at,
+      app: check.app?.slug ?? null,
+      workflowPath: workflowRun?.path ?? null,
+      workflowRunId: workflowRun?.id ?? null
+    });
+  }
+  return result(reasons.length ? 'full' : 'fast', reasons, reusedChecks);
+}
+
+function isFullCommitSha(value) {
+  return /^[0-9a-f]{40}$/u.test(`${value ?? ''}`);
+}
+
+function firstObjectId(output) {
+  const candidate = `${output ?? ''}`.trim().split(/\s+/u)[0];
+  return isFullCommitSha(candidate) ? candidate : null;
+}
+
+function latestCheck(checks) {
+  return [...checks].sort((left, right) => (
+    Date.parse(right?.completed_at ?? right?.started_at ?? 0)
+    - Date.parse(left?.completed_at ?? left?.started_at ?? 0)
+  ))[0] ?? null;
+}
+
+export async function listGithubChecks({ repository, sha, root, execute = run }) {
+  const response = execute('gh', [
+    'api',
+    '--paginate',
+    '--slurp',
+    `repos/${repository}/commits/${sha}/check-runs?filter=latest&per_page=100`
+  ], root);
+  let parsed;
+  try {
+    parsed = JSON.parse(response);
+  } catch (error) {
+    throw new Error(`GitHub Checks response was invalid JSON: ${error.message}`);
+  }
+  const pages = Array.isArray(parsed) ? parsed : [parsed];
+  if (pages.some((page) => !Array.isArray(page?.check_runs))) {
+    throw new Error('GitHub Checks response did not include check_runs');
+  }
+  const workflowRuns = new Map();
+  const checks = pages.flatMap((page) => page.check_runs);
+  return Promise.all(checks.map(async (check) => {
+    const runId = workflowRunId(check?.details_url);
+    if (!runId) return { ...check, workflow_run: null };
+    if (!workflowRuns.has(runId)) {
+      workflowRuns.set(runId, Promise.resolve().then(() => {
+        const runResponse = execute('gh', ['api', `repos/${repository}/actions/runs/${runId}`], root);
+        return JSON.parse(runResponse);
+      }));
+    }
+    return { ...check, workflow_run: await workflowRuns.get(runId) };
+  }));
+}
+
+function workflowRunId(detailsUrl) {
+  return `${detailsUrl ?? ''}`.match(/\/actions\/runs\/(\d+)(?:\/|$)/u)?.[1] ?? null;
+}
+
+export function buildReleaseTiming({
+  mergedAt,
+  publishStartedAt,
+  npmPublishedAt,
+  workflowCompletedAt,
+  mergeToNpmTargetMs = 120_000
+}) {
+  const merged = requiredTimestamp(mergedAt, 'mergedAt');
+  const publishStarted = requiredTimestamp(publishStartedAt, 'publishStartedAt');
+  const npmPublished = requiredTimestamp(npmPublishedAt, 'npmPublishedAt');
+  const workflowCompleted = requiredTimestamp(workflowCompletedAt, 'workflowCompletedAt');
+  if (npmPublished.value < merged.value) throw new Error('npmPublishedAt must not precede mergedAt');
+  if (workflowCompleted.value < npmPublished.value) {
+    throw new Error('workflowCompletedAt must not precede npmPublishedAt');
+  }
+  if (publishStarted.value > workflowCompleted.value) {
+    throw new Error('publishStartedAt must not follow workflowCompletedAt');
+  }
+  const completeStages = publishStarted.value >= merged.value && publishStarted.value <= npmPublished.value;
+  const mergeToNpmMs = npmPublished.value - merged.value;
+  return {
+    merge_at: merged.iso,
+    publish_started_at: publishStarted.iso,
+    npm_published_at: npmPublished.iso,
+    workflow_completed_at: workflowCompleted.iso,
+    pre_publish_ms: completeStages ? publishStarted.value - merged.value : null,
+    npm_publish_ms: completeStages ? npmPublished.value - publishStarted.value : null,
+    post_publish_ms: workflowCompleted.value - npmPublished.value,
+    merge_to_npm_ms: mergeToNpmMs,
+    workflow_total_ms: workflowCompleted.value - merged.value,
+    merge_to_npm_target_ms: mergeToNpmTargetMs,
+    merge_to_npm_target_met: mergeToNpmMs <= mergeToNpmTargetMs,
+    stage_measurement: completeStages ? 'complete' : 'registry_already_visible'
+  };
+}
+
+function requiredTimestamp(value, name) {
+  const timestamp = Date.parse(`${value ?? ''}`);
+  if (!Number.isFinite(timestamp)) throw new Error(`${name} must be an ISO timestamp: ${value}`);
+  return { value: timestamp, iso: new Date(timestamp).toISOString() };
+}
+
 export function shouldReleaseVersion(before, after) {
   return compareSemver(after, before) > 0;
 }
 
-function compareSemver(a, b) {
-  const left = parseSemver(a);
-  const right = parseSemver(b);
-  for (const key of ['major', 'minor', 'patch']) {
-    if (left[key] !== right[key]) return left[key] > right[key] ? 1 : -1;
-  }
-  if (!left.pre.length && right.pre.length) return 1;
-  if (left.pre.length && !right.pre.length) return -1;
-  for (let index = 0; index < Math.max(left.pre.length, right.pre.length); index += 1) {
-    if (left.pre[index] === undefined) return -1;
-    if (right.pre[index] === undefined) return 1;
-    if (left.pre[index] === right.pre[index]) continue;
-    const ln = /^\d+$/.test(left.pre[index]);
-    const rn = /^\d+$/.test(right.pre[index]);
-    if (ln && rn) return Number(left.pre[index]) > Number(right.pre[index]) ? 1 : -1;
-    if (ln !== rn) return ln ? -1 : 1;
-    return left.pre[index] > right.pre[index] ? 1 : -1;
-  }
-  return 0;
+export function releaseClassification(version) {
+  const { pre } = parseSemver(version);
+  const prerelease = pre.length > 0;
+  return { prerelease, latest: !prerelease };
 }
 
-function parseSemver(value) {
-  const match = `${value}`.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/u);
-  if (!match) throw new Error(`Invalid SemVer: ${value}`);
-  return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), pre: match[4]?.split('.') ?? [] };
+function releaseClassificationForCurrentLatest(version, currentLatestTag) {
+  const classification = releaseClassification(version);
+  if (classification.prerelease || !currentLatestTag) return classification;
+  const match = currentLatestTag.match(/^v(.+)$/u);
+  if (!match) {
+    throw new Error(`Latest GitHub Release tag is not a v-prefixed SemVer: ${currentLatestTag}`);
+  }
+  return {
+    ...classification,
+    latest: compareSemver(version, match[1]) >= 0
+  };
+}
+
+export function reconcileGithubRelease({
+  root = rootDefault,
+  version,
+  expectedSha,
+  notesFile,
+  repository = process.env.GITHUB_REPOSITORY || REPOSITORY,
+  execute = run
+}) {
+  if (!/^[0-9a-f]{40}$/u.test(`${expectedSha}`)) {
+    throw new Error(`Expected release SHA must be a full 40-character commit SHA: ${expectedSha}`);
+  }
+  if (!notesFile) throw new Error('GitHub Release notes file is required');
+  if (!/^[^/]+\/[^/]+$/u.test(repository)) throw new Error(`Invalid GitHub repository: ${repository}`);
+
+  const tag = `v${version}`;
+  const latestTagBefore = readLatestGithubReleaseTag(repository, root);
+  const classification = releaseClassificationForCurrentLatest(version, latestTagBefore);
+  const exists = githubReleaseExists(tag, repository, root);
+  if (exists) verifyReleaseTag(tag, expectedSha, root, execute);
+
+  execute('gh', [
+    'release', exists ? 'edit' : 'create', tag,
+    '--target', expectedSha,
+    '--title', `VibePro ${version}`,
+    '--notes-file', notesFile,
+    `--prerelease=${classification.prerelease}`,
+    `--latest=${classification.latest}`,
+    '--repo', repository
+  ], root);
+
+  verifyReleaseTag(tag, expectedSha, root, execute);
+  const metadata = readGithubReleaseMetadata(tag, repository, root, execute);
+  const latestTag = readLatestGithubReleaseTag(repository, root);
+  const actualLatest = latestTag === tag;
+  const preservedNewerLatest = !classification.prerelease
+    && !classification.latest
+    && latestTag === latestTagBefore;
+  if (
+    metadata.tagName !== tag
+    || metadata.targetCommitish !== expectedSha
+    || metadata.isPrerelease !== classification.prerelease
+    || actualLatest !== classification.latest
+    || (!classification.prerelease && !classification.latest && !preservedNewerLatest)
+  ) {
+    throw new Error(
+      `GitHub Release ${tag} metadata did not converge: ` +
+      `expected target=${expectedSha} prerelease=${classification.prerelease} latest=${classification.latest}` +
+      `${classification.latest || classification.prerelease ? '' : ` latestTag=${latestTagBefore}`}; ` +
+      `received target=${metadata.targetCommitish} prerelease=${metadata.isPrerelease} latest=${actualLatest}` +
+      ` latestTag=${latestTag ?? 'none'}`
+    );
+  }
+  return { tag, ...classification, targetCommitish: metadata.targetCommitish };
+}
+
+function githubReleaseExists(tag, repository, root) {
+  const result = spawnSync('gh', ['release', 'view', tag, '--repo', repository], {
+    cwd: root,
+    encoding: 'utf8'
+  });
+  if (result.status === 0) return true;
+  const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+  if (/release not found|HTTP 404|not found/iu.test(diagnostic)) return false;
+  throw new Error(`GitHub Release lookup failed for ${tag}: ${diagnostic || `exit ${result.status}`}`);
+}
+
+function verifyReleaseTag(tag, expectedSha, root, execute) {
+  execute('git', ['fetch', '--tags', '--force', 'origin'], root);
+  const actualSha = execute('git', ['rev-list', '-n', '1', tag], root);
+  if (actualSha !== expectedSha) {
+    throw new Error(`GitHub Release tag ${tag} resolves to ${actualSha || 'no commit'}; expected ${expectedSha}`);
+  }
+}
+
+function readGithubReleaseMetadata(tag, repository, root, execute) {
+  const output = execute('gh', [
+    'release', 'view', tag,
+    '--json', 'tagName,targetCommitish,isPrerelease',
+    '--repo', repository
+  ], root);
+  try {
+    return JSON.parse(output);
+  } catch (error) {
+    throw new Error(`GitHub Release ${tag} metadata was invalid JSON: ${error.message}`);
+  }
+}
+
+function readLatestGithubReleaseTag(repository, root) {
+  const result = spawnSync('gh', [
+    'api', `repos/${repository}/releases/latest`, '--jq', '.tag_name'
+  ], { cwd: root, encoding: 'utf8' });
+  if (result.status === 0) return result.stdout.trim();
+  const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+  if (/release not found|HTTP 404|not found/iu.test(diagnostic)) return null;
+  throw new Error(`Latest GitHub Release lookup failed: ${diagnostic || `exit ${result.status}`}`);
 }
 
 export function npmDistTags(version) {
@@ -489,7 +993,7 @@ export async function reconcileNpmRelease({
   root = rootDefault,
   version,
   expectedSha,
-  attempts = 6,
+  attempts = NPM_REGISTRY_CONVERGENCE_ATTEMPTS,
   delay = wait,
   metadata = npmMetadata,
   versions = npmVersions,
@@ -499,11 +1003,13 @@ export async function reconcileNpmRelease({
   if (existing) assertGitHead(existing, expectedSha, version);
   else execute('npm', ['publish', '--access', 'public', '--tag', npmDistTags(version)[0]], root);
 
-  const published = await retry(() => metadata(version), attempts, delay);
+  // The first readback revalidates online; later attempts also bypass the
+  // local npm cache so a 404 remembered from the pre-publish lookup is never replayed.
+  const published = await retry((attempt) => metadata(version, { bypassCache: attempt > 0 }), attempts, delay);
   assertGitHead(published, expectedSha, version);
-  await retry(async () => {
-    const visibleVersions = await versions();
-    const currentTags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json'], root));
+  await retry(async (attempt) => {
+    const visibleVersions = await versions({ bypassCache: attempt > 0 });
+    const currentTags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json', NPM_REGISTRY_ONLINE_FLAG], root));
     const desired = desiredDistTags(
       [...visibleVersions, version, ...Object.values(currentTags)],
       npmDistTags(version)
@@ -511,7 +1017,7 @@ export async function reconcileNpmRelease({
     for (const [tag, desiredVersion] of Object.entries(desired)) {
       execute('npm', ['dist-tag', 'add', `vibepro@${desiredVersion}`, tag], root);
     }
-    const tags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json'], root));
+    const tags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json', NPM_REGISTRY_ONLINE_FLAG], root));
     return Object.entries(desired).every(([tag, desiredVersion]) => tags[tag] === desiredVersion) ? tags : null;
   }, attempts, delay);
   return published;
@@ -527,8 +1033,44 @@ export function desiredDistTags(versions, tags) {
   }));
 }
 
-function npmMetadata(version) {
-  const result = spawnSync('npm', ['view', `vibepro@${version}`, 'version', 'gitHead', '--json'], { encoding: 'utf8' });
+// Registry reads must revalidate against the registry instead of trusting the
+// local npm cache: the registry serves the packument with Cache-Control
+// max-age=300, so a pre-publish lookup can be replayed as E404 for 300 s.
+export const NPM_REGISTRY_ONLINE_FLAG = '--prefer-online';
+
+// Window: 1+2+4+8+16 s backoff, then 30 s steps; 15 attempts = 14 waits =
+// 301 s in total, which exceeds the 300 s packument max-age (run 38734145965
+// gave up after 6 attempts / 31 s of waiting). Same constants as brainbase#795.
+export const NPM_REGISTRY_CONVERGENCE_ATTEMPTS = 15;
+export const NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS = 30_000;
+
+export function npmRegistryConvergenceDelays(attempts = NPM_REGISTRY_CONVERGENCE_ATTEMPTS) {
+  return Array.from({ length: Math.max(attempts - 1, 0) }, (_, index) => registryRetryDelay(index));
+}
+
+function registryRetryDelay(index) {
+  return Math.min(2 ** index * 1000, NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS);
+}
+
+export function npmViewArgs(args, cacheDirectory = null) {
+  const result = ['view', ...args, NPM_REGISTRY_ONLINE_FLAG];
+  if (cacheDirectory) result.push('--cache', cacheDirectory);
+  return result;
+}
+
+export function spawnNpmView(args, { bypassCache = false, spawn = spawnSync } = {}) {
+  // A throwaway cache directory guarantees no cached pre-publish 404/packument
+  // can be replayed, even if npm short-circuits revalidation.
+  const cacheDirectory = bypassCache ? mkdtempSync(path.join(tmpdir(), 'vibepro-npm-readback-cache-')) : null;
+  try {
+    return spawn('npm', npmViewArgs(args, cacheDirectory), { encoding: 'utf8' });
+  } finally {
+    if (cacheDirectory) rmSync(cacheDirectory, { recursive: true, force: true });
+  }
+}
+
+export function npmMetadata(version, { bypassCache = false, spawn = spawnSync } = {}) {
+  const result = spawnNpmView([`vibepro@${version}`, 'version', 'gitHead', '--json'], { bypassCache, spawn });
   if (result.status !== 0) {
     const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`;
     if (/E404|404 Not Found|is not in this registry/iu.test(diagnostic)) return null;
@@ -539,8 +1081,8 @@ function npmMetadata(version) {
   }
 }
 
-function npmVersions() {
-  const result = spawnSync('npm', ['view', 'vibepro', 'versions', '--json'], { encoding: 'utf8' });
+export function npmVersions({ bypassCache = false, spawn = spawnSync } = {}) {
+  const result = spawnNpmView(['vibepro', 'versions', '--json'], { bypassCache, spawn });
   if (result.status !== 0) throw new Error(`npm versions lookup failed: ${(result.stderr ?? '').trim() || `exit ${result.status}`}`);
   try {
     const versions = JSON.parse(result.stdout);
@@ -551,12 +1093,25 @@ function npmVersions() {
   }
 }
 
+export function npmPublishedAt(version, { root = rootDefault, execute = run } = {}) {
+  const response = execute('npm', npmViewArgs(['vibepro', 'time', '--json']), root);
+  let times;
+  try {
+    times = JSON.parse(response);
+  } catch (error) {
+    throw new Error(`npm publication times returned invalid JSON: ${error.message}`);
+  }
+  const publishedAt = times?.[version];
+  requiredTimestamp(publishedAt, `npm publishedAt for ${version}`);
+  return publishedAt;
+}
+
 async function readMetadataWithRetry(operation, attempts, delay) {
   let lastError;
   for (let index = 0; index < attempts; index += 1) {
     try { return operation(); } catch (error) {
       lastError = error;
-      if (index < attempts - 1) await delay(2 ** index * 1000);
+      if (index < attempts - 1) await delay(registryRetryDelay(index));
     }
   }
   throw lastError;
@@ -572,12 +1127,12 @@ async function retry(operation, attempts, delay) {
   let lastError;
   for (let index = 0; index < attempts; index += 1) {
     try {
-      const value = await operation();
+      const value = await operation(index);
       if (value) return value;
     } catch (error) {
       lastError = error;
     }
-    if (index < attempts - 1) await delay(2 ** index * 1000);
+    if (index < attempts - 1) await delay(registryRetryDelay(index));
   }
   if (lastError) throw lastError;
   throw new Error(`npm registry did not converge after ${attempts} attempts`);
@@ -600,6 +1155,28 @@ async function writeOutput(values) {
   else process.stdout.write(lines);
 }
 
+async function appendReleaseTimingSummary(timing) {
+  const lines = [
+    `merge_at=${timing.merge_at}`,
+    `publish_started_at=${timing.publish_started_at}`,
+    `npm_published_at=${timing.npm_published_at}`,
+    `workflow_completed_at=${timing.workflow_completed_at}`,
+    `pre_publish_ms=${timing.pre_publish_ms ?? 'unavailable'}`,
+    `npm_publish_ms=${timing.npm_publish_ms ?? 'unavailable'}`,
+    `post_publish_ms=${timing.post_publish_ms}`,
+    `merge_to_npm_ms=${timing.merge_to_npm_ms}`,
+    `workflow_total_ms=${timing.workflow_total_ms}`,
+    `merge_to_npm_target_ms=${timing.merge_to_npm_target_ms}`,
+    `merge_to_npm_target_met=${timing.merge_to_npm_target_met}`,
+    `stage_measurement=${timing.stage_measurement}`
+  ];
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await appendFile(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
+  } else {
+    process.stdout.write(`${JSON.stringify(timing)}\n`);
+  }
+}
+
 async function main(args) {
   const [command, ...rest] = args;
   const option = (name) => rest[rest.indexOf(name) + 1];
@@ -611,6 +1188,20 @@ async function main(args) {
     await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after });
     return;
   }
+  if (command === 'validation-plan') {
+    const event = JSON.parse(await readFile(option('--event'), 'utf8'));
+    const result = await selectReleaseValidationPath({
+      event,
+      repository: option('--repository') || process.env.GITHUB_REPOSITORY || REPOSITORY
+    });
+    await writeOutput({
+      validation_mode: result.mode,
+      validation_reason: result.reasons.join(',') || 'exact_sha_ci_reused',
+      reviewed_head_sha: result.reviewedHeadSha,
+      merge_sha: result.mergeSha
+    });
+    return;
+  }
   if (command === 'project') {
     const event = JSON.parse(await readFile(option('--event'), 'utf8'));
     const before = versionAt(rootDefault, event.pull_request.base.sha);
@@ -618,6 +1209,11 @@ async function main(args) {
     const result = await projectReleaseNote(rootDefault, event);
     await projectPublishedVersion(rootDefault, before, after, event.pull_request.merged_at);
     await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after, month: result.month, pr_number: result.number });
+    return;
+  }
+  if (command === 'reconcile-published-versions') {
+    const npmTime = JSON.parse(await readFile(option('--npm-time'), 'utf8'));
+    await reconcilePublishedVersions(rootDefault, npmTime);
     return;
   }
   if (command === 'reproject') {
@@ -633,10 +1229,31 @@ async function main(args) {
     return;
   }
   if (command === 'publish-npm') {
-    await reconcileNpmRelease({ version: option('--version'), expectedSha: option('--sha') });
+    const version = option('--version');
+    await reconcileNpmRelease({ version, expectedSha: option('--sha') });
+    await writeOutput({ npm_published_at: npmPublishedAt(version) });
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <plan|project|reproject|release-body|publish-npm>');
+  if (command === 'reconcile-github-release') {
+    reconcileGithubRelease({
+      version: option('--version'),
+      expectedSha: option('--sha'),
+      notesFile: option('--notes-file'),
+      repository: option('--repository') || process.env.GITHUB_REPOSITORY || REPOSITORY
+    });
+    return;
+  }
+  if (command === 'timing') {
+    const timing = buildReleaseTiming({
+      mergedAt: option('--merged-at'),
+      publishStartedAt: option('--publish-started-at'),
+      npmPublishedAt: option('--npm-published-at'),
+      workflowCompletedAt: option('--workflow-completed-at')
+    });
+    await appendReleaseTimingSummary(timing);
+    return;
+  }
+  throw new Error('Usage: post-merge-release.mjs <plan|validation-plan|project|reconcile-published-versions|reproject|release-body|publish-npm|reconcile-github-release|timing>');
 }
 
 if (isDirectInvocation()) {

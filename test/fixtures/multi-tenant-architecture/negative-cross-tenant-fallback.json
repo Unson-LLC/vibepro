@@ -1,0 +1,6 @@
+{
+  "base_fixture": "pooled",
+  "contract_path": "credentials.cross_tenant_fallback",
+  "value": "allowed",
+  "expected_finding": "cross_tenant_credential_fallback"
+}

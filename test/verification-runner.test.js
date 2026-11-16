@@ -10,11 +10,6 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import {
-  buildArtifactRemediationCommands,
-  buildVerificationCommandSearchText,
-  classifyVerificationEvidenceItem
-} from '../src/pr-manager.js';
-import {
   CALLER_FORBIDDEN_OBSERVATION_KEYS,
   HAND_SUPPLIABLE_OBSERVATION_KEYS,
   buildObservation,
@@ -22,6 +17,7 @@ import {
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
 } from '../src/verification-evidence.js';
+import { monotonicElapsed, monotonicNow } from '../src/monotonic-clock.js';
 import {
   COMPUTED_OBSERVATION_KEYS,
   buildRunWarnings,
@@ -109,20 +105,42 @@ test('verify run records the executed outcome without accepting agent status inp
   assert.equal(command.observation.values.tests, '2');
   assert.equal(command.observation.values.pass, '2');
   assert.equal(command.observation.values.fail, '0');
+  assert.equal(command.observation.values.runner_node_version, process.version);
   assert.equal(command.computed_observation.producer, 'vibepro verify run');
   assert.ok(command.computed_observation.computed_keys.includes('exit_code'));
   assert.ok(/^[0-9a-f]{64}$/.test(command.observation.values.stdout_sha256));
+  assert.equal(command.runtime_identity.integrity.status, 'trusted');
+  assert.match(command.runtime_identity.identity_digest, /^[0-9a-f]{64}$/);
 
   const artifact = await readJson(runArtifactPath(root, 'unit'));
   assert.equal(artifact.evidence_source, 'runner_direct');
   assert.equal(artifact.exit_code, 0);
   assert.deepEqual(artifact.run.argv, ['node', '--test', 'tests/sample.test.js']);
   assert.equal(artifact.run.counts.tests, 2);
+  assert.equal(artifact.run.node_version, process.version);
   assert.equal(artifact.run.tree_mutated_during_run, false);
   assert.ok(Number.isFinite(artifact.run.duration_ms));
+  assert.equal(artifact.runtime_identity.identity_digest, command.runtime_identity.identity_digest);
+  assert.equal(result.result.runtime_identity.identity_digest, command.runtime_identity.identity_digest);
 
   const log = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
   assert.match(log, /tests 2/);
+});
+
+test('development runtime is blocked before verify run writes or executes evidence', async () => {
+  const root = await setupRepo();
+  const marker = path.join(root, 'must-not-run.txt');
+  const result = await runCli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--', process.execPath, '-e', `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'ran')`
+  ], {
+    stdout: { write() {} },
+    stderr: { write() {} },
+    env: { ...process.env, NODE_TEST_CONTEXT: '', VIBEPRO_RUNTIME_MODE: 'development' }
+  });
+  assert.notEqual(result.exitCode, 0);
+  await assert.rejects(readFile(marker), /ENOENT/);
+  await assert.rejects(readFile(runArtifactPath(root, 'build')), /ENOENT/);
 });
 
 test('verify run rejects an agent-supplied --status', async () => {
@@ -558,18 +576,23 @@ test('verify run reports an output-buffer kill as its own cause, not as a timeou
 test('verify run kills a silent process on the no-progress deadline well before the wall-clock cap', async () => {
   const root = await setupRepo();
   await writeFile(path.join(root, 'Makefile'), 'all:\n\t@sleep 30\n');
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await cli([
     'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
     '--target', 'Makefile', '--timeout-ms', '5000', '--no-progress-deadline-ms', '300',
     '--', 'make'
   ]);
-  const elapsedMs = Date.now() - startedAt;
+  const elapsedMs = monotonicElapsed(startedAt);
   assert.equal(result.result.status, 'fail');
   assert.equal(result.result.timed_out, true);
-  // The no-progress deadline (300ms), not the wall-clock cap (5000ms), is what killed this:
-  // proven by finishing far short of the wall clock, not merely by the boolean outcome.
-  assert.ok(elapsedMs < 3000, `expected the no-progress deadline to kill well under the 5000ms wall clock, took ${elapsedMs}ms`);
+  // duration_ms is only the executeCommand span. `sleep` ignores SIGTERM, so a
+  // wall-clock kill cannot return before --timeout-ms (5000) plus the 2000ms
+  // grace period. Finishing before 5000ms means the 300ms no-progress deadline
+  // fired. The outer elapsed time also includes tree sampling and is not that clock.
+  assert.ok(
+    result.result.duration_ms < 5000,
+    `expected the no-progress deadline to kill before the 5000ms wall clock, command took ${result.result.duration_ms}ms (outer ${elapsedMs}ms)`
+  );
   const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
   assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
 });
@@ -594,39 +617,42 @@ test('executeCommand attributes a signal it did not send as an external kill, no
 
 test('executeCommand kills a silent command on the no-progress deadline independently of the wall clock', async () => {
   const script = 'setInterval(() => {}, 1000);';
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
     timeoutMs: 10000,
     noProgressDeadlineMs: 200,
     maxOutputBytes: 1_000_000,
     env: process.env
   });
-  const elapsedMs = Date.now() - startedAt;
+  const elapsedMs = monotonicElapsed(startedAt);
   assert.equal(result.timedOut, true);
   assert.equal(result.externalKillSignal, null);
   assert.ok(elapsedMs < 5000, `expected the no-progress deadline to kill well under the 10000ms wall clock, took ${elapsedMs}ms`);
 });
 
-test('executeCommand: sustained streaming output extends the no-progress deadline past its own length', async () => {
+test('executeCommand: sustained test-completion progress extends the no-progress deadline', async () => {
   const script = [
     'let i = 0;',
     'const t = setInterval(() => {',
     '  i += 1;',
-    "  process.stdout.write('x');",
-    '  if (i >= 6) { clearInterval(t); process.exit(0); }',
-    '}, 40);'
+    "  process.stdout.write(`# tests ${i}\\n# pass ${i}\\n# fail 0\\n`);",
+    '  if (i >= 15) { clearInterval(t); process.exit(0); }',
+    '}, 50);'
   ].join('\n');
+  const startedAt = monotonicNow();
   const result = await executeCommand(process.cwd(), [process.execPath, '-e', script], {
     timeoutMs: 5000,
-    // Shorter than the ~240ms total run time but generous enough to absorb Node startup
-    // latency: only sustained silence, not the mere passage of time, should kill this.
-    noProgressDeadlineMs: 400,
+    // The child runs for ~750ms, so surviving this 500ms deadline proves that increasing,
+    // parseable test-completion counts extend it; mere stdout liveness is not enough.
+    noProgressDeadlineMs: 500,
     maxOutputBytes: 1_000_000,
     env: process.env
   });
+  const elapsedMs = monotonicElapsed(startedAt);
   assert.equal(result.exitCode, 0);
   assert.equal(result.timedOut, false);
-  assert.equal(result.stdout.length, 6);
+  assert.ok(elapsedMs > 500, `expected genuine progress to keep the process alive past the 500ms deadline, took ${elapsedMs}ms`);
+  assert.match(result.stdout, /# tests 15\n# pass 15\n# fail 0/);
 });
 
 test('a partially sampled worktree does not report a change that did not happen, and says so', () => {
@@ -965,7 +991,7 @@ test('every computed observation key is classified as provenance or hand-supplia
   // test exists to prevent, and `head_sha` must stay suppliable or verify import-ci breaks.
   assert.ok(CALLER_FORBIDDEN_OBSERVATION_KEYS.size > 1, 'the rule must cover a class, not one key');
   assert.equal(CALLER_FORBIDDEN_OBSERVATION_KEYS.has('head_sha'), false);
-  for (const key of ['run_artifact', 'stdout_sha256', 'worktree_sha256_before', 'harness_env_removed']) {
+  for (const key of ['run_artifact', 'stdout_sha256', 'worktree_sha256_before', 'harness_env_removed', 'runner_node_version']) {
     assert.ok(CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key), `${key} states how the record was produced`);
   }
 });
@@ -1056,106 +1082,6 @@ test('the runner keeps lifting its own computed evidence_source through the same
     false,
     'the receipt-backed path must not report its own computed key as caller input'
   );
-});
-
-// Round 9, gate_evidence: with evidence_source now on every runner-produced record's
-// observation.values, the stale-evidence remediation command reconstructed it as
-// `--observed evidence_source=runner_direct` — which `verify record` rejects, so the command
-// pr prepare tells an operator to run could not run.
-test('the emitted stale-evidence remediation command is runnable against a runner-produced record', async () => {
-  const root = await setupRepo();
-  const run = await cli([
-    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
-    '--target', 'tests/sample.test.js',
-    '--scenario', 'sample unit suite passes',
-    '--', 'node', '--test', 'tests/sample.test.js'
-  ]);
-  assert.equal(run.exitCode, 0);
-  const recorded = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  assert.equal(recorded.observation.values.evidence_source, 'runner_direct', 'the fixture must carry the key');
-
-  const [recordCommand] = buildArtifactRemediationCommands({
-    artifact_type: 'verification_command',
-    kind: recorded.kind,
-    command: recorded.command,
-    summary: recorded.summary,
-    artifact: recorded.artifact,
-    observation: recorded.observation,
-    content_binding: recorded.content_binding
-  }, STORY_ID);
-  assert.ok(!recordCommand.includes('evidence_source'), `remediation command must not replay a rejected key: ${recordCommand}`);
-  assert.match(recordCommand, /--observed exit_code=0/);
-
-  // Executed, not only inspected: "unrunnable" is the finding, so the emitted string is run.
-  const executable = recordCommand.replace(
-    /^vibepro\b/,
-    `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`
-  );
-  await execFileAsync('/bin/sh', ['-c', executable], { cwd: root, encoding: 'utf8' });
-  const rerecorded = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  assert.equal(rerecorded.evidence_source, 'self_reported', 'replaying by hand must not inherit the runner trust marker');
-  assert.equal(rerecorded.observation.values.evidence_source, undefined);
-});
-
-// Round 15, architecture_boundary: the runner writes the whole provenance half of
-// observation.values on every record it makes, and pr-manager flattened that object into the
-// corpus its evidence classifiers match kinds against. `run_artifact` is
-// `.vibepro/pr/<story-id>/verification-runs/<kind>.json`, so the `story-` alternative in the
-// runtime_path_evidence pattern matched every runner_direct record whatever it actually
-// verified — and that kind feeds current_reality / failure_modes / done_evidence. The rule
-// asserted here is the class, not the one key: no caller-forbidden key or value reaches the
-// corpus at all, so no kind can be earned from how the record was produced.
-test('the evidence classification corpus excludes the provenance keys the runner writes', async () => {
-  const root = await setupRepo();
-  const run = await cli([
-    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
-    '--target', 'tests/sample.test.js',
-    '--scenario', 'the sample unit suite passes at the current head',
-    '--', 'node', '--test', 'tests/sample.test.js'
-  ]);
-  assert.equal(run.exitCode, 0);
-  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  const provenance = Object.entries(record.observation.values)
-    .filter(([key]) => CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key));
-  assert.ok(provenance.length > 5, `the fixture must carry the provenance half, got ${provenance.length} key(s)`);
-
-  // The reviewer's counterfactual: the pre-fix corpus is the same list with nothing excluded,
-  // and it carries the story id — from the record's own run artifact path, not from anything
-  // this run inspected.
-  const unfilteredCorpus = [
-    ...record.observation.targets,
-    ...record.observation.scenarios,
-    ...Object.entries(record.observation.values).flatMap(([key, value]) => [key, String(value)])
-  ].join('\n');
-  assert.match(unfilteredCorpus, /story-/, 'the pre-fix corpus carried the story id through run_artifact');
-
-  const corpus = buildVerificationCommandSearchText(record);
-  assert.doesNotMatch(corpus, /story-/, `provenance paths must not reach the corpus: ${corpus}`);
-  // A provenance value that an outcome key also reports — head_sha_before repeats head_sha on
-  // a run that did not move the head — is in the corpus on the outcome key's ticket, so only
-  // the values the provenance half alone contributes are asserted absent.
-  const outcomeValues = new Set(
-    Object.entries(record.observation.values)
-      .filter(([key]) => !CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key))
-      .map(([, value]) => String(value))
-  );
-  for (const [key, value] of provenance) {
-    assert.ok(!corpus.includes(key), `${key} states how the record was produced and must not be classified`);
-    if (outcomeValues.has(String(value))) continue;
-    assert.ok(!corpus.includes(String(value)), `the value of ${key} must not be classified either`);
-  }
-  // The outcome half still reaches the classifiers: this narrows what evidence is read from,
-  // it does not stop reading the observation.
-  assert.ok(corpus.includes('tests/sample.test.js'), corpus);
-  assert.ok(corpus.includes('exit_code'), corpus);
-
-  const kinds = classifyVerificationEvidenceItem(record).map((item) => item.kind);
-  assert.ok(
-    !kinds.includes('runtime_path_evidence'),
-    `a unit run over tests/sample.test.js earns no runtime path evidence: ${kinds.join(', ')}`
-  );
-  // What the record did verify is still classified, so the record is narrowed, not silenced.
-  assert.ok(kinds.includes('focused_test'), `focused_test is earned by the run itself: ${kinds.join(', ')}`);
 });
 
 test('status and evidence_source are computed facts, not hand-listed exceptions', async () => {

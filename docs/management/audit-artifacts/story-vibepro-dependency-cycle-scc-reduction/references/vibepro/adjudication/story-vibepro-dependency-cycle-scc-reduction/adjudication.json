@@ -1,0 +1,240 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+  "updated_at": "2026-08-05T04:09:05.528Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "The adjudicator independently re-ran the SCC integration test against the live repository rather than trusting the recorded log: dependency_cycle_count=1 (16-member SCC), mutual_dependency_count=20, undeclared_dependency_count=22, budget_violation_count=11, orphan_file_count=1, violation_count=55 all reproduced live. The origin/main baseline (69,490 / 69,524, 7.86s) was not re-measured by the adjudicator (outside a read-only mandate) but is corroborated consistently by the cycle-length histogram and every cross-reference with no contradiction found.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:09:05.524Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "detectModuleCycles remains exported with unchanged signature and logic and has zero callers anywhere in src/ or bin/ (grep-verified); findDependencyCycles calls detectModuleSccs only. Test ac:7 asserts the CDL-S-6 normalized-cycle behavior still holds and that no live-pipeline violation uses the retired dependency_cycle:<a>-><b> id prefix. spec drift is clean for both this story and the merged story-vibepro-conformance-delta-ledger.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:09:04.274Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "DELTA_VIOLATION_KINDS literally includes mutual_dependency and summary carries mutual_dependency_count alongside dependency_cycle_count (now SCC-counted). E2e tests assert by_kind.dependency_cycle and by_kind.mutual_dependency are scored as independent dimensions for new and resolved cases, including an SCC shrinking from 3 to 2 members producing one resolved plus one new SCC rather than a silent mutation.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:09:03.167Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "rankFeedbackEdgeCandidates sorts intra-SCC edges ascending by import_edge_count with deterministic tie-break. Tests assert ascending weights, that the 3-import edge sorts last, that every candidate endpoint is an SCC member, and that the rendered markdown contains the literal heuristic disclaimer; the adjudicator re-ran the integration test confirming this against the live repo.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:09:02.030Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "findMutualDependencyPairs pairs only entries where from < to with a reverse edge present, id mutual_dependency:<a>+<b> alphabetical. E2e ac:4 cuts one direction of a real mutual pair and asserts the resolved violation id, both directions' import counts, and non-empty example_edges per direction.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:09:00.904Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Each SCC carries members, module_edge_count, import_edge_count, mutual_pairs and feedback_edge_candidates. Test ac:3 uses a hand-built fixture asserting module_edge_count=4 and import_edge_count=6 exactly, not field presence; the integration test cross-checks scc.mutual_pairs against the independently emitted mutual_dependency violations on the real repo, ruling out a truncated or capped SCC.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:08:59.247Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "id is dependency_cycle_scc:<sorted members joined by +>. The e2e ac:2 test drives the real CLI, introduces a back edge closing gate->story->infra->gate, and asserts the new violation id is exactly dependency_cycle_scc:gate+infra+story with by_kind.dependency_cycle.new=1, and that rescanning an identical tree yields an identical id set. This directly falsifies the central risk of a new cycle becoming invisible under reduction.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:08:57.866Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "detectModuleSccs is an explicit-work-stack non-recursive Tarjan (O(V+E), single pass per node via frame.edgeIndex); only size>1 components or self-looping singletons are kept and members are sorted so order derives from names not traversal. The e2e test forces a 20000-node cycle through detectModuleSccs (resolves as 1 component) while detectModuleCycles throws RangeError, a real non-tautological proof of the non-recursive property.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "task_id": null,
+        "acceptance_criteria": [
+          "DCS-S-1: `detectModuleSccs(moduleEdges)` が有向モジュールグラフの強連結成分を**反復（非再帰）版 Tarjan** で線形時間 O(V+E) で求め、size>1 の SCC と、自己ループを持つ単一ノードの SCC を循環として返す。結果はメンバーのソート順で決定論的に並ぶ。",
+          "DCS-S-2: `dependency_cycle` violation は SCC 1 個につき 1 件になり、id は構成モジュールのソート済みリストから決定論的に導出される（`dependency_cycle_scc:<module>+<module>+...`）。同一グラフを 2 回スキャンすると id 集合が完全一致する。",
+          "DCS-S-3: SCC violation は `members`（ソート済み）、`module_edge_count`（SCC 内部のモジュール間 edge 数）、`import_edge_count`（それらを構成する実 import 本数）、`mutual_pairs`（SCC 内部の相互依存ペア）、`feedback_edge_candidates` を持つ。",
+          "DCS-S-4: 相互依存ペア（両方向に import がある module ペア）が `mutual_dependency` という独立 kind の violation として出力される。id は `mutual_dependency:<a>+<b>`（アルファベット順）で、各件は両方向の実 import 本数と例示 edge を持つ。",
+          "DCS-S-5: `feedback_edge_candidates` は SCC 内部のモジュール間 edge を実 import 本数の昇順で並べた上位候補であり、各候補は from/to/import 本数/例示 edge を持つ。これは最小 feedback arc set の厳密解ではなく重み最小の候補提示であることが、コードと出力の両方で明示される。",
+          "DCS-S-6: `summary` に `mutual_dependency_count` が追加され、`dependency_cycle_count` は SCC 件数を指す。`architecture-conformance-delta.js` の `DELTA_VIOLATION_KINDS` に `mutual_dependency` が含まれ、delta の `by_kind` に次元として現れる。",
+          "DCS-S-7: `export function detectModuleCycles(moduleEdges)` は署名・戻り値契約ともに維持され、既存の CDL-S-6 テスト（正規化の start node 非依存性）がそのまま通る。ただし conformance パイプラインからは呼ばれない。",
+          "DCS-S-8: 本リポジトリ実測で `dependency_cycle` が 69,490 件から 1 件、`mutual_dependency` が 20 件、`undeclared_dependency` 22 / `orphan_file` 1 / `budget_violation` 11 が不変であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "69da04af99dc298cfc4857982a64c23850cdf3648c4d9e956d30445c229692aa",
+      "recorded_at": "2026-08-05T04:08:56.851Z"
+    }
+  ]
+}

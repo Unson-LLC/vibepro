@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-cross-system-adjudication
 title: Cross-system adjudication requires a different model family than the implementer Spec
-status: active
+status: historical
 parent_design: story-vibepro-cross-system-adjudication
 last_reviewed_root_hash: 1f7acc2880b8117ff6e79685b2bca607346131588374119be28da03d7d428ca3
 ---

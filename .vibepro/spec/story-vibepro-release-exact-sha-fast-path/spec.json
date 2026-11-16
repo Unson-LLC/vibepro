@@ -1,0 +1,312 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-exact-sha-fast-path",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "The merge commit is eligible for CI reuse only when its ordered parents are the pull request base and reviewed head and its tree equals a freshly reconstructed merge tree.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-001"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "selectReleaseValidationPath"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "RELFAST-AC-001/002/003 selects fast only for bound tree and exact-SHA trusted checks"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "reconstructed tree do not bind"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T02:38:00.192Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "INV-006",
+      "type": "invariant",
+      "statement": "Fast validation requires successful, completed, fresh test (20), test (22), and analyze check runs from the expected GitHub Actions workflow paths, signed with the current pull request number, base SHA, and exact reviewed head SHA.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-002"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "REQUIRED_CHECK_WORKFLOWS"
+          },
+          {
+            "file": ".github/workflows/ci.yml",
+            "anchor": "run-name"
+          },
+          {
+            "file": ".github/workflows/codeql.yml",
+            "anchor": "run-name"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "RELFAST-AC-001/002/003 selects fast only for bound tree and exact-SHA trusted checks"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "github-actions"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T03:03:23.322Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "When every binding and evidence condition passes, the release workflow runs version checks, typecheck, release-focused tests, and npm pack without rerunning the full test suite.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-003"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "Validate release candidate"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-release-exact-sha-fast-path.test.js",
+            "case": "story-vibepro-release-exact-sha-fast-path replays real merge-tree binding and workflow fast/fallback branches"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-release-exact-sha-fast-path.test.js",
+            "must_contain": "doesNotMatch(fastStep"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T02:38:00.192Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "When CI evidence, current-base/workflow provenance, or source binding is absent, failed, pending, stale, mismatched, or untrusted, the read-only immutable-base selector records explicit reasons and the separate release job executes the full test suite.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-004"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "Run full validation fallback"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "RELFAST-AC-004 falls back for missing, failed, or pending exact-SHA checks"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "falls back for missing, failed, or pending"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T03:03:23.322Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Both validation modes retain the existing npm gitHead, dist-tag, git tag, and GitHub Release convergence checks.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-005"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "reconcileNpmRelease"
+          },
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "reconcileGithubRelease"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "PCR-CON-006 rejects an existing version with another gitHead"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "another gitHead"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T02:38:00.192Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "Unit and end-to-end tests cover fast reuse, full fallback, stale evidence, SHA mismatch, current-base mismatch, workflow mismatch, parent mismatch, tree mismatch, pagination, rerun pending state, foreign provenance, and Checks API failure.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-006"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "selectReleaseValidationPath"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "RELFAST-AC-004 rejects stale evidence and exact-SHA mismatch"
+          },
+          {
+            "file": "test/e2e/story-vibepro-release-exact-sha-fast-path.test.js",
+            "case": "story-vibepro-release-exact-sha-fast-path replays real merge-tree binding and workflow fast/fallback branches"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "stale_check:"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T02:38:00.192Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "INV-005",
+      "type": "invariant",
+      "statement": "Release timing records merge, publish start, npm publication, and workflow final-step timestamps and derives pre-publish, npm, post-publish, merge-to-npm, and total durations without fabricating rerun stages.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-007"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "buildReleaseTiming"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "RELFAST-AC-007/008 timing CLI writes the decision surface to the workflow summary"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "pre_publish_ms"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T02:38:00.192Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "The workflow summary evaluates whether merge-to-npm publication completed within the 120000 millisecond target and reports the measured result.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ac_id": "RELFAST-AC-008"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "scripts/post-merge-release.mjs",
+            "anchor": "merge_to_npm_target_ms"
+          },
+          {
+            "file": ".github/workflows/post-merge-release.yml",
+            "anchor": "Record recovery state"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/post-merge-release.test.js",
+            "case": "RELFAST-AC-007/008 separates release stages and evaluates the 120 second target"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "merge_to_npm_target_met=true"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-12T02:38:00.192Z",
+      "last_revised_at": "2026-08-12T03:03:23.322Z"
+    }
+  ],
+  "generated_at": "2026-08-12T03:03:23.321Z",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-08-12T02:38:00.190Z"
+}

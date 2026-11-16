@@ -1,6 +1,22 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
+import { recordMultiTenantApplicabilityDeclarationAudit } from './multi-tenant-applicability-audit.js';
+import { assessMultiTenantArchitecture } from './multi-tenant-architecture.js';
+import { assessSemanticContract } from './semantic-contract.js';
+
+export {
+  assessSemanticClause,
+  assessSemanticContract,
+  createSemanticUnavailableAssessment,
+  SEMANTIC_ANSWER_STATUSES,
+  SEMANTIC_CASE_KINDS,
+  SEMANTIC_CHECK_NAMES,
+  SEMANTIC_OUTCOME_KINDS,
+  summarizeSemanticOutcomeCoverage,
+  validateSemanticContractShape
+} from './semantic-contract.js';
+
 const CLAUSE_TYPES = new Set(['invariant', 'scenario', 'contract', 'sla']);
 const ORIGIN_KINDS = new Set(['acceptance_criteria', 'background', 'policy', 'frontmatter', 'other']);
 const DIAGRAM_KINDS = new Set(['er', 'state', 'sequence', 'flow', 'c4_context', 'deployment', 'threat_model', 'dfd']);
@@ -39,7 +55,19 @@ export async function validateSpec(repoRoot, spec, options = {}) {
   }
   if (!Array.isArray(spec.clauses)) {
     errors.push({ code: 'clauses_missing', message: 'clauses must be an array' });
-    return { ok: false, errors, warnings, spec };
+    const semanticAssessment = assessSemanticContract(spec);
+    errors.push(...semanticAssessment.errors);
+    warnings.push(...semanticAssessment.warnings);
+    return {
+      ok: false,
+      errors,
+      warnings,
+      clause_reports: [],
+      semantic_assessment: semanticAssessment,
+      // Alias retained for consumers that use the input field name.
+      semantic_contract: semanticAssessment,
+      spec
+    };
   }
 
   const clauseReports = [];
@@ -49,6 +77,18 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     if (report.errors.length > 0) errors.push(...report.errors);
     if (report.warnings.length > 0) warnings.push(...report.warnings);
     clauseReports.push(report);
+  }
+
+  const semanticAssessment = assessSemanticContract(spec, {
+    verifiedCounterexampleIndexes: clauseReports
+      .filter((report) => report.counterexample_test_verified)
+      .map((report) => report.index)
+  });
+  errors.push(...semanticAssessment.errors);
+  warnings.push(...semanticAssessment.warnings);
+  for (const semanticClause of semanticAssessment.clause_assessments) {
+    const report = clauseReports[semanticClause.index];
+    if (report) report.semantic_assessment = semanticClause;
   }
 
   if (spec.diagrams !== undefined) {
@@ -83,11 +123,101 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     }
   }
 
+  const applicabilityStoryText = options.storyContext ?? spec.story_context ?? '';
+  const storySourcePresent = options.storyContext !== undefined
+    ? options.storyContext.trim() !== ''
+    : false;
+  const multiTenantArchitecture = assessMultiTenantArchitecture({
+    storyText: applicabilityStoryText,
+    spec,
+    storySourcePresent,
+    contract: spec.multi_tenancy ?? null,
+    applicabilityEvidence: options.multiTenantApplicabilityEvidence,
+    expectedHeadCommit: options.expectedHeadCommit,
+    mode: options.mode ?? 'final'
+  });
+  const declaredNonApplicability = spec.multi_tenancy?.applicability === false
+    || spec.multi_tenancy?.applicability === 'not_applicable';
+  const reasoned = multiTenantArchitecture.reasoned_non_applicability;
+  if (reasoned?.attempted) {
+    await recordMultiTenantApplicabilityDeclarationAudit(root, {
+      story_id: spec.story_id,
+      declared_applicability: spec.multi_tenancy?.applicability,
+      reason: reasoned.reason ?? null,
+      evidence_ref: reasoned.evidence_ref ?? null,
+      accepted: reasoned.accepted === true,
+      refusal_reason: reasoned.accepted ? null : reasoned.refusal_reason,
+      strong_signals: reasoned.strong_signals ?? [],
+      head_commit: options.expectedHeadCommit ?? options.headCommit ?? null,
+      reasoned_attempted: true
+    }, { mode: options.mode ?? 'final' });
+  }
+  if (reasoned?.attempted && !reasoned.accepted) {
+    const refusalMessages = {
+      reason_required: 'multi_tenancy.reason must be a non-empty string for a reasoned not_applicable declaration',
+      evidence_ref_required: 'multi_tenancy.evidence_ref must be a non-empty string for a reasoned not_applicable declaration',
+      evidence_ref_invalid: 'multi_tenancy.evidence_ref must be a plausible path, URL, or identifier reference',
+      story_missing: 'reasoned not_applicable requires a Story document; empty story context is rejected fail-safe',
+      strong_signal_present: `strong multi-tenant signals override not_applicable: ${reasoned.strong_signals.join(', ')}`
+    };
+    const refusalCodes = {
+      reason_required: 'multi_tenant_applicability_reason_required',
+      evidence_ref_required: 'multi_tenant_applicability_evidence_ref_required',
+      evidence_ref_invalid: 'multi_tenant_applicability_evidence_ref_invalid',
+      story_missing: 'multi_tenant_applicability_story_missing',
+      strong_signal_present: 'multi_tenant_applicability_strong_signal_conflict'
+    };
+    const issue = {
+      code: refusalCodes[reasoned.refusal_reason] ?? 'multi_tenant_applicability_declaration_refused',
+      message: refusalMessages[reasoned.refusal_reason] ?? `reasoned non-applicability refused: ${reasoned.refusal_reason}`,
+      path: 'multi_tenancy.applicability'
+    };
+    if (options.mode === 'draft') warnings.push(issue);
+    else errors.push(issue);
+  }
+  if (multiTenantArchitecture.applicable) {
+    for (const finding of multiTenantArchitecture.findings) {
+      const issue = {
+        code: `multi_tenant_${finding.code}`,
+        message: `${finding.path}: ${finding.message}`,
+        path: finding.path
+      };
+      if (finding.severity === 'error' && options.mode !== 'draft') errors.push(issue);
+      else warnings.push(issue);
+    }
+  }
+  if (declaredNonApplicability
+      && multiTenantArchitecture.implementation_readiness?.status !== 'ready'
+      && !(reasoned?.attempted && !reasoned.accepted)) {
+    const issue = {
+      code: 'multi_tenant_applicability_evidence_inconclusive',
+      message: `implementation readiness: ${multiTenantArchitecture.implementation_readiness?.reasons?.join(', ') ?? 'unknown'}`,
+      path: 'multi_tenancy.applicability'
+    };
+    if (options.mode === 'draft') warnings.push(issue);
+    else errors.push(issue);
+  }
+  if (options.multiTenantApplicabilityEvidence
+      && spec.multi_tenancy?.applicability !== false
+      && spec.multi_tenancy?.applicability !== 'not_applicable') {
+    const issue = {
+      code: 'multi_tenant_applicability_declaration_required',
+      message: 'implementation readiness requires multi_tenancy.applicability: not_applicable',
+      path: 'multi_tenancy.applicability'
+    };
+    if (options.mode === 'draft') warnings.push(issue);
+    else errors.push(issue);
+  }
+
   return {
     ok: errors.length === 0,
     errors,
     warnings,
     clause_reports: clauseReports,
+    semantic_assessment: semanticAssessment,
+    // Alias retained for consumers that use the input field name.
+    semantic_contract: semanticAssessment,
+    multi_tenant_architecture: multiTenantArchitecture,
     spec
   };
 }
@@ -120,6 +250,7 @@ async function validateClause(repoRoot, clause, index) {
   const architectureRefs = Array.isArray(origin.architecture_refs) ? origin.architecture_refs : [];
   const codeRefs = Array.isArray(origin.code_refs) ? origin.code_refs : [];
   const testRefs = Array.isArray(origin.test_refs) ? origin.test_refs : [];
+  let verifiedConcreteTestRefs = 0;
   if (storyRefs.length === 0 && architectureRefs.length === 0 && codeRefs.length === 0 && testRefs.length === 0) {
     errors.push({
       code: 'origin_empty',
@@ -149,6 +280,7 @@ async function validateClause(repoRoot, clause, index) {
         code: 'architecture_ref_missing',
         message: `${locator}.origin.architecture_refs[${i}].file "${ref.file}" not found in repository`
       });
+      continue;
     }
   }
 
@@ -189,6 +321,11 @@ async function validateClause(repoRoot, clause, index) {
         code: 'test_ref_missing',
         message: `${locator}.origin.test_refs[${i}].file "${ref.file}" not found in repository`
       });
+      continue;
+    }
+    if (typeof ref.case === 'string' && ref.case.trim().length > 0
+        && await fileIncludes(repoRoot, ref.file, ref.case)) {
+      verifiedConcreteTestRefs += 1;
     }
   }
 
@@ -211,7 +348,15 @@ async function validateClause(repoRoot, clause, index) {
     }
   }
 
-  return { index, id: clause.id ?? null, errors, warnings };
+  return {
+    index,
+    id: clause.id ?? null,
+    errors,
+    warnings,
+    counterexample_test_verified: clause.case_kind !== 'positive'
+      && testRefs.length > 0
+      && verifiedConcreteTestRefs === testRefs.length
+  };
 }
 
 async function verifyPattern(repoRoot, pattern, { locator }) {

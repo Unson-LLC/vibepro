@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+      "decision_id": "decision-1785900002453-512f068f",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: 9ファイル・実装差分は src/architecture-conformance.js の [REDACTED:149cb522ce10] 周辺とdelta側1行に限定され、レビュー対象の判断は『SCC縮約が正しいか』『新規悪化が見えなくならないか』の2点に集約される。review_owner_map: 変更ファイルはすべて target-model.json の architecture モジュール所有 (src/architecture-conformance*.js) と、そのテスト。cli/gate-pr/story など他モジュールのソースは変更していない。related_file_blast_radius: graphify の関連ファイル分析は変更3 / 関連6で、関連先 (src/architecture-rebaseline-proposal.js, src/cli.js, src/review-surface-violations.js) はいずれも runArchitectureConformance の戻り値を読むだけで violation 形状の内部フィールドには依存しない (summary は加算のみ、kind は維持)。split_plan: 上記 gate:split_resolution の decision に記載のとおり分割しない",
+      "artifact": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/traceability.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-05T03:20:16.357Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

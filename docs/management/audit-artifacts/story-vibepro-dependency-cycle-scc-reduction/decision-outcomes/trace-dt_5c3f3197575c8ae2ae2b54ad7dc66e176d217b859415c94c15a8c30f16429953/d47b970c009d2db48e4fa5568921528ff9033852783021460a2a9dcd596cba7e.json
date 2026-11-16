@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+  "ledger_path": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_5c3f3197575c8ae2ae2b54ad7dc66e176d217b859415c94c15a8c30f16429953"
+  },
+  "parent_revision_fingerprint": "c3db05a29050b39ffdcd29d596b32e07c024b8bc56c8fbbd2d21f950139d78e6",
+  "revision_fingerprint": "d47b970c009d2db48e4fa5568921528ff9033852783021460a2a9dcd596cba7e",
+  "trace": {
+    "decision_trace_id": "dt_5c3f3197575c8ae2ae2b54ad7dc66e176d217b859415c94c15a8c30f16429953",
+    "collision_group": null,
+    "trace_source_ref": "tsr_8bae5925bcd1ed3709e41b9b8add5cd04b79ca918c2951b15e5848e0ca40f007",
+    "normalized_subject_key": "gate:pr_scope_judgment",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.json",
+      "native_id": "decision-1785900000994-613ca3ef",
+      "digest": "74487aaa1fb2836ff2615ebd15d30ca9e48abc2c7e2cb966c6f3ecdba408770f",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+    "parent_revision_fingerprint": "c3db05a29050b39ffdcd29d596b32e07c024b8bc56c8fbbd2d21f950139d78e6",
+    "revision_fingerprint": "d47b970c009d2db48e4fa5568921528ff9033852783021460a2a9dcd596cba7e",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_5c3f3197575c8ae2ae2b54ad7dc66e176d217b859415c94c15a8c30f16429953"
+        },
+        "parent_revision_fingerprint": "360530ca9975d89ba790f29b6a31577b8e9efd4f5e8806f675abce335be82ff2"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 428,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/428",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "718aef115e8658bcc911e758cb6a1f91a5646801",
+        "status": "merged",
+        "merged_at": "2026-08-05T05:15:21Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

@@ -4,6 +4,23 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- **Breaking cleanup (`0.2.0-beta.3`)**: publish the rebuilt minimal core. VibePro
+  now keeps repository-local Story, Spec, verification, review, decision, trace,
+  and PR evidence without a Gate DAG, blocking readiness verdicts, managed merge,
+  lifecycle accounting, budget enforcement, or automatic audit bundles. Removed
+  commands are not compatibility aliases; automation must switch to the commands
+  shown by `vibepro help`. The npm README and public manual now describe the same
+  boundary. Rollback by pinning `vibepro@0.2.0-beta.2`.
+
+- Remove the retired `check self-dogfood` and `checkpoint` invocations from CI.
+  Type checks, the full test suite, TypeScript E2E suite, E2E structural lint,
+  package dry-run, version smoke test, and English help smoke test remain required.
+
+- Remove 11 TypeScript acceptance specs that exclusively asserted behavior from
+  the retired Gate DAG, managed execution, adjudication, UI/UX gate, and audit
+  surfaces. The retained TypeScript E2E executes the current artifact-routing CLI
+  path, and the E2E runner still fails closed when no TypeScript specs exist.
+
 - Pin the `test` npm script to `node --test --test-concurrency=2`. The suite is
   I/O-bound and scales negatively with parallelism; `--test-concurrency=2` is
   the measured optimum (unlimited parallelism took 28 minutes at load average
@@ -1685,3 +1702,2703 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-target-model
 なし
 
 <!-- vibepro-release-pr:424:end -->
+
+<!-- vibepro-release-pr:427:start -->
+## [#427](https://github.com/Unson-LLC/vibepro/pull/427) story-vibepro-target-model-projection-v2 - target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる
+
+- Author: @sintariran
+- Merged: 2026-08-04T17:02:28Z
+- Commit: `71bab5ec9f901dc724d07e94973979fd14a095cf`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-target-model-projection-v2.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-target-model-projection-v2.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:427:end -->
+
+<!-- vibepro-release-pr:428:start -->
+## [#428](https://github.com/Unson-LLC/vibepro/pull/428) story-vibepro-dependency-cycle-scc-reduction - dependency_cycle の SCC 縮約 — 69,490件の単純閉路列挙を「1つのSCC + 20の相互依存ペア」へ畳み、ratchet gate を載せられる粒度にする
+
+- Author: @sintariran
+- Merged: 2026-08-05T05:15:21Z
+- Commit: `718aef115e8658bcc911e758cb6a1f91a5646801`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-dependency-cycle-scc-reduction.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:428:end -->
+
+<!-- vibepro-release-pr:429:start -->
+## [#429](https://github.com/Unson-LLC/vibepro/pull/429) refactor: 縮小リファクタ Slice 1 — 診断/UIUX/architecture/performanceスキャナ群を削除
+
+- Author: @sintariran
+- Merged: 2026-08-06T10:49:23Z
+- Commit: `fcb4b825098dcdc8b1781afa82f9196e16ebac91`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:429:end -->
+
+<!-- vibepro-release-pr:430:start -->
+## [#430](https://github.com/Unson-LLC/vibepro/pull/430) refactor: 縮小リファクタ Slice 2 — 実行エンジン本体（execute/gate/adjudicate/outcome/checkpoint）を削除
+
+- Author: @sintariran
+- Merged: 2026-08-06T12:47:30Z
+- Commit: `b81e78c9553b4ec8fb0c4ddc57328404cb24f25e`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:430:end -->
+
+<!-- vibepro-release-pr:431:start -->
+## [#431](https://github.com/Unson-LLC/vibepro/pull/431) refactor: 縮小リファクタ Slice 3 — delivery-efficiency予算全系を削除
+
+- Author: @sintariran
+- Merged: 2026-08-06T14:00:25Z
+- Commit: `ca1fd47bbe8ff15b36ce0cb06343fef5bd3fe7b9`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:431:end -->
+
+<!-- vibepro-release-pr:432:start -->
+## [#432](https://github.com/Unson-LLC/vibepro/pull/432) refactor: 縮小リファクタ Slice 4 — run-context-capsuleスナップショット機構を削除（計画の実測更新込み）
+
+- Author: @sintariran
+- Merged: 2026-08-06T14:55:04Z
+- Commit: `b49b07f1dfb3461b87430c74bed705fbca9826ae`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:432:end -->
+
+<!-- vibepro-release-pr:435:start -->
+## [#435](https://github.com/Unson-LLC/vibepro/pull/435) feat: v-nextフォローアップ — report fingerprint再設計とstory_source/AC対応マップのpr prepare再統合
+
+- Author: @sintariran
+- Merged: 2026-08-06T22:51:31Z
+- Commit: `f763e3f59fca9e938c8e49ca023f583a2ee3f53d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:435:end -->
+
+<!-- vibepro-release-pr:437:start -->
+## [#437](https://github.com/Unson-LLC/vibepro/pull/437) release: publish minimal core beta.3
+
+- Author: @sintariran
+- Merged: 2026-08-07T02:08:05Z
+- Commit: `dbc88fc74dcf7f3472556b8b4a349032fb30846e`
+
+### Change Summary
+
+Publish VibePro 0.2.0-beta.3 as the rebuilt minimal core. Align the npm README and VitePress entry pages with the current Story, Spec, verification, review, decision, trace, and PR evidence boundary. Remove retired CI commands and stale TypeScript acceptance specs.
+
+### Compatibility
+
+Breaking beta cleanup. Removed Gate DAG, blocking readiness verdicts, managed execution and merge, lifecycle accounting, budget enforcement, automatic adjudication and audit, check, and checkpoint command surfaces are not restored as aliases.
+
+### User Action
+
+Update to vibepro@beta and migrate automation to commands listed by vibepro help. Pin vibepro@0.2.0-beta.2 only if temporary migration time is required.
+
+<!-- vibepro-release-pr:437:end -->
+
+<!-- vibepro-release-pr:438:start -->
+## [#438](https://github.com/Unson-LLC/vibepro/pull/438) fix: v-next外部repo初適用で見つかった不具合5件を修正 (#436)
+
+- Author: @sintariran
+- Merged: 2026-08-07T06:16:59Z
+- Commit: `73b62a58f2d024f986fcf77d7dcf66faf2b9ee69`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:438:end -->
+
+<!-- vibepro-release-pr:442:start -->
+## [#442](https://github.com/Unson-LLC/vibepro/pull/442) feat: シニアエンジニア判断DAGを追加
+
+- Author: @sintariran
+- Merged: 2026-08-07T12:10:22Z
+- Commit: `941e9ddacec2f10c56ef95c2b1a08a84d8a88519`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:442:end -->
+
+<!-- vibepro-release-pr:443:start -->
+## [#443](https://github.com/Unson-LLC/vibepro/pull/443) fix: derive judgment mode from causal evidence
+
+- Author: @sintariran
+- Merged: 2026-08-07T14:25:44Z
+- Commit: `584ba3f413e79f58f0645306aa616abf8d87e683`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:443:end -->
+
+<!-- vibepro-release-pr:444:start -->
+## [#444](https://github.com/Unson-LLC/vibepro/pull/444) fix: 判断モードの証拠境界を分離
+
+- Author: @sintariran
+- Merged: 2026-08-07T16:07:53Z
+- Commit: `af91a470adfb895701c0e0c56cc0788c0f5b39cd`
+
+### Change Summary
+
+Senior Engineering Judgment DAGが、問題の存在と解決方向の証拠を別々に扱うようになりました。構造的過剰はSIMPLIFY、価値制約はVALUE、判断証拠が不足・不明ならVALIDATEへ分岐します。公開versionの投影対象を現行版フィールドへ限定し、過去のrelease履歴とrollback先を保持したままVitePress metadataを同期します。
+
+### Compatibility
+
+Breaking beta change: senior judgment input schemaは0.2.0から0.3.0へ更新されました。0.2.0入力は曖昧な旧契約として拒否されます。
+
+### User Action
+
+senior judgment入力のcurrent_constraintへkindとdecision_evidenceを追加してください。kindはvalue_constraintまたはstructural_excess、decision_evidence.statusはsufficient、insufficient、unknownのいずれかです。
+
+<!-- vibepro-release-pr:444:end -->
+
+<!-- vibepro-release-pr:445:start -->
+## [#445](https://github.com/Unson-LLC/vibepro/pull/445) fix: release履歴を追記型に修正
+
+- Author: @sintariran
+- Merged: 2026-08-08T01:06:40Z
+- Commit: `5891a4cdb5fc1cb73cbd00ad3d510401a65aee1f`
+
+### Change Summary
+
+Version history now keeps published releases as an append-only ledger. This restores `0.2.0-beta.3`, corrects the `0.2.0-beta.4` summary, and validates bilingual history integrity before writing projected release documentation.
+
+### Compatibility
+
+No package or CLI compatibility change.
+
+### User Action
+
+No action required.
+
+<!-- vibepro-release-pr:445:end -->
+
+<!-- vibepro-release-pr:448:start -->
+## [#448](https://github.com/Unson-LLC/vibepro/pull/448) fix: enforce immutable runtime identity
+
+- Author: @sintariran
+- Merged: 2026-08-10T16:12:18Z
+- Commit: `5e19da4a890a6ae607241d40bbbb438dae6f5124`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:448:end -->
+
+<!-- vibepro-release-pr:450:start -->
+## [#450](https://github.com/Unson-LLC/vibepro/pull/450) fix: PR準備成果物の不整合を修正
+
+- Author: @sintariran
+- Merged: 2026-08-11T10:12:36Z
+- Commit: `a662da0d53d99399e21ffe1304be92fa790d619d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:450:end -->
+
+<!-- vibepro-release-pr:451:start -->
+## [#451](https://github.com/Unson-LLC/vibepro/pull/451) fix: GitHub Release分類を確実に収束
+
+- Author: @sintariran
+- Merged: 2026-08-11T11:48:10Z
+- Commit: `4388cf10aa0a6cb6692fd79c00017a9824910979`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:451:end -->
+
+<!-- vibepro-release-pr:452:start -->
+## [#452](https://github.com/Unson-LLC/vibepro/pull/452) chore: 0.2.0-beta.6を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-11T12:18:40Z
+- Commit: `28775f0963d78aeba941145d50da8c4d96b1efd7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:452:end -->
+
+<!-- vibepro-release-pr:453:start -->
+## [#453](https://github.com/Unson-LLC/vibepro/pull/453) docs: リリース安全事例を公開
+
+- Author: @sintariran
+- Merged: 2026-08-11T13:50:05Z
+- Commit: `50fcbd270e8d58930ab5940f408dab32077148fa`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:453:end -->
+
+<!-- vibepro-release-pr:456:start -->
+## [#456](https://github.com/Unson-LLC/vibepro/pull/456) docs: 匿名化した実運用事例を追加
+
+- Author: @sintariran
+- Merged: 2026-08-12T00:19:51Z
+- Commit: `67e5a9cc4c7e6d637d3f602d2f68e99f898487da`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:456:end -->
+
+<!-- vibepro-release-pr:455:start -->
+## [#455](https://github.com/Unson-LLC/vibepro/pull/455) fix: accepted-specのHEAD系譜をPR成果物へ投影する
+
+- Author: @sintariran
+- Merged: 2026-08-12T00:42:24Z
+- Commit: `c2e68b23a0da1708b323708a941aaf68837cd5b1`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:455:end -->
+
+<!-- vibepro-release-pr:457:start -->
+## [#457](https://github.com/Unson-LLC/vibepro/pull/457) chore: 0.2.0-beta.7を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-12T01:36:11Z
+- Commit: `a306c7789cece62ca46df85e40f39ca5c61a72a7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:457:end -->
+
+<!-- vibepro-release-pr:459:start -->
+## [#459](https://github.com/Unson-LLC/vibepro/pull/459) feat: VibePro npm公開Skillを追加する
+
+- Author: @sintariran
+- Merged: 2026-08-12T02:13:29Z
+- Commit: `9b6f672d714818f128f80cc0b1d01fb579e35129`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:459:end -->
+
+<!-- vibepro-release-pr:461:start -->
+## [#461](https://github.com/Unson-LLC/vibepro/pull/461) chore: 0.2.0-beta.8を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-12T04:04:47Z
+- Commit: `b9e0a3493577b1fd86d6dc20694dcfcd85dfe1b1`
+
+### Change Summary
+
+Issue #458 と PR #460 のexact-SHA CI証拠再利用を含むmainを、vibepro 0.2.0-beta.8として公開します。リリースPR自体はversion metadataとStory・Spec・catalogだけを変更します。
+
+### Compatibility
+
+破壊的変更はありません。既存のbeta利用者は同じCLI契約のまま更新できます。
+
+### User Action
+
+必要に応じて npm install vibepro@0.2.0-beta.8 を実行してください。
+
+<!-- vibepro-release-pr:461:end -->
+
+<!-- vibepro-release-pr:465:start -->
+## [#465](https://github.com/Unson-LLC/vibepro/pull/465) chore: 0.2.0-beta.9を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-15T00:18:54Z
+- Commit: `6d5ef5e0d44123438890acbd714470ecb30e9e53`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:465:end -->
+
+<!-- vibepro-release-pr:473:start -->
+## [#473](https://github.com/Unson-LLC/vibepro/pull/473) fix: バージョン据え置き時のマージ後処理を完了する
+
+- Author: @sintariran
+- Merged: 2026-08-17T03:46:56Z
+- Commit: `aae2c85fa9e89c5cc7eb13224149a9cd547e4a31`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:473:end -->
+
+<!-- vibepro-release-pr:474:start -->
+## [#474](https://github.com/Unson-LLC/vibepro/pull/474) fix: 旧形式Storyタスクを正規化する
+
+- Author: @sintariran
+- Merged: 2026-08-17T06:56:00Z
+- Commit: `e9bb9c2e3309826dd09c72e737218f2c1e65a4c6`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:474:end -->
+
+<!-- vibepro-release-pr:475:start -->
+## [#475](https://github.com/Unson-LLC/vibepro/pull/475) chore: 0.2.0-beta.10を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-17T07:00:04Z
+- Commit: `92c1f79df53605eca6f262351c48df3531518b4a`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:475:end -->
+
+<!-- vibepro-release-pr:476:start -->
+## [#476](https://github.com/Unson-LLC/vibepro/pull/476) docs: align VibePro with product intent traceability
+
+- Author: @sintariran
+- Merged: 2026-08-20T09:19:02Z
+- Commit: `2cf9ce715d421edd8b8a68048ab6fa5599b0b2b1`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:476:end -->
+
+<!-- vibepro-release-pr:477:start -->
+## [#477](https://github.com/Unson-LLC/vibepro/pull/477) feat: add minimal Development Judgment DAG
+
+- Author: @sintariran
+- Merged: 2026-08-20T09:19:43Z
+- Commit: `373348fdde8ebbb460b68ba313666b7669ece830`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:477:end -->
+
+<!-- vibepro-release-pr:478:start -->
+## [#478](https://github.com/Unson-LLC/vibepro/pull/478) 公開説明文の意図を保ったまま、旧文言に固定されたCI契約を修復する
+
+- Author: @sintariran
+- Merged: 2026-08-20T15:33:12Z
+- Commit: `e1b9d7a5d4982b009924c778efac2c074e891198`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:478:end -->
+
+<!-- vibepro-release-pr:479:start -->
+## [#479](https://github.com/Unson-LLC/vibepro/pull/479) fix: block PR creation until agent reviews complete
+
+- Author: @sintariran
+- Merged: 2026-08-21T11:38:27Z
+- Commit: `598c4c3c13b36ea96900afca182124aa61232ff8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:479:end -->
+
+<!-- vibepro-release-pr:480:start -->
+## [#480](https://github.com/Unson-LLC/vibepro/pull/480) chore: 0.2.0-beta.11を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-21T11:47:49Z
+- Commit: `65ad94c68250405438bdeb22b8940952d2b3b0ea`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:480:end -->
+
+<!-- vibepro-release-pr:481:start -->
+## [#481](https://github.com/Unson-LLC/vibepro/pull/481) feat: connect Development Judgment to the delivery workflow
+
+- Author: @sintariran
+- Merged: 2026-08-22T01:15:19Z
+- Commit: `fc17b4afafd233cc76ebd00bfc45a010fa1986c5`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:481:end -->
+
+<!-- vibepro-release-pr:482:start -->
+## [#482](https://github.com/Unson-LLC/vibepro/pull/482) chore: 0.2.0-beta.12を公開準備
+
+- Author: @sintariran
+- Merged: 2026-08-22T04:47:16Z
+- Commit: `cec99e07e77c863cb09965e691067252553c5ef7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:482:end -->
+
+<!-- vibepro-release-pr:483:start -->
+## [#483](https://github.com/Unson-LLC/vibepro/pull/483) feat: complete Development Judgment operating loop
+
+- Author: @sintariran
+- Merged: 2026-08-23T12:34:54Z
+- Commit: `ed89f5683870dedd53244d1f6f81a3eeeba38dd7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:483:end -->
+
+<!-- vibepro-release-pr:484:start -->
+## [#484](https://github.com/Unson-LLC/vibepro/pull/484) chore: release 0.2.0-beta.13
+
+- Author: @sintariran
+- Merged: 2026-08-23T12:41:22Z
+- Commit: `66a87a14992cee1559f3c4d5b56554e200ec2492`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:484:end -->
+
+<!-- vibepro-release-pr:486:start -->
+## [#486](https://github.com/Unson-LLC/vibepro/pull/486) feat: add causal Review DAG freshness and progress-sensitive convergence
+
+- Author: @sintariran
+- Merged: 2026-08-24T01:21:06Z
+- Commit: `b0d57d944fa9806cc517c83c6cf9620779bdec15`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:486:end -->
+
+<!-- vibepro-release-pr:488:start -->
+## [#488](https://github.com/Unson-LLC/vibepro/pull/488) chore: release 0.2.0-beta.14
+
+- Author: @sintariran
+- Merged: 2026-08-24T04:00:45Z
+- Commit: `fb35ee06d9a91b1bab7d7dab0584deb62a3b2086`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:488:end -->
+
+<!-- vibepro-release-pr:489:start -->
+## [#489](https://github.com/Unson-LLC/vibepro/pull/489) fix: 非マルチテナント適用判定と実装証拠を分離する
+
+- Author: @sintariran
+- Merged: 2026-08-24T14:53:38Z
+- Commit: `877dd461695edb52e138a811078551705799d433`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:489:end -->
+
+<!-- vibepro-release-pr:490:start -->
+## [#490](https://github.com/Unson-LLC/vibepro/pull/490) chore: release 0.2.0-beta.15
+
+- Author: @sintariran
+- Merged: 2026-08-24T16:05:23Z
+- Commit: `a1c4e9a593d03cc9bfbc94584b8bc64734a002fa`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:490:end -->
+
+<!-- vibepro-release-pr:491:start -->
+## [#491](https://github.com/Unson-LLC/vibepro/pull/491) fix: project safe agent review instructions
+
+- Author: @sintariran
+- Merged: 2026-08-24T17:08:53Z
+- Commit: `e9385b9846932a37456d62cf85f5ed6092eeec91`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:491:end -->
+
+<!-- vibepro-release-pr:492:start -->
+## [#492](https://github.com/Unson-LLC/vibepro/pull/492) fix: bind PR readiness to canonical Story Tasks
+
+- Author: @sintariran
+- Merged: 2026-08-24T17:38:16Z
+- Commit: `495b7fbc2724bd13c3f9d82c80b916dd4dd782e8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:492:end -->
+
+<!-- vibepro-release-pr:494:start -->
+## [#494](https://github.com/Unson-LLC/vibepro/pull/494) fix: Judgmentを通常計画フローへ接続
+
+- Author: @sintariran
+- Merged: 2026-08-25T09:51:26Z
+- Commit: `feb4426600ddb48ec91fdd0bbbb47eca18915601`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:494:end -->
+
+<!-- vibepro-release-pr:493:start -->
+## [#493](https://github.com/Unson-LLC/vibepro/pull/493) chore: prepare 0.2.0-beta.16 release
+
+- Author: @sintariran
+- Merged: 2026-08-25T12:43:06Z
+- Commit: `8b9fd24b6614f8d55b4e6c42d1179a68e6f92f85`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:493:end -->
+
+<!-- vibepro-release-pr:495:start -->
+## [#495](https://github.com/Unson-LLC/vibepro/pull/495) fix: make verification progress deadline test deterministic
+
+- Author: @sintariran
+- Merged: 2026-08-25T14:10:27Z
+- Commit: `58de3ec992c4ef4aeb16317a534d1926aa4dee4d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:495:end -->
+
+<!-- vibepro-release-pr:499:start -->
+## [#499](https://github.com/Unson-LLC/vibepro/pull/499) fix: subagent回復ループを3回で収束させる
+
+- Author: @sintariran
+- Merged: 2026-08-28T15:22:17Z
+- Commit: `026b26885a32960f7f2c21112f5a5e804999505d`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:499:end -->
+
+<!-- vibepro-release-pr:500:start -->
+## [#500](https://github.com/Unson-LLC/vibepro/pull/500) fix: stop evidence loops with the minimal-core workflow
+
+- Author: @sintariran
+- Merged: 2026-08-30T02:25:13Z
+- Commit: `ca32dc1ae1a54f5a2beff1eef9d50dbde27cded9`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:500:end -->
+
+<!-- vibepro-release-pr:502:start -->
+## [#502](https://github.com/Unson-LLC/vibepro/pull/502) chore: prepare 0.2.0-beta.17 release
+
+- Author: @sintariran
+- Merged: 2026-08-30T02:42:48Z
+- Commit: `1c3bebb6824d79c8e49ef66c9271c61c35c7cd29`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:502:end -->
+
+<!-- vibepro-release-pr:503:start -->
+## [#503](https://github.com/Unson-LLC/vibepro/pull/503) fix: Minimal Core契約をCodex配布面まで収束させる
+
+- Author: @sintariran
+- Merged: 2026-08-30T14:32:58Z
+- Commit: `afc13d90d296fbc358e21fb327753ba364468279`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:503:end -->
+
+<!-- vibepro-release-pr:504:start -->
+## [#504](https://github.com/Unson-LLC/vibepro/pull/504) feat: bind Brainbase runtime context and emit verified learning
+
+- Author: @sintariran
+- Merged: 2026-08-30T23:46:16Z
+- Commit: `ba100550ebab0cec5f3804b471a09bc46610b896`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:504:end -->
+
+<!-- vibepro-release-pr:505:start -->
+## [#505](https://github.com/Unson-LLC/vibepro/pull/505) chore: release VibePro 0.2.0-beta.18
+
+- Author: @sintariran
+- Merged: 2026-08-31T02:29:30Z
+- Commit: `2ff03db8045bceee47d3dad3da10695103ce91a1`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:505:end -->
+
+<!-- vibepro-release-pr:511:start -->
+## [#511](https://github.com/Unson-LLC/vibepro/pull/511) fix: 外部処理の再投入を証跡ベースで収束させる
+
+- Author: @sintariran
+- Merged: 2026-09-02T05:14:42Z
+- Commit: `42c38d17f822433e5f1237fdff1bdf18689d1024`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:511:end -->
+
+<!-- vibepro-release-pr:512:start -->
+## [#512](https://github.com/Unson-LLC/vibepro/pull/512) chore: prepare 0.2.0-beta.19 release
+
+- Author: @sintariran
+- Merged: 2026-09-02T10:33:04Z
+- Commit: `309f5f8d65691fe2acd4030deb19e031b252db9b`
+
+### Change Summary
+
+- add a fail-closed instruction contract for external side-effect retries
+- require read-before-write, terminal receipts, first-failure boundaries, and mutation budgets
+- stop a fourth mutation after three semantic no-progress attempts
+
+### Compatibility
+
+- no breaking changes
+- runtime enforcement remains the host or adapter responsibility
+
+### User Action
+
+- update to `vibepro@0.2.0-beta.19`
+
+<!-- vibepro-release-pr:512:end -->
+
+<!-- vibepro-release-pr:513:start -->
+## [#513](https://github.com/Unson-LLC/vibepro/pull/513) docs: 判断DAG実証系としてのVibePro ProfileとProof Ledgerを正本化
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:24:18Z
+- Commit: `d1664cf5b54452f7290a75716d1783268a360299`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:513:end -->
+
+<!-- vibepro-release-pr:515:start -->
+## [#515](https://github.com/Unson-LLC/vibepro/pull/515) test: pin adopted-input digest guard, promote VPJ-DAG-004 to P2
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:24:59Z
+- Commit: `1d885883a6b711ace62a4f03d4ab768ba6987d60`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:515:end -->
+
+<!-- vibepro-release-pr:516:start -->
+## [#516](https://github.com/Unson-LLC/vibepro/pull/516) docs: mark adjudication design and Stories historical after PR #430
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:25:13Z
+- Commit: `99c255d840c72f92b55261a52b64df87c4fce258`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:516:end -->
+
+<!-- vibepro-release-pr:514:start -->
+## [#514](https://github.com/Unson-LLC/vibepro/pull/514) docs(skill): add Development Judgment loop step to vibepro-workflow
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:29:45Z
+- Commit: `ab9617d51a517d2fc15c1aba0f4794ce34d0bf10`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:514:end -->
+
+<!-- vibepro-release-pr:517:start -->
+## [#517](https://github.com/Unson-LLC/vibepro/pull/517) docs: Proof Ledger の解消済み gap を記録（PR #514/#515/#516）
+
+- Author: @sintariran
+- Merged: 2026-09-02T11:31:13Z
+- Commit: `4bc00b4202fdeea716a38c12fced7e9c7cd765c3`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:517:end -->
+
+<!-- vibepro-release-pr:519:start -->
+## [#519](https://github.com/Unson-LLC/vibepro/pull/519) docs(skill): Development Judgment の適用要否基準を定義し、実運用の入口無効化を台帳へ記録
+
+- Author: @sintariran
+- Merged: 2026-09-02T22:29:46Z
+- Commit: `d75ca7cde62892dbc44e1d48254740f0a777f8cf`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:519:end -->
+
+<!-- vibepro-release-pr:520:start -->
+## [#520](https://github.com/Unson-LLC/vibepro/pull/520) docs(cli): story plan / judgment applicability のヘルプに適用要否の基準を添える
+
+- Author: @sintariran
+- Merged: 2026-09-02T22:44:22Z
+- Commit: `9fff97e665c62498438787e9c394a8725dbf08ca`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:520:end -->
+
+<!-- vibepro-release-pr:521:start -->
+## [#521](https://github.com/Unson-LLC/vibepro/pull/521) fix: 保存済みPR説明を生成本文へ投影
+
+- Author: @sintariran
+- Merged: 2026-09-02T23:06:14Z
+- Commit: `73f3a5b7a0423978c562243bde1e586664680490`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:521:end -->
+
+<!-- vibepro-release-pr:522:start -->
+## [#522](https://github.com/Unson-LLC/vibepro/pull/522) 複数remote環境のPR送信先を明示して誤送信を防ぐ
+
+- Author: @sintariran
+- Merged: 2026-09-03T04:42:25Z
+- Commit: `4974cfd954791fb3cb03dba5173d080e2dc31dce`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:522:end -->
+
+<!-- vibepro-release-pr:523:start -->
+## [#523](https://github.com/Unson-LLC/vibepro/pull/523) Issue #518の修正を0.2.0-beta.21として配布する
+
+- Author: @sintariran
+- Merged: 2026-09-03T05:18:12Z
+- Commit: `c3446c227873fc01c0223b3334cf5544903693a7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:523:end -->
+
+<!-- vibepro-release-pr:524:start -->
+## [#524](https://github.com/Unson-LLC/vibepro/pull/524) feat(brainbase): managed closed-loop integration
+
+- Author: @sintariran
+- Merged: 2026-09-03T06:09:45Z
+- Commit: `fea6fd025629cfd9663846c7fa783c7611022330`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:524:end -->
+
+<!-- vibepro-release-pr:525:start -->
+## [#525](https://github.com/Unson-LLC/vibepro/pull/525) fix: 旧レビューGate処理を削除して軽量レビューに統一
+
+- Author: @sintariran
+- Merged: 2026-09-04T13:49:01Z
+- Commit: `4a8507d9a15193c822c56838a35ad1582360fafb`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:525:end -->
+
+<!-- vibepro-release-pr:526:start -->
+## [#526](https://github.com/Unson-LLC/vibepro/pull/526) fix: Brainbaseへの送信と受信確認を分離する
+
+- Author: @sintariran
+- Merged: 2026-09-04T13:53:25Z
+- Commit: `a3060059dfedbe0e5d11bc543babc74670e41437`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:526:end -->
+
+<!-- vibepro-release-pr:527:start -->
+## [#527](https://github.com/Unson-LLC/vibepro/pull/527) feat: BrainbaseのOutcomeCaseをmanaged v2で受信する
+
+- Author: @sintariran
+- Merged: 2026-09-05T00:58:39Z
+- Commit: `54fdc20b6f19ce98922872dad5562faa2c38a7d3`
+
+### Change Summary
+
+- `brainbase-vibepro-managed-handoff.v2` の署名・有効期限・対象repo・基準SHAを検証
+- OutcomeCaseの7項目をStoryへ投影し、context・bind receipt・消費ledgerを保存
+- 同一handoffの再利用、改ざん、期限切れ、対象不一致を拒否
+- PR本文にBrainbase受信証跡を反映し、古い生成済みPR証跡は除外
+
+### Compatibility
+
+既存の `brainbase-vibepro-context-handoff.v1` 送信・受信経路を維持します。
+
+### User Action
+
+managed v2を使う場合は、Brainbase issuerと共有する署名検証用環境変数を設定してください。
+
+<!-- vibepro-release-pr:527:end -->
+
+<!-- vibepro-release-pr:528:start -->
+## [#528](https://github.com/Unson-LLC/vibepro/pull/528) chore: VibePro 0.2.0-beta.22を公開する
+
+- Author: @sintariran
+- Merged: 2026-09-05T01:19:11Z
+- Commit: `b5b6e6742652caba9cb5e6402e848e57321576d8`
+
+### Change Summary
+
+- Brainbase発行の `brainbase-vibepro-managed-handoff.v2` を検証・受信
+- OutcomeCaseの7項目をStoryへ投影し、context・bind receipt・消費ledgerを保存
+- 改ざん、期限切れ、repo/基準SHA不一致、同一handoff再利用を拒否
+- VibePro package versionを `0.2.0-beta.22` へ更新
+
+### Compatibility
+
+既存のmanaged v1互換経路を維持します。managed v2を使わない利用者への破壊的変更はありません。
+
+### User Action
+
+Brainbase managed v2連携を使う環境では、Brainbase issuerと共有する署名検証用環境変数を設定してください。
+
+<!-- vibepro-release-pr:528:end -->
+
+<!-- vibepro-release-pr:529:start -->
+## [#529](https://github.com/Unson-LLC/vibepro/pull/529) docs: VibeProの旧証跡回収ルールを廃止
+
+- Author: @sintariran
+- Merged: 2026-09-05T10:27:38Z
+- Commit: `240158539719e61e75222510e7090d62380eefaa`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:529:end -->
+
+<!-- vibepro-release-pr:530:start -->
+## [#530](https://github.com/Unson-LLC/vibepro/pull/530) refactor: retire VibePro merge authority
+
+- Author: @sintariran
+- Merged: 2026-09-06T06:06:07Z
+- Commit: `18210e5e275f81878d4f632ac0f921f9b41d4ca0`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:530:end -->
+
+<!-- vibepro-release-pr:531:start -->
+## [#531](https://github.com/Unson-LLC/vibepro/pull/531) fix: require explicit repository targets before push
+
+- Author: @sintariran
+- Merged: 2026-09-12T21:18:19Z
+- Commit: `15391b125d502557bc19ab695e0cc855893efa4c`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:531:end -->
+
+<!-- vibepro-release-pr:532:start -->
+## [#532](https://github.com/Unson-LLC/vibepro/pull/532) chore: release 0.2.0-beta.23
+
+- Author: @sintariran
+- Merged: 2026-09-12T21:24:30Z
+- Commit: `80e0b5cf1ae133be802c88344cf7cf35abd1b597`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:532:end -->
+
+<!-- vibepro-release-pr:534:start -->
+## [#534](https://github.com/Unson-LLC/vibepro/pull/534) fix: preserve semantic sufficiency across Story traceability
+
+- Author: @sintariran
+- Merged: 2026-09-13T14:42:55Z
+- Commit: `7f8ff6a4a7572bcb763a7b5c1ef232a93d29ab29`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:534:end -->
+
+<!-- vibepro-release-pr:535:start -->
+## [#535](https://github.com/Unson-LLC/vibepro/pull/535) chore: VibePro 0.2.0-beta.24を公開
+
+- Author: @sintariran
+- Merged: 2026-09-13T14:54:35Z
+- Commit: `ebaa940a5894e26ad817c4af4c61a5a9f0d99983`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:535:end -->
+
+<!-- vibepro-release-pr:538:start -->
+## [#538](https://github.com/Unson-LLC/vibepro/pull/538) fix: バグ診断の完了権限を廃止
+
+- Author: @sintariran
+- Merged: 2026-09-17T02:52:09Z
+- Commit: `8929f36d6c359f3be8cb6c6cf4d3d10ac4175397`
+
+### Change Summary
+
+バグ診断が「診断完了」を宣言する旧経路を廃止しました。PR evidence は修正範囲を記録しますが、下流影響や canonical 状態を確認済みとは扱いません。
+
+### Compatibility
+
+`vibepro diagnose bug` コマンドは廃止されます。旧バグ診断 artifact は履歴用途としてのみ残ります。
+
+### User Action
+
+`vibepro diagnose bug` を利用している自動化は、通常の issue 調査と PR evidence に移行してください。
+
+<!-- vibepro-release-pr:538:end -->
+
+<!-- vibepro-release-pr:539:start -->
+## [#539](https://github.com/Unson-LLC/vibepro/pull/539) chore: VibePro 0.2.0-beta.25を公開
+
+- Author: @sintariran
+- Merged: 2026-09-17T02:57:40Z
+- Commit: `9ce9cf32604682e52ab66074bcf7b011bc4efe19`
+
+### Change Summary
+
+バグ診断が根拠なく完了を宣言する旧経路を廃止しました。PR evidence は `fix_scope` で修正範囲を明示し、下流影響や canonical 状態の未確認を保持します。
+
+### Compatibility
+
+`vibepro diagnose bug` コマンドは廃止されます。旧バグ診断 artifact は履歴用途としてのみ残ります。
+
+### User Action
+
+`vibepro diagnose bug` を利用している自動化は、通常の issue 調査と PR evidence に移行してください。
+
+<!-- vibepro-release-pr:539:end -->
+
+<!-- vibepro-release-pr:540:start -->
+## [#540](https://github.com/Unson-LLC/vibepro/pull/540) feat: add safe worktree lifecycle commands
+
+- Author: @sintariran
+- Merged: 2026-09-17T15:17:39Z
+- Commit: `ec54b97c7ce4451ea7b1288af373ca08190f276c`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:540:end -->
+
+<!-- vibepro-release-pr:541:start -->
+## [#541](https://github.com/Unson-LLC/vibepro/pull/541) chore: VibePro 0.2.0-beta.26を公開
+
+- Author: @sintariran
+- Merged: 2026-09-17T15:24:31Z
+- Commit: `a56dddd8f548022c2a26c70af2ee02b01c7ea2e8`
+
+### Change Summary
+
+`vibepro worktree inspect`と`vibepro worktree close`を追加しました。dirty、未統合、active、未登録、入れ子、検査不能なworktreeはfail closedし、安全条件を満たす対象だけをcloseします。通常mergeとsquash mergeの両方を統合済みとして判定します。
+
+### Compatibility
+
+既存コマンドへの破壊的変更はありません。worktree lifecycleはJudgment/Gate DAGから独立した運用コマンドです。
+
+### User Action
+
+確認には`vibepro worktree inspect &lt;repo&gt; --path &lt;path&gt; --base &lt;ref&gt;`、安全に閉じるには`vibepro worktree close &lt;repo&gt; --path &lt;path&gt; --base &lt;ref&gt;`を使います。`close`は`--force`を使いません。
+
+<!-- vibepro-release-pr:541:end -->
+
+<!-- vibepro-release-pr:542:start -->
+## [#542](https://github.com/Unson-LLC/vibepro/pull/542) feat(skills): add worktree lifecycle guidance
+
+- Author: @sintariran
+- Merged: 2026-09-17T16:25:19Z
+- Commit: `c19e8e90dcd4df092e5616cbdde972fc27cccd35`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:542:end -->
+
+<!-- vibepro-release-pr:543:start -->
+## [#543](https://github.com/Unson-LLC/vibepro/pull/543) chore: VibePro 0.2.0-beta.27を公開
+
+- Author: @sintariran
+- Merged: 2026-09-17T16:31:02Z
+- Commit: `8462f7dd35cb3d46b6762e37727b299cdfd346b2`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:543:end -->
+
+<!-- vibepro-release-pr:544:start -->
+## [#544](https://github.com/Unson-LLC/vibepro/pull/544) feat: 専門判断DAGへGraphify調査と再判断ループを接続
+
+- Author: @sintariran
+- Merged: 2026-09-20T10:53:29Z
+- Commit: `8cb0588fbfb08ec7115641e5b068daac7ca44b8f`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:544:end -->
+
+<!-- vibepro-release-pr:545:start -->
+## [#545](https://github.com/Unson-LLC/vibepro/pull/545) chore(release): publish 0.2.0-beta.28
+
+- Author: @sintariran
+- Merged: 2026-09-20T11:11:54Z
+- Commit: `dea09e2ddea48693d0efb96eddb1959295767223`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:545:end -->
+
+<!-- vibepro-release-pr:546:start -->
+## [#546](https://github.com/Unson-LLC/vibepro/pull/546) docs: 現行プロダクトに合わせて公開サイトを書き直す
+
+- Author: @sintariran
+- Merged: 2026-09-21T09:40:58Z
+- Commit: `557c95ef7bc19c945f2c4e2b4fe51afa24469e25`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:546:end -->
+
+<!-- vibepro-release-pr:547:start -->
+## [#547](https://github.com/Unson-LLC/vibepro/pull/547) fix: マニュアルのMermaid図を描画する
+
+- Author: @sintariran
+- Merged: 2026-09-21T10:07:12Z
+- Commit: `f5de85d353151e041e04ba8c701908e28d51d314`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:547:end -->
+
+<!-- vibepro-release-pr:548:start -->
+## [#548](https://github.com/Unson-LLC/vibepro/pull/548) fix: マニュアルの日本語切替404を解消
+
+- Author: @sintariran
+- Merged: 2026-09-21T10:29:51Z
+- Commit: `ad14ae86c4b4a2eec2310b2557d7be22750b50db`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:548:end -->
+
+<!-- vibepro-release-pr:550:start -->
+## [#550](https://github.com/Unson-LLC/vibepro/pull/550) feat: UI変更の標準部品探索と視覚確認を促す
+
+- Author: @sintariran
+- Merged: 2026-09-21T23:54:06Z
+- Commit: `3539e0f691161d8a6343d14370bd858e6db9e695`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:550:end -->
+
+<!-- vibepro-release-pr:551:start -->
+## [#551](https://github.com/Unson-LLC/vibepro/pull/551) chore(release): publish 0.2.0-beta.29
+
+- Author: @sintariran
+- Merged: 2026-09-22T00:06:56Z
+- Commit: `02934659e8a91a23c2ee8dc0b57ad768ae7c4b45`
+
+### Change Summary
+
+- UI変更時に、既存の標準primitiveと類似画面の探索結果をSpecへ残せます。
+- 対象viewportの修正前後スクリーンショットと目視評価を完了条件として記録できます。
+- DOM寸法やテスト成功だけで視覚品質を合格扱いせず、2回のCSS調整で未解決なら構造・標準部品を再検討します。
+
+### Compatibility
+
+破壊的変更なし。既存CLI契約は変更しません。
+
+### User Action
+
+`npm install vibepro@0.2.0-beta.29` で更新してください。
+
+<!-- vibepro-release-pr:551:end -->
+
+<!-- vibepro-release-pr:558:start -->
+## [#558](https://github.com/Unson-LLC/vibepro/pull/558) docs: align judgment terminology with agreed concept model
+
+- Author: @sintariran
+- Merged: 2026-09-26T10:58:21Z
+- Commit: `51e56725171e173dabd307b977966b8fd6a2c5ac`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:558:end -->
+
+<!-- vibepro-release-pr:559:start -->
+## [#559](https://github.com/Unson-LLC/vibepro/pull/559) feat: renew managed Brainbase bindings with receipt history
+
+- Author: @sintariran
+- Merged: 2026-09-26T15:26:03Z
+- Commit: `ff23b412c82b3f10dd648475af5defff5158b075`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:559:end -->
+
+<!-- vibepro-release-pr:560:start -->
+## [#560](https://github.com/Unson-LLC/vibepro/pull/560) fix: retain cumulative judgment feedback history
+
+- Author: @sintariran
+- Merged: 2026-09-29T11:50:05Z
+- Commit: `1c910cb67ca231b3bc0577dc2c4fbdafb63db1ee`
+
+### Change Summary
+
+次回の専門判断が、直近1回だけでなく境界以後の採用履歴を参照します。
+
+### Compatibility
+
+既存の意味採用・PR権限・Gateには変更なし。
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:560:end -->
+
+<!-- vibepro-release-pr:561:start -->
+## [#561](https://github.com/Unson-LLC/vibepro/pull/561) fix: preserve judgment draft when feedback preflight fails
+
+- Author: @sintariran
+- Merged: 2026-09-29T12:01:51Z
+- Commit: `9aa874e655ad8ffca650bbf193f69f7bab42b883`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:561:end -->
+
+<!-- vibepro-release-pr:563:start -->
+## [#563](https://github.com/Unson-LLC/vibepro/pull/563) docs: connect self-model to development judgment
+
+- Author: @sintariran
+- Merged: 2026-09-30T08:10:45Z
+- Commit: `6769c82c8fe263822e24309f5d5aed04caa9f431`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:563:end -->
+
+<!-- vibepro-release-pr:567:start -->
+## [#567](https://github.com/Unson-LLC/vibepro/pull/567) TLの並列Task計画と外部実行の責務を定義する
+
+- Author: @sintariran
+- Merged: 2026-10-10T06:27:06Z
+- Commit: `88fa8911c6a0315922c675b0909874005a7c68a8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:567:end -->
+
+<!-- vibepro-release-pr:568:start -->
+## [#568](https://github.com/Unson-LLC/vibepro/pull/568) 外部実行の開発進捗をBrainbaseへ送り読み戻しを検証する
+
+- Author: @sintariran
+- Merged: 2026-10-10T06:27:53Z
+- Commit: `df3b4a49f27aed8012ca9537386ff30417a139a4`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:568:end -->
+
+<!-- vibepro-release-pr:569:start -->
+## [#569](https://github.com/Unson-LLC/vibepro/pull/569) feat: PR準備から配備引継ぎを任意出力する
+
+- Author: @sintariran
+- Merged: 2026-10-10T10:28:47Z
+- Commit: `1765ad3be8cd8ae184ce4d13d10a2d0ee46cb998`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:569:end -->
+
+<!-- vibepro-release-pr:570:start -->
+## [#570](https://github.com/Unson-LLC/vibepro/pull/570) CIをEVO-X2へ統一し、Codex進捗連携を任意で有効化
+
+- Author: @sintariran
+- Merged: 2026-10-10T20:17:19Z
+- Commit: `d472cbc547dbecd30924b577ce41b8e0ce18c033`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:570:end -->
+
+<!-- vibepro-release-pr:571:start -->
+## [#571](https://github.com/Unson-LLC/vibepro/pull/571) fix: restore PR test validation and add optional progress dispatch
+
+- Author: @sintariran
+- Merged: 2026-10-10T23:37:47Z
+- Commit: `6c2658fcbea88cfc42450c6816f13267ca019215`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:571:end -->
+
+<!-- vibepro-release-pr:572:start -->
+## [#572](https://github.com/Unson-LLC/vibepro/pull/572) fix: persist optional --reviewed-by on judgment disposition records
+
+- Author: @sintariran
+- Merged: 2026-10-14T07:54:50Z
+- Commit: `975b3986e2b9ebbc17b2e2393ea7f079c9e0b67d`
+
+### Change Summary
+
+`vibepro judgment disposition record` と、運用経路の `judgment outcome record` が disposition を書くときに、任意の `--reviewed-by &lt;actor&gt;` を読む。保存先は disposition JSON の `reviewed_by`。値なしの末尾 `--reviewed-by` はエラーにしない。
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:572:end -->
+
+<!-- vibepro-release-pr:573:start -->
+## [#573](https://github.com/Unson-LLC/vibepro/pull/573) fix: refuse non-genuine judgment runs
+
+- Author: @sintariran
+- Merged: 2026-10-14T11:44:46Z
+- Commit: `96b46104d78ede6dbf570d24c1368bd8dca16afd`
+
+### Change Summary
+
+Judgment adoption rejects input VibePro did not prepare. A draft receipt and the adoption record are HMAC-signed. The receipt binds the PR number, source head, `prepared_at`, `advisory`, and `blocking`. The adoption signature covers `reviewed_by`. Keys shorter than 32 characters are refused.
+
+### Compatibility
+
+Prepare, adopt, evaluate, and audit fail until `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` is set to at least 32 characters and a pull request number is available. `--reviewed-by` must be `human:&lt;id&gt;` or `agent:&lt;id&gt;`. Rewriting `reviewed_by` on an adoption fails audit.
+
+### User Action
+
+Store a key of at least 32 characters in Infisical (https://infisical.unson.jp) and inject `VIBEPRO_JUDGMENT_RECEIPT_HMAC_KEY` into the environment that runs prepare, adopt, evaluate, and audit. Set `VIBEPRO_JUDGMENT_PR_NUMBER` to the current pull request.
+
+<!-- vibepro-release-pr:573:end -->
+
+<!-- vibepro-release-pr:574:start -->
+## [#574](https://github.com/Unson-LLC/vibepro/pull/574) fix: judgment prepare reads Story headings
+
+- Author: @sintariran
+- Merged: 2026-10-14T12:00:15Z
+- Commit: `8df6a15207146c0c1ffebde047817d447991a5dc`
+
+### Change Summary
+
+`judgment prepare` fills judgment fields from Story headings, including the Japanese aliases. Headings inside fences and indented code are ignored. An unclosed fence, or a fence whose supposed close carries an info string, stays open and warns.
+
+### Compatibility
+
+Stories without these headings keep the uncertain draft and emit the no-section warning. An unclosed fence adds a second warning.
+
+### User Action
+
+Put the judgment frame and options under the headings above when the draft should be evaluable without editing the JSON. Close fences with a bare `` ``` `` or `~~~` line.
+
+<!-- vibepro-release-pr:574:end -->
+
+<!-- vibepro-release-pr:578:start -->
+## [#578](https://github.com/Unson-LLC/vibepro/pull/578) chore(release): publish 0.2.0-beta.30
+
+- Author: @sintariran
+- Merged: 2026-10-15T00:54:58Z
+- Commit: `34f5dea61e97730e464999da83a6ecba9f2e09b5`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:578:end -->
+
+<!-- vibepro-release-pr:575:start -->
+## [#575](https://github.com/Unson-LLC/vibepro/pull/575) fix: measure verification elapsed time and timeouts with a monotonic clock
+
+- Author: @sintariran
+- Merged: 2026-10-15T07:09:37Z
+- Commit: `c4da713bac0d6747ad2a2ec8ff6cd8bcf4ee7743`
+
+### Change Summary
+
+- 経過時間とタイムアウト判定は単調時計。開始・終了の ISO 時刻、ファイル mtime、識別子は Date のまま。
+- 注入した時計が戻ったとき、経過は 0 に丸まる境界テストを追加した。
+
+### Compatibility
+
+記録される `duration_ms` / `elapsed_ms` は単調時計の差（ミリ秒、四捨五入）になる。ISO の `started_at` / `finished_at` は従来どおり Date。
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:575:end -->
+
+<!-- vibepro-release-pr:580:start -->
+## [#580](https://github.com/Unson-LLC/vibepro/pull/580) feat: Journey scope, configurable walking-skeleton steps, and curate additions
+
+- Author: @sintariran
+- Merged: 2026-10-15T10:45:28Z
+- Commit: `4eb0b54ac35b265fb8a02d00bab2d86cd7532c69`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:580:end -->
+
+<!-- vibepro-release-pr:581:start -->
+## [#581](https://github.com/Unson-LLC/vibepro/pull/581) ci: drop id-token permission from npm publish (self-hosted, no provenance)
+
+- Author: @sintariran
+- Merged: 2026-10-15T11:06:18Z
+- Commit: `45c31901f23ba9651b1acd432ef686749e53e82c`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:581:end -->
+
+<!-- vibepro-release-pr:583:start -->
+## [#583](https://github.com/Unson-LLC/vibepro/pull/583) ci: npm-publish uses npm ci and asserts a clean checkout before pack
+
+- Author: @sintariran
+- Merged: 2026-10-15T12:10:01Z
+- Commit: `040c053f9e7e3a8ac67dcd79291b84a780e28052`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:583:end -->
+
+<!-- vibepro-release-pr:584:start -->
+## [#584](https://github.com/Unson-LLC/vibepro/pull/584) fix(release): npm readback を --prefer-online と使い捨て cache で収束させる
+
+- Author: @sintariran
+- Merged: 2026-10-15T13:28:00Z
+- Commit: `942d4f243d1e4a8ca5d4c0d8a6dec9404bbb7864`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:584:end -->
+
+<!-- vibepro-release-pr:585:start -->
+## [#585](https://github.com/Unson-LLC/vibepro/pull/585) feat: route vibepro journey derive/handoff/curate in the CLI
+
+- Author: @sintariran
+- Merged: 2026-10-15T16:05:49Z
+- Commit: `eed181924156974396644e278af87c615e4c91a8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:585:end -->
+
+<!-- vibepro-release-pr:587:start -->
+## [#587](https://github.com/Unson-LLC/vibepro/pull/587) fix(release): project version history from the documented SemVer token
+
+- Author: @sintariran
+- Merged: 2026-10-15T17:45:14Z
+- Commit: `39cc9e34e3efd19954c4084efe236dedcba9f55c`
+
+### Change Summary
+
+Version-history projection now reads the documented SemVer token in the channel row, upgrade heading, and VitePress `softwareVersion`. It advances that token when it is older than the version being released, and it refuses a newer documented token instead of treating a prerelease prefix as a match.
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:587:end -->
+
+<!-- vibepro-release-pr:588:start -->
+## [#588](https://github.com/Unson-LLC/vibepro/pull/588) fix: multi-tenant applicability false positive on weak actor+boundary co-occurrence
+
+- Author: @sintariran
+- Merged: 2026-10-17T10:14:58Z
+- Commit: `9511e8cc42e73ac5a380c0be1fedb7bf7ac28140`
+
+### Change Summary
+
+マルチテナント適用判定の弱シグナル誤検知を修正（リリースは本 PR では行わない）。
+
+### Compatibility
+
+弱い語の共起のみでマルチテナント契約を要求していた Story は、final spec write が通るようになる。強いシグナルがある Story の契約要件は変わらない。
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:588:end -->
+
+<!-- vibepro-release-pr:591:start -->
+## [#591](https://github.com/Unson-LLC/vibepro/pull/591) feat: CLI-usable reasoned not_applicable exemption for multi-tenant applicability gate
+
+- Author: @sintariran
+- Merged: 2026-10-17T12:20:37Z
+- Commit: `294c561eb242649bb0b9de252b1551150944584b`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:591:end -->
+
+<!-- vibepro-release-pr:589:start -->
+## [#589](https://github.com/Unson-LLC/vibepro/pull/589) feat(task-plan): add overlap_refs to schema 0.2.0
+
+- Author: @sintariran
+- Merged: 2026-10-17T12:43:05Z
+- Commit: `26757f1a6bcecab15f23e04b69a0f3fa0bf1ebbd`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:589:end -->
+
+<!-- vibepro-release-pr:594:start -->
+## [#594](https://github.com/Unson-LLC/vibepro/pull/594) [trial-opencode-deepseek] pr prepare: show draft spec (#439)
+
+- Author: @sintariran
+- Merged: 2026-10-17T14:30:02Z
+- Commit: `f4d6be78c1d56dff2c110d8eeb73cf2e678d0e0e`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:594:end -->
+
+<!-- vibepro-release-pr:595:start -->
+## [#595](https://github.com/Unson-LLC/vibepro/pull/595) feat: Storyからtask-planを作る分解器 (T4)
+
+- Author: @sintariran
+- Merged: 2026-10-17T14:41:14Z
+- Commit: `d6bf5fabd2e6b57cea4c209868a31ff78d4741f1`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:595:end -->
+
+<!-- vibepro-release-pr:596:start -->
+## [#596](https://github.com/Unson-LLC/vibepro/pull/596) fix(ac-parser): 受入条件見出しの括弧付き注記を認識する
+
+- Author: @sintariran
+- Merged: 2026-10-17T23:55:34Z
+- Commit: `20518e97880fe71984711b9496f846df980deae0`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:596:end -->
+
+<!-- vibepro-release-pr:592:start -->
+## [#592](https://github.com/Unson-LLC/vibepro/pull/592) ci: npm公開をTrusted Publishing（OIDC）へ切り替える
+
+- Author: @sintariran
+- Merged: 2026-10-18T00:12:35Z
+- Commit: `81f235b31029a7fac66e2c2c96b09187252e2cac`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:592:end -->
+
+<!-- vibepro-release-pr:597:start -->
+## [#597](https://github.com/Unson-LLC/vibepro/pull/597) ci: 手動npm公開のcheckoutで全履歴を取る
+
+- Author: @sintariran
+- Merged: 2026-10-18T00:32:52Z
+- Commit: `e2583517eb73bc4c3dc6263e852cf7e394b81ac3`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:597:end -->
+
+<!-- vibepro-release-pr:599:start -->
+## [#599](https://github.com/Unson-LLC/vibepro/pull/599) ci: OIDC公開ジョブからnpm環境を外し、断られた理由をログに出す
+
+- Author: @sintariran
+- Merged: 2026-10-18T01:10:39Z
+- Commit: `5511926bc960e8510bebde33f229d477e5af9b74`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:599:end -->
+
+<!-- vibepro-release-pr:601:start -->
+## [#601](https://github.com/Unson-LLC/vibepro/pull/601) ci: post-mergeの公開をnpm-publish.ymlの呼び出しにする
+
+- Author: @sintariran
+- Merged: 2026-10-18T02:39:51Z
+- Commit: `1e0a24e810fa564fbe7b75406ed8cd60b1eaa6f2`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:601:end -->
+
+<!-- vibepro-release-pr:610:start -->
+## [#610](https://github.com/Unson-LLC/vibepro/pull/610) (やり直し r2)【要件】RQ-002 値なしの --reviewed-by が次のフラグを採択者として取り込まない(vibepro、Draft PR まで)
+
+- Author: @sintariran
+- Merged: 2026-10-26T04:34:38Z
+- Commit: `053236f9cb0d381e909a8416b841d71886c7ecb6`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:610:end -->
+
+<!-- vibepro-release-pr:614:start -->
+## [#614](https://github.com/Unson-LLC/vibepro/pull/614) fix(docs): サイトの版表記を npm（package.json）の版に合わせ、ビルド時に自動でそろえる
+
+- Author: @sintariran
+- Merged: 2026-11-01T02:29:13Z
+- Commit: `b893c63ce2e8f39d3b635ea7ef911d744484aad6`
+
+### Change Summary
+
+ドキュメントサイトの npm の版の表記を、ビルド時に npm registry の dist-tags から読むようにした。
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:614:end -->
+
+<!-- vibepro-release-pr:615:start -->
+## [#615](https://github.com/Unson-LLC/vibepro/pull/615) 【worker】fix(docs): 公開履歴を npm の公開時刻と突き合わせ、beta.31〜34 の抜けを直す
+
+- Author: @sintariran
+- Merged: 2026-11-01T03:17:52Z
+- Commit: `f916e0a97b31eec68464306bfb0d6a7267b83c12`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:615:end -->
+
+<!-- vibepro-release-pr:616:start -->
+## [#616](https://github.com/Unson-LLC/vibepro/pull/616) 【worker】fix(pr): 遅れている手元の --base ブランチを origin 側に置き換える（#423）
+
+- Author: @sintariran
+- Merged: 2026-11-01T05:54:33Z
+- Commit: `fd9b8ab2ca8a265ebb5e11c090780ee59dbd88c7`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:616:end -->
+
+<!-- vibepro-release-pr:617:start -->
+## [#617](https://github.com/Unson-LLC/vibepro/pull/617) 【worker】fix(verify): 同じ kind の記録を別の command で置き換えたら警告する（#447）
+
+- Author: @sintariran
+- Merged: 2026-11-01T05:55:10Z
+- Commit: `f9fba867ba0ff134bf8295aa4f584649ab6c213b`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:617:end -->
+
+<!-- vibepro-release-pr:618:start -->
+## [#618](https://github.com/Unson-LLC/vibepro/pull/618) 【worker】fix(verify): 合格の記録で存在しない --target のパスに警告を付ける（#447）
+
+- Author: @sintariran
+- Merged: 2026-11-01T06:22:11Z
+- Commit: `4d1fda7587c9461d47699d01f47152777af2b85b`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:618:end -->
+
+<!-- vibepro-release-pr:619:start -->
+## [#619](https://github.com/Unson-LLC/vibepro/pull/619) 【worker】chore(deps-dev): vite を脆弱性の直った 6.4.5 にそろえる
+
+- Author: @sintariran
+- Merged: 2026-11-01T09:20:21Z
+- Commit: `b568a90a28fca7b16475b70b902f5a8d8ef5855c`
+
+### Change Summary
+
+ドキュメントのビルドに使う vite を、脆弱性が直った 6.4.5 にそろえました。
+
+### Compatibility
+
+変わりません（開発用の依存だけです）。
+
+### User Action
+
+不要
+
+<!-- vibepro-release-pr:619:end -->
+
+<!-- vibepro-release-pr:577:start -->
+## [#577](https://github.com/Unson-LLC/vibepro/pull/577) test: find Brainbase producer modules in separate directories
+
+- Author: @sintariran
+- Merged: 2026-11-03T09:19:33Z
+- Commit: `227b36dfe79f163260e0b9e5cb0a3f4de8b21fc8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:577:end -->
+
+<!-- vibepro-release-pr:621:start -->
+## [#621](https://github.com/Unson-LLC/vibepro/pull/621) UNS-523: CI runner backup with self-hosted defaults
+
+- Author: @sintariran
+- Merged: 2026-11-08T15:14:05Z
+- Commit: `9b0c089249978e0be63932d117c8f4fb30b3e3a8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:621:end -->
+
+<!-- vibepro-release-pr:623:start -->
+## [#623](https://github.com/Unson-LLC/vibepro/pull/623) ci: 検証スキルと verify-skill の結果を付ける仕組みを入れる
+
+- Author: @sintariran
+- Merged: 2026-11-15T23:39:19Z
+- Commit: `6f19a3c8a1edaeb07b86996ab3e9e7dc40025f50`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:623:end -->

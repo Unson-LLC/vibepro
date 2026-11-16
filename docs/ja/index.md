@@ -3,36 +3,54 @@ layout: home
 
 hero:
   name: VibePro
-  text: プロダクトジャーニーを可視化する
-  tagline: AIエージェントの変更を、証拠付きで安全に出荷できるPRへ変えるリポジトリローカル制御基盤。人間が入口と出口を握ります。
+  text: 変更の目的を、PRレビューまで届ける
+  tagline: AIと「何を変えるべきか」を調べて判断し、その理由をStory・Spec・実装・PRレビューまでつなぐCLI。
   image:
     src: /assets/vibepro-header.png
     alt: VibePro
   actions:
     - theme: brand
-      text: VibeProを理解する
+      text: ひとつの変更で試す
+      link: /ja/guide/getting-started
+    - theme: alt
+      text: VibeProとは
       link: /ja/guide/what-is-vibepro
     - theme: alt
-      text: 制御ループを見る
-      link: /ja/guide/control-loop
-    - theme: alt
-      text: Betaを導入する
-      link: /ja/guide/getting-started
+      text: CLIリファレンス
+      link: /ja/reference/cli
 
 features:
-  - title: 意図を出荷契約に変える
-    details: Story、Architecture、Specで、目的、境界、受け入れ条件、rollback前提をコードより先に確認できる形へ固定します。
-  - title: リスクに応じて証跡を広げる
-    details: 変更が触る面に合わせて、検証、独立レビュー、adjudication、release guardを追加します。
-  - title: 出荷後まで監査できる
-    details: PR準備、CI再取込、merge実行、canonical audit、ROIレポートを現在のcommitに結びつけ、チャット履歴だけに残しません。
+  - title: 何を変えるべきかを調べる
+    details: ホストAIと問いを立て、コード構造やソースを調べ、証拠に合わせて選択肢と推薦を見直します。未確認は未確認のまま残します。
+  - title: 振る舞いを証跡につなぐ
+    details: Specで具体的な振る舞いを定義し、その実装コードとテストへの参照をつなぎます。
+  - title: PRレビューを読みやすくする
+    details: 検証とレビューの記録を変更と一緒に残し、実装がStoryとSpecにどうつながるかをPR本文へ要約します。
 ---
 
-## 役割から読む
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
 
-- **実装者:** [インストールと初回実行](/ja/guide/getting-started) → [制御ループ](/ja/guide/control-loop) → [Managed Execution](/ja/guide/managed-execution)
-- **Reviewer / adjudicator:** [エージェントレビュー](/ja/guide/agent-review) → [安全モデル](/ja/guide/safety-model)
-- **Release operator:** [リリースと監査](/ja/guide/release-and-audit) → [CLIリファレンス](/ja/reference/cli)
-- **Engineering manager:** [VibeProとは](/ja/guide/what-is-vibepro) → [機能マップ](/ja/guide/feature-map) → [リリースと監査](/ja/guide/release-and-audit)
+現在のバージョン: <code>{{ site.themeConfig.npmLatest }}</code>
 
-このマニュアルはhosting platformに依存しません。Cloudflare Pagesは現在の公開先にすぎず、運用リファレンスに分離しています。
+## 作るものを決める前から、レビューまで
+
+依頼を受けても、すぐに新機能を足すとは限りません。[シニアエンジニア判断](/ja/guide/senior-engineering-judgment)では、`judgment investigate` を使い、ホストAIが目的・範囲から問いを立て、既存のGraphify成果物やソースを読み、追加の証拠で問題設定・選択肢・推薦を見直せます。その候補を明示的な採択手順へ渡し、何を作るか、減らすか、先に確かめるかを検討します。すべての変更にこの調査を必須とするものではありません。
+
+## PRには、差分だけでなく変更の理由も必要です
+
+AIコーディングエージェントは、きれいな差分を作りながら、ユーザーが求めていた問題とは別の問題を解くことがあります。VibeProは、レビュアーが確認したい「なぜこの変更をするのか」「合意した振る舞いは何か」「どこに実装され、何を確認したか」というつながりを残します。
+
+たとえば「CSV出力では現在の絞り込み条件を維持する」というStoryがあるとします。Specでその振る舞いを具体化し、実装コードとテストを参照します。検証記録には実際に実行したテストを残し、PR要約でそれらをレビューの場へ戻します。
+
+VibeProは、実装とテストへの参照が構造上存在するかを確認します。意味の解釈や選択肢の比較はホストAIも担いますが、CLIはモデルを自律的に呼び出さず、判断の正しさを保証しません。参照先が存在し、テストが通っていても、ユーザーの課題を外している可能性があります。人間による確認と採択の責任は残ります。
+
+## 意図的に残している境界
+
+StoryとSpecには、更新して保つためのコストがあります。これはVibeProが確認できる機械可読な契約であり、README、Issue、プロダクト議論、通常のコードレビューを置き換えるものではありません。READMEやIssueだけで代用する機能ではなく、既存のPR説明で十分なら追加負担の方が大きくなる場合もあります。変更の意図が変わったときに、レビューに必要な範囲で記録も更新してください。
+
+以前の広範なGate DAGと、マージをブロックするライフサイクル機構は、最小コアから廃止されています。現在の判断DAGは、調査・再判断と次の行動を支える助言です。意図の逸脱を自動で認定したり、安全性の認定、PR承認、マージの権限を持ったりするものではありません。
+
+[導入ガイド](/ja/guide/getting-started)では、最小限の実用的な流れを説明します。[VibeProとは](/ja/guide/what-is-vibepro)では、記録の役割と境界を詳しく説明します。

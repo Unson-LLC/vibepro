@@ -48,3 +48,16 @@
 - [ペルソナ](../product/03_personas.md)
 - [API設計](./03_api_design.md)
 - [セキュリティ設計](./08_security_design.md)
+
+## 7. テナント識別と越境拒否（該当する場合）
+
+| 項目 | 内容 |
+|---|---|
+| canonical tenant key |  |
+| 解決元 |  |
+| 解決点 |  |
+| key欠落時 | deny |
+| key曖昧時 | deny |
+| cross-tenant候補 | deny and audit |
+
+クライアント入力だけをtenant識別の正本にしない。認証済み主体から解決したkeyと要求先が一致することをサーバー側で確認する。

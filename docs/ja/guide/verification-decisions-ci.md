@@ -14,7 +14,7 @@ vibepro verify record . \
   --observed "exit_code=0"
 ```
 
-`--kind` は必須で、`unit`、`integration`、`e2e`、`typecheck`、`build` を受け付けます。`--status` は `pass`、`fail`、`needs_setup` です。Gateが結果を利用する場合はdurable status artifactとstructured observationを残します。
+`--kind` は必須で、`unit`、`integration`、`e2e`、`typecheck`、`build` を受け付けます。`--status` は `pass`、`fail`、`needs_setup` です。`pass` は実際の成功を確認してから記録してください。レビューする人が根拠を確認できるよう、結果ファイルと観測した内容を残します。
 
 残リスクはfailをpassへ変換せず、帰属可能なdecisionとして記録します。
 
@@ -30,8 +30,8 @@ PRのCI完了後:
 
 ```bash
 vibepro verify import-ci . --id <story-id> --pr <number>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
+vibepro pr prepare . --story-id <story-id> --base origin/main --json
+vibepro pr create . --story-id <story-id> --base origin/main --repo <owner/name>
 ```
 
 CIはreview対象commitに結びつき、importに成功した場合にだけ証跡です。認証失敗、check欠落、mapping不明は明示したままにし、空の成功結果へ変換しません。

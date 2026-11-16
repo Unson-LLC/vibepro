@@ -3,7 +3,14 @@ import { mkdir, readdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { resolvePrArtifactFile } from './artifact-routing.js';
+import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
+import { extractMarkdownAcceptanceCriteria } from './markdown-acceptance-criteria.js';
+import {
+  assessSemanticContract,
+  createSemanticUnavailableAssessment,
+  globToRegExp,
+  summarizeSemanticOutcomeCoverage
+} from './spec-validator.js';
 import { toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -33,6 +40,9 @@ export function buildTraceability(existing, {
   acceptanceCriteria = null,
   scenarioClauses = null,
   scenarioLineage = null,
+  acceptedSpecLineage = undefined,
+  semanticAssessment = undefined,
+  outcomeCoverage = undefined,
   now = null
 }) {
   const timestamp = now ?? new Date().toISOString();
@@ -66,6 +76,17 @@ export function buildTraceability(existing, {
     : existing?.scenario_lineage && typeof existing.scenario_lineage === 'object'
       ? existing.scenario_lineage
       : null;
+  const semanticClauses = [...acceptance_criteria, ...scenario_clauses];
+  const semanticClausesWereSupplied = Array.isArray(acceptanceCriteria) || Array.isArray(scenarioClauses);
+  const semantic_assessment = semanticAssessment === undefined
+    ? semanticClausesWereSupplied
+      ? deriveSemanticAssessmentFromClauses(semanticClauses)
+      : existing?.semantic_assessment ?? deriveSemanticAssessmentFromClauses(semanticClauses)
+    : semanticAssessment;
+  const outcome_coverage = outcomeCoverage === undefined
+    ? semantic_assessment?.outcome_coverage
+      ?? summarizeSemanticOutcomeCoverage(semanticAssessmentsFromClauses(semanticClauses))
+    : outcomeCoverage;
   return {
     schema_version: TRACEABILITY_SCHEMA_VERSION,
     story_id: storyId,
@@ -76,15 +97,43 @@ export function buildTraceability(existing, {
     acceptance_criteria,
     scenario_clauses,
     scenario_lineage,
-    coverage_summary: summarizeTraceabilityClauseMap({ acceptance_criteria, scenario_clauses, scenario_lineage }),
+    accepted_spec_lineage: acceptedSpecLineage === undefined
+      ? existing?.accepted_spec_lineage ?? null
+      : acceptedSpecLineage,
+    semantic_assessment,
+    semantic_assessments: semantic_assessment?.clause_assessments
+      ?? semanticAssessmentsFromClauses(semanticClauses),
+    outcome_coverage,
+    coverage_summary: summarizeTraceabilityClauseMap({
+      acceptance_criteria,
+      scenario_clauses,
+      scenario_lineage,
+      semantic_assessment,
+      outcome_coverage
+    }),
     created_at: existing?.created_at ?? timestamp,
     updated_at: timestamp
   };
 }
 
-export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scenario_clauses = [], scenario_lineage = null } = {}) {
+export function summarizeTraceabilityClauseMap({
+  acceptance_criteria = [],
+  scenario_clauses = [],
+  scenario_lineage = null,
+  semantic_assessment = null,
+  outcome_coverage = null
+} = {}) {
   const clauses = [...acceptance_criteria, ...scenario_clauses];
   const countByStatus = (status) => clauses.filter((item) => item.status === status).length;
+  const semanticAssessments = semanticAssessmentsFromClauses(clauses);
+  const projectedSemanticAssessment = semantic_assessment ?? (
+    semanticAssessments.length > 0
+      ? deriveSemanticAssessmentFromClauses(clauses)
+      : createSemanticUnavailableAssessment()
+  );
+  const semanticOutcomeCoverage = outcome_coverage
+    ?? projectedSemanticAssessment?.outcome_coverage
+    ?? summarizeSemanticOutcomeCoverage(semanticAssessments);
   return {
     clause_count: clauses.length,
     acceptance_criteria_count: acceptance_criteria.length,
@@ -92,6 +141,9 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
     mapped_count: countByStatus('mapped'),
     weakly_mapped_count: countByStatus('weakly_mapped'),
     unmapped_count: countByStatus('unmapped'),
+    semantic_assessment: projectedSemanticAssessment,
+    semantic_assessments: semanticAssessments,
+    outcome_coverage: semanticOutcomeCoverage,
     scenario_lineage: scenario_lineage && typeof scenario_lineage === 'object'
       ? {
           status: scenario_lineage.status ?? 'mapped',
@@ -111,6 +163,77 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
         source_text: item.source_text,
         weak_mapping_reason: item.weak_mapping_reason ?? null
       }))
+  };
+}
+
+function semanticAssessmentsFromClauses(clauses = []) {
+  const entries = Array.isArray(clauses) ? clauses : [];
+  return entries.flatMap((item) => {
+    if (Array.isArray(item?.semantic_assessments)) return item.semantic_assessments;
+    return item?.semantic_assessment ? [item.semantic_assessment] : [];
+  });
+}
+
+function deriveSemanticAssessmentFromClauses(clauses = []) {
+  const clauseAssessments = semanticAssessmentsFromClauses(clauses);
+  if (clauseAssessments.length === 0) return createSemanticUnavailableAssessment();
+
+  const answerStatuses = new Set(['resolved', 'ambiguous', 'no_answer', 'conflicting', 'stale', 'unavailable']);
+  const statuses = clauseAssessments
+    .map((assessment) => assessment.answer_status)
+    .filter((status) => answerStatuses.has(status));
+  const uniqueStatuses = [...new Set(statuses)];
+  const answerStatus = uniqueStatuses.length === 0
+    ? 'unavailable'
+    : uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'mixed';
+  const answerResolution = statuses.length === 0
+    ? 'unavailable'
+    : statuses.every((status) => status === 'resolved') ? 'resolved' : 'unresolved';
+  const status = clauseAssessments.some((assessment) => assessment.status === 'invalid')
+    ? 'invalid'
+    : 'available';
+  const outcomeCoverage = summarizeSemanticOutcomeCoverage(clauseAssessments);
+  const positiveOnly = clauseAssessments.every((assessment) => assessment.case_kind === 'positive');
+  const resolvedCount = clauseAssessments.filter((assessment) => (
+    assessment.status === 'resolved' && assessment.answer_status === 'resolved'
+  )).length;
+  const warnings = clauseAssessments.flatMap((assessment) => assessment.warnings ?? []);
+  if (status === 'available' && positiveOnly && resolvedCount > 0) {
+    warnings.push({
+      code: 'semantic_counterexample_missing',
+      severity: 'warning',
+      path: 'semantic_contract.strongest_counterexample',
+      message: 'happy-path semantic resolution has no declared counterexample'
+    });
+  }
+  return {
+    status,
+    semantic_contract_status: status,
+    semantic_contract_present: true,
+    answer_status: answerStatus,
+    answer_resolution: status === 'invalid' ? 'unavailable' : answerResolution,
+    automatic_continuation: status === 'available'
+      && answerResolution === 'resolved'
+      && clauseAssessments.every((assessment) => (
+        ['internal_output', 'downstream_outcome', 'canonical_readback'].includes(assessment.outcome_kind)
+      )),
+    unresolved_behavior: { action: 'ask_once', max_questions: 1, automatic_continuation: false },
+    counterexample: {
+      status: clauseAssessments.some((assessment) => (
+        assessment.case_kind && assessment.case_kind !== 'positive' && assessment.case_kind !== 'unknown'
+      )) ? 'declared_unverified' : 'unavailable',
+      declared: clauseAssessments.some((assessment) => (
+        assessment.case_kind && assessment.case_kind !== 'positive' && assessment.case_kind !== 'unknown'
+      )),
+      happy_path_resolutions: clauseAssessments
+        .filter((assessment) => assessment.status === 'resolved' && assessment.answer_status === 'resolved')
+        .map((assessment) => assessment.clause_id)
+    },
+    clause_assessments: clauseAssessments,
+    outcome_coverage: outcomeCoverage,
+    reason_codes: [...new Set(clauseAssessments.flatMap((assessment) => assessment.reason_codes ?? []))],
+    errors: clauseAssessments.flatMap((assessment) => assessment.errors ?? []),
+    warnings
   };
 }
 
@@ -176,6 +299,359 @@ export function buildTraceabilityClauseMap({
   };
 }
 
+/**
+ * Resolve accepted-spec lineage against immutable blobs in the target HEAD.
+ *
+ * Returning null is intentionally different from an invalid result: null means
+ * no accepted spec exists and lets callers retain the legacy heuristic map.
+ * Once a canonical spec exists, broken lineage fails closed and must not fall
+ * back to changed-file name matching.
+ */
+export async function buildAcceptedSpecClauseMap(repoRoot, {
+  storyId,
+  storyDocPath,
+  verification = { recorded: false, commands: [] },
+  verificationTrustStatus = 'trusted',
+  headRef = 'HEAD'
+} = {}) {
+  const root = path.resolve(repoRoot);
+  const [headSha, headConfigBlob] = await Promise.all([
+    gitOutput(root, ['rev-parse', headRef]),
+    gitBlob(root, headRef, '.vibepro/config.json')
+  ]);
+  let headConfig = {};
+  try {
+    headConfig = headConfigBlob ? JSON.parse(headConfigBlob.content) : {};
+  } catch {
+    return emptyAcceptedSpecMap({
+      headSha,
+      specPath: null,
+      specBlobOid: null,
+      reasonCodes: ['artifact_routing_config_invalid_at_head']
+    });
+  }
+  const routeOptions = {
+    storyId,
+    configOverride: headConfig,
+    validateStoryMirror: false
+  };
+  const [headSpecRoute, headStoryRoute] = await Promise.all([
+    resolveArtifactRoute(root, 'accepted_spec', routeOptions),
+    resolveArtifactRoute(root, 'story', routeOptions)
+  ]);
+  const absoluteSpecPath = headSpecRoute.canonical.absolute_path;
+  const specPath = headSpecRoute.canonical.relative_path;
+  const authoritativeStoryPath = headStoryRoute.canonical.relative_path;
+  const [headSpec, worktreeSpec] = await Promise.all([
+    gitBlob(root, headRef, specPath),
+    readFile(absoluteSpecPath, 'utf8').catch((error) => error.code === 'ENOENT' ? null : Promise.reject(error))
+  ]);
+  if (!headSpec && worktreeSpec === null) return null;
+
+  const globalReasons = [];
+  const failures = [];
+  if (!headSpec) globalReasons.push('accepted_spec_not_in_head');
+  if (worktreeSpec === null) globalReasons.push('accepted_spec_missing_from_worktree');
+  if (headSpec && worktreeSpec !== headSpec.content) globalReasons.push('accepted_spec_diverged_from_head');
+
+  let spec = null;
+  try {
+    spec = headSpec ? JSON.parse(headSpec.content) : JSON.parse(worktreeSpec);
+  } catch {
+    globalReasons.push('accepted_spec_invalid_json');
+  }
+  if (!spec || typeof spec !== 'object') {
+    return emptyAcceptedSpecMap({ headSha, specPath, specBlobOid: headSpec?.oid ?? null, reasonCodes: globalReasons });
+  }
+  if (spec.story_id !== storyId) globalReasons.push('accepted_spec_story_id_mismatch');
+  const headStory = await gitBlob(root, headRef, authoritativeStoryPath);
+  if (!headStory) globalReasons.push('story_not_in_head');
+  const criteria = headStory ? extractMarkdownAcceptanceCriteria(headStory.content) : [];
+  const criteriaById = new Map(criteria.map((criterion) => [criterion.id, criterion]));
+  const items = criteria.map((criterion) => ({
+    id: criterion.id,
+    type: 'acceptance_criterion',
+    source_text: criterion.text,
+    text: criterion.text,
+    source_line: criterion.source_line ?? null,
+    status: 'unmapped',
+    story_scenario_ids: [],
+    scenario_lineage_status: 'valid',
+    unknown_story_scenario_ids: [],
+    mapped_files: [],
+    mapped_tests: [],
+    mapped_test_provenance: [],
+    mapped_evidence: [],
+    mapped_review_findings: [],
+    spec_clause_ids: [],
+    mapping_source: 'accepted_spec',
+    lineage_status: 'unresolved',
+    verification_status: verificationStatusFor([], verification, verificationTrustStatus),
+    semantic_assessment: null,
+    semantic_assessments: [],
+    reason_codes: [],
+    weak_mapping_reason: null
+  }));
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+  const blobCache = new Map();
+  const verifiedCounterexampleIndexes = new Set();
+
+  for (const [clauseIndex, clause] of (spec.clauses ?? []).entries()) {
+    const clauseId = typeof clause?.id === 'string' ? clause.id : `clause:${clauseIndex + 1}`;
+    const clauseReasons = [];
+    const refs = Array.isArray(clause?.origin?.story_refs) ? clause.origin.story_refs : [];
+    const referencedAcIds = [];
+    for (const ref of refs.filter((entry) => entry?.kind === 'acceptance_criteria')) {
+      const resolvedId = stableStoryRefId(ref, criteriaById);
+      if (!resolvedId) {
+        clauseReasons.push(ref?.ac_id || ref?.text_snippet ? 'unknown_story_ac' : 'unstable_story_ref');
+      } else {
+        referencedAcIds.push(resolvedId);
+      }
+    }
+    if (referencedAcIds.length === 0 && !clauseReasons.includes('unknown_story_ac')) {
+      clauseReasons.push('story_ref_missing');
+    }
+
+    const testRefs = Array.isArray(clause?.origin?.test_refs) ? clause.origin.test_refs : [];
+    const testProvenance = [];
+    if (testRefs.length === 0) clauseReasons.push('test_ref_missing');
+    for (const ref of testRefs) {
+      const normalizedPath = normalizeGitPath(ref?.file);
+      if (!normalizedPath) {
+        clauseReasons.push('test_file_missing');
+        continue;
+      }
+      const blob = await cachedGitBlob(blobCache, root, headRef, normalizedPath);
+      if (!blob) {
+        clauseReasons.push('test_file_missing');
+        continue;
+      }
+      if (typeof ref.case !== 'string' || !nodeTestCaseExists(blob.content, ref.case)) {
+        clauseReasons.push('test_case_missing');
+        continue;
+      }
+      testProvenance.push({
+        file: normalizedPath,
+        case: ref.case,
+        head_sha: headSha || null,
+        blob_oid: blob.oid
+      });
+    }
+    if (clause?.case_kind && clause.case_kind !== 'positive'
+        && testRefs.length > 0 && testProvenance.length === testRefs.length) {
+      verifiedCounterexampleIndexes.add(clauseIndex);
+    }
+
+    const patterns = Array.isArray(clause?.verifiable_by?.test_pattern)
+      ? clause.verifiable_by.test_pattern
+      : [];
+    if (clause?.type === 'invariant' && patterns.length === 0) {
+      clauseReasons.push('test_pattern_missing');
+    }
+    for (const pattern of patterns) {
+      if (!await testPatternMatchesHead(root, headRef, pattern, blobCache)) {
+        clauseReasons.push('test_pattern_failed');
+      }
+    }
+
+    const uniqueReasons = [...new Set(clauseReasons)];
+    if (uniqueReasons.length > 0) failures.push({ clause_id: clauseId, reason_codes: uniqueReasons });
+    for (const acId of referencedAcIds) {
+      const item = itemsById.get(acId);
+      if (!item) continue;
+      item.spec_clause_ids.push(clauseId);
+      item.mapped_test_provenance.push(...testProvenance);
+      item.mapped_tests.push(...testProvenance.map((entry) => entry.file));
+      item.mapped_files.push(...testProvenance.map((entry) => entry.file));
+      item.reason_codes.push(...uniqueReasons);
+    }
+  }
+
+  const semanticAssessment = assessSemanticContract(spec, { verifiedCounterexampleIndexes });
+  if (semanticAssessment.status === 'invalid') {
+    globalReasons.push('semantic_contract_invalid');
+    failures.push({
+      clause_id: 'semantic_contract',
+      reason_codes: [...new Set(semanticAssessment.reason_codes)]
+    });
+  }
+
+  const semanticByClauseId = new Map(
+    semanticAssessment.clause_assessments.map((assessment) => [assessment.clause_id, assessment])
+  );
+
+  for (const item of items) {
+    item.spec_clause_ids = [...new Set(item.spec_clause_ids)];
+    item.mapped_tests = [...new Set(item.mapped_tests)];
+    item.mapped_files = [...new Set(item.mapped_files)];
+    item.reason_codes = [...new Set([...globalReasons, ...item.reason_codes])];
+    if (item.spec_clause_ids.length === 0) item.reason_codes.push('accepted_spec_clause_missing');
+    const lineageReasons = item.reason_codes.filter((code) => code !== 'verification_evidence_untrusted');
+    item.lineage_status = lineageReasons.length === 0 ? 'resolved' : 'invalid';
+    item.status = item.lineage_status === 'resolved' ? 'mapped' : 'unmapped';
+    item.verification_status = verificationStatusFor(item.mapped_test_provenance, verification, verificationTrustStatus);
+    if (item.verification_status === 'untrusted') item.reason_codes.push('verification_evidence_untrusted');
+    const semanticEntries = item.spec_clause_ids
+      .map((clauseId) => semanticByClauseId.get(clauseId))
+      .filter(Boolean)
+      .map((assessment) => ({ ...assessment, verification_status: item.verification_status }));
+    item.semantic_assessments = semanticEntries;
+    item.semantic_assessment = semanticEntries.length === 1 ? semanticEntries[0] : null;
+    item.reason_codes = [...new Set(item.reason_codes)];
+  }
+
+  const projectedClauseAssessments = semanticAssessment.clause_assessments.map((assessment) => {
+    const item = items.find((candidate) => candidate.spec_clause_ids.includes(assessment.clause_id));
+    return {
+      ...assessment,
+      verification_status: item?.verification_status ?? 'unknown'
+    };
+  });
+  const projectedSemanticAssessment = {
+    ...semanticAssessment,
+    clause_assessments: projectedClauseAssessments,
+    outcome_coverage: summarizeSemanticOutcomeCoverage(projectedClauseAssessments)
+  };
+
+  const reasonCodes = [...new Set([...globalReasons, ...failures.flatMap((failure) => failure.reason_codes)])];
+  return {
+    acceptance_criteria: items,
+    scenario_clauses: [],
+    scenario_lineage: null,
+    semantic_assessment: projectedSemanticAssessment,
+    semantic_assessments: projectedClauseAssessments,
+    outcome_coverage: projectedSemanticAssessment.outcome_coverage,
+    accepted_spec_lineage: {
+      status: reasonCodes.length === 0 && items.every((item) => item.lineage_status === 'resolved') ? 'resolved' : 'invalid',
+      head_sha: headSha || null,
+      spec_path: specPath,
+      spec_blob_oid: headSpec?.oid ?? null,
+      story_path: authoritativeStoryPath,
+      story_blob_oid: headStory?.oid ?? null,
+      mapping_source: 'accepted_spec',
+      clause_count: Array.isArray(spec.clauses) ? spec.clauses.length : 0,
+      resolved_clause_count: items.filter((item) => item.lineage_status === 'resolved').length,
+      reason_codes: reasonCodes,
+      failures
+    }
+  };
+}
+
+function emptyAcceptedSpecMap({ headSha, specPath, specBlobOid, reasonCodes }) {
+  const semanticAssessment = createSemanticUnavailableAssessment(reasonCodes);
+  return {
+    acceptance_criteria: [],
+    scenario_clauses: [],
+    scenario_lineage: null,
+    semantic_assessment: semanticAssessment,
+    semantic_assessments: [],
+    outcome_coverage: semanticAssessment.outcome_coverage,
+    accepted_spec_lineage: {
+      status: 'invalid',
+      head_sha: headSha || null,
+      spec_path: specPath,
+      spec_blob_oid: specBlobOid,
+      story_path: null,
+      story_blob_oid: null,
+      mapping_source: 'accepted_spec',
+      clause_count: 0,
+      resolved_clause_count: 0,
+      reason_codes: [...new Set(reasonCodes)],
+      failures: []
+    }
+  };
+}
+
+function stableStoryRefId(ref, criteriaById) {
+  if (typeof ref?.ac_id === 'string' && criteriaById.has(ref.ac_id)) return ref.ac_id;
+  if (typeof ref?.text_snippet === 'string' && criteriaById.has(ref.text_snippet)) return ref.text_snippet;
+  return null;
+}
+
+function normalizeGitPath(value) {
+  if (typeof value !== 'string' || !value.trim() || path.isAbsolute(value)) return null;
+  const normalized = value.replaceAll('\\', '/').replace(/^\.\//, '');
+  if (normalized.split('/').includes('..')) return null;
+  return normalized;
+}
+
+function nodeTestCaseExists(content, caseName) {
+  if (typeof caseName !== 'string' || !caseName) return false;
+  const escaped = caseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const exactCase = `(['\"\\x60])${escaped}\\1\\s*[,)]`;
+  const directCall = new RegExp(`\\b(?:test|it)\\s*\\(\\s*${exactCase}`);
+  const parameterizedCall = new RegExp(
+    `\\b(?:test|it)\\s*\\.\\s*each\\s*\\([^)]*\\)\\s*\\(\\s*${exactCase}`
+  );
+  return directCall.test(content) || parameterizedCall.test(content);
+}
+
+async function testPatternMatchesHead(root, headRef, pattern, blobCache) {
+  if (!pattern || typeof pattern.file_glob !== 'string') return false;
+  const files = await gitFilesMatching(root, headRef, pattern.file_glob);
+  if (files.length === 0) return false;
+  const blobs = (await Promise.all(
+    files.map((file) => cachedGitBlob(blobCache, root, headRef, file))
+  )).filter(Boolean);
+  if (blobs.length === 0) return false;
+
+  const contains = (needle) => blobs.some((blob) => blob.content.includes(needle));
+  if (typeof pattern.must_contain === 'string' && !contains(pattern.must_contain)) return false;
+  if (typeof pattern.must_not_contain === 'string' && contains(pattern.must_not_contain)) return false;
+  if (typeof pattern.must_cover === 'string' && !contains(pattern.must_cover)) return false;
+  return true;
+}
+
+async function gitFilesMatching(root, headRef, fileGlob) {
+  const normalized = normalizeGitPath(fileGlob);
+  if (!normalized) return [];
+  if (!/[?*{}]/.test(normalized)) return [normalized];
+  const output = await gitOutput(root, ['ls-tree', '-r', '--name-only', headRef]);
+  const regex = globToRegExp(normalized);
+  return output.split('\n').filter((file) => regex.test(file));
+}
+
+async function cachedGitBlob(cache, root, headRef, file) {
+  if (!cache.has(file)) cache.set(file, await gitBlob(root, headRef, file));
+  return cache.get(file);
+}
+
+async function gitBlob(root, headRef, file) {
+  try {
+    const [{ stdout: content }, { stdout: oid }] = await Promise.all([
+      execFileAsync('git', ['show', `${headRef}:${file}`], { cwd: root, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }),
+      execFileAsync('git', ['rev-parse', `${headRef}:${file}`], { cwd: root, encoding: 'utf8' })
+    ]);
+    return { content, oid: oid.trim() };
+  } catch {
+    return null;
+  }
+}
+
+async function gitOutput(root, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+    return stdout.trim();
+  } catch {
+    return '';
+  }
+}
+
+function verificationStatusFor(testRefs, verification, trustStatus) {
+  if (trustStatus !== 'trusted') return verification?.recorded ? 'untrusted' : 'unverified';
+  if (!verification?.recorded) return 'unverified';
+  const commands = verification.commands ?? [];
+  const passed = commands.some((command) => {
+    if (command.status !== 'pass' || command.trust_status !== 'trusted') return false;
+    const targets = command.observation?.targets ?? [];
+    const scenarios = command.observation?.scenarios ?? [];
+    if (testRefs.length === 0) return false;
+    return testRefs.some((ref) => targets.includes(ref.file) && (scenarios.length === 0 || scenarios.includes(ref.case)));
+  });
+  return passed ? 'verified' : 'unverified';
+}
+
 function extractStoryScenarioIds(storyText) {
   return [...new Set(String(storyText ?? '').match(/\b[A-Z0-9]+-STORY-[A-Z0-9-]+\b/g) ?? [])];
 }
@@ -196,6 +672,7 @@ function buildClauseTraceabilityItem({
   const matchedTests = tests.filter((file) => (
     clauseMatchesPathOrText({ id, text, value: file.path ?? file })
     || testContentExplicitlyTargetsClause({ id, storyId, file })
+    || testContentMentionsBacktickedIdentifier({ text, file })
   ));
   const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
     evidenceTargetsClause({ id, text, item })
@@ -226,6 +703,8 @@ function buildClauseTraceabilityItem({
     id,
     type,
     source_text: text,
+    // Backwards-compatible alias retained for pr-prepare.json consumers.
+    text,
     source_line,
     status,
     story_scenario_ids: storyScenarioIds,
@@ -272,6 +751,32 @@ function testContentExplicitlyTargetsClause({ id, storyId, file }) {
     && new RegExp(`(^|[^a-z0-9])${escapedId}(?=$|[^a-z0-9])`, 'i').test(file.content);
 }
 
+// issue #436 item 5: AC↔test mapping was filename-heuristic-only
+// (clauseMatchesPathOrText against the test's path) plus a story-qualified
+// reference syntax (testContentExplicitlyTargetsClause). An AC phrased
+// around a concrete identifier (e.g. "`fitSlackOverview` は...しない") that a
+// test actually exercises by calling that identifier — without repeating the
+// AC id/story id anywhere, and without the identifier appearing in the test
+// file's own path — showed up as [未対応] even though a real test covered
+// it. Extend matching (deliberately narrow: no design change to draft-spec
+// handling) to also count a test as mapped when a backtick-quoted
+// identifier from the AC/clause text literally appears in the test's
+// content.
+function extractBacktickedIdentifiers(text) {
+  const matches = String(text ?? '').match(/`([A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*)`/g) ?? [];
+  return [...new Set(matches.map((match) => match.slice(1, -1)))].filter((identifier) => identifier.length >= 3);
+}
+
+function testContentMentionsBacktickedIdentifier({ text, file }) {
+  if (!file || typeof file !== 'object' || typeof file.content !== 'string') return false;
+  const identifiers = extractBacktickedIdentifiers(text);
+  if (identifiers.length === 0) return false;
+  return identifiers.some((identifier) => {
+    const escaped = identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^A-Za-z0-9_$])${escaped}(?=$|[^A-Za-z0-9_$])`).test(file.content);
+  });
+}
+
 function isStrongClauseEvidence(item) {
   if (!item || item.type === 'pr_artifact') return false;
   const bindingStatus = item.binding_status ?? item.binding?.status ?? null;
@@ -314,27 +819,7 @@ function isClauseBindingTarget(value) {
 }
 
 export function extractAcceptanceCriteria(storyText) {
-  const lines = String(storyText ?? '').split(/\r?\n/);
-  const criteria = [];
-  let inSection = false;
-  for (const [index, line] of lines.entries()) {
-    if (/^#{2,}\s*(Acceptance Criteria|受け入れ基準|受け入れ条件)\s*$/i.test(line.trim())) {
-      inSection = true;
-      continue;
-    }
-    if (inSection && /^#{1,}\s+/.test(line)) break;
-    if (!inSection) continue;
-    const match = line.match(/^\s*-\s*(?:\[[ xX]\]\s*)?(.+?)\s*$/);
-    if (!match) continue;
-    const text = match[1].trim();
-    if (!text) continue;
-    criteria.push({
-      id: `AC-${criteria.length + 1}`,
-      text,
-      source_line: index + 1
-    });
-  }
-  return criteria;
+  return extractMarkdownAcceptanceCriteria(storyText);
 }
 
 function clauseMatchesPathOrText({ id, text, value }) {
@@ -358,10 +843,34 @@ export async function readTraceability(repoRoot, storyId) {
   return readJsonIfExists(await traceabilityArtifactPath(repoRoot, storyId));
 }
 
-export async function bindStoryTraceability(repoRoot, { storyId, storyDocPath = null, source, lifecycle, evidence = [] }) {
+export async function bindStoryTraceability(repoRoot, {
+  storyId,
+  storyDocPath = null,
+  source,
+  lifecycle,
+  evidence = [],
+  acceptanceCriteria = null,
+  scenarioClauses = null,
+  scenarioLineage = null,
+  acceptedSpecLineage = undefined,
+  semanticAssessment = undefined,
+  outcomeCoverage = undefined
+}) {
   const artifactPath = await traceabilityArtifactPath(repoRoot, storyId);
   const existing = await readJsonIfExists(artifactPath);
-  const traceability = buildTraceability(existing, { storyId, storyDocPath, source, lifecycle, evidence });
+  const traceability = buildTraceability(existing, {
+    storyId,
+    storyDocPath,
+    source,
+    lifecycle,
+    evidence,
+    acceptanceCriteria,
+    scenarioClauses,
+    scenarioLineage,
+    acceptedSpecLineage,
+    semanticAssessment,
+    outcomeCoverage
+  });
   await mkdir(path.dirname(artifactPath), { recursive: true });
   await writeFile(artifactPath, `${JSON.stringify(traceability, null, 2)}\n`);
   return traceability;

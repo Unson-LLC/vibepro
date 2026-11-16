@@ -2,7 +2,10 @@
 story_id: story-vibepro-judgment-dag-adjudication
 title: Judgment DAG Adjudication Architecture
 parent_design: vibepro-judgment-dag-adjudication
+status: historical
 ---
+
+> **Historical (2026-09-02)**: `vibepro adjudicate` and the gate DAG described below were removed in PR #430. This document is kept as design history only; it does not describe current VibePro behavior.
 
 # アーキテクチャ
 

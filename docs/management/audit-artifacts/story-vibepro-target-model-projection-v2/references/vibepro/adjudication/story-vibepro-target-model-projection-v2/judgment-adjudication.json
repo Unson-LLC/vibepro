@@ -1,0 +1,360 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "updated_at": "2026-08-04T16:43:10.288Z",
+  "events": [
+    {
+      "event_id": "c0abb109-3265-4638-8c4e-eaee380baed7",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Machine-projection intent with 8 ACs mapping 1:1 to the actual diff content, independently confirmed by field-level inspection.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:03.529Z"
+    },
+    {
+      "event_id": "aece3213-5a2e-4f5e-a8d5-586e663b0c37",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Prior-state numbers (22 adjudicated-cluster orphans + 1 residual, 41 undeclared) reconcile with the adjudicator's independent origin/main scan; no fabricated baseline.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:03.975Z"
+    },
+    {
+      "event_id": "7d9737fb-920f-4046-9582-f8a9863a0be5",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Frozen-literal deepEqual assertions on rules/scope_roots/budgets and full 22/19 pair lists are strict checks; underlying data confirmed by direct inspection independent of the tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:04.415Z"
+    },
+    {
+      "event_id": "13fae68b-6f27-433f-8698-4adac8bbb346",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Every new allowed_dependencies entry corresponds exactly to one of the 24 human-approved declarations with zero extras, verified by diffing the full block against origin/main.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:04.856Z"
+    },
+    {
+      "event_id": "042725ad-34fe-409b-9e23-35873b5d6891",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The key projection failure mode (silently legalizing induced dependencies) checked directly: all 3 induced pairs remain undeclared in the live conformance scan.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:05.284Z"
+    },
+    {
+      "event_id": "7ef27d12-1a9b-4e62-b0c7-a7a2adb7a862",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "npm test and typecheck pass corroborated by the adjudicator's own independent conformance re-execution producing matching numbers.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:05.711Z"
+    },
+    {
+      "event_id": "3d967e6d-6c7b-4e6e-95e1-03343e8482ab",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "target-model.json diff is purely additive with no removed keys, schema change, or CLI/API surface touched; confirmed via structural diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:06.154Z"
+    },
+    {
+      "event_id": "5c3ec7f8-3ad7-4d80-99b0-15870c2fd484",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changed file set is docs/config/spec/test only; target-model.json is static governance config, not application state.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:06.628Z"
+    },
+    {
+      "event_id": "ba8eb5ad-a1f3-49ba-a5dc-6c6612a40229",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "6 files changed with zero code and a single coherent mechanical-projection narrative; reviewable by one reviewer as the decision record reasons.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:07.036Z"
+    },
+    {
+      "event_id": "1e3a5695-4ad6-490e-beda-642960bced2a",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Trigger fired on Story text naming progress-deadline.js as a path string; zero src files touched, so no timeout behavior can regress.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:07.471Z"
+    },
+    {
+      "event_id": "083c4bfa-20d9-4148-895a-d80ba7a332ec",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Correctly not_required; no parser or extraction code touched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:07.927Z"
+    },
+    {
+      "event_id": "0767c95f-005b-44db-8b77-55c66d0f1772",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Correctly not_required; no external provider or network code touched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:08.415Z"
+    },
+    {
+      "event_id": "cb582ce3-c3af-4fa6-8b05-e6f4ec64f15f",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No retry, queue, or worker code touched; over-broad trigger but correct conclusion.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:08.897Z"
+    },
+    {
+      "event_id": "b53e3b83-4589-41f2-9735-24c984e7fae8",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No auth or permission code touched; no-risk conclusion correct on inspection.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:09.346Z"
+    },
+    {
+      "event_id": "4b3f5149-fea1-4958-9ae3-8b5920766717",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Highest-relevance failure mode for a projection story, specifically verified absent: induced dependencies reported as debt not silently legalized, conformance numbers independently reproducible.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:09.836Z"
+    },
+    {
+      "event_id": "67671e38-ab4f-4772-9194-3766b51dceb1",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Correctly not_required; no workflow or state-machine transition code touched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a76fdf5e162e056e5",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-target-model-projection-v2; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "recorded_at": "2026-08-04T16:43:10.286Z"
+    }
+  ]
+}

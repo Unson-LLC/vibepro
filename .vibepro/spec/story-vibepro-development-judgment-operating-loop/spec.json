@@ -1,0 +1,82 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-development-judgment-operating-loop",
+  "status": "accepted",
+  "clauses": [
+    {
+      "id": "DJO-001",
+      "type": "invariant",
+      "statement": "Judgment applicability and reviewed input adoption are explicit provenance records before operational evaluation.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJO-001" },
+          { "kind": "acceptance_criteria", "ac_id": "DJO-003" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-operating-loop.test.js", "case": "standard judgment operation reaches plan consumption, disposition, outcome, and next-run feedback" }
+        ]
+      },
+      "verifiable_by": { "test_pattern": ["standard judgment operation reaches plan consumption"] }
+    },
+    {
+      "id": "DJO-002",
+      "type": "scenario",
+      "statement": "An actionable Development Judgment is bound into Story planning and creates mode-specific advisory guidance without blocking authority.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJO-004" },
+          { "kind": "acceptance_criteria", "ac_id": "DJO-005" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-operating-loop.test.js", "case": "standard judgment operation reaches plan consumption, disposition, outcome, and next-run feedback" }
+        ]
+      },
+      "verifiable_by": { "test_pattern": ["plan consumption"] }
+    },
+    {
+      "id": "DJO-003",
+      "type": "invariant",
+      "statement": "Human disposition and observed Outcome are separate records, and pending Outcome work remains discoverable.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJO-006" },
+          { "kind": "acceptance_criteria", "ac_id": "DJO-007" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-operating-loop.test.js", "case": "standard judgment operation reaches plan consumption, disposition, outcome, and next-run feedback" }
+        ]
+      },
+      "verifiable_by": { "test_pattern": ["disposition, outcome"] }
+    },
+    {
+      "id": "DJO-004",
+      "type": "scenario",
+      "statement": "A confirmed Outcome advances the next judgment history boundary and is visible in PR advisory projection.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJO-008" },
+          { "kind": "acceptance_criteria", "ac_id": "DJO-009" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-operating-loop.test.js", "case": "standard judgment operation reaches plan consumption, disposition, outcome, and next-run feedback" }
+        ]
+      },
+      "verifiable_by": { "test_pattern": ["next-run feedback"] }
+    },
+    {
+      "id": "DJO-005",
+      "type": "scenario",
+      "statement": "A reasoned not-applicable decision remains explicit and non-blocking without injecting a judgment task into the Story plan.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "ac_id": "DJO-001" },
+          { "kind": "acceptance_criteria", "ac_id": "DJO-010" }
+        ],
+        "test_refs": [
+          { "file": "test/judgment-operating-loop.test.js", "case": "not-applicable judgment remains explicit, non-blocking, and does not inject a plan task" }
+        ]
+      },
+      "verifiable_by": { "test_pattern": ["not-applicable judgment remains explicit"] }
+    }
+  ]
+}

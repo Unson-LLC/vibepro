@@ -1,24 +1,149 @@
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
+
 # バージョンとリリースチャネル
 
-package versionの正本は `package.json` で、installed binaryは `vibepro version` で表示します。
+source versionの正本は `package.json` で、installed binaryは `vibepro version` で表示します。
 
-| Channel | 現在値 | Authority |
+| Channel | このrelease後の期待値 | 正本 |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.2` | release workflow完了後の公開registry state |
-| npm `beta` | `0.2.0-beta.2` | release workflow完了後の公開registry state |
-| Repository `main` | `0.2.0-beta.2` のrelease source | Git commitと `CHANGELOG.md` |
-| Manual build | footer / metaのsource commit | deployed build artifact |
+| npm `latest` | <code>{{ site.themeConfig.npmLatest }}</code> | {{ site.themeConfig.npmTagsSource }} |
+| npm `beta` | <code>{{ site.themeConfig.npmBeta }}</code> | {{ site.themeConfig.npmTagsSource }} |
+| Repository `main` | <code>{{ site.themeConfig.version }}</code> release source | Git commitと `package.json` |
+| Manual build | footer/metaのsource commit | deployed VitePress artifact |
 
-## Unreleasedのmanual-visible capability
+表は現在のrelease channelを示します。以下のsectionは公開済みversionの追記専用ledgerで、PRごとの詳細な根拠は[リリースノート](/ja/releases/)に保持します。
 
-- 独立review lifecycleとadjudicationを含むrisk-adaptive Gate DAG
-- PR作成から監査済みmergeまでのmanaged execution
-- CI evidence import、existing PR refresh、canonical audit replay、cost / ROI report
-- Journey、UI/UX intake / map、VibePro-native Design System、visual / responsive / a11y evidence、design modernization
-- bounded summary / readiness viewと明示的なresponsibility / authority contract
+## 0.2.0-beta.34
 
-公開betaは `npm install -g vibepro@beta` で明示的に導入できます。installed helpとこのmanualが異なる場合は、実行中binaryのcontractが優先です。境界は[リリースと監査](/ja/guide/release-and-audit)とrepositoryの `CHANGELOG.md` を参照してください。
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
 
-何が変わったかは[リリースノート](/ja/releases/)で、正式公開版とPR由来の開発マイルストーンを分けて確認できます。
+## 0.2.0-beta.32
 
-`0.1.0-alpha.0` ではOSS公開用package形、phase checkpoint、Story / Spec review flow、public discovery documentationを追加しました。
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.31
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.30
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.29
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.28
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.27
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.26
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.25
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.24
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.23
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.22
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.21
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.20
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.19
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.18
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.17
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.16
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.15
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.14
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.13
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.12
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.11
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.10
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.9
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.8
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.7
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.6
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.5
+
+この公開版の変更詳細は[リリースノート](/ja/releases/)に記録します。
+
+## 0.2.0-beta.4
+
+Senior Engineering Judgment DAGで、問題の存在を示す証拠と解決方向の証拠を分離します。構造的過剰は `SIMPLIFY`、価値制約は `VALUE`、判断証拠が不足または不明な場合は `VALIDATE` へ分岐します。このbreaking betaでsenior judgment入力schemaは `0.2.0` から `0.3.0` へ更新されました。
+
+## 0.2.0-beta.3
+
+再構築した最小コアを公開し、npm README、VitePressの入口、generated CLI reference、CIをその契約に揃えます。これはbeta段階のbreaking changeで、再構築時に削除したcommandや自動control-plane機構に互換aliasはありません。
+
+## 0.2.0-beta.2
+
+直前の公開betaは、より広いevidence gateとmanaged workflowを含みます。移行時間が必要な場合だけpinしてください。これは現在の最小コア方針を表しません。
+
+manualとinstalled versionが異なる場合は、installed binaryのhelp出力を優先してください。
+
+公開と開発の時系列は[リリースノート](/ja/releases/)で確認できます。

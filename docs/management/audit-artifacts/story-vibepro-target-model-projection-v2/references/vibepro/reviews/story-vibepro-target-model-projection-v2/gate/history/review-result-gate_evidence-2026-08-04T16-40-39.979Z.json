@@ -1,0 +1,161 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Projection review at HEAD bc4d50c5: the Q1-Q5 machine projection matches the adjudicated card answers exactly and does nothing beyond them; rules/scope_roots/budgets/governance body byte-identical pre/post; all 24 allowed_dependencies declarations are exactly Q1's 2 plus Q4's 22 declare candidates (set-diffed against proposal.json); the 3 agent-runtime-induced undeclared edges remain undeclared and documented as the next adjudication target; regression-test modifications preserve the anti-self-adjudication guard; unit 2512/2512 and typecheck pass head-bound. No findings.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=gate_orchestration. Field-by-field diff of target-model.json before/after projection against proposal.json triage; reran the story test file (7/7) and prior governance test file (13/13); reran architecture conformance --base origin/main cross-checking undeclared list (22 = 19 resolve + 3 induced) and orphan (1: scan-ignored-dirs.js); verified test modifications generalize without gutting guards; confirmed only model/card/spec/design-ssot/test files changed with no src code touched.",
+    "evidence": "node --test test/target-model-projection-v2.test.js (7/7); node --test test/architecture-rebaseline-proposal.test.js (13/13); node bin/vibepro.js architecture conformance . --base origin/main --json (undeclared 22, orphan 1, budget 11 unchanged); verification-runs/{unit,typecheck}.json head bc4d50c5 pass",
+    "inputs": [
+      "docs/architecture/target-model.json",
+      "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+      "test/target-model-projection-v2.test.js",
+      "test/architecture-rebaseline-proposal.test.js",
+      "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+      ".vibepro/spec/story-vibepro-target-model-projection-v2/spec.json",
+      "design-ssot.json",
+      ".vibepro/config.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concerns that the projection might include machine-invented declarations, that model_version_changed might be unverifiable, or that test modifications were silent weakening -> pass because set-diff proves declaration exactness, conformance counts independently corroborate the projection, and the test diff preserves the original anti-self-adjudication guard"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+    "expected_root": null,
+    "expected_head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+    "current_head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+      "expected_root": null,
+      "expected_head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "current_head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T16:40:39.979Z",
+  "git_context": {
+    "head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+    "current_branch": "codex/story-vibepro-target-model-projection-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T16:40:39.956Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "89b69d8f651849aecaeef206d579e8d4ef05a78eafcc3aea2d612a8f6ad08f3f",
+        "size": 103593
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "0e69f5089f55d44e211d354aea29db70ce717cd77e18c44bb7a59d10e9c6592f",
+        "size": 275196
+      },
+      {
+        "path": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+        "sha256": "2111ac3febfd4cbfbd658b9d28ce6a42db35c506a8af6ff3cd099101d4886fc6",
+        "size": 14624
+      },
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "84c2f8ed3cecbe28e431e0a572d8888eab55f65c30b98ac17599e81ee18ae65a",
+        "size": 12955
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+        "sha256": "fc55877702a02b04f472e308554ba1951d243c234120b87d921c581f10387a8b",
+        "size": 9890
+      },
+      {
+        "path": "test/architecture-rebaseline-proposal.test.js",
+        "sha256": "6fe9d38d69a0c82e82cd432ebde3803613fd77ccd2ee4c1b4a6272e6aa8ab74f",
+        "size": 20004
+      },
+      {
+        "path": "test/target-model-projection-v2.test.js",
+        "sha256": "a0352266431c781b1ce037b5220afd48dca8839df76e1ef588ea38ec204e05c7",
+        "size": 9547
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "543814c65e9802fa3a157a31562a54bcd45054f6e25bb1809fc2863ebed84dcf"
+  },
+  "source_fingerprint": "53561326cdc18e4d329e30ed15b6a4e386e7d0cf06aac57c6a77edcb14670321",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "acd4142c5e74dcd9b",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "acd4142c5e74dcd9b",
+    "session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/5dba809a-0bb8-481f-a513-6f094921cc5f/tasks/acd4142c5e74dcd9b.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-target-model-projection-v2/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close recorded with close_reason=completed at head bc4d50c5; subagent ended after returning pass verdict JSON",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+      "implementation_session_id": "subagent-a3acdb53e61f88d24",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

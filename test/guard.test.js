@@ -180,6 +180,11 @@ test('GUARD-S-006 guard install writes a marked idempotent pre-push hook and ref
   const hookContent = await readFile(first.hook.path, 'utf8');
   assert.ok(hookContent.includes(GUARD_HOOK_MARKER));
   assert.ok(hookContent.includes('guard check'));
+  assert.ok(hookContent.includes('--push-url "$2"'));
+  await assert.rejects(execFileAsync('sh', [first.hook.path, 'origin', 'https://github.com/example/project.git'], {
+    cwd: repo,
+    env: { ...process.env, VIBEPRO_GUARD_BIN: '/nonexistent-vibepro-validator' }
+  }), (error) => error.code === 1 && /destination validator unavailable/.test(error.stderr));
 
   const second = await installGuard(repo, {});
   assert.equal(second.hook.status, 'reinstalled');

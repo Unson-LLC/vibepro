@@ -1,0 +1,206 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+  "updated_at": "2026-08-05T04:09:12.632Z",
+  "events": [
+    {
+      "event_id": "2e3c2cf3-27e0-485f-ad0e-94f170d74216",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The stated intent (collapse 69,490 simple-cycle enumeration into 1 SCC plus 20 actionable mutual_dependency pairs) is directly and verifiably realized by the inspected code and tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:06.457Z"
+    },
+    {
+      "event_id": "6608f1fc-8fe3-4d07-9945-6787ab950de1",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay evidence drives the real CLI end to end (base-ref checkout, both-side scan, persisted delta); the adjudicator independently re-ran the integration variant and reproduced the claimed live-repo numbers, so the binding is genuine rather than a matched token.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:07.478Z"
+    },
+    {
+      "event_id": "84324fef-57dd-4b41-98cd-f8043d9ea728",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The CDL-S-1/S-2 invariant that violation ids derive from element identity rather than index or order is preserved: SCC and mutual_dependency ids both derive from sorted module names and determinism is tested by reversing edge input order.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:08.193Z"
+    },
+    {
+      "event_id": "8fd88c84-0eac-420d-a5a6-0dcbb26e97d2",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The decision record's central claim was independently verified: only the architecture-conformance modules changed, and the three related consumer files do not read violation-shape internals (the rebaseline proposal's cluster.members belongs to an unrelated orphan_clusters concept).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:09.126Z"
+    },
+    {
+      "event_id": "7ed70ac4-3428-4577-a951-dee82b575201",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Each named failure mode has a test that actually forces the failure condition: a back edge to prove new cycles are not hidden, a 20000-node depth contrast with RangeError, reversed-edge determinism, and a cross-check of mutual_pairs against independently emitted violations to rule out capping or truncation.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:09.780Z"
+    },
+    {
+      "event_id": "59f090fc-450b-4e7b-aa2d-a545c9f4db27",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The flow_replay, artifact_replay, and scenario_clause_e2e evidence was independently re-executed by the adjudicator with matching results, so the done state is genuinely reconstructable.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:10.538Z"
+    },
+    {
+      "event_id": "d23a1b59-339d-4f64-a944-94facb9ed1c0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The dependency_cycle violation id prefix changes to dependency_cycle_scc, a real output-shape change that the story names explicitly; the adjudicator grepped src/ and bin/ and found zero consumers depending on the old prefix or on the report heading text, so the scope of the contract change was actually considered rather than assumed away.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:11.168Z"
+    },
+    {
+      "event_id": "cc8c25de-ede2-4b80-808e-45e5b5d1f4d3",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The accepted_followup decision's blast-radius claim (changes confined to the architecture module and its tests, consumers reading only summary counts) was independently verified against the actual source rather than restated.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:11.770Z"
+    },
+    {
+      "event_id": "d6f4e75d-5b17-40ad-aa79-750382dceac1",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The changed file set touches no gate, review, or evidence-lifecycle code paths, so the not_required classification is correct rather than a coverage gap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a518c5df1141f1110",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-dependency-cycle-scc-reduction; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+      "recorded_at": "2026-08-05T04:09:12.628Z"
+    }
+  ]
+}

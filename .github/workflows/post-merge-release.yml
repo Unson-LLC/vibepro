@@ -9,69 +9,173 @@ concurrency:
   group: post-merge-release-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: read
-
 jobs:
-  release:
+  validation:
     if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      pull-requests: read
+    outputs:
+      release_required: ${{ steps.projection.outputs.release_required }}
+      version: ${{ steps.projection.outputs.version }}
+      validation_mode: ${{ steps.validation.outputs.validation_mode }}
+      validation_reason: ${{ steps.validation.outputs.validation_reason }}
     steps:
       - uses: actions/checkout@v7
         with:
-          # Run the trusted workflow and projection code from the default branch.
-          # The merged SHA is checked out only for the immutable package build below.
-          ref: main
+          # The selector is code from the immutable pre-merge base, never from
+          # the pull request or the moving post-merge default branch.
+          ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
       - run: npm ci
       - name: Plan conditional package release
         id: projection
         run: node scripts/post-merge-release.mjs plan --event "$GITHUB_EVENT_PATH"
-      - name: Bind package release to the merged PR commit
+      - name: Select exact-SHA validation path
+        id: validation
         if: ${{ steps.projection.outputs.release_required == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! node scripts/post-merge-release.mjs validation-plan --event "$GITHUB_EVENT_PATH" --repository "$GITHUB_REPOSITORY"; then
+            echo "validation_mode=full" >> "$GITHUB_OUTPUT"
+            echo "validation_reason=trusted_base_selector_unavailable" >> "$GITHUB_OUTPUT"
+            echo "reviewed_head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+            echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> "$GITHUB_OUTPUT"
+          fi
+          cat "$GITHUB_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+
+  # Validation stays on the self-hosted runner; only publication moves to a
+  # GitHub-hosted runner because npm Trusted Publishing requires one.
+  release-candidate:
+    needs: validation
+    if: ${{ needs.validation.outputs.release_required == 'true' }}
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Bind package release to the merged PR commit
         env:
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
-          git checkout --detach "$RELEASE_SHA"
-          test "$(node -p "require('./package.json').version")" = "${{ steps.projection.outputs.version }}"
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
           echo "release_target=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-      - name: Validate package
-        if: ${{ steps.projection.outputs.release_required == 'true' }}
+          echo "validation_mode=${{ needs.validation.outputs.validation_mode || 'full' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "validation_reason=${{ needs.validation.outputs.validation_reason || 'missing_validation_output' }}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Validate release candidate
         run: |
           npm ci
           npm run typecheck
-          npm test
+          node --test test/post-merge-release.test.js test/github-release-convergence.test.js test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js test/e2e/story-vibepro-release-exact-sha-fast-path.test.js
           npm run pack:dry-run
-      - name: Publish npm and reconcile GitHub Release under package lease
-        if: ${{ steps.projection.outputs.release_required == 'true' }}
+      - name: Run full validation fallback
+        if: ${{ needs.validation.outputs.validation_mode != 'fast' }}
+        run: npm test
+
+  release:
+    needs: [validation, release-candidate]
+    if: ${{ needs.validation.outputs.release_required == 'true' }}
+    # npm refuses the OIDC token of a pull_request_target run ("OIDC token
+    # exchange error - package not found"; brainbase and run 39088095340), so
+    # this job does not publish. It dispatches npm-publish.yml, the npm Trusted
+    # Publisher, and waits for it; a GITHUB_TOKEN may trigger workflow_dispatch.
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
+    timeout-minutes: 90
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+    outputs:
+      publish_started_at: ${{ steps.publish.outputs.publish_started_at }}
+      npm_published_at: ${{ steps.publish.outputs.npm_published_at }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Bind publication to the validated merge commit
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.projection.outputs.version }}
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
-          RELEASE_LOCK=$(node scripts/npm-release-lock.mjs acquire)
-          release_lock() { node scripts/npm-release-lock.mjs release "$RELEASE_LOCK"; }
-          trap release_lock EXIT
-          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
-          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-          node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output /tmp/vibepro-release.md
-          if gh release view "v${VERSION}" >/dev/null 2>&1; then
-            git fetch --tags --force
-            test "$(git rev-list -n 1 "v${VERSION}")" = "$RELEASE_SHA"
-            gh release edit "v${VERSION}" --title "VibePro ${VERSION}" --notes-file /tmp/vibepro-release.md
-          else
-            gh release create "v${VERSION}" --target "$RELEASE_SHA" --title "VibePro ${VERSION}" --notes-file /tmp/vibepro-release.md
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(node -p "require('./package.json').version")" = "${{ needs.validation.outputs.version }}"
+      # npm-publish.yml publishes the head of main; the docs job, which moves
+      # main, runs only after this job, so that head must be the merge commit.
+      - name: Publish npm through the trusted publishing workflow
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.validation.outputs.version }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          PUBLISH_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "publish_started_at=${PUBLISH_STARTED_AT}" >> "$GITHUB_OUTPUT"
+          gh workflow run npm-publish.yml --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+          RUN_ID=""
+          for _ in $(seq 1 30); do
+            RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow npm-publish.yml --event workflow_dispatch --limit 10 \
+              --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${PUBLISH_STARTED_AT}\")] | sort_by(.createdAt) | .[0].databaseId // empty")
+            [ -n "$RUN_ID" ] && break
+            sleep 10
+          done
+          test -n "$RUN_ID"
+          echo "npm_publish_run=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" >> "$GITHUB_STEP_SUMMARY"
+          RUN_SHA=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json headSha --jq .headSha)
+          if [ "$RUN_SHA" != "$RELEASE_SHA" ]; then
+            echo "::error::npm-publish.yml run ${RUN_ID} targets ${RUN_SHA}, expected merge commit ${RELEASE_SHA}"
+            exit 1
           fi
+          gh run watch "$RUN_ID" --repo "$GITHUB_REPOSITORY" --exit-status --interval 30
+          test "$(npm view "vibepro@${VERSION}" gitHead --prefer-online)" = "$RELEASE_SHA"
+          NPM_PUBLISHED_AT=$(npm view vibepro time --json --prefer-online | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>process.stdout.write(JSON.parse(d)[process.argv[1]]))" "$VERSION")
+          echo "npm_published_at=${NPM_PUBLISHED_AT}" >> "$GITHUB_OUTPUT"
+          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Reconcile GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.validation.outputs.version }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output "$RUNNER_TEMP/vibepro-release.md"
+          node scripts/post-merge-release.mjs reconcile-github-release --version "$VERSION" --sha "$RELEASE_SHA" --notes-file "$RUNNER_TEMP/vibepro-release.md" --repository "$GITHUB_REPOSITORY"
           echo "github_release=v${VERSION}@${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
+
+  docs:
+    needs: [validation, release]
+    # Docs follow a successful publication, or run alone when the version is unchanged.
+    if: ${{ always() && needs.validation.result == 'success' && (needs.validation.outputs.release_required != 'true' || needs.release.result == 'success') }}
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
       - name: Record version gate
-        if: ${{ steps.projection.outputs.release_required != 'true' }}
+        if: ${{ needs.validation.outputs.release_required != 'true' }}
         run: echo "npm=skipped (package version unchanged)" >> "$GITHUB_STEP_SUMMARY"
       - name: Project PR body into release history
         id: docs_projection
@@ -86,8 +190,11 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
+            npm ci --ignore-scripts
             node scripts/post-merge-release.mjs project --event "$GITHUB_EVENT_PATH"
-            git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md
+            npm view vibepro time --json --prefer-online > "$RUNNER_TEMP/npm-time.json"
+            node scripts/post-merge-release.mjs reconcile-published-versions --npm-time "$RUNNER_TEMP/npm-time.json"
+            git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md docs/.vitepress/config.mjs
             if git diff --cached --quiet; then
               pushed=true
               echo "docs_commit=unchanged_or_reconciled" >> "$GITHUB_STEP_SUMMARY"
@@ -111,8 +218,34 @@ jobs:
           npm ci
           npm run docs:deploy
           echo "docs_deploy=passed" >> "$GITHUB_STEP_SUMMARY"
+
+  recovery:
+    needs: [validation, release-candidate, release, docs]
+    if: ${{ always() && needs.validation.result == 'success' }}
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
       - name: Record recovery state
         if: ${{ always() }}
+        env:
+          RESULTS: validation=${{ needs.validation.result }} release-candidate=${{ needs.release-candidate.result }} release=${{ needs.release.result }} docs=${{ needs.docs.result }}
         run: |
+          if [ "${{ needs.validation.outputs.release_required }}" = "true" ] && [ -n "${{ needs.release.outputs.npm_published_at }}" ]; then
+            WORKFLOW_COMPLETED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            node scripts/post-merge-release.mjs timing \
+              --merged-at "${{ github.event.pull_request.merged_at }}" \
+              --publish-started-at "${{ needs.release.outputs.publish_started_at }}" \
+              --npm-published-at "${{ needs.release.outputs.npm_published_at }}" \
+              --workflow-completed-at "$WORKFLOW_COMPLETED_AT"
+          else
+            echo "release_timing=unavailable (npm publication was not observed)" >> "$GITHUB_STEP_SUMMARY"
+          fi
           echo "recovery=rerun this workflow; projection, GitHub Release, npm metadata, dist-tags, docs markers, and docs commit are reconciled idempotently" >> "$GITHUB_STEP_SUMMARY"
-          echo "result=${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "result=${RESULTS}" >> "$GITHUB_STEP_SUMMARY"

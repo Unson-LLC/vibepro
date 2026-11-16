@@ -1,45 +1,31 @@
 # インストールと初回実行
 
-公開済みearly beta、またはcurrent `main` のローカルcheckoutを使います。
+VibeProはNode.js 20以上が必要です。公開パッケージは現在betaです。以下の手順ではグローバルにインストールします。
 
 ```bash
 npm install -g vibepro@beta
-vibepro version
+vibepro --help
 ```
 
-ローカルcheckoutで動かす場合:
+グローバルにインストールせず確認する場合は、`npx vibepro@beta --help` を使えます。その場合、以降の例の `vibepro` も `npx vibepro@beta` に置き換えてください。
+
+Gitリポジトリで、試す変更をひとつ選びます。`/path/to/repo`、StoryのID、タイトルを実際の値に置き換えて初期化します。
 
 ```bash
-npm install
-npm link
-vibepro version
+vibepro init /path/to/repo \
+  --story-id story-example \
+  --title "変更内容" \
+  --language ja
 ```
 
-対象リポジトリで最初の確認を実行します。
+対象リポジトリに `.vibepro/` が作られます。Story、Spec、確認結果を保存する場所であり、アプリケーション本体ではありません。初期化しただけでは、必要な振る舞いの記述や変更の検証は完了しません。
+
+導入状態とリポジトリ状態を確認します。
 
 ```bash
-vibepro doctor .
-vibepro story list .
-vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
+vibepro doctor /path/to/repo --json
+vibepro status /path/to/repo --json
+vibepro story list /path/to/repo --all
 ```
 
-npm packageとこのmanualが別commitを表す場合があります。command contractの正本はinstalled binaryの `vibepro help` です。版の境界は[リリースと監査](/ja/guide/release-and-audit)を参照してください。
-
-## 任意: codebase-memory-mcp
-
-`codebase-memory-mcp` は任意連携です。VibeProはこれを同梱、インストール、更新、設定変更しません。`codebase-memory-mcp` コマンドが `PATH` 上にある場合、`vibepro pr prepare` は現在の変更ファイルに対して、読み取り専用の topology query を1回だけbest-effortで実行します。
-
-ローカル設定例:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -s -- --skip-config
-export PATH="$HOME/.local/bin:$PATH"
-codebase-memory-mcp --version
-codebase-memory-mcp cli index_repository '{"repo_path":"'"$(pwd)"'"}'
-codebase-memory-mcp cli list_projects '{}'
-```
-
-VibeProからCLIだけを使い、CodexやClaudeなどのMCP設定を自動変更したくない場合は `--skip-config` を使います。
-
-この連携は、対象repoがindex済みのときに意味があります。未インストール、query失敗、clean worktree、変更ファイルとの一致なしは `pr_context.code_topology_context.available=false` として記録され、PR readinessを単独では止めません。
+次は、期待する振る舞いを書き、[ひとつの変更からPR準備まで](/ja/guide/control-loop)を進めます。マニュアルとインストールした版が異なる場合は、`vibepro help --language ja` を優先してください。

@@ -1,0 +1,467 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "updated_at": "2026-08-04T15:55:21.184Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+      "expected_root": null,
+      "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+      "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858921183-54305dd5",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewability: 1人のreviewerが一貫した判断として読める粒度。scope_reviewed 済み、review_owner は target model の裁定者である sato_keigo、decision_record はこの記録自体",
+      "reason": "scope_reviewed: 変更は6ファイル・コード変更ゼロで、reviewerが確認すべき問いは「裁定カードの5つの回答が target-model.json に過不足なく入っているか」の一点に還元される。review_owner_map: target-model.json の allowed_dependencies と modules は governance.human_adjudicated 領域であり、responsible reviewer は裁定者である sato_keigo（回答経路: coordinator session AskUserQuestion）。テスト2ファイルは同じ投影の検証面であり所有者は分かれない。decision_record: 分割しない判断は gate:pr_scope_judgment の decision record に、投影範囲の境界（rules[]本文変更なし・ratchet gate導入なし・resolve 19件のコード修正なし）は story frontmatter の reason.boundary に記録済み",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:21.175Z"
+      },
+      "recorded_at": "2026-08-04T15:55:21.184Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858919881-94b3d1b2",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": "needs_evidence",
+      "summary": "data_state: migration_plan / rollback_plan / idempotency_test / query_semantics_test はいずれも不要。永続状態のスキーマもクエリも変えず、変更は単一JSONファイルのデータ値のみ",
+      "reason": "migration_plan: target-model.json のスキーマ（schema_version 0.1.0 相当のフィールド構成）は不変で、modules[] への要素追加・paths への文字列追加・allowed_dependencies への文字列追加・model_version の整数インクリメントのみ。読み手である loadTargetModel の検証（model_version は正の整数、欠落は null に degrade）を満たすため移行手順は存在しない。rollback_plan: 2ファイル (target-model.json / 裁定カード) を revert すれば model_version 1 の状態へ完全復帰し、副作用は conformance の計測値が旧モデル基準へ戻ることのみ（storyの reason.rollback に記載）。idempotency_test: 投影は宣言的な最終状態であり、TMP-S-1..S-7 が最終状態を直接assertするため再適用しても同じ状態に収束する（追加は includes ガード付きで重複しない）。query_semantics_test: conformance の import scan とクエリ経路は変更しておらず、実測で base/head 双方が同一物差しで計測されていることを delta artifact (previous_model_version 1 / head 2 / model_version_changed true) が示している",
+      "reviewer": "codex",
+      "artifact": ".vibepro/architecture/conformance/delta.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:19.874Z"
+      },
+      "recorded_at": "2026-08-04T15:55:19.882Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858918573-6d8af8f3",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": ".vibepro artifact の commit は .vibepro/config.json と .vibepro/spec/<story>/spec.json の2件に限定する。診断・証跡artifactはcommitしない",
+      "reason": "config.json は手書きStoryを VibePro に認識させる登録簿であり、これをcommitしないと story derive 経路を持たない self-dogfood フローで Story が消える。spec.json は Spec SSOT であり、前段story (PR #424) 以降 .vibepro/spec/<story>/spec.json をcommitする運用が確立している（origin/main に同名パスが存在）。それ以外の .vibepro/pr/ .vibepro/checks/ .vibepro/diagnostics/ .vibepro/architecture/ は診断・証跡でありcommitしない（.git/info/exclude で .vibepro/ が除外されているため、この2件のみ git add -f で明示的に追加している）",
+      "reviewer": "codex",
+      "artifact": ".vibepro/spec/story-vibepro-target-model-projection-v2/spec.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:18.567Z"
+      },
+      "recorded_at": "2026-08-04T15:55:18.574Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858917314-15ecb002",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "clean branch / split は不要: branch codex/story-vibepro-target-model-projection-v2 は origin/main から作成され、この裁定投影以外のcommitを含まない",
+      "reason": "branch上のcommitは 起票 / 投影 / Spec登録 / pinの是正 の4件のみで、いずれも同一意図に属する。origin/main へ rebase 済みで無関係な変更の混入はない（git diff --name-only origin/main...HEAD が6ファイル）",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-target-model-projection-v2/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:17.307Z"
+      },
+      "recorded_at": "2026-08-04T15:55:17.315Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858916070-848def82",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "PR分割はしない: 6ファイルすべてが「佐藤裁定済み5問を target-model へ投影する」という単一意図の不可分な構成要素であり、分割すると片方だけがmergeされた時点でモデルとカードが乖離する",
+      "reason": "内訳は (1) target-model.json = 裁定の投影先の正本、(2) 裁定カード = 同じ裁定の provenance 記録、(3) target-model-projection-v2.test.js = 投影内容の回帰、(4) architecture-rebaseline-proposal.test.js = 前段storyが model_version=1 と card pending を固定していたpinの是正（投影と同時でなければ必ず赤になる）、(5) spec.json / story md / config.json = self-dogfoodフローの登録物。(1)と(2)を分けると「モデルは v2 だがカードは未回答」または「カードは回答済みだがモデルは v1」という、統治上まさに検知したい乖離状態を自分で作ることになる。(4)を分けるとどちらの順序でもCIが赤になる区間が生じる。コード変更は含まれず、diffは JSON データ + Markdown + テストのみで、1人のreviewerが一貫して読める粒度に収まる",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-target-model-projection-v2/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:16.064Z"
+      },
+      "recorded_at": "2026-08-04T15:55:16.071Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858914777-cd05309b",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "intake_not_applicable",
+      "status": "accepted",
+      "source": "gate:uiux_intake_judgment",
+      "source_status": "needs_evidence",
+      "summary": "UI/UX intake は適用外: 変更は target-model.json のデータ・裁定カードのMarkdown・回帰テストのみで、UI表面もユーザー導線も存在しない",
+      "reason": "このstoryの変更ファイルは docs/architecture/target-model.json / [REDACTED:d54cc228713f]-model-rebaseline-cards.md / test/*.test.js / .vibepro/spec/*/spec.json / story md / .vibepro/config.json であり、レンダリングされる画面・コンポーネント・ルート・スタイルを一切含まない。story diagnose の Journey Context も Required=no / Status=not_required / Detection=- と判定している",
+      "reviewer": "codex",
+      "artifact": ".vibepro/stories/story-vibepro-target-model-projection-v2/diagnostics",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:14.771Z"
+      },
+      "recorded_at": "2026-08-04T15:55:14.778Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 5,
+      "intake_not_applicable": 1
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+        "expected_root": null,
+        "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785858921183-54305dd5",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewability: 1人のreviewerが一貫した判断として読める粒度。scope_reviewed 済み、review_owner は target model の裁定者である sato_keigo、decision_record はこの記録自体",
+      "reason": "scope_reviewed: 変更は6ファイル・コード変更ゼロで、reviewerが確認すべき問いは「裁定カードの5つの回答が target-model.json に過不足なく入っているか」の一点に還元される。review_owner_map: target-model.json の allowed_dependencies と modules は governance.human_adjudicated 領域であり、responsible reviewer は裁定者である sato_keigo（回答経路: coordinator session AskUserQuestion）。テスト2ファイルは同じ投影の検証面であり所有者は分かれない。decision_record: 分割しない判断は gate:pr_scope_judgment の decision record に、投影範囲の境界（rules[]本文変更なし・ratchet gate導入なし・resolve 19件のコード修正なし）は story frontmatter の reason.boundary に記録済み",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-target-model-projection-v2/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2",
+          "expected_root": null,
+          "expected_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "current_head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a1c1939ec7dd748ea656c208937efa2c854c176c",
+        "current_branch": "codex/story-vibepro-target-model-projection-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-04T15:55:21.175Z"
+      },
+      "recorded_at": "2026-08-04T15:55:21.184Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-target-model-projection-v2/decision-records.json"
+}

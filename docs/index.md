@@ -3,36 +3,54 @@ layout: home
 
 hero:
   name: VibePro
-  text: Make the product journey visible
-  tagline: A repository-local control plane that turns AI-agent changes into evidence-backed, safely shippable pull requests. Humans hold the entry and exit decisions.
+  text: Bring the reason for a change into its PR.
+  tagline: Investigate what should change with your AI host, then connect the reasoning to Stories, Specs, implementation, and PR review.
   image:
     src: /assets/vibepro-header.png
     alt: VibePro
   actions:
     - theme: brand
-      text: Understand VibePro
+      text: Try one change
+      link: /guide/getting-started
+    - theme: alt
+      text: What VibePro Is
       link: /guide/what-is-vibepro
     - theme: alt
-      text: Run the Control Loop
-      link: /guide/control-loop
-    - theme: alt
-      text: Install the Beta
-      link: /guide/getting-started
+      text: CLI Reference
+      link: /reference/cli
 
 features:
-  - title: Intent becomes a delivery contract
-    details: Story, Architecture, and Spec keep the product purpose, boundaries, acceptance criteria, and rollback assumptions inspectable before code is trusted.
-  - title: Evidence expands with risk
-    details: Verification, independent review, adjudication, and release guards activate according to the surfaces the change actually touches.
-  - title: Shipping stays auditable
-    details: PR preparation, CI refresh, merge execution, canonical audit, and ROI reports remain bound to the current commit instead of disappearing into chat history.
+  - title: Investigate what should change
+    details: Frame questions with your AI host, inspect code structure and source, and revise options and recommendations with evidence. Keep unknowns explicit.
+  - title: Connect behavior to evidence
+    details: Describe concrete behavior in a Spec and link it to the code and tests that should implement and verify it.
+  - title: Make the PR easier to review
+    details: Keep verification and review records with the change, then prepare a PR summary that shows how the implementation connects back to the Story and Spec.
 ---
 
-## Choose Your Path
+<script setup>
+import { useData } from 'vitepress';
+const { site } = useData();
+</script>
 
-- **Implementer:** [Install and First Run](/guide/getting-started) → [Control Loop](/guide/control-loop) → [Managed Execution](/guide/managed-execution)
-- **Reviewer or adjudicator:** [Agent Review](/guide/agent-review) → [Safety Model](/guide/safety-model)
-- **Release operator:** [Release and Audit](/guide/release-and-audit) → [CLI Reference](/reference/cli)
-- **Engineering manager:** [What VibePro Is](/guide/what-is-vibepro) → [Feature Map](/guide/feature-map) → [Release and Audit](/guide/release-and-audit)
+Current version: <code>{{ site.themeConfig.npmLatest }}</code>
 
-The manual is platform-agnostic. Cloudflare Pages is only the current hosting target and is documented separately in the operations reference.
+## From deciding what to build to reviewing the change
+
+A request does not always call for a new feature. With [Senior Engineering Judgment](/guide/senior-engineering-judgment), `judgment investigate` helps the AI host frame questions from the goal and scope, inspect existing Graphify artifacts and source, and revisit the problem, options, and recommendations as evidence changes. Candidates can then enter explicit input adoption and evaluation to consider what to build, simplify, or validate first. This investigation is optional, not a requirement for every change.
+
+## A PR should explain more than what changed
+
+AI coding agents can produce a clean diff while solving the wrong user problem. VibePro keeps the few links a reviewer needs to answer: what user need motivated this change, what behavior was agreed, where is it implemented, and what was actually checked?
+
+For example, a Story might say that a CSV export must preserve the active filters. The Spec can make that behavior concrete and name the code and test references. The verification record shows which test ran, and the PR summary brings those pieces back into the review conversation.
+
+VibePro checks whether declared implementation and test references are structurally present. The AI host can interpret evidence and compare options, but the CLI does not autonomously call a model or guarantee correct judgment. A reference can exist and a test can pass while the change still misses the user's need. Human review and adoption responsibility remain.
+
+## A deliberate boundary
+
+Story and Spec records are an additional maintenance cost. They are the machine-readable contract VibePro can inspect; they do not replace a README, an issue tracker, product discussion, or normal code review. README or issue context alone is not a supported replacement for these records. If an existing PR explanation is already sufficient, the additional maintenance may cost more than it returns.
+
+The former broad Gate DAG and its merge-blocking lifecycle machinery are retired from the minimal core. The current judgment DAG supports investigation, reconsideration, and next actions as advice. It does not automatically certify intent alignment or safety, approve PRs, or grant merge authority.
+
+The [getting-started guide](/guide/getting-started) walks through the smallest useful flow. [What VibePro Is](/guide/what-is-vibepro) explains the records and their boundaries in more detail.

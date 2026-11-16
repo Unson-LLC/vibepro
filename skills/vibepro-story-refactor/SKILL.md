@@ -1,114 +1,34 @@
 ---
 name: vibepro-story-refactor
-description: Use when refactoring with VibePro so the agent follows Story -> Architecture -> Spec -> Task -> Code -> Gate -> PR instead of editing code first.
+description: Use when a repository explicitly uses VibePro Story and Spec artifacts for a focused refactor.
 ---
 
 # VibePro Story Refactor
 
 ## Purpose
 
-Use this Skill when VibePro is driving a refactor. The goal is to find and fix code defects, security risks, DRY gaps, and responsibility-boundary problems while preserving Story / Architecture / Spec consistency.
+利用者価値と既存の振る舞いを守りながら、限定した責務を安全に整理する。
 
 ## When to Use
 
-Use this Skill when a refactor, cleanup, bug fix, architecture correction, security hardening, performance refactor, UI modernization, or DRY pass is expected to move through VibePro. It applies even when the user asks for "just a small refactor" if the work changes behavior, boundaries, user flows, verification, or PR readiness.
+対象リポジトリがVibePro Story／Specを明示的に使い、受け入れ条件を変えない限定的なrefactorを行う場合に使う。
 
-## Required Workflow
+## Process
 
-1. Start from a Story. If no Story exists, run `vibepro story derive` and inspect the Story map before implementing.
-2. Resolve the output language from `.vibepro/config.json` `output.language` or the explicit CLI `--language` override before manually adding or editing human-facing Story, Architecture, Spec, Task, Review, Diagnosis, Journey, or PR artifacts.
-3. Check Architecture. If the boundary, dependency direction, or responsibility split is missing, restore or add Architecture docs before changing code.
-4. Check Spec. If behavior, invariant, API, or data-flow expectations are missing, restore or add Spec docs before changing code.
-5. Use VibePro task context:
-   - `vibepro story plan <repo>`
-   - `vibepro task create <repo> --from-plan --id <story-id>`
-   - `vibepro task brief|plan|handoff <repo> --task <task-id> --id <story-id>`
-6. Use a diagnosis package when the refactor has a clear purpose:
-   - UI behavior: `vibepro check ui <repo> --story-id <story-id>`
-   - Security boundary: `vibepro check security <repo> --story-id <story-id>`
-   - Performance readiness: `vibepro check performance <repo> --story-id <story-id>`
-   - Architecture boundary: `vibepro check architecture <repo> --story-id <story-id>`
-   - Launch readiness: `vibepro check launch-readiness <repo> --story-id <story-id>`
-7. For performance refactors, define Story-level metrics before claiming improvement. Separate DB/server readiness from user-perceived readiness.
-8. For UI/UX modernization refactors, derive design constraints before changing components:
-   - run `vibepro design-modernize derive-system <repo> --id <story-id> ...`,
-   - run `vibepro design-modernize plan <repo> --id <story-id> ...`,
-   - preserve current routes, information architecture, CTA priority, state behavior, and data dependencies,
-   - treat image-generated or external design proposals as visual hypotheses, not implementation authority.
-9. Implement with focused tests. Prefer small changes tied to the task target files.
-10. Run project verification and then `vibepro pr prepare`.
-11. Read `pr-prepare.json` `gate_status` before treating the work as PR-ready.
-12. If Agent Review Gate is unresolved, it must be cleared before finalizing. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-13. Run the VibePro parallel subagent review workflow:
-   - `vibepro review prepare <repo> --id <story-id> --stage <stage>`
-   - dispatch each role in `parallel-dispatch.md` as a separate parallel subagent review,
-   - close/shutdown each review subagent after receiving its result,
-   - `vibepro review record` each result with Codex/Claude Code provenance and lifecycle evidence (`--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed` plus thread/session/call/transcript evidence),
-   - rerun `vibepro pr prepare`.
-   If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-14. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
-
-## Refactor Target Criteria
-
-Prioritize candidates that VibePro surfaces as:
-
-- security boundary or authorization risk
-- duplicated query, validation, or policy shape
-- responsibility split failure
-- Story / Architecture / Spec contradiction
-- Graphify-related impact beyond changed files
-- Gate evidence missing for changed behavior
-
-## Guardrails
-
-- Do not refactor only because code looks untidy. Tie the work to Story value and evidence.
-- Do not widen scope after `task handoff` unless `pr prepare` confirms the scope remains reviewable.
-- Do not mix repo-control changes, requirement SSOT recovery, runtime behavior, and E2E gate fixes unless the split-plan allows it.
-- Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
-- Do not merge or create a PR unless `gate_status.ready_for_pr_create=true` and `gate_status.overall_status=ready_for_review`.
-- Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
-- Do not call a VibePro refactor complete while `gate:agent_review` is `needs_review`, `missing`, `stale`, `block`, or `failed`; complete the parallel subagent reviews first.
-- Do not satisfy Agent Review Gate with a manual `pass`. A passing review must include Codex or Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) so later audits can distinguish real subagent review from coordinator self-approval and closed review threads.
-- Do not treat visual redesign as a refactor unless the unchanged UX contracts are explicit. Current route, layout information hierarchy, CTA priority, state behavior, data dependencies, and accessibility expectations must be preserved or intentionally changed in Story/Spec.
-- Do not use color-token substitution as a substitute for a Design System. VibePro-derived DS should include semantic colors, state colors, component roles, CTA hierarchy, composition rules, anti-patterns, and visual hypothesis policy.
-- Do not translate machine-facing identifiers while localizing human-facing artifacts. Keep JSON keys, schema names, enums, Story IDs, Gate IDs, DAG node IDs, task IDs, role IDs, commands, file paths, package names, and external tool names unchanged.
-- Prefer `vibepro execute start <repo> --story-id <id>` for isolation; it creates or reuses a managed worktree and records that state. Do not claim VibePro created a worktree unless the command output records it, and create branches only from inside the target worktree.
-- Do not clean dirty repository worktrees by reflexively stashing. First inspect `git status --short --branch`, unstaged diff, cached diff, and branch/HEAD reflog.
-- If a branch was advanced by external sync, merge, rebase, or another worktree, check whether the dirty state is a stale reverse diff from the previous branch commit to `HEAD`. Compare `git diff --stat <old> HEAD` with `git diff --cached --stat` / `git diff --stat` before deciding.
-- Only classify dirty state as safe to clean after proving it is already represented in `HEAD` and contains no extra user hunks. Otherwise report the exact files and keep the work intact.
-
-## Common Rationalizations
-
-- "This is only refactoring, so Story/Spec do not matter." Reject this; refactors can change contracts and must preserve or update the documented intent.
-- "No UI changed, so no user-facing evidence is needed." API, data, performance, and operational behavior can still affect users.
-- "A broad cleanup is efficient." VibePro favors scope that remains reviewable and tied to the Story.
-- "Agent Review can wait until after final." If the Gate requires it, unresolved review means the work is not complete.
-- "Design modernization is just visual polish." It must preserve routes, information architecture, CTA priority, states, data dependencies, and accessibility unless the Story/Spec intentionally change them.
+1. Storyの目的、受け入れ条件、変更しない振る舞いを確認する。
+2. 境界や契約が変わる場合だけArchitecture／ADRを更新する。
+3. 変更対象を一つの責務に絞り、必要なSpecを最小限更新する。
+4. 変更前の振る舞いを対象テストで固定し、小さく実装する。
+5. 影響範囲のテストを実行し、通常のGitHub PRとレビューへ進む。
 
 ## Red Flags
 
-- The refactor starts from code edits without identifying the Story.
-- Architecture or Spec gaps are discovered but left implicit.
-- Verification only proves the happy path or only the changed file.
-- A split-plan recommends separation but the implementation keeps unrelated lanes together.
-- Performance claims lack comparable before/after metrics.
-- UI modernization lacks derived DS and DS gate evidence.
+Gate DAG、`gate:agent_review`、head-bound evidence、review lifecycle、`vibepro pr create`、`vibepro execute merge` を必須にしない。旧成果物に表示されても新しい作業を起こさない。
+
+## Common Rationalizations
+
+「refactorだから旧Gate一式を閉じる必要がある」は理由にならない。必要なのは受け入れ条件と変更しない振る舞いの確認である。
 
 ## Verification
 
-Before calling the refactor complete, show that Story, Architecture, and Spec still align; run focused project verification for changed behavior; run the relevant diagnosis package; rerun `vibepro pr prepare`; and inspect `gate_status`, `gate:definition_of_done`, `gate:agent_review`, and the review cockpit decision path.
-
-## Completion Check
-
-Before calling the work done:
-
-- Story / Architecture / Spec relationship is clear.
-- Tests or verification evidence exists for changed behavior.
-- Purpose-level diagnosis package evidence exists when UI, security, performance, architecture, or launch readiness was the stated goal.
-- UI modernization has `derived-design-system.json`, `design-modernize.json`, and `ds-gate.json` evidence when the Story changes design/UX.
-- Performance improvements have comparable before/after evidence, or the PR explicitly says improvement rate is unknown and why.
-- `pr-prepare.json` `gate_status.ready_for_pr_create` is true.
-- `gate:agent_review` has passed when VibePro required parallel subagent review.
-- `review-cockpit.html` has a clear recommended decision.
-- `human-review.json` can record the human decision.
-- `vibepro pr create` is the PR creation path.
+変更コードと影響範囲のテストを確認する。受け入れ条件の未達、セキュリティ境界、データ損失、変更した配備／ロールバック、CI検証不能だけを阻害理由にする。

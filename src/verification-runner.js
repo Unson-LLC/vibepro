@@ -5,7 +5,9 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
+import { assertRuntimeIntegrity } from './runtime-info.js';
 import { toWorkspaceRelative } from './workspace.js';
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 import { classifyTermination, createProgressDeadline } from './progress-deadline.js';
 import {
   RUNNER_EVIDENCE_RECEIPT,
@@ -74,6 +76,7 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'timeout_ms',
   'max_output_bytes',
   'harness_env_removed',
+  'runner_node_version',
   'evidence_source'
 ]);
 
@@ -123,7 +126,7 @@ function assertArtifactDerivedKeysProtected(document = runArtifactProbeDocument(
 // Markers that make a nested runner report to a foreign harness instead of running normally.
 // Inheriting NODE_TEST_CONTEXT makes `node --test` exit 0 having run nothing and printed
 // nothing — a silent green that this command exists to make impossible.
-const HARNESS_ENV_MARKERS = Object.freeze(['NODE_TEST_CONTEXT']);
+const HARNESS_ENV_MARKERS = Object.freeze(['NODE_TEST_CONTEXT', 'VIBEPRO_RUNTIME_MODE']);
 
 // `verify record` lets the agent write the command, the status, the observed numbers and
 // the artifact they are cross-checked against, so the cross-check compares one piece of
@@ -148,6 +151,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   if (argv.length === 0) {
     throw new Error('verify run requires the command to execute after `--`, e.g. vibepro verify run . --id <id> --kind unit -- node --test test/foo.test.js');
   }
+  const runtimeIdentity = await assertRuntimeIntegrity({
+    purpose: 'evidence_generation',
+    env: options.env
+  });
   const timeoutMs = normalizeTimeout(options.timeoutMs);
   const maxOutputBytes = normalizeOutputLimit(options.maxOutputBytes);
   // Defaults to timeoutMs when unset: with no separate --no-progress-deadline-ms, the
@@ -170,6 +177,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   // source file mid-run moves the tree without moving HEAD, so both are sampled.
   const treeBefore = await sampleTreeState(root);
   const startedAt = new Date();
+  const startedMono = monotonicNow();
   const execution = await executeCommand(root, argv, { timeoutMs, noProgressDeadlineMs, maxOutputBytes, env: options.env });
   const finishedAt = new Date();
   const treeAfter = await sampleTreeState(root);
@@ -180,7 +188,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const parsedCounts = extractOutputCounts(execution.stdout) ?? extractOutputCounts(output);
   const runCounts = parsedCounts?.counts ?? null;
   const outputMetrics = parsedCounts?.format ?? 'none';
-  const durationMs = finishedAt.getTime() - startedAt.getTime();
+  const durationMs = Math.round(monotonicElapsed(startedMono));
   const status = execution.exitCode === 0 && !execution.signal ? 'pass' : 'fail';
   const headMoved = Boolean(headBefore && headAfter && headBefore !== headAfter);
   const worktreeComparison = compareWorktreeSamples(treeBefore, treeAfter);
@@ -233,6 +241,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     timeout_ms: String(timeoutMs),
     max_output_bytes: String(maxOutputBytes),
     harness_env_removed: (execution.envRemoved ?? []).join(',') || 'none',
+    runner_node_version: process.version,
     tree_mutated_during_run: String(treeMutated),
     head_moved_during_run: String(headMoved),
     worktree_changed_during_run: String(worktreeChanged),
@@ -294,7 +303,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     worktreeSampled,
     worktreeSamplingComplete,
     maxOutputBytes,
-    warnings
+    warnings,
+    runtimeIdentity
   }));
   const artifactPath = written.artifactPath;
   // Classified from the document actually written, not from the empty probe: the probe carries
@@ -349,7 +359,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       output_metrics: outputMetrics
     },
     observationOverrides: overrides,
-    additionalWarnings: warnings
+    additionalWarnings: warnings,
+    env: options.env
   }));
 
   return {
@@ -370,6 +381,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     worktree_sampling_complete: worktreeSamplingComplete,
     output_metrics: outputMetrics,
     counts: runCounts,
+    runtime_identity: runtimeIdentity,
     warnings,
     observation_overrides: overrides,
     run_artifact: toWorkspaceRelative(root, artifactPath),
@@ -482,11 +494,12 @@ export function executeCommand(root, argv, { timeoutMs, noProgressDeadlineMs, ma
       return;
     }
 
+    const startedMono = monotonicNow();
     const kernel = createProgressDeadline({
       no_progress_deadline_ms: noProgressDeadlineMs,
       max_wall_clock_ms: timeoutMs,
-      started_at: Date.now(),
-      now: () => Date.now()
+      started_at: startedMono,
+      now: monotonicNow
     });
 
     let stdout = '';
@@ -649,6 +662,7 @@ function buildRunArtifactDocument(storyId, kind, run) {
     producer: 'vibepro verify run',
     kind,
     story_id: storyId,
+    runtime_identity: run.runtimeIdentity ?? null,
     head_sha: run.headAfter,
     observed: run.computedValues,
     run: {
@@ -676,6 +690,7 @@ function buildRunArtifactDocument(storyId, kind, run) {
       worktree_sampling_complete: run.worktreeSamplingComplete,
       output_metrics: run.outputMetrics,
       counts: run.counts,
+      node_version: run.computedValues.runner_node_version,
       harness_env_removed: run.execution.envRemoved ?? [],
       log: run.logPath,
       log_truncated: run.logTruncated

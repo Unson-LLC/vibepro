@@ -198,7 +198,6 @@ export async function runDiagnosis(repoRoot, options = {}) {
   };
   manifest.runs = [run, ...(manifest.runs ?? []).filter((item) => item.run_id !== runId)];
   await writeManifest(root, manifest);
-
   return { runDir, run };
 }
 

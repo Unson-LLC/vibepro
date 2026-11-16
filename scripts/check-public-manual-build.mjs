@@ -1,8 +1,10 @@
+import { compareSemver, publishedVersions } from './published-versions.mjs';
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const FORBIDDEN_PUBLIC_ROUTES = [
+  'features/anonymized-value-cases',
   'reference/gate-tuning/2026-07',
   'reference/vibepro-ui-journey-e2e-dogfood'
 ];
@@ -20,13 +22,21 @@ export const FORBIDDEN_PUBLIC_CORPORA = [
 ];
 
 export const REQUIRED_PUBLIC_ROUTES = [
+  'cases/index.html',
+  'cases/evidence-gated-answer.html',
+  'cases/stable-completion-decision.html',
+  'cases/stable-batch-window.html',
+  'cases/restart-safe-delivery.html',
+  'cases/release-safety.html',
   'guide/agent-review.html',
   'guide/ai-pr-workflow.html',
+  'guide/brainbase-receiver.html',
   'guide/check-packs.html',
   'guide/checkpoints-and-execution.html',
   'guide/ci-integration.html',
   'guide/control-loop.html',
   'guide/core-concepts.html',
+  'guide/expert-judgment-nodes.html',
   'guide/feature-map.html',
   'guide/gate-tuning-ritual.html',
   'guide/gates-and-evidence.html',
@@ -35,6 +45,7 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'guide/managed-execution.html',
   'guide/release-and-audit.html',
   'guide/safety-model.html',
+  'guide/senior-engineering-judgment.html',
   'guide/story-spec-traceability.html',
   'guide/verification-decisions-ci.html',
   'guide/what-is-vibepro.html',
@@ -47,22 +58,34 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'releases/2026-05.html',
   'releases/2026-06.html',
   'releases/2026-07.html',
+  'releases/2026-08.html',
   'ja/guide/agent-review.html',
   'ja/guide/ai-pr-workflow.html',
+  'ja/guide/brainbase-receiver.html',
   'ja/guide/check-packs.html',
   'ja/guide/checkpoints-and-execution.html',
+  'ja/guide/ci-integration.html',
   'ja/guide/control-loop.html',
   'ja/guide/core-concepts.html',
+  'ja/guide/expert-judgment-nodes.html',
   'ja/guide/feature-map.html',
+  'ja/guide/gate-tuning-ritual.html',
   'ja/guide/gates-and-evidence.html',
   'ja/guide/getting-started.html',
   'ja/guide/graphify-impact.html',
   'ja/guide/managed-execution.html',
   'ja/guide/release-and-audit.html',
   'ja/guide/safety-model.html',
+  'ja/guide/senior-engineering-judgment.html',
   'ja/guide/story-spec-traceability.html',
   'ja/guide/verification-decisions-ci.html',
   'ja/guide/what-is-vibepro.html',
+  'ja/cases/index.html',
+  'ja/cases/evidence-gated-answer.html',
+  'ja/cases/stable-completion-decision.html',
+  'ja/cases/stable-batch-window.html',
+  'ja/cases/restart-safe-delivery.html',
+  'ja/cases/release-safety.html',
   'ja/reference/artifact-map.html',
   'ja/reference/cli.html',
   'ja/reference/cloudflare-pages.html',
@@ -71,7 +94,8 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'ja/releases/2026-01.html',
   'ja/releases/2026-05.html',
   'ja/releases/2026-06.html',
-  'ja/releases/2026-07.html'
+  'ja/releases/2026-07.html',
+  'ja/releases/2026-08.html'
 ];
 
 const REQUIRED_FILES = [
@@ -83,7 +107,31 @@ const REQUIRED_FILES = [
   'sitemap.xml'
 ];
 
-export async function checkPublicManualBuild(distDir) {
+export function findUnlistedPublishedVersions(historyMarkdownOrHtml, npmTime, sourceVersion) {
+  const headings = new Set([
+    ...[...historyMarkdownOrHtml.matchAll(/^## ([^\s]+)\s*$/gmu)].map((match) => match[1]),
+    // Read the version token inside each <h2>; no tag stripping (the text is only compared, never rendered).
+    ...[...historyMarkdownOrHtml.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/giu)]
+      .map((match) => match[1].match(/\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?/u)?.[0])
+      .filter(Boolean)
+  ]);
+  return publishedVersions(npmTime, headings).filter((version) => compareSemver(version, sourceVersion) <= 0 && !headings.has(version));
+}
+
+async function fetchNpmTime() {
+  try {
+    const response = await fetch('https://registry.npmjs.org/vibepro', { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`npm registry returned ${response.status}`);
+    const { time } = await response.json();
+    if (!time || typeof time !== 'object' || Array.isArray(time)) throw new Error('npm registry time is missing');
+    return time;
+  } catch (error) {
+    console.warn(`Warning: skipping published version history check: ${error.message}`);
+    return null;
+  }
+}
+
+export async function checkPublicManualBuild(distDir, { loadNpmTime = fetchNpmTime } = {}) {
   for (const relativePath of REQUIRED_FILES) {
     await requireFile(distDir, relativePath);
   }
@@ -92,6 +140,7 @@ export async function checkPublicManualBuild(distDir) {
   }
 
   const files = await walk(distDir);
+  const outputFiles = new Set(files.map(normalize));
   for (const corpus of FORBIDDEN_PUBLIC_CORPORA) {
     const forbiddenOutput = files.find((file) => {
       const normalized = normalize(file);
@@ -111,6 +160,19 @@ export async function checkPublicManualBuild(distDir) {
   const searchableFiles = files.filter((file) => /\.(?:html|js|json|txt|xml)$/u.test(file));
   for (const file of searchableFiles) {
     const content = await readFile(path.join(distDir, file), 'utf8');
+    if (file.endsWith('.html')) {
+      for (const match of content.matchAll(/\bhref=["'](\/(?:ja\/)?guide\/[^"'#?]*)(?:[?#][^"']*)?["']/gu)) {
+        const route = decodeURIComponent(match[1]).slice(1);
+        const destination = route.endsWith('/') ? `${route}index.html`
+          : route.endsWith('.html') ? route : `${route}.html`;
+        if (!outputFiles.has(destination)) {
+          throw new Error(`Public build has missing guide link destination ${match[1]} in ${normalize(file)}`);
+        }
+      }
+    }
+    if (file.endsWith('.html') && /class="[^"]*language-mermaid\b/u.test(content)) {
+      throw new Error(`Public build contains an unrendered Mermaid code fence: ${normalize(file)}`);
+    }
     for (const corpus of FORBIDDEN_PUBLIC_CORPORA) {
       const escapedCorpus = escapeRegExp(corpus);
       const publicLink = new RegExp(`(?:href|src)=["'](?:https://vibepro\\.pages\\.dev)?/?${escapedCorpus}/`, 'u');
@@ -142,6 +204,14 @@ export async function checkPublicManualBuild(distDir) {
     }
   }
 
+  const npmTime = await loadNpmTime();
+  if (npmTime) {
+    const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+    for (const relative of ['reference/version-history.html', 'ja/reference/version-history.html']) {
+      const missing = findUnlistedPublishedVersions(await readFile(path.join(distDir, relative), 'utf8'), npmTime, version);
+      if (missing.length) throw new Error(`Published version history lags npm in ${relative}: missing ${missing.join(', ')}`);
+    }
+  }
   return { status: 'pass', files: files.length };
 }
 

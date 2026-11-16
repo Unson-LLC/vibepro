@@ -8,7 +8,7 @@ parent_design: vibepro-release-notes-history
 
 ## 判断
 
-公開情報を二層に分ける。`reference/version-history` は「どの版を実行しているか」を示す版・チャネルの正本、`releases/` は「何が変わったか」を説明する読者向け履歴とする。
+公開情報を二層に分ける。`reference/version-history` は現在の版・チャネル表と、公開済みversionを削除・改名しない追記専用ledgerを持つ。`releases/` は「何が変わったか」をPR根拠とともに説明する読者向け履歴とする。
 
 release notesはGitHubのmerged PR一覧を母集団にするが、正式リリースとは呼ばない。正式公開版はGitHub Release、git tag、npm registryで確認できたものだけを掲載する。PR履歴は月次の開発マイルストーンとして再構成し、各主張を代表PRへリンクする。依存更新や監査artifactの追記は集計には含めるが、利用者が判断する主要変更からは除外する。
 

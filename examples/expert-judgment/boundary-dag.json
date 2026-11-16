@@ -1,0 +1,198 @@
+{
+  "schema_version": "0.1.0",
+  "case_id": "example-recipient-delivery-fallback",
+  "observations": [
+    {
+      "id": "delivery_outcome_defined",
+      "kind": "delivery_outcome_defined",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/delivery_outcome_defined"
+      ]
+    },
+    {
+      "id": "necessary_for_committed_job",
+      "kind": "necessary_for_committed_job",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/necessary_for_committed_job"
+      ]
+    },
+    {
+      "id": "required_protection",
+      "kind": "required_protection",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/required_protection"
+      ]
+    },
+    {
+      "id": "owner_value_choice_required",
+      "kind": "owner_value_choice_required",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/owner_value_choice_required"
+      ]
+    },
+    {
+      "id": "existing_authority_covers_action",
+      "kind": "existing_authority_covers_action",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/existing_authority_covers_action"
+      ]
+    },
+    {
+      "id": "change_scope_known",
+      "kind": "change_scope_known",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/change_scope_known"
+      ]
+    },
+    {
+      "id": "shared_contract_change",
+      "kind": "shared_contract_change",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/shared_contract_change"
+      ]
+    },
+    {
+      "id": "information_boundary_crossed",
+      "kind": "information_boundary_crossed",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/information_boundary_crossed"
+      ]
+    },
+    {
+      "id": "recipient_scope_authorized",
+      "kind": "recipient_scope_authorized",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/recipient_scope_authorized"
+      ]
+    },
+    {
+      "id": "execution_topology_known",
+      "kind": "execution_topology_known",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/execution_topology_known"
+      ]
+    },
+    {
+      "id": "dependency_available",
+      "kind": "dependency_available",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/dependency_available"
+      ]
+    },
+    {
+      "id": "fallback_preserves_contract",
+      "kind": "fallback_preserves_contract",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/fallback_preserves_contract"
+      ]
+    },
+    {
+      "id": "production_data_isolated",
+      "kind": "production_data_isolated",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/production_data_isolated"
+      ]
+    },
+    {
+      "id": "repeated_local_fixes",
+      "kind": "repeated_local_fixes",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/repeated_local_fixes"
+      ]
+    },
+    {
+      "id": "complexity_growing",
+      "kind": "complexity_growing",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/complexity_growing"
+      ]
+    },
+    {
+      "id": "outcome_improving",
+      "kind": "outcome_improving",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/outcome_improving"
+      ]
+    },
+    {
+      "id": "urgent_containment",
+      "kind": "urgent_containment",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/urgent_containment"
+      ]
+    },
+    {
+      "id": "capability_claimed",
+      "kind": "capability_claimed",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/capability_claimed"
+      ]
+    },
+    {
+      "id": "implementation_present",
+      "kind": "implementation_present",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/implementation_present"
+      ]
+    },
+    {
+      "id": "intended_path_observed",
+      "kind": "intended_path_observed",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/intended_path_observed"
+      ]
+    },
+    {
+      "id": "verification_repeating",
+      "kind": "verification_repeating",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/verification_repeating"
+      ]
+    },
+    {
+      "id": "material_unknown_open",
+      "kind": "material_unknown_open",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/material_unknown_open"
+      ]
+    },
+    {
+      "id": "next_check_changes_decision",
+      "kind": "next_check_changes_decision",
+      "value": true,
+      "source_refs": [
+        "synthetic:boundary-case/next_check_changes_decision"
+      ]
+    },
+    {
+      "id": "independently_required_check",
+      "kind": "independently_required_check",
+      "value": false,
+      "source_refs": [
+        "synthetic:boundary-case/independently_required_check"
+      ]
+    }
+  ]
+}

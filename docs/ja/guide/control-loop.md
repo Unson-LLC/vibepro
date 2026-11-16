@@ -1,69 +1,96 @@
-# 証拠付き出荷の制御ループ
+# ひとつの変更からPR準備まで
 
-VibeProは出荷を、一度だけ埋めればよいchecklistではなく、current headに結びついた契約の連鎖として扱います。
+[リポジトリの初期化](/ja/guide/getting-started)後の手順です。`story-example` と `/path/to/repo` は実際の値に置き換えてください。自動承認の工程ではなく、人がレビューする材料を揃える流れです。
 
-```text
-Story → Architecture / Spec → Code → Verification
-      → Independent Review → Adjudication → Release Guard
-      → PR → CI refresh → Merge → Canonical Audit / ROI
+## 1. Story
+
+`init` はStoryのIDを登録しますが、Story本文は生成しません。標準設定では、対象リポジトリ内の `docs/management/stories/active/story-example.md` を作り、要求と受け入れ条件を書きます。
+
+```markdown
+# 絞り込み条件を反映したCSV出力
+
+利用者は、絞り込み後に画面で見ている行をそのままCSVに出力したい。
+
+## Acceptance Criteria
+- CSVには、選択した絞り込み条件に合う行だけを出力する。
 ```
 
-## 1. 意図と設計を結ぶ
+Storyの保存先を変更している場合は、その設定先を使ってください。本文を用意したら診断します。
 
 ```bash
-vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify
-vibepro architecture write . --id <story-id> --input <architecture.json> --final
-vibepro spec write . --id <story-id> --input <spec.json> --final
-vibepro story diagnose . --id <story-id> --phase pre-implementation --run-graphify
+vibepro story diagnose /path/to/repo --id story-example
 ```
 
-Storyは成果契約、Architectureは境界とrollback、Specは機械可読なclause、code / test reference、必要diagramを所有します。GraphとJourney contextはimpact lensであり、これらのauthorityを置き換えません。
+Storyには、利用者が実現したいことと受け入れ条件を書きます。たとえば「CSVには、選択した絞り込み条件に合う行だけを出力する」です。診断は内容を見直す材料であり、正しさの保証ではありません。Graphify連携を使う場合だけ `--run-graphify` を追加します。
 
-## 2. 実装して挙動を証明する
+## 2. Spec
 
 ```bash
-vibepro verify record . \
-  --id <story-id> \
-  --kind build \
-  --status pass \
-  --command "npm run build" \
-  --artifact <durable-status-artifact> \
-  --scenario "production build completes" \
-  --observed "exit_code=0"
+vibepro spec write /path/to/repo --id story-example --draft --input /path/to/spec.json
 ```
 
-statusは `pass`、`fail`、`needs_setup` です。exit code 0だけでdurable artifactや具体的観測がない記録は、完了証明ではなく補助証跡になることがあります。
+Specには期待する振る舞いと参照先を書きます。上のコマンドを実行する前にJSONファイルを用意し、`/path/to/spec.json` をその絶対パスに置き換えます。相対パスは対象リポジトリではなく、コマンドを実行した場所から解決されます。以下はStoryの最初の受け入れ条件を参照する例です。ID・文言・参照先を、実際の変更に合わせてください。
 
-## 3. 独立して検査する
+```json
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-example",
+  "clauses": [{
+    "id": "INV-EXAMPLE-1",
+    "type": "invariant",
+    "statement": "CSVには、選択した絞り込み条件に合う行だけを出力する。",
+    "origin": {
+      "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }]
+    }
+  }]
+}
+```
 
-[エージェントレビュー](/ja/guide/agent-review)のprepare → separate reviewer start → inspection → lifecycle close → provenance付きrecordを実行します。Spec clauseやSenior Judgment itemに独立裁定が必要なら `adjudicate prepare` / `adjudicate record` を使います。
+これは最初の下書きであり、実装済み・テスト済みの証拠ではありません。実装を進めながら、実際のコードとテストへの参照も追加します。`--draft` は下書きとして保存する指定であり、Specの確定ではありません。
 
-## 4. GuardしてPRを準備する
+確定は別の手順です。現行の `spec readiness` にはStory登録、Graphifyのノード・エッジ、Story診断、現在のHEADに一致するreadinessが必要です。`vibepro spec readiness /path/to/repo --id story-example --base origin/main` の結果を確認し、条件を満たしてから `spec write --final` を使います。この下書き中心の手順ではGraphifyは任意ですが、現行の確定時検査では必要です。
+
+**SpecをPRのサマリーに含めるには、確定が必要です。** `pr prepare` が読むのは確定済みの `spec.json` だけです。下書きだけでは `no accepted spec found` と表示されます。Graphifyの情報を用意してStoryを診断した後、次を実行します。
 
 ```bash
-vibepro guard check . --story-id <story-id>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
+vibepro spec readiness /path/to/repo --id story-example --base origin/main
+vibepro spec write /path/to/repo --id story-example --final --input /path/to/spec.json
+vibepro spec show /path/to/repo --id story-example
 ```
 
-readinessの正本は `pr-prepare.json` の `gate_status` です。短いPR本文は判断briefであり、詳細証跡の代替ではありません。
+readinessで前提の不足が示された場合は、確定へ進まず解消してください。準備方法は[Graphifyによる影響範囲の確認](/ja/guide/graphify-impact)を参照してください。
 
-## 5. CIを更新してmergeする
+下書きを保存したら、対象リポジトリ内の `.vibepro/spec/story-example/draft.json` を開いて読み返します。`spec show` が読むのは確定済みの `spec.json` であり、下書きではありません。確定後に使ってください。
+
+参照検査で確認できるのは、宣言したファイルや対応するアンカーの存在です。実装が要求を満たすかは別に確認します。普段のエディターやコーディングエージェントで実装し、参照先も更新してください。
+
+## 3. 検証
 
 ```bash
-vibepro verify import-ci . --id <story-id> --pr <number>
-vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
-vibepro pr create . --story-id <story-id> --base origin/main
-vibepro execute merge . --story-id <story-id> --strategy merge
+vibepro verify run /path/to/repo --id story-example --kind unit -- npm test
 ```
 
-CI importは証跡集合を変えます。merge前にprepareとPR refreshを再実行し、artifactとPR本文をcurrent headへ揃えます。
+`npm test` は、その変更に適したテストコマンドに置き換えてください。`verify run` は指定コマンドを実行し、結果を記録します。成功しただけで受け入れ条件のすべてを確認したことにはなりません。テストが何を確かめているかも確認します。外部で得た結果には `verify record` を使え、記録の出所を区別できます。
 
-## 6. 出荷結果を残す
+## 4. レビューと判断
+
+レビュー用の文脈を用意し、Story・Spec・変更コード・テスト結果を実際に確認します。以下の `pass` は、レビューで問題が見つからなかった場合だけ使う例です。要約と参照先は、実際に確認した内容へ置き換えてください。問題があれば `needs_changes` または `block` として記録します。
 
 ```bash
-vibepro audit replay . --story-id <story-id>
-vibepro usage report . --gate-roi --subagent-roi
+vibepro review prepare /path/to/repo --id story-example --role reviewer
+vibepro review record /path/to/repo --id story-example --role reviewer \
+  --status pass --summary "StoryとSpec、変更対象を確認済み" \
+  --inspection-input src/example.js
+vibepro review status /path/to/repo --id story-example
+vibepro decision status /path/to/repo --id story-example
 ```
 
-Canonical auditは「何が出荷されたか」「正本checkoutから再生できるか」を示します。Usage reportは出荷価値と、証跡・レビューのコストを分離します。
+これらのコマンドで軽量なレビュー記録を保存します。選択理由を明示する必要があれば判断記録も使いますが、すべての変更で別の判断を作り出す必要はありません。
+
+## 5. PRへの引き渡し
+
+```bash
+vibepro pr prepare /path/to/repo --story-id story-example --base origin/main
+```
+
+`.vibepro/pr/story-example/pr-prepare.json` と同じ場所の `pr-body.md` を確認します。変更の目的、実施した確認、未確認の点が伝わるかを読み返してから、普段のPR運用で使ってください。このコマンドはStory本文・Spec・検証・レビューがすべて揃わなくても出力できるため、出力されたことを作業の完了と取り違えないでください。`needs_changes`・`block` の具体的な問題があっても、`pr prepare` はblocking状態と理由を要約して終了します。`pr create` はblockedの準備結果ではPR作成を実行せず、指摘が解消されるまで停止します。準備ができたことは、承認済み・マージ可能という意味ではありません。`pr create` は任意のGitHub CLI連携であり、安全性を認定するものではありません。

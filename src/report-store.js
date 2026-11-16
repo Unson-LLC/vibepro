@@ -35,6 +35,16 @@ export async function readNarrative(repoRoot, storyId, kind) {
   }
 }
 
+// 壊れた保存済み説明で再生成を妨げず、通常の読込経路では不正JSONを識別できるようにする。
+export async function readNarrativeForRecovery(repoRoot, storyId, kind) {
+  try {
+    return await readNarrative(repoRoot, storyId, kind);
+  } catch (error) {
+    if (error instanceof SyntaxError) return null;
+    throw error;
+  }
+}
+
 export async function writeNarrative(repoRoot, storyId, kind, narrative) {
   await ensureReportDir(repoRoot, storyId, kind);
   const target = getNarrativeFile(repoRoot, storyId, kind);

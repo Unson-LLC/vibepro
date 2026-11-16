@@ -1,7 +1,8 @@
 ---
 story_id: story-vibepro-skill-docs-adjudication-refresh
 title: gate進化（adjudication・inconclusive・release guard）をagent Skillsへ反映する
-status: active
+status: historical
+updated_at: 2026-09-02
 view: dev
 period: 2026-07
 spec_docs:
@@ -13,6 +14,8 @@ reason:
   rollback: 対象2ファイルのdocs-only変更のため、revert一発で戻せる。runtime影響なし。
   boundary: 対象はskills/vibepro-gate-evidence/SKILL.mdとskills/vibepro-workflow/SKILL.md、本Story doc、Spec docミラー（docs/specs/story-vibepro-skill-docs-adjudication-refresh.md）、およびdesign-ssot.jsonへのtraceability登録（`vibepro design-ssot link`がCLI生成する正規化差分＝既存rootのchild_links backfillを含む。手編集はしない）。CLI実装・他Skill・CLAUDE.md/AGENTS.mdの本文は変更しない。
 ---
+
+> **Historical (2026-09-02)**: The adjudication skill guidance this Story added was removed along with `vibepro adjudicate` in PR #430. Kept as design history only.
 
 # Story
 

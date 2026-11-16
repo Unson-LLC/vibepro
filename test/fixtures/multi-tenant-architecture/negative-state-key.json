@@ -1,0 +1,6 @@
+{
+  "base_fixture": "pooled",
+  "resource_index": 0,
+  "resource_patch": { "partition_key": "shared_id" },
+  "expected_finding": "state_partition_key_mismatch"
+}

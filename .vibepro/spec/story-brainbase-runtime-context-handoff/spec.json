@@ -1,0 +1,46 @@
+{
+  "schema_version": "vibepro-spec.v1",
+  "story_id": "story-brainbase-runtime-context-handoff",
+  "status": "accepted",
+  "behavior": {
+    "commands": [
+      {
+        "name": "vibepro integration brainbase bind",
+        "required_options": [
+          "--id",
+          "--input"
+        ],
+        "output": ".vibepro/integrations/brainbase/<story-id>/context.json"
+      },
+      {
+        "name": "vibepro integration brainbase event",
+        "required_options": [
+          "--id",
+          "--summary"
+        ],
+        "output": ".vibepro/integrations/brainbase/<story-id>/knowledge-event.json"
+      }
+    ],
+    "handoff_schema": "brainbase-vibepro-context-handoff.v1",
+    "context_schema": "vibepro-brainbase-context.v1",
+    "event_schema": "knowledge_event.v1"
+  },
+  "invariants": [
+    "VibePro must not call or recalculate Brainbase Judgment Resolver.",
+    "Judgment receipt must be managed, resolved, continue, project-matched, digest-valid, and unresolved-free.",
+    "Every required knowledge.resolve capability must have one matching routing receipt and at least one actual canonical reference with a SHA-256 content digest.",
+    "Personal Knowledge, operational state, and unknown routes must not be persisted by v1.",
+    "Knowledge Event generation requires computed passing verification after context binding and matching the current git fingerprint.",
+    "Generated events must be non-decision candidates with Graph promotion and external action disabled."
+  ],
+  "verification": {
+    "tests": [
+      "test/brainbase-integration.test.js"
+    ],
+    "commands": [
+      "npm run typecheck",
+      "node --test test/brainbase-integration.test.js",
+      "npm test"
+    ]
+  }
+}

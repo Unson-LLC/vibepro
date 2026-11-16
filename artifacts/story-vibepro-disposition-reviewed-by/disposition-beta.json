@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.1.0",
+  "disposition_id": "disposition-2026-10-14T04-56-03-618Z-2aa3ef1f",
+  "story_id": "story-vibepro-disposition-reviewed-by",
+  "run_id": "judgment-disposition-reviewed-by-1",
+  "human_decision": "accepted",
+  "effect": "changed_plan",
+  "summary": "VALUE / proceed を採る。任意の reviewed_by を追加し、必須化と recorded_by への別名は不変条件違反として捨てる。story plan は Story catalog が無く失敗したため、計画成果物自体は未更新。",
+  "evidence_refs": [
+    "src/cli.js",
+    "src/judgment-operations.js"
+  ],
+  "recorded_by": "cursor-cloud-agent",
+  "recorded_at": "2026-10-14T04:56:03.618Z",
+  "artifact": ".vibepro/reviews/story-vibepro-disposition-reviewed-by/development-judgment/dispositions/judgment-disposition-reviewed-by-1/history/disposition-2026-10-14T04-56-03-618Z-2aa3ef1f.json",
+  "advisory": true,
+  "blocking": false
+}

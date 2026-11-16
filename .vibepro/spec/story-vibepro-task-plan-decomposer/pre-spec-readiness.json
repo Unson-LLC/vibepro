@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-plan-decomposer",
+  "created_at": "2026-10-17T14:03:05.592Z",
+  "status": "blocked",
+  "git": {
+    "head_sha": "44854636fcccc7d43182d728d4e62f3e21cbe234"
+  },
+  "checks": [
+    {
+      "id": "story_selected",
+      "status": "pass",
+      "reason": "Story is registered in .vibepro/config.json (brainbase.stories[])"
+    },
+    {
+      "id": "graphify_context",
+      "status": "blocked",
+      "reason": "Graphify artifact is missing"
+    },
+    {
+      "id": "story_diagnosis",
+      "status": "blocked",
+      "reason": "No story diagnosis run exists for this Story"
+    }
+  ],
+  "graphify": {
+    "available": false,
+    "artifact": ".vibepro/graphify/graph.json",
+    "node_count": 0,
+    "edge_count": 0,
+    "edge_source_key": null,
+    "reason": "Graphify artifact is missing"
+  },
+  "diagnosis": null,
+  "engineering_judgment": null,
+  "pr_prepare": {
+    "created_at": "2026-10-17T14:03:05.582Z",
+    "artifact": ".vibepro/pr/story-vibepro-task-plan-decomposer/pr-prepare.json"
+  },
+  "next_actions": [
+    "Run `vibepro graph . --run-graphify`.",
+    "Run `vibepro story diagnose . --id story-vibepro-task-plan-decomposer --pre-architecture --run-graphify`."
+  ]
+}

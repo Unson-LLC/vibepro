@@ -4,27 +4,27 @@
   "clauses": [
     {
       "id": "VIBE-CORE-PR-001",
-      "statement": "PR lifecycle execution must use VibePro readiness artifacts as the authority for pr create and execute merge, and must not treat raw GitHub PR state as sufficient without current Gate DAG evidence.",
+      "statement": "VibePro provides lightweight Story-to-Spec, implementation, affected-test, review, and PR-handoff traceability. The repository's normal GitHub PR, review, and merge flow is canonical; VibePro must not execute or grant authority for a GitHub merge.",
       "applies_to": {
-        "responsibility": "vibepro.pr_lifecycle.execution",
+        "responsibility": "vibepro.pr_handoff.traceability",
         "paths": [
-          "src/merge-manager.js",
-          "src/task-manager.js",
-          "src/usage-report.js"
+          "src/cli.js",
+          "src/pr-manager.js"
         ],
         "symbols": [
-          "ready_for_pr_create",
-          "pr_create_allowed",
-          "execute merge",
-          "pr_merge"
+          "pr prepare",
+          "pr create",
+          "Story-to-Spec traceability",
+          "GitHub PR handoff"
         ],
         "risk_surfaces": [
-          "gate_orchestration",
-          "core_workflow_state"
+          "pr_handoff",
+          "authority_boundary"
         ]
       },
       "evidence_requirements": [
-        "pr_lifecycle_regression"
+        "pr_handoff_regression",
+        "authority_boundary_regression"
       ]
     },
     {

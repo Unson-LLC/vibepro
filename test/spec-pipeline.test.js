@@ -374,18 +374,13 @@ export function specReadinessMarker() {
   for (const checkId of [
     'story_selected',
     'graphify_context',
-    'story_diagnosis',
-    'architecture_check',
-    'engineering_judgment'
+    'story_diagnosis'
   ]) {
     assert.equal(checksById.get(checkId)?.status, 'pass', `${checkId} should pass`);
   }
   assert.equal(readiness.graphify.available, true);
   assert.ok(readiness.graphify.node_count > 0);
   assert.equal(typeof readiness.diagnosis.run_id, 'string');
-  assert.equal(typeof readiness.architecture_check.run_id, 'string');
-  assert.equal(typeof readiness.engineering_judgment.route_type, 'string');
-  assert.ok(readiness.engineering_judgment.active_axis_count >= 0);
 });
 
 test('spec readiness missing diagnosis action uses design-input phase', async () => {
@@ -414,6 +409,39 @@ test('spec readiness missing diagnosis action uses design-input phase', async ()
     readiness.next_actions.some((action) => action.includes(`vibepro story diagnose . --id ${STORY_ID} --pre-architecture --run-graphify`)),
     true
   );
+});
+
+// issue #436 item 4: story_selected used to only look at
+// vibepro-manifest.json (populated by `story diagnose`), never at
+// .vibepro/config.json's brainbase.stories[]/current_story_id (populated by
+// `story add` / `story select`). A story registered and selected via
+// `story add`/`story select` but never diagnosed therefore reported
+// story_selected: blocked even though the CLI had already accepted it.
+// Also exercises a story id without the `story-` prefix, which init itself
+// accepts (mana-runtime's real repro used `slack-split-surrogate-safe`).
+test('spec readiness resolves story_selected from story add/select without requiring a diagnosis run', async () => {
+  const repo = await makeSpecRepo({ readyPreSpecEvidence: false });
+  await initGitRepo(repo);
+  const extraStoryId = 'slack-split-surrogate-safe';
+  const add = await captureRunCli(['story', 'add', repo, '--id', extraStoryId, '--title', 'issue #436 repro story']);
+  assert.equal(add.exitCode, 0);
+  const select = await captureRunCli(['story', 'select', repo, '--id', extraStoryId]);
+  assert.equal(select.exitCode, 0);
+
+  const { stdout } = await captureRunCli([
+    'spec',
+    'readiness',
+    repo,
+    '--id',
+    extraStoryId,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  const readiness = JSON.parse(stdout);
+  const storySelected = readiness.checks.find((check) => check.id === 'story_selected');
+  assert.equal(storySelected.status, 'pass');
+  assert.match(storySelected.reason, /config\.json/);
 });
 
 test('spec fingerprint resolves the explicit story id instead of falling back to existing STR-001', async () => {
@@ -480,6 +508,67 @@ test('spec write rejects clauses whose code_refs do not exist', async () => {
   const report = JSON.parse(stdout);
   assert.equal(report.ok, false);
   assert.ok(report.errors.some((err) => err.code === 'code_ref_missing'));
+});
+
+test('spec write JSON keeps semantic assessment and contract aliases on success and validation failure', async () => {
+  const repo = await makeSpecRepo();
+  const semanticContract = {
+    semantic_owner: 'The requesting user owns the meaning of the claim.',
+    deterministic_owner: 'The VibePro host validates declared structure.',
+    core_hypothesis: 'A result is sufficient only when it answers the requested claim.',
+    strongest_counterexample: 'A present result can describe a different subject.',
+    false_success_mode: 'Treating any result as an answer suppresses a needed question.',
+    unknown_representation: 'Use unknown when evidence cannot establish the claim.',
+    operational_definitions: [
+      ['sufficient', 'supports the requested claim'],
+      ['relevant', 'concerns the requested subject'],
+      ['directly_answers', 'answers the requested question'],
+      ['applicable', 'applies to the requested scope'],
+      ['current', 'is fresh for the requested time'],
+      ['non_conflicting', 'has no contradictory evidence'],
+      ['unambiguous', 'has one clear interpretation']
+    ].map(([term, definition]) => ({ term, definition }))
+  };
+  const makeSpec = (codeFile) => ({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    semantic_contract: semanticContract,
+    clauses: [{
+      id: 'INV-SEMANTIC-1',
+      type: 'invariant',
+      statement: 'semantic answer resolution remains explicit when evidence is incomplete',
+      origin: { code_refs: [{ file: codeFile, anchor: 'handleCancel' }] },
+      outcome_kind: 'internal_output',
+      case_kind: 'negative',
+      semantic_evaluation: {
+        answer_status: 'no_answer',
+        checks: { current: null }
+      }
+    }]
+  });
+
+  const success = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test'],
+    { stdin: readableFrom(JSON.stringify(makeSpec('src/lib/services/billing.ts'))) }
+  );
+  assert.equal(success.exitCode, 0, success.stdout);
+  const successJson = JSON.parse(success.stdout);
+  assert.equal(successJson.semantic_assessment.answer_status, 'no_answer');
+  assert.equal(successJson.semantic_assessment.answer_resolution, 'unresolved');
+  assert.equal(successJson.semantic_contract.answer_resolution, 'unresolved');
+  assert.deepEqual(successJson.semantic_contract.outcome_coverage, successJson.semantic_assessment.outcome_coverage);
+
+  const failure = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test'],
+    { stdin: readableFrom(JSON.stringify(makeSpec('src/does-not-exist.ts'))) }
+  );
+  assert.equal(failure.exitCode, 2, failure.stdout);
+  const failureJson = JSON.parse(failure.stdout);
+  assert.ok(failureJson.errors.some((error) => error.code === 'code_ref_missing'));
+  assert.equal(failureJson.semantic_assessment.answer_status, 'no_answer');
+  assert.equal(failureJson.semantic_assessment.answer_resolution, 'unresolved');
+  assert.equal(failureJson.semantic_contract.answer_resolution, 'unresolved');
+  assert.deepEqual(failureJson.semantic_contract.outcome_coverage, failureJson.semantic_assessment.outcome_coverage);
 });
 
 test('spec write accepts valid clause and assigns stable id; spec show reads it back', async () => {

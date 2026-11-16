@@ -1,10 +1,5 @@
 # Check Packs
 
-Check Packsは、リポジトリやworkflowごとの反復可能な確認をまとめます。
+このページは、以前のCheck Packs運用を説明していました。過去のリンクを維持するために残していますが、Check Packsと広範なGate機構は、現在のVibePro最小コアには含まれません。
 
-```bash
-vibepro check pr-readiness . --story-id <story-id> --base main
-vibepro check regression-risk .
-```
-
-証跡収集を再現可能にするために使います。該当軸がactiveな場合、checkが通っただけでruntime、security、data、release証跡の不足を置き換えてはいけません。
+現在の機能は、[機能マップ](/ja/guide/feature-map)と[コントロールループ](/ja/guide/control-loop)を参照してください。現行コアが扱うStory、Spec、構造上の参照、検証・レビュー記録、PR準備は、人間が判断するための証拠です。一般的な安全ゲートやマージゲートではありません。

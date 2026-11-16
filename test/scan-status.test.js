@@ -8,7 +8,6 @@ import test from 'node:test';
 import { buildScanCoverage, describeScanStatus, resolveScanConclusiveness } from '../src/scan-status.js';
 import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
-import { analyzeRegressionRisk } from '../src/regression-risk-scanner.js';
 
 async function makeRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-scan-status-'));
@@ -130,34 +129,6 @@ export async function loadDetail(id) {
   assert.ok(blockResult.scan_coverage.scanned_count > 0);
 });
 
-// SCAN-S-007: regression-risk-scanner: zero scored modules (nothing the call
-// graph could evaluate blast radius for) is inconclusive rather than a
-// silent pass.
-test('SCAN-S-007: regression-risk-scanner is inconclusive when zero modules are scored', () => {
-  const structuralOnlyGraph = {
-    nodes: [
-      { id: 'x', source_file: 'src/x.js' },
-      { id: 'y', source_file: 'src/y.js' }
-    ],
-    links: [{ relation: 'contains', source: 'y', target: 'x' }]
-  };
-  const result = analyzeRegressionRisk(structuralOnlyGraph);
-  assert.equal(result.summary.scored_modules, 0);
-  assert.equal(result.status, 'inconclusive');
-  assert.ok(typeof result.reason === 'string' && result.reason.length > 0);
-  assert.ok(Array.isArray(result.scan_coverage.roots));
-
-  // Regression guard: normal call-graph scoring is unaffected.
-  const node = (id, file) => ({ id, source_file: file });
-  const call = (s, t) => ({ relation: 'calls', source: s, target: t });
-  const scoredGraph = {
-    nodes: [node('hub_fn', 'src/hub.js'), node('a_fn', 'src/a.js')],
-    links: [call('a_fn', 'hub_fn')]
-  };
-  const scoredResult = analyzeRegressionRisk(scoredGraph, { highFanIn: 99, moderateFanIn: 99 });
-  assert.equal(scoredResult.summary.scored_modules, 1);
-  assert.equal(scoredResult.status, 'pass');
-});
 
 test('describeScanStatus renders inconclusive/not_applicable distinctly and passes through other statuses', () => {
   assert.match(describeScanStatus('inconclusive'), /inconclusive/);

@@ -3,10 +3,29 @@ import { appendFile, chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promi
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { evaluateGateReadiness } from './pr-manager.js';
 import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
+
+// The minimal core dropped Gate DAG / readiness evaluation (docs/management/REBUILD.md).
+// Guard's release-surface check is now a deterministic proxy: has `vibepro pr prepare`
+// been run at least once for the selected story? It is not a quality gate, only a
+// "did you even run pr prepare before this release surface command" tripwire.
+async function evaluatePrPrepareReadiness(repoRoot, { storyId } = {}) {
+  const config = await readGuardConfig(repoRoot);
+  const resolvedStoryId = storyId ?? config.selected_story_id ?? null;
+  if (!resolvedStoryId) {
+    return { status: 'no_story', ready_for_pr_create: false, story_id: null, gates: [] };
+  }
+  try {
+    const artifactPath = await resolvePrArtifactFile(repoRoot, resolvedStoryId, 'pr-prepare.json');
+    await readFile(artifactPath, 'utf8');
+    return { status: 'ready', ready_for_pr_create: true, story_id: resolvedStoryId, gates: [] };
+  } catch {
+    return { status: 'not_prepared', ready_for_pr_create: false, story_id: resolvedStoryId, gates: [] };
+  }
+}
 
 export const GUARD_HOOK_MARKER = '# vibepro-release-surface-guard';
 export const DEFAULT_PROTECTED_BRANCHES = ['main', 'master'];
@@ -123,7 +142,7 @@ export async function checkGuard(repoRoot, options = {}) {
   if (!options.storyId && !config.selected_story_id) {
     return { ...base, decision: 'allow', surface, reason: 'no story is selected in this workspace; guard has nothing to evaluate' };
   }
-  const readinessEvaluator = options.readinessEvaluator ?? evaluateGateReadiness;
+  const readinessEvaluator = options.readinessEvaluator ?? evaluatePrPrepareReadiness;
   let readiness;
   try {
     readiness = await readinessEvaluator(root, { storyId: options.storyId });
@@ -235,12 +254,9 @@ async function installPrePushHook(root) {
 function buildPrePushHookScript() {
   return `#!/bin/sh
 ${GUARD_HOOK_MARKER}
-# Managed by \`vibepro guard install\`. Delegates protected-branch pushes to
-# \`vibepro guard check\`; other refs pass through untouched. If the vibepro CLI
-# is not on PATH the hook allows the push instead of bricking git (boundary
-# documented in the release-surface-guard architecture doc).
-command -v \${VIBEPRO_GUARD_BIN:-vibepro} >/dev/null 2>&1 || exit 0
-exec \${VIBEPRO_GUARD_BIN:-vibepro} guard check "$(git rev-parse --show-toplevel)" --pre-push "$1" <&0
+# Validate the expected repository against Git's actual destination for every ref.
+command -v "\${VIBEPRO_GUARD_BIN:-vibepro}" >/dev/null 2>&1 || { echo 'Push blocked: destination validator unavailable.' >&2; exit 1; }
+exec "\${VIBEPRO_GUARD_BIN:-vibepro}" guard check "$(git rev-parse --show-toplevel)" --pre-push "$1" --push-url "$2" <&0
 `;
 }
 

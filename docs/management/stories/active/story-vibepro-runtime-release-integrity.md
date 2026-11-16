@@ -1,44 +1,51 @@
 ---
 story_id: story-vibepro-runtime-release-integrity
-title: "VibePro自己改善: 実際に動いているVibeProの版を保証する"
+title: "実行経路ごとのVibePro runtime identityを保証する"
 source:
-  type: codex-log-audit
+  type: runtime-incident
   id: VP-SELF-002
-  title: "修正済みと思ったVibeProが実行環境へ反映されない"
 architecture_docs:
-  - ../../architecture/vibepro-self-dogfood-control-loop-architecture.md
+  - ../../../architecture/vibepro-runtime-release-integrity.md
 spec_docs:
-  - ../../specs/vibepro-self-dogfood-control-loop.md
+  - ../../../specs/vibepro-runtime-release-integrity.md
 status: active
 created_at: 2026-05-16
-updated_at: 2026-05-16
+updated_at: 2026-08-11
 ---
 
-# Story: VibePro自己改善: 実際に動いているVibeProの版を保証する
+# Story: 実行経路ごとのVibePro runtime identityを保証する
 
 ## User Story
 
-**As a** VibeProを使って開発を任せたいユーザー
-**I want to** 実際に呼び出されているVibePro CLI、checkout、origin/main、Skill群の版が確認される
-**So that** 修正したはずの機能が古いcheckoutや古いSkillで実行され、同じ問題を再発させることを防げる
+**As a** VibeProで証跡とPR判断を生成する利用者
 
-## Background
+**I want to** launcher、hook、CLI、証跡が同じimmutable runtimeのidentityを証明する
+**So that** 古いcheckoutやdirtyな開発runtimeの結果を正規の判断として採用しない
 
-VibeProの修正後にも、実際に `~/.local/bin/vibepro` がどのcheckoutを参照しているか、`workspace/code/vibepro` がorigin/mainへ追随しているか、Skillが最新版に追随しているかを都度確認する必要があった。
+## Incident
 
-一方で、余計なcheckoutを増やすと実態把握が難しくなり、どのVibeProを使って検証したのかが曖昧になる。
+`~/.local/bin/vibepro` は265 commits behindかつ8 tracked files dirtyのdetached worktreeを参照し、Brainbase pre-pushは別の962 commits behind checkoutを絶対パス参照していた。旧doctorはこのbehind+dirtyを警告せず、Overall pass / exit 0としていた。
 
 ## Acceptance Criteria
 
-- [ ] `vibepro doctor` と `vibepro pr prepare` が、実行中CLIの実体パス、package root、git HEAD、branch、origin/mainとの差分を表示する
-- [ ] 実行中CLIが期待repoと異なる場合、PR gateに runtime_mismatch を出す
-- [ ] `workspace/code/vibepro` がorigin/mainに追随していない場合、stale_runtime として警告する
-- [ ] Skill配布先がVibePro本体の最新版とずれている場合、skills_drift として検出できる
-- [ ] 追加checkoutを作らずに、既存の正本checkoutを最新化する手順が証跡に残る
-- [ ] 診断結果には「どのファイル、どのログ、どのプロセスで確認したか」を含める
+- AC-1: `runtime identity` とdoctorが exact version、resolved entrypoint、package root、source kind、Git SHA/dirty/origin relation、identity digestを返す。
+- AC-2: 通常モードはrelease manifest付きnpm packageだけを信頼し、Git checkoutは明示的development観測に限定する。
+- AC-3: behindまたはdivergedのGit runtimeはdirtyでも `stale_runtime` で非0終了し、doctor fix・verify・PR artifactを変更しない。
+- AC-4: verify run artifact、verification evidenceの各command、PR prepare/createへruntime identityを記録し、identity欠落または不正な既存証跡をPR判断に使わない。
+- AC-5: npm tarballへsource commitを含むrelease manifestを同梱し、公開後はexact versionと`dist.integrity`を照合する。
+- AC-6: canonical launcherとBrainbase pre-pushは同じ公開済みexact npm runtimeを解決する。
+- AC-7: 旧dirty差分を復元可能なpatch/bundle/tarとして保全し、reset・削除・上書きしない。
 
-## Implementation Notes
+## Tasks
 
-- 対象候補: `src/runtime-info.js`, `src/doctor.js`, `src/pr-manager.js`
-- Skill同期の扱いは、VibePro本体と運用Skill repoの責務境界を明示する
-- dirty fileは実行版の判定と混ぜず、別の作業状態として扱う
+- TSK-1 Runtime policy: `src/runtime-info.js` と `test/runtime-info.test.js`。
+- TSK-2 Evidence propagation: doctor、verification、PR managerと対象テスト。
+- TSK-3 Release provenance: `scripts/runtime-manifest.mjs`、package metadata、pack/install smoke。
+- TSK-4 Consumer convergence: Brainbase hookとcanonical launcherを公開済みexact versionへ切り替える。
+- TSK-5 Release verification: npm exact version、gitHead、dist.integrity、dist.shasumと証跡smokeを記録する。
+
+## Boundaries
+
+- VibePro自己開発はplain git flowを使い、source checkoutを下流runtimeとして配布しない。
+- `.vibepro/` と旧audit artifactsはread-only archiveのため、本Story/Architecture/Spec/Taskを正本とする。
+- Skill driftはruntime integrityとは別Storyで扱う。

@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-projection-v2",
+  "created_at": "2026-08-04T16:43:44.645Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/adjudication/target-model-rebaseline-cards.md, docs/architecture/target-model.json)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/adjudication/target-model-rebaseline-cards.md, docs/architecture/target-model.json)"
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "8 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-04T16:43:41.617Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-target-model-projection-v2/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+      "branch": "codex/story-vibepro-target-model-projection-v2",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "cd0a38092d744c5a217ee2dfb3182e52b7a7ce37",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

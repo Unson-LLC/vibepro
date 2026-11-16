@@ -1,0 +1,1503 @@
+import { countExpertUnresolvedNodes, renderExpertJudgmentSummary } from './expert-judgment.js';
+import { createHash, randomUUID } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
+
+import { assertArtifactWritePath, resolveArtifactRoute } from './artifact-routing.js';
+import {
+  evaluateJudgmentWorkflow,
+  prepareJudgmentInput,
+  readDevelopmentJudgmentProjection,
+  recordJudgmentOutcome
+} from './judgment-workflow.js';
+import {
+  assertGenuineJudgmentRunId,
+  assertJudgmentSourceInsideVibepro,
+  JUDGMENT_RUN_ID_PATTERN,
+  judgmentLineageSha256,
+  normalizeWorkspaceRelative,
+  sourceInputStaysInsideVibepro
+} from './judgment-run-authenticity.js';
+import {
+  assertJudgmentAdoptionMac,
+  assertJudgmentReceiptContext,
+  assertJudgmentReceiptMac,
+  formatReviewedByActor,
+  parseReviewedByActor,
+  requireJudgmentReceiptKey,
+  resolveJudgmentPrNumber,
+  reviewedByIsMechanicallyCheckable,
+  sealJudgmentAdoption,
+  sealJudgmentReceipt
+} from './judgment-receipt.js';
+import { validateSeniorJudgmentInput } from './senior-judgment-dag.js';
+import { getWorkspaceDir, JUDGMENT_GITIGNORE_MIGRATION_NOTE, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
+
+const execFileAsync = promisify(execFile);
+const HUMAN_DECISIONS = new Set(['accepted', 'modified', 'rejected']);
+const JUDGMENT_EFFECTS = new Set(['changed_plan', 'changed_review_focus', 'escalated_to_human', 'no_effect']);
+const OUTCOME_STATUSES = new Set(['confirmed', 'mixed', 'falsified', 'unknown']);
+const ACTIONABLE_RECOMMENDATIONS = new Set([
+  'proceed',
+  'investigate',
+  'proceed_with_investigation',
+  'choose_viable_option',
+  'reduce_scope',
+  'measure_first'
+]);
+
+export async function recordJudgmentApplicability(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'judgment applicability record requires --id <story-id>');
+  const applicable = parseApplicable(options.applicable);
+  const reason = requireText(options.reason, 'judgment applicability record requires --reason <text>');
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const recordedAt = options.recordedAt ?? new Date().toISOString();
+  const recordId = options.recordId ?? `applicability-${timestampId(recordedAt)}-${randomUUID().slice(0, 8)}`;
+  const historyPath = await safePath(root, path.join(developmentRoot, 'applicability', 'history', `${recordId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'applicability', 'current.json'));
+  const record = {
+    schema_version: '0.1.0',
+    record_id: recordId,
+    story_id: storyId,
+    applicable,
+    reason,
+    recorded_by: normalizeText(options.recordedBy) ?? 'unknown',
+    recorded_at: recordedAt,
+    artifact: toWorkspaceRelative(root, historyPath),
+    advisory: true,
+    blocking: false
+  };
+  await mkdir(path.dirname(historyPath), { recursive: true });
+  await writeFile(historyPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
+  await mkdir(path.dirname(currentPath), { recursive: true });
+  await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  return {
+    record,
+    status: await getJudgmentOperationalStatus(root, storyId)
+  };
+}
+
+export async function prepareOperationalJudgmentInput(repoRoot, options = {}) {
+  const env = options.env ?? process.env;
+  requireJudgmentReceiptKey(env);
+  const prNumber = resolveJudgmentPrNumber(env);
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'judgment prepare requires --id <story-id>');
+  const applicability = await readApplicability(root, storyId);
+  if (!applicability) {
+    throw new Error(
+      `Judgment applicability is not recorded for Story ${storyId}. `
+      + `Run \`vibepro judgment applicability record . --id ${storyId} --applicable yes|no --reason <text>\` first.`
+    );
+  }
+  if (!applicability.applicable) {
+    throw new Error(`Development Judgment is recorded as not applicable for Story ${storyId}: ${applicability.reason}`);
+  }
+
+  const feedback = await readFeedbackPointer(root, storyId);
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const currentAdoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', 'current.json'));
+  if (currentAdoption && (!feedback || feedback.run_id !== currentAdoption.run_id)) {
+    throw new Error(
+      `Feedback for latest adopted judgment ${currentAdoption.run_id} is missing or stale for Story ${storyId}; `
+      + 'restore its feedback or record its disposition/outcome before preparing another run'
+    );
+  }
+  const previousCycle = feedback
+    ? await readAdoptedDevelopmentCycle(root, storyId, feedback)
+    : null;
+  if (options.runId !== undefined && options.runId !== null) {
+    await assertDraftRunAvailable(root, storyId, options.runId);
+  }
+  const prepared = await prepareJudgmentInput(root, options);
+  const input = structuredClone(prepared.input);
+  if (feedback) {
+    applyFeedbackToInput(input, feedback, previousCycle);
+  }
+
+  const absoluteArtifact = path.resolve(root, prepared.artifact);
+  const payload = `${JSON.stringify(input, null, 2)}\n`;
+  await writeFile(absoluteArtifact, payload, 'utf8');
+  const draftReceiptPath = await writeDraftReceipt(root, storyId, {
+    runId: prepared.run_id,
+    artifact: prepared.artifact,
+    sourceHeadSha: prepared.source_head_sha,
+    feedback,
+    inputSha256: sha256(payload),
+    lineageSha256: judgmentLineageSha256(input),
+    prNumber,
+    env
+  });
+
+  return {
+    ...prepared,
+    input,
+    feedback: feedback ? summarizeFeedback(feedback) : null,
+    lifecycle: 'draft_prepared',
+    draft_receipt: toWorkspaceRelative(root, draftReceiptPath)
+  };
+}
+
+export async function adoptJudgmentInput(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'judgment input adopt requires --id <story-id>');
+  const inputPath = requireText(options.inputPath, 'judgment input adopt requires --input <input.json>');
+  const reviewedBy = parseReviewedByActor(requireText(options.reviewedBy, 'judgment input adopt requires --reviewed-by <actor>'));
+  const env = options.env ?? process.env;
+  const authority = requireText(options.authority, 'judgment input adopt requires --authority <source>');
+  const summary = requireText(options.summary, 'judgment input adopt requires --summary <text>');
+  const resolvedInputPath = path.isAbsolute(inputPath) ? inputPath : path.resolve(root, inputPath);
+  const bytes = await readFile(resolvedInputPath, 'utf8');
+  const input = parseJson(bytes, `Invalid judgment input JSON at ${inputPath}`);
+  if (input.story_id !== storyId) {
+    throw new Error(`judgment input adopt --id ${storyId} does not match input story_id ${String(input.story_id)}`);
+  }
+  const runId = requireText(input.run_id, 'judgment input requires run_id');
+  const sourceInput = await assertJudgmentSourceInsideVibepro(root, resolvedInputPath);
+  const receipt = await assertDraftReceipt(root, storyId, runId);
+  await assertReceiptUseContext(root, receipt, env);
+  assertDraftLineage(receipt, input, runId);
+  assertDraftArtifact(receipt, sourceInput);
+  validateSeniorJudgmentInput(input);
+  const digest = sha256(bytes);
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const adoptedInputPath = await safePath(root, path.join(developmentRoot, 'inputs', `${runId}.json`));
+  const adoptionPath = await safePath(root, path.join(developmentRoot, 'adoptions', `${runId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'adoptions', 'current.json'));
+  const existing = await readJsonIfExists(adoptionPath);
+  if (existing) {
+    if (existing.input_sha256 !== digest) {
+      throw new Error(`Judgment input ${runId} was already adopted with a different SHA-256 digest`);
+    }
+    assertJudgmentAdoptionMac(existing, env);
+    return {
+      adoption: existing,
+      status: await getJudgmentOperationalStatus(root, storyId),
+      idempotent: true
+    };
+  }
+  assertPreparedInputHash(receipt, digest, runId);
+
+  await mkdir(path.dirname(adoptedInputPath), { recursive: true });
+  await writeFile(adoptedInputPath, bytes, { flag: 'wx' });
+  const adoptedAt = options.adoptedAt ?? new Date().toISOString();
+  const record = {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    run_id: runId,
+    source_input: sourceInput,
+    adopted_input: toWorkspaceRelative(root, adoptedInputPath),
+    input_sha256: digest,
+    reviewed_by: reviewedBy,
+    authority,
+    review_summary: summary,
+    pr_number: receipt.pr_number,
+    source_head_sha: receipt.source_head_sha,
+    problem_frame_status: input.problem_frame?.status ?? null,
+    active_axes: (input.axes ?? []).filter((axis) => axis.activation === 'active').map((axis) => axis.id),
+    option_count: input.options?.length ?? 0,
+    adopted_at: adoptedAt,
+    artifact: toWorkspaceRelative(root, adoptionPath),
+    advisory: true,
+    blocking: false
+  };
+  const signed = sealJudgmentAdoption(record, env);
+  await mkdir(path.dirname(adoptionPath), { recursive: true });
+  await writeFile(adoptionPath, `${JSON.stringify(signed, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(currentPath, `${JSON.stringify(signed, null, 2)}\n`, 'utf8');
+  return {
+    adoption: signed,
+    status: await getJudgmentOperationalStatus(root, storyId),
+    idempotent: false
+  };
+}
+
+export async function evaluateOperationalJudgmentWorkflow(repoRoot, options = {}) {
+  const env = options.env ?? process.env;
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'judgment evaluate requires --id <story-id>');
+  const inputPath = requireText(options.inputPath, 'judgment evaluate requires --input <input.json>');
+  const resolvedInputPath = path.isAbsolute(inputPath) ? inputPath : path.resolve(root, inputPath);
+  const bytes = await readFile(resolvedInputPath, 'utf8');
+  const input = parseJson(bytes, `Invalid judgment input JSON at ${inputPath}`);
+  if (input.story_id !== storyId) {
+    throw new Error(`judgment evaluate --id ${storyId} does not match input story_id ${String(input.story_id)}`);
+  }
+  const runId = requireText(input.run_id, 'judgment input requires run_id');
+  const sourceInput = await assertJudgmentSourceInsideVibepro(root, resolvedInputPath);
+  const draftReceipt = await assertDraftReceipt(root, storyId, runId);
+  await assertReceiptUseContext(root, draftReceipt, env);
+  assertDraftLineage(draftReceipt, input, runId);
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const adoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', `${runId}.json`));
+  if (!adoption) {
+    if (normalizeWorkspaceRelative(draftReceipt.artifact) !== sourceInput) {
+      assertDraftArtifact(draftReceipt, sourceInput);
+    }
+    throw new Error(
+      `Judgment input ${runId} has not been adopted. `
+      + `Run \`vibepro judgment input adopt . --id ${storyId} --input ${inputPath} --reviewed-by <actor> --authority <source> --summary <text>\` first.`
+    );
+  }
+  assertJudgmentAdoptionMac(adoption, env);
+  const digest = sha256(bytes);
+  if (adoption.input_sha256 !== digest) {
+    throw new Error(`Judgment input ${runId} changed after adoption; prepare and adopt a new run instead`);
+  }
+  assertEvaluatedInputBinding(draftReceipt, adoption, sourceInput, digest, runId);
+
+  const result = await evaluateJudgmentWorkflow(root, {
+    storyId,
+    inputPath: resolvedInputPath
+  });
+  const actionable = isActionableEvaluation(result.senior);
+  const evaluatedAt = new Date().toISOString();
+  const evaluationPath = await safePath(root, path.join(developmentRoot, 'evaluations', `${runId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'evaluations', 'current.json'));
+  const receipt = {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    run_id: runId,
+    input_sha256: digest,
+    adoption_artifact: adoption.artifact,
+    source_head_sha: await gitOptional(root, ['rev-parse', 'HEAD']) || null,
+    actionable,
+    reason_codes: evaluationReasonCodes(result.senior),
+    development_mode: result.senior.development_mode ?? null,
+    recommendation: result.senior.recommendation ?? null,
+    unknown_count: result.senior.unknown_count ?? result.senior.unknowns?.length ?? 0,
+    ...(result.senior.investigation_input ? {
+      investigation_context: structuredClone(result.senior.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(result.senior.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: result.senior.investigation_unresolved_questions?.length ?? 0
+    } : {}),
+    viable_options: result.senior.viable_options ?? [],
+    pruned_options: result.senior.pruned_options ?? [],
+    next_actions: result.senior.next_actions ?? [],
+    ...(result.senior.expert_judgment ? { expert_judgment: result.senior.expert_judgment, expert_unresolved_node_count: countExpertUnresolvedNodes(result.senior.expert_judgment) } : {}),
+    evaluated_at: evaluatedAt,
+    artifact: toWorkspaceRelative(root, evaluationPath),
+    advisory: true,
+    blocking: false
+  };
+  await mkdir(path.dirname(evaluationPath), { recursive: true });
+  await writeFile(evaluationPath, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(currentPath, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  return {
+    ...result,
+    operational: receipt,
+    operational_status: await getJudgmentOperationalStatus(root, storyId)
+  };
+}
+
+export async function recordJudgmentDisposition(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'judgment disposition record requires --id <story-id>');
+  const runId = requireText(options.runId, 'judgment disposition record requires --run <run-id>');
+  const humanDecision = requireAllowed(options.humanDecision, HUMAN_DECISIONS, '--human-decision');
+  const effect = requireAllowed(options.effect, JUDGMENT_EFFECTS, '--effect');
+  const summary = requireText(options.summary, 'judgment disposition record requires --summary <text>');
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const evaluation = await readJsonIfExists(path.join(developmentRoot, 'evaluations', `${runId}.json`));
+  if (!evaluation) throw new Error(`Judgment evaluation ${runId} is missing for Story ${storyId}`);
+  const recordedAt = options.recordedAt ?? new Date().toISOString();
+  const dispositionId = options.dispositionId ?? `disposition-${timestampId(recordedAt)}-${randomUUID().slice(0, 8)}`;
+  const historyPath = await safePath(root, path.join(developmentRoot, 'dispositions', runId, 'history', `${dispositionId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'dispositions', runId, 'current.json'));
+  const record = {
+    schema_version: '0.1.0',
+    disposition_id: dispositionId,
+    story_id: storyId,
+    run_id: runId,
+    human_decision: humanDecision,
+    effect,
+    summary,
+    evidence_refs: uniqueStrings(options.evidenceRefs),
+    recorded_by: normalizeText(options.recordedBy) ?? 'unknown',
+    reviewed_by: normalizeText(options.reviewedBy),
+    recorded_at: recordedAt,
+    artifact: toWorkspaceRelative(root, historyPath),
+    advisory: true,
+    blocking: false
+  };
+  await mkdir(path.dirname(historyPath), { recursive: true });
+  await writeFile(historyPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
+  await mkdir(path.dirname(currentPath), { recursive: true });
+  await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  await writeFeedbackPointer(root, storyId, {
+    story_id: storyId,
+    run_id: runId,
+    development_mode: evaluation.development_mode,
+    judgment_artifact: evaluation.artifact,
+    disposition: record,
+    outcome: null,
+    updated_at: recordedAt
+  });
+  return {
+    disposition: record,
+    status: await getJudgmentOperationalStatus(root, storyId)
+  };
+}
+
+export async function recordOperationalJudgmentOutcome(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'judgment outcome record requires --id <story-id>');
+  const runId = requireText(options.runId, 'judgment outcome record requires --run <run-id>');
+  const status = requireAllowed(options.status, OUTCOME_STATUSES, '--status');
+  const summary = requireText(options.summary, 'judgment outcome record requires --summary <text>');
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const disposition = await readJsonIfExists(path.join(developmentRoot, 'dispositions', runId, 'current.json'));
+  if (!disposition) {
+    throw new Error(
+      `Judgment disposition ${runId} is missing. `
+      + `Record accepted/modified/rejected and its delivery effect before recording an outcome.`
+    );
+  }
+  const evaluation = await readJsonIfExists(path.join(developmentRoot, 'evaluations', `${runId}.json`));
+  if (!evaluation) throw new Error(`Judgment evaluation ${runId} is missing for Story ${storyId}`);
+  const observedAt = options.observedAt ?? new Date().toISOString();
+  const outcomeId = options.evaluationId ?? `outcome-${timestampId(observedAt)}-${randomUUID().slice(0, 8)}`;
+  let legacy = null;
+  const currentDag = await readJsonIfExists(path.join(developmentRoot, 'current.json'));
+  if (currentDag?.run_id === runId) {
+    legacy = await recordJudgmentOutcome(root, {
+      storyId,
+      runId,
+      evaluationId: outcomeId,
+      humanDecision: disposition.human_decision,
+      effect: disposition.effect,
+      status,
+      summary,
+      evidenceRefs: options.evidenceRefs,
+      observedOutcomes: options.observedOutcomes,
+      observedAt
+    });
+  }
+
+  const historyPath = await safePath(root, path.join(developmentRoot, 'outcome-receipts', runId, 'history', `${outcomeId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'outcome-receipts', runId, 'current.json'));
+  const record = {
+    schema_version: '0.1.0',
+    evaluation_id: outcomeId,
+    story_id: storyId,
+    run_id: runId,
+    status,
+    summary,
+    evidence_refs: uniqueStrings(options.evidenceRefs),
+    observed_outcomes: normalizeObservedOutcomes(options.observedOutcomes),
+    observed_at: observedAt,
+    disposition_artifact: disposition.artifact,
+    legacy_artifact: legacy?.artifact ?? null,
+    artifact: toWorkspaceRelative(root, historyPath),
+    advisory: true,
+    blocking: false
+  };
+  await mkdir(path.dirname(historyPath), { recursive: true });
+  await writeFile(historyPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
+  await mkdir(path.dirname(currentPath), { recursive: true });
+  await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  await writeFeedbackPointer(root, storyId, {
+    story_id: storyId,
+    run_id: runId,
+    development_mode: evaluation.development_mode,
+    judgment_artifact: evaluation.artifact,
+    disposition,
+    outcome: record,
+    updated_at: observedAt
+  });
+  return {
+    outcome: record,
+    legacy,
+    status: await getJudgmentOperationalStatus(root, storyId)
+  };
+}
+
+export async function getJudgmentOperationalStatus(repoRoot, storyId) {
+  const root = path.resolve(repoRoot);
+  const id = requireText(storyId, 'judgment status requires --id <story-id>');
+  const developmentRoot = await resolveDevelopmentRoot(root, id);
+  const applicability = await readJsonIfExists(path.join(developmentRoot, 'applicability', 'current.json'));
+  const draft = await readJsonIfExists(path.join(developmentRoot, 'drafts', 'current.json'));
+  const adoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', 'current.json'));
+  const evaluation = await readJsonIfExists(path.join(developmentRoot, 'evaluations', 'current.json'));
+  const planBinding = await readJsonIfExists(path.join(developmentRoot, 'plan-bindings', 'current.json'));
+  const runId = evaluation?.run_id ?? adoption?.run_id ?? draft?.run_id ?? null;
+  const disposition = runId
+    ? await readJsonIfExists(path.join(developmentRoot, 'dispositions', runId, 'current.json'))
+    : null;
+  const outcome = runId
+    ? await readJsonIfExists(path.join(developmentRoot, 'outcome-receipts', runId, 'current.json'))
+    : null;
+
+  const lifecycle = resolveLifecycle({ applicability, draft, adoption, evaluation, planBinding, disposition, outcome });
+  const nextActions = buildLifecycleNextActions(id, lifecycle, { draft, adoption, evaluation, planBinding, disposition, outcome });
+  return {
+    schema_version: '0.1.0',
+    story_id: id,
+    lifecycle,
+    applicable: applicability?.applicable ?? null,
+    applicability,
+    run_id: runId,
+    draft,
+    adoption,
+    evaluation,
+    actionable: evaluation?.actionable ?? false,
+    plan_binding: planBinding?.run_id === runId ? planBinding : null,
+    disposition,
+    outcome,
+    pending_disposition: Boolean(evaluation?.actionable && (!planBinding || planBinding.run_id === runId) && !disposition),
+    pending_outcome: Boolean(disposition && (!outcome || outcome.status === 'unknown')),
+    next_actions: nextActions,
+    advisory: true,
+    blocking: false
+  };
+}
+
+export async function listPendingJudgmentWork(repoRoot) {
+  const root = path.resolve(repoRoot);
+  const config = await readJsonIfExists(path.join(getWorkspaceDir(root), 'config.json')) ?? {};
+  const stories = normalizeActiveStories(config?.brainbase?.stories);
+  const pending = [];
+  for (const story of stories) {
+    const status = await getJudgmentOperationalStatus(root, story.story_id);
+    if (status.pending_disposition || status.pending_outcome) {
+      pending.push({
+        story_id: story.story_id,
+        title: story.title ?? story.story_id,
+        lifecycle: status.lifecycle,
+        run_id: status.run_id,
+        pending_disposition: status.pending_disposition,
+        pending_outcome: status.pending_outcome,
+        next_actions: status.next_actions
+      });
+    }
+  }
+  return {
+    schema_version: '0.1.0',
+    pending_count: pending.length,
+    pending,
+    advisory: true,
+    blocking: false
+  };
+}
+
+export async function readOperationalJudgmentProjection(repoRoot, storyId) {
+  const root = path.resolve(repoRoot);
+  try {
+    const [base, status] = await Promise.all([
+      readDevelopmentJudgmentProjection(root, storyId),
+      getJudgmentOperationalStatus(root, storyId)
+    ]);
+    return {
+      ...base,
+      lifecycle: status.lifecycle,
+      applicable: status.applicable,
+      input_adopted: Boolean(status.adoption),
+      actionable: status.actionable,
+      plan_binding: status.plan_binding,
+      disposition: status.disposition,
+      pending_disposition: status.pending_disposition,
+      pending_outcome: status.pending_outcome,
+      outcome: status.outcome,
+      next_actions: status.next_actions,
+      operational_status: status
+    };
+  } catch (error) {
+    return {
+      available: false,
+      status: 'unavailable',
+      lifecycle: 'unavailable',
+      applicable: null,
+      input_adopted: false,
+      actionable: false,
+      plan_binding: null,
+      disposition: null,
+      pending_disposition: false,
+      pending_outcome: false,
+      outcome: null,
+      next_actions: [],
+      artifact: null,
+      advisory: true,
+      blocking: false,
+      error: sanitizeError(error)
+    };
+  }
+}
+
+export function applyDevelopmentJudgmentToPlan(plan, projection, options = {}) {
+  const storyId = options.storyId ?? projection?.story_id ?? null;
+  const next = structuredClone(plan);
+  const binding = {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    status: projection?.applicable === false
+      ? 'not_applicable'
+      : projection?.actionable
+        ? 'applied'
+        : projection?.lifecycle ?? 'not_started',
+    lifecycle_before_plan: projection?.lifecycle ?? 'not_started',
+    run_id: projection?.run_id ?? null,
+    development_mode: projection?.development_mode ?? null,
+    recommendation: projection?.recommendation ?? null,
+    actionable: Boolean(projection?.actionable),
+    unknown_count: projection?.unknown_count ?? 0,
+    ...(projection?.investigation_input ? {
+      investigation_input: structuredClone(projection.investigation_input),
+      investigation_context: structuredClone(projection.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(projection.investigation_unresolved_questions ?? []),
+      investigation_unresolved_count: projection.investigation_unresolved_count
+        ?? projection.investigation_unresolved_questions?.length
+        ?? 0
+    } : {}),
+    ...(projection?.expert_judgment ? {
+      expert_unresolved_node_count: projection.expert_unresolved_node_count,
+      expert_decision_paths: [...(projection.expert_judgment.decision_paths ?? [])],
+      expert_priority_checks: structuredClone(projection.expert_judgment.priority_checks ?? []),
+      expert_not_assessed_paths: [...(projection.expert_judgment.not_assessed_paths ?? [])]
+    } : {}),
+    judgment_artifact: projection?.artifact ?? null,
+    evaluation_artifact: projection?.operational_status?.evaluation?.artifact ?? null,
+    input_sha256: projection?.operational_status?.evaluation?.input_sha256 ?? null,
+    source_head_sha: projection?.operational_status?.evaluation?.source_head_sha ?? null,
+    effect: 'no_effect',
+    advisory: true,
+    blocking: false
+  };
+
+  if (binding.actionable && storyId) {
+    const guidance = buildJudgmentGuidanceTask(storyId, projection);
+    const existingTasks = Array.isArray(next.task_candidates) ? next.task_candidates : [];
+    if (!existingTasks.some((task) => task.id === guidance.id)) {
+      next.task_candidates = [guidance, ...existingTasks];
+      binding.effect = 'changed_plan';
+    }
+    next.priority_stories = (next.priority_stories ?? []).map((story) => story.story_id === storyId
+      ? { ...story, development_judgment: binding }
+      : story);
+    if ((projection.unknown_count ?? 0) > 0) {
+      next.questions = [{
+        story_id: storyId,
+        field: 'development_judgment_unknowns',
+        question: `Development Judgment ${projection.run_id} has ${projection.unknown_count} unresolved item(s); close or explicitly defer them before claiming the recommendation was followed.`,
+        priority: 'high'
+      }, ...(next.questions ?? [])].slice(0, 20);
+    }
+    const investigationQuestions = projection.investigation_unresolved_questions ?? [];
+    if (investigationQuestions.length > 0) {
+      const questions = investigationQuestions.map((item) => ({
+        story_id: storyId,
+        field: `judgment_investigation_${item.kind ?? 'question'}`,
+        question: item.text ?? item.question ?? String(item),
+        source: item.id ?? null,
+        priority: 'high'
+      }));
+      next.questions = [...questions, ...(next.questions ?? [])].slice(0, 20);
+    }
+    next.next_commands = uniqueStrings([
+      `vibepro judgment status . --id ${storyId}`,
+      ...(next.next_commands ?? [])
+    ]);
+  }
+  next.development_judgment = binding;
+  return { plan: next, binding };
+}
+
+export async function recordDevelopmentJudgmentPlanConsumption(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = requireText(options.storyId, 'plan consumption requires storyId');
+  const binding = options.binding ?? {};
+  if (!binding.run_id || !binding.actionable) return null;
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const consumedAt = options.consumedAt ?? new Date().toISOString();
+  const bindingId = options.bindingId ?? `plan-${timestampId(consumedAt)}-${randomUUID().slice(0, 8)}`;
+  const historyPath = await safePath(root, path.join(developmentRoot, 'plan-bindings', 'history', `${bindingId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'plan-bindings', 'current.json'));
+  const record = {
+    ...binding,
+    binding_id: bindingId,
+    plan_artifact: options.planArtifact ?? null,
+    plan_markdown: options.planMarkdown ?? null,
+    consumed_at: consumedAt,
+    artifact: toWorkspaceRelative(root, historyPath),
+    advisory: true,
+    blocking: false
+  };
+  await mkdir(path.dirname(historyPath), { recursive: true });
+  await writeFile(historyPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
+  await mkdir(path.dirname(currentPath), { recursive: true });
+  await writeFile(currentPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  return record;
+}
+
+export function renderDevelopmentJudgmentPlanMarkdown(binding) {
+  if (!binding) return '';
+  return [
+    '',
+    '## Development Judgment',
+    '',
+    `- Lifecycle before plan: ${binding.lifecycle_before_plan ?? 'not_started'}`,
+    `- Plan application: ${binding.status ?? 'not_started'}`,
+    `- Run: ${binding.run_id ? `\`${binding.run_id}\`` : '-'}`,
+    `- Development mode: ${binding.development_mode ?? 'not_selected'}`,
+    `- Recommendation: ${binding.recommendation ?? 'none'}`,
+    `- Investigation unresolved questions: ${binding.investigation_unresolved_count ?? 0}`,
+    `- Plan effect: ${binding.effect ?? 'no_effect'}`,
+    `- Actionable: ${Boolean(binding.actionable)}`,
+    `- Advisory: true`,
+    `- Blocking: false`,
+    ''
+  ].join('\n');
+}
+
+export function renderJudgmentApplicabilitySummary(result) {
+  return [
+    `Judgment applicability: ${result.record.applicable ? 'applicable' : 'not_applicable'}`,
+    `Story: ${result.record.story_id}`,
+    `Reason: ${result.record.reason}`,
+    `Lifecycle: ${result.status.lifecycle}`,
+    'Judgment applicability is advisory and non-blocking.',
+    ''
+  ].join('\n');
+}
+
+export function renderJudgmentAdoptionSummary(result) {
+  return [
+    `Judgment input adopted: ${result.adoption.run_id}`,
+    `Input SHA-256: ${result.adoption.input_sha256}`,
+    `Reviewed by: ${formatReviewedByActor(result.adoption.reviewed_by)}`,
+    `Authority: ${result.adoption.authority}`,
+    `Lifecycle: ${result.status.lifecycle}`,
+    ''
+  ].join('\n');
+}
+
+export function renderJudgmentOperationalEvaluationSummary(result) {
+  return [
+    `Development Judgment evaluation: ${result.operational.run_id}`,
+    `Actionable: ${result.operational.actionable}`,
+    `Development mode: ${result.operational.development_mode ?? 'not_selected'}`,
+    `Recommendation: ${result.operational.recommendation ?? 'none'}`,
+    `Lifecycle: ${result.operational_status.lifecycle}`,
+    ...(result.senior.expert_judgment ? [renderExpertJudgmentSummary(result.senior.expert_judgment).trimEnd()] : []),
+    'The evaluation is advisory and cannot change PR readiness or merge authority.',
+    ''
+  ].join('\n');
+}
+
+export function renderJudgmentDispositionSummary(result) {
+  return [
+    `Judgment disposition: ${result.disposition.disposition_id}`,
+    `Run: ${result.disposition.run_id}`,
+    `Human decision: ${result.disposition.human_decision}`,
+    `Effect: ${result.disposition.effect}`,
+    `Reviewed by: ${result.disposition.reviewed_by ?? '-'}`,
+    `Lifecycle: ${result.status.lifecycle}`,
+    ''
+  ].join('\n');
+}
+
+export function renderOperationalJudgmentOutcomeSummary(result) {
+  return [
+    `Judgment outcome: ${result.outcome.evaluation_id}`,
+    `Run: ${result.outcome.run_id}`,
+    `Outcome status: ${result.outcome.status}`,
+    `Lifecycle: ${result.status.lifecycle}`,
+    `Artifact: ${result.outcome.artifact}`,
+    ''
+  ].join('\n');
+}
+
+export function renderJudgmentOperationalStatus(result) {
+  return [
+    `Judgment lifecycle: ${result.lifecycle}`,
+    `Story: ${result.story_id}`,
+    `Applicable: ${result.applicable === null ? 'not_recorded' : result.applicable}`,
+    `Run: ${result.run_id ?? '-'}`,
+    `Input adopted: ${Boolean(result.adoption)}`,
+    `Actionable: ${result.actionable}`,
+    `Consumed by plan: ${Boolean(result.plan_binding)}`,
+    `Pending disposition: ${result.pending_disposition}`,
+    `Pending outcome: ${result.pending_outcome}`,
+    'Next actions:',
+    ...(result.next_actions.length ? result.next_actions.map((action) => `- ${action}`) : ['- none']),
+    'Judgment remains advisory and non-blocking.',
+    ''
+  ].join('\n');
+}
+
+export function renderPendingJudgmentWork(result) {
+  if (result.pending.length === 0) return 'No pending judgment disposition or outcome work.\n';
+  return [
+    `Pending judgment work: ${result.pending_count}`,
+    ...result.pending.flatMap((item) => [
+      `- ${item.story_id}: ${item.lifecycle} (run=${item.run_id ?? '-'})`,
+      ...item.next_actions.map((action) => `  - ${action}`)
+    ]),
+    ''
+  ].join('\n');
+}
+
+function resolveLifecycle({ applicability, draft, adoption, evaluation, planBinding, disposition, outcome }) {
+  if (!applicability) return 'not_started';
+  if (!applicability.applicable) return 'not_applicable';
+  if (!draft) return 'applicable_not_prepared';
+  const currentRunId = evaluation?.run_id ?? adoption?.run_id ?? draft?.run_id;
+  if (!adoption || adoption.run_id !== draft.run_id) return 'draft_prepared';
+  if (!evaluation || evaluation.run_id !== adoption.run_id) return 'input_reviewed';
+  if (!evaluation.actionable) return 'evaluated_unactionable';
+  if (!planBinding || planBinding.run_id !== currentRunId) return 'evaluated_actionable';
+  if (!disposition) return 'consumed_by_plan';
+  if (!outcome || outcome.status === 'unknown') return 'outcome_pending';
+  return 'closed';
+}
+
+function buildLifecycleNextActions(storyId, lifecycle, state) {
+  const draftArtifact = state.draft?.artifact ?? '<input-draft.json>';
+  const adoptedInput = state.adoption?.adopted_input ?? '<adopted-input.json>';
+  const runId = state.evaluation?.run_id ?? state.adoption?.run_id ?? state.draft?.run_id ?? '<run-id>';
+  const commands = {
+    not_started: [`vibepro judgment applicability record . --id ${storyId} --applicable yes|no --reason <text>`],
+    not_applicable: [],
+    applicable_not_prepared: [`vibepro judgment prepare . --id ${storyId}`],
+    draft_prepared: [
+      `vibepro judgment input adopt . --id ${storyId} --input ${draftArtifact} --reviewed-by human:<id>|agent:<id> --authority <source> --summary <text>`
+    ],
+    input_reviewed: [`vibepro judgment evaluate . --id ${storyId} --input ${adoptedInput}`],
+    evaluated_unactionable: [`Resolve the recorded problem-frame or evidence gaps, then prepare a new judgment run for ${storyId}`],
+    evaluated_actionable: ['vibepro story plan .'],
+    consumed_by_plan: [
+      `vibepro judgment disposition record . --id ${storyId} --run ${runId} --human-decision accepted|modified|rejected --effect changed_plan|changed_review_focus|escalated_to_human|no_effect --summary <text> [--reviewed-by <actor>]`
+    ],
+    outcome_pending: [
+      `vibepro judgment outcome record . --id ${storyId} --run ${runId} --status confirmed|mixed|falsified|unknown --summary <text> --evidence <ref>`
+    ],
+    closed: []
+  };
+  return commands[lifecycle] ?? [];
+}
+
+function buildJudgmentGuidanceTask(storyId, projection) {
+  const mode = projection.development_mode ?? 'VALIDATE';
+  const modeText = {
+    VALUE: '価値制約を直接解く最小の選択肢を実行する',
+    SIMPLIFY: '追加実装より削除・統合・再設計を優先し、構造面を増やさない',
+    VALIDATE: '本実装より先に識別的な証拠を得る検証を実行する'
+  }[mode] ?? '判断で示された次アクションを明示的に計画へ反映する';
+  const nextActions = projection.operational_status?.evaluation?.next_actions ?? [];
+  const priorityChecks = projection.expert_judgment?.priority_checks ?? [];
+  const notAssessedPaths = projection.expert_judgment?.not_assessed_paths ?? [];
+  const investigationQuestions = projection.investigation_unresolved_questions ?? [];
+  return {
+    id: `${storyId}-development-judgment-${mode.toLowerCase()}`,
+    story_id: storyId,
+    title: `Development Judgment ${mode}を計画へ反映する`,
+    purpose: `${modeText}。Recommendation: ${projection.recommendation ?? 'none'}`,
+    acceptance: [
+      `Judgment run ${projection.run_id}を計画根拠として保持する`,
+      modeText,
+      ...(priorityChecks.length
+        ? priorityChecks.map((check) => `専門判断の優先確認: ${formatExpertPriorityCheck(check)}`)
+        : []),
+      ...(notAssessedPaths.length
+        ? [`未評価の詳細経路を不適用と断定せず記録する: ${notAssessedPaths.join(', ')}`]
+        : []),
+      ...(investigationQuestions.length
+        ? investigationQuestions.map((item) => (
+          `調査の未解決事項: ${item.text ?? item.question ?? String(item)}`
+        ))
+        : []),
+      ...(nextActions.length ? nextActions.map((action) => `次アクション: ${formatNextAction(action)}`) : ['未解決事項を明示的に閉じるかdeferする'])
+    ],
+    priority: 'high',
+    source_type: 'development_judgment',
+    source_file: projection.artifact,
+    target_files: [],
+    read_first_files: projection.artifact ? [{ file: projection.artifact, reason: 'Development Judgmentの判断正本' }] : [],
+    graph_context: null,
+    recommended_strategy: {
+      id: `judgment-${mode.toLowerCase()}`,
+      reason: projection.recommendation ?? modeText
+    },
+    implementation_steps: [
+      { id: 'review-judgment', title: '判断正本を確認する', detail: `Run ${projection.run_id}の根拠・unknown・pruned optionsを確認する` },
+      { id: 'apply-mode', title: `${mode}モードを適用する`, detail: modeText },
+      { id: 'record-disposition', title: '採択と影響を記録する', detail: '実装またはレビューへ与えた影響をjudgment dispositionとして記録する' }
+    ],
+    suggested_command: `vibepro judgment status . --id ${storyId}`,
+    execution_policy: 'proposal_only',
+    mutates_repository: false,
+    judgment_binding: {
+      run_id: projection.run_id,
+      development_mode: mode,
+      recommendation: projection.recommendation,
+      decision_paths: [...(projection.expert_judgment?.decision_paths ?? [])],
+      priority_checks: structuredClone(priorityChecks),
+      not_assessed_paths: [...notAssessedPaths],
+      investigation_context: structuredClone(projection.investigation_context ?? null),
+      investigation_unresolved_questions: structuredClone(investigationQuestions),
+      investigation_unresolved_count: investigationQuestions.length,
+      advisory: true,
+      blocking: false
+    }
+  };
+}
+
+async function readAdoptedDevelopmentCycle(root, storyId, feedback) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const runId = requireText(feedback.run_id, 'feedback requires a previous run_id');
+  const wrongStory = feedback.story_id !== storyId
+    || feedback.disposition?.story_id !== storyId
+    || feedback.disposition?.run_id !== runId
+    || (feedback.outcome && (
+      feedback.outcome.story_id !== storyId || feedback.outcome.run_id !== runId
+    ));
+  if (wrongStory) {
+    throw new Error(`Feedback ${runId} does not match Story ${storyId}; restore the matching feedback before preparing another run`);
+  }
+  if (feedback.outcome?.status === 'confirmed' && !normalizeText(feedback.outcome.artifact)) {
+    throw new Error(`Confirmed feedback ${runId} has no outcome artifact; restore the verified outcome before preparing another run`);
+  }
+  const adoption = await readJsonIfExists(path.join(developmentRoot, 'adoptions', `${runId}.json`));
+  if (!adoption || adoption.story_id !== storyId || adoption.run_id !== runId) {
+    throw new Error(`Adopted judgment input ${runId} is missing or does not match Story ${storyId}`);
+  }
+  const inputPath = await safePath(root, path.join(developmentRoot, 'inputs', `${runId}.json`));
+  let bytes;
+  try {
+    bytes = await readFile(inputPath, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    throw new Error(`Adopted judgment input ${runId} is missing; restore the adopted input before preparing another run`);
+  }
+  if (sha256(bytes) !== adoption.input_sha256) {
+    throw new Error(`Adopted judgment input ${runId} changed after adoption; cumulative history cannot be reused`);
+  }
+  const previousInput = parseJson(bytes, `Invalid adopted judgment input for ${runId}`);
+  if (previousInput.story_id !== storyId || previousInput.run_id !== runId) {
+    throw new Error(`Adopted judgment input ${runId} does not match its Story or run`);
+  }
+  validateSeniorJudgmentInput(previousInput);
+  return previousInput.development_cycle;
+}
+
+function applyFeedbackToInput(input, feedback, previousCycle) {
+  const sourceRefs = uniqueStrings([
+    feedback.judgment_artifact,
+    feedback.disposition?.artifact,
+    feedback.outcome?.artifact
+  ]);
+  const outcomeStatus = feedback.outcome?.status ?? 'unknown';
+  const mode = feedback.development_mode ?? null;
+  input.observations = [
+    ...(input.observations ?? []),
+    {
+      id: `previous-judgment-${feedback.run_id}`,
+      statement: feedback.outcome
+        ? `Previous judgment ${feedback.run_id} produced outcome ${outcomeStatus}`
+        : `Previous judgment ${feedback.run_id} was adopted but its external outcome is still unknown`,
+      source_ref: feedback.outcome?.artifact ?? feedback.disposition?.artifact ?? feedback.judgment_artifact,
+      freshness: 'current'
+    }
+  ];
+  input.development_cycle.history_boundary = structuredClone(previousCycle.history_boundary);
+  input.development_cycle.adopted_batches = structuredClone(previousCycle.adopted_batches);
+  if (feedback.outcome?.status === 'confirmed') {
+    input.development_cycle.history_boundary = {
+      kind: mode === 'SIMPLIFY' ? 'simplification_baseline' : 'verified_external_outcome',
+      source_ref: feedback.outcome.artifact
+    };
+    input.development_cycle.adopted_batches = [];
+  } else {
+    input.development_cycle.adopted_batches.push({
+      id: `batch-${feedback.run_id}`,
+      story_ids: [feedback.story_id],
+      change_kind: modeToChangeKind(mode),
+      structural_effect: modeToStructuralEffect(mode),
+      external_outcome: outcomeToExternalOutcome(outcomeStatus),
+      source_refs: sourceRefs.length ? sourceRefs : ['previous-judgment-outcome-unavailable']
+    });
+  }
+}
+
+function summarizeFeedback(feedback) {
+  return {
+    run_id: feedback.run_id,
+    development_mode: feedback.development_mode,
+    disposition: feedback.disposition?.human_decision ?? null,
+    effect: feedback.disposition?.effect ?? null,
+    outcome: feedback.outcome?.status ?? null,
+    source: feedback.outcome?.artifact ?? feedback.disposition?.artifact ?? feedback.judgment_artifact
+  };
+}
+
+async function assertDraftRunAvailable(root, storyId, runId) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const receiptPath = await safePath(root, path.join(developmentRoot, 'drafts', `${runId}.json`));
+  try {
+    await readFile(receiptPath);
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  throw new Error(`Judgment draft ${runId} already exists; use a new --run-id`);
+}
+
+async function writeDraftReceipt(root, storyId, { runId, artifact, sourceHeadSha, feedback, inputSha256, lineageSha256, prNumber, env }) {
+  if (!sourceHeadSha) {
+    throw new Error('Judgment prepare cannot bind a receipt without source_head_sha. Commit the repository and prepare again.');
+  }
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const receiptPath = await safePath(root, path.join(developmentRoot, 'drafts', `${runId}.json`));
+  const currentPath = await safePath(root, path.join(developmentRoot, 'drafts', 'current.json'));
+  await markSupersededDraft(root, developmentRoot, runId);
+  const record = {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    run_id: runId,
+    artifact,
+    input_sha256: inputSha256,
+    lineage_sha256: lineageSha256,
+    source_head_sha: sourceHeadSha,
+    pr_number: prNumber,
+    feedback: feedback ? summarizeFeedback(feedback) : null,
+    prepared_at: new Date().toISOString(),
+    advisory: true,
+    blocking: false
+  };
+  const signed = sealJudgmentReceipt(record, env);
+  await mkdir(path.dirname(receiptPath), { recursive: true });
+  await writeFile(receiptPath, `${JSON.stringify(signed, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(currentPath, `${JSON.stringify(signed, null, 2)}\n`, 'utf8');
+  return receiptPath;
+}
+
+async function markSupersededDraft(root, developmentRoot, runId) {
+  const currentPath = path.join(developmentRoot, 'drafts', 'current.json');
+  const current = await readJsonIfExists(currentPath);
+  if (!current?.run_id || current.run_id === runId || current.superseded_at) return;
+  const previousPath = path.join(developmentRoot, 'drafts', `${current.run_id}.json`);
+  const previous = await readJsonIfExists(previousPath);
+  if (!previous || previous.superseded_at) return;
+  const marked = {
+    ...previous,
+    superseded_at: new Date().toISOString(),
+    superseded_by: runId
+  };
+  await writeFile(await safePath(root, previousPath), `${JSON.stringify(marked, null, 2)}\n`, 'utf8');
+}
+
+async function assertDraftReceipt(root, storyId, runId) {
+  assertGenuineJudgmentRunId(runId);
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const receipt = await readJsonIfExists(path.join(developmentRoot, 'drafts', `${runId}.json`));
+  if (!receipt) {
+    throw new Error(
+      `Judgment draft receipt drafts/${runId}.json is missing for Story ${storyId}. `
+      + `Run \`vibepro judgment prepare . --id ${storyId}\` and adopt that prepared artifact. `
+      + 'Hand-made judgment input is refused.'
+    );
+  }
+  if (receipt.story_id !== storyId || receipt.run_id !== runId) {
+    throw new Error(
+      `Judgment draft receipt drafts/${runId}.json does not match Story ${storyId} or run_id ${runId}.`
+    );
+  }
+  return receipt;
+}
+
+function assertDraftLineage(receipt, input, runId) {
+  const lineage = judgmentLineageSha256(input);
+  if (!receipt.lineage_sha256 || receipt.lineage_sha256 !== lineage || !receipt.input_sha256) {
+    throw new Error(
+      `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+      + `receipt lineage ${receipt.lineage_sha256 ?? 'missing'} != adopted lineage ${lineage}. `
+      + 'Keep the prepared story, run, and goal, and adopt the prepared artifact.'
+    );
+  }
+}
+
+function assertDraftArtifact(receipt, sourceInput) {
+  const artifact = normalizeWorkspaceRelative(receipt.artifact);
+  if (!artifact || artifact !== sourceInput) {
+    throw new Error(
+      `Judgment draft receipt artifact ${receipt.artifact ?? 'missing'} does not match the adopted input ${sourceInput}. `
+      + 'Adopt the prepared artifact inside .vibepro/.'
+    );
+  }
+}
+
+function assertEvaluatedInputBinding(receipt, adoption, sourceInput, digest, runId) {
+  const allowed = new Set([
+    normalizeWorkspaceRelative(receipt.artifact),
+    normalizeWorkspaceRelative(adoption.adopted_input),
+    normalizeWorkspaceRelative(adoption.source_input)
+  ].filter(Boolean));
+  if (!allowed.has(sourceInput)) {
+    throw new Error(
+      `Judgment draft receipt artifact ${receipt.artifact ?? 'missing'} does not match the adopted input ${sourceInput}. `
+      + 'Evaluate the prepared artifact or the adopted snapshot inside .vibepro/.'
+    );
+  }
+  if (receipt.input_sha256 !== digest) {
+    throw new Error(
+      `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+      + `receipt ${receipt.input_sha256 ?? 'missing'} != ${digest}.`
+    );
+  }
+}
+
+function assertPreparedInputHash(receipt, digest, runId) {
+  if (receipt.input_sha256 !== digest) {
+    throw new Error(
+      `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+      + `receipt ${receipt.input_sha256 ?? 'missing'} != ${digest}. `
+      + 'input_sha256 is fixed when prepare creates the receipt and adopt does not overwrite it.'
+    );
+  }
+}
+
+async function assertReceiptUseContext(root, receipt, env) {
+  const headSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  assertJudgmentReceiptContext(receipt, { env, headSha });
+}
+
+export async function auditJudgmentAdoptions(repoRoot, options = {}) {
+  const env = options.env ?? process.env;
+  const root = path.resolve(repoRoot);
+  const reviewsRoot = path.join(getWorkspaceDir(root), 'reviews');
+  const files = await findAdoptionCurrents(reviewsRoot);
+  const committed = await readCommittedTree(root);
+  const findings = [];
+  let keyError = null;
+  try {
+    requireJudgmentReceiptKey(env);
+  } catch (error) {
+    keyError = error;
+    findings.push({
+      artifact: null,
+      story_id: null,
+      run_id: null,
+      issues: [{ code: 'receipt_key_missing', message: error.message }]
+    });
+  }
+  let prNumber = null;
+  if (!keyError) {
+    try {
+      prNumber = resolveJudgmentPrNumber(env);
+    } catch (error) {
+      findings.push({
+        artifact: null,
+        story_id: null,
+        run_id: null,
+        issues: [{ code: 'pr_number_missing', message: error.message }]
+      });
+    }
+  }
+  for (const filePath of files) {
+    const relative = toWorkspaceRelative(root, filePath);
+    let record;
+    try {
+      record = JSON.parse(await readFile(filePath, 'utf8'));
+    } catch (error) {
+      findings.push({
+        artifact: relative,
+        issues: [{ code: 'adoption_unreadable', message: `Adoption ${relative} is not valid JSON: ${error.message}` }]
+      });
+      continue;
+    }
+    const issues = await inspectAdoptionRecord(root, record, filePath, committed, { env, prNumber, verifyMac: !keyError });
+    if (issues.length > 0) {
+      findings.push({
+        artifact: relative,
+        story_id: record?.story_id ?? null,
+        run_id: record?.run_id ?? null,
+        issues
+      });
+    }
+  }
+  const ok = findings.length === 0;
+  return {
+    schema_version: '0.1.0',
+    ok,
+    scanned: files.length,
+    finding_count: findings.length,
+    findings,
+    advisory: ok,
+    blocking: !ok
+  };
+}
+
+export function renderJudgmentAuditSummary(result) {
+  const lines = [
+    `Judgment audit: ${result.ok ? 'ok' : 'failed'}`,
+    `Advisory: ${result.advisory}`,
+    `Blocking: ${result.blocking}`,
+    `Scanned adoptions: ${result.scanned}`,
+    `Findings: ${result.finding_count}`
+  ];
+  for (const finding of result.findings ?? []) {
+    lines.push(`- ${finding.artifact} story=${finding.story_id ?? '-'} run=${finding.run_id ?? '-'}`);
+    for (const issue of finding.issues ?? []) lines.push(`  ${issue.code}: ${issue.message}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+async function inspectAdoptionRecord(root, record, adoptionFile, committed, context = {}) {
+  const issues = [];
+  const runId = typeof record?.run_id === 'string' ? record.run_id : '';
+  const storyId = typeof record?.story_id === 'string' ? record.story_id : '';
+  if (!JUDGMENT_RUN_ID_SAFE(runId)) {
+    issues.push({
+      code: 'run_id_format',
+      message: `Judgment run_id ${runId || 'missing'} is not genuine. Expected ${JUDGMENT_RUN_ID_PATTERN_TEXT()}.`
+    });
+  }
+  const sourceInput = normalizeWorkspaceRelative(record?.source_input);
+  if (!sourceInputStaysInsideVibepro(sourceInput)) {
+    issues.push({
+      code: 'source_input_outside_vibepro',
+      message: `Judgment source_input must stay inside .vibepro/. Refusing ${record?.source_input ?? 'missing'}.`
+    });
+  }
+  appendCommittedTreeIssues(issues, root, adoptionFile, runId, sourceInput, committed);
+  if (!storyId || !runId) return issues;
+  let receipt = null;
+  try {
+    const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+    receipt = await readJsonIfExists(path.join(developmentRoot, 'drafts', `${runId}.json`));
+  } catch (error) {
+    issues.push({
+      code: 'receipt_missing',
+      message: `Judgment draft receipt drafts/${runId}.json could not be read: ${error.message}`
+    });
+    return issues;
+  }
+  if (!receipt) {
+    issues.push({
+      code: 'receipt_missing',
+      message: `Judgment draft receipt drafts/${runId}.json is missing for Story ${storyId}.`
+    });
+    return issues;
+  }
+  const artifact = normalizeWorkspaceRelative(receipt.artifact);
+  if (!artifact || artifact !== sourceInput) {
+    issues.push({
+      code: 'artifact_mismatch',
+      message: `Judgment draft receipt artifact ${receipt.artifact ?? 'missing'} does not match the adopted input ${sourceInput || 'missing'}.`
+    });
+  }
+  if (!receipt.input_sha256 || receipt.input_sha256 !== record.input_sha256) {
+    issues.push({
+      code: 'input_hash_mismatch',
+      message: `Judgment draft receipt input hash does not match the adopted input for ${runId}. `
+        + `receipt ${receipt.input_sha256 ?? 'missing'} != adoption ${record.input_sha256 ?? 'missing'}.`
+    });
+  }
+  if (context.verifyMac) {
+    try {
+      assertJudgmentReceiptMac(receipt, context.env);
+    } catch (error) {
+      issues.push({ code: 'receipt_signature_invalid', message: error.message });
+    }
+    try {
+      assertJudgmentAdoptionMac(record, context.env);
+    } catch (error) {
+      issues.push({ code: 'adoption_signature_invalid', message: error.message });
+    }
+  }
+  if (context.prNumber != null && receipt.pr_number !== context.prNumber) {
+    issues.push({
+      code: 'pr_mismatch',
+      message: `Judgment draft receipt was prepared for PR ${receipt.pr_number ?? 'missing'} and cannot be used on PR ${context.prNumber}.`
+    });
+  }
+  if (receipt.pr_number !== record.pr_number) {
+    issues.push({
+      code: 'pr_mismatch',
+      message: `Judgment adoption PR ${record.pr_number ?? 'missing'} does not match receipt PR ${receipt.pr_number ?? 'missing'}.`
+    });
+  }
+  if (!receipt.source_head_sha || receipt.source_head_sha !== record.source_head_sha) {
+    issues.push({
+      code: 'head_mismatch',
+      message: `Judgment adoption head ${record.source_head_sha ?? 'missing'} does not match receipt head ${receipt.source_head_sha ?? 'missing'}.`
+    });
+  } else if (!(await headIncludesCommit(root, receipt.source_head_sha))) {
+    issues.push({
+      code: 'head_mismatch',
+      message: `Judgment draft receipt was prepared at head ${receipt.source_head_sha} and this checkout does not contain that head.`
+    });
+  }
+  if (!reviewedByIsMechanicallyCheckable(record.reviewed_by)) {
+    issues.push({
+      code: 'reviewed_by_unverified',
+      message: 'Judgment reviewed_by must be { kind: "human"|"agent", id } so the actor kind is mechanically checkable. '
+        + `Refusing ${JSON.stringify(record.reviewed_by ?? null)}.`
+    });
+  }
+  return issues;
+}
+
+async function headIncludesCommit(root, sha) {
+  if (!/^[0-9a-f]{7,64}$/.test(String(sha ?? ''))) return false;
+  const head = await gitOptional(root, ['rev-parse', 'HEAD']);
+  if (head && head === sha) return true;
+  try {
+    await execFileAsync('git', ['merge-base', '--is-ancestor', sha, 'HEAD'], { cwd: root });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function appendCommittedTreeIssues(issues, root, adoptionFile, runId, sourceInput, committed) {
+  const required = [];
+  if (runId && !runId.includes('/') && !runId.includes('\\') && !runId.includes('..')) {
+    const developmentDir = path.dirname(path.dirname(adoptionFile));
+    required.push(toWorkspaceRelative(root, path.join(developmentDir, 'drafts', `${runId}.json`)));
+    required.push(toWorkspaceRelative(root, path.join(developmentDir, 'runs', `${runId}.json`)));
+  }
+  required.push(sourceInput);
+  for (const relative of required) {
+    if (relative && committed.has(relative)) continue;
+    const shown = relative || 'source_input';
+    issues.push({
+      code: 'missing_from_committed_tree',
+      message: `Judgment file ${shown} is missing from the committed tree. ${JUDGMENT_GITIGNORE_MIGRATION_NOTE}`
+    });
+  }
+}
+
+async function readCommittedTree(root) {
+  const listing = await gitOptional(root, ['-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', 'HEAD']);
+  return new Set(listing.split('\n').map((line) => line.trim()).filter(Boolean));
+}
+
+function JUDGMENT_RUN_ID_SAFE(runId) {
+  return JUDGMENT_RUN_ID_PATTERN.test(runId);
+}
+
+function JUDGMENT_RUN_ID_PATTERN_TEXT() {
+  return String(JUDGMENT_RUN_ID_PATTERN);
+}
+
+async function findAdoptionCurrents(reviewsRoot) {
+  const found = [];
+  await walkAdoptionCurrents(reviewsRoot, found);
+  return found;
+}
+
+async function walkAdoptionCurrents(directory, found) {
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  for (const entry of entries) {
+    if (entry.isSymbolicLink()) continue;
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await walkAdoptionCurrents(fullPath, found);
+      continue;
+    }
+    if (entry.isFile() && entry.name === 'current.json' && path.basename(directory) === 'adoptions') {
+      found.push(fullPath);
+    }
+  }
+}
+
+async function writeFeedbackPointer(root, storyId, feedback) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  const target = await safePath(root, path.join(developmentRoot, 'feedback', 'current.json'));
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(target, `${JSON.stringify(feedback, null, 2)}\n`, 'utf8');
+}
+
+async function readFeedbackPointer(root, storyId) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  return readJsonIfExists(path.join(developmentRoot, 'feedback', 'current.json'));
+}
+
+async function readApplicability(root, storyId) {
+  const developmentRoot = await resolveDevelopmentRoot(root, storyId);
+  return readJsonIfExists(path.join(developmentRoot, 'applicability', 'current.json'));
+}
+
+async function resolveDevelopmentRoot(root, storyId) {
+  const route = await resolveArtifactRoute(root, 'review', { storyId });
+  const reviewRoot = await assertArtifactWritePath(root, route.canonical.relative_path);
+  return path.join(reviewRoot, 'development-judgment');
+}
+
+async function safePath(root, absolutePath) {
+  return assertArtifactWritePath(root, path.relative(root, absolutePath));
+}
+
+function isActionableEvaluation(senior) {
+  const frameValid = senior?.decision_context?.problem_frame?.status === 'valid';
+  if (!frameValid || !senior?.development_mode) return false;
+  if (senior.recommendation === 'revise_problem' || senior.recommendation === 'human_decision_required') return false;
+  if (ACTIONABLE_RECOMMENDATIONS.has(senior.recommendation)) return true;
+  return Array.isArray(senior.next_actions) && senior.next_actions.some((action) => action?.type !== 'review_expert_judgment');
+}
+
+function evaluationReasonCodes(senior) {
+  const reasons = [];
+  const frame = senior?.decision_context?.problem_frame?.status;
+  if (frame !== 'valid') reasons.push(`problem_frame_${frame ?? 'missing'}`);
+  if (!senior?.development_mode) reasons.push('development_mode_not_selected');
+  if (senior?.unknowns?.length) reasons.push('unknowns_present');
+  if (senior?.investigation_unresolved_questions?.length) reasons.push('investigation_unresolved');
+  if (senior?.recommendation) reasons.push(`recommendation_${senior.recommendation}`);
+  return reasons;
+}
+
+function modeToChangeKind(mode) {
+  return { VALUE: 'addition', SIMPLIFY: 'simplification', VALIDATE: 'validation' }[mode] ?? 'validation';
+}
+
+function modeToStructuralEffect(mode) {
+  return { VALUE: 'increase', SIMPLIFY: 'decrease', VALIDATE: 'neutral' }[mode] ?? 'unknown';
+}
+
+function outcomeToExternalOutcome(status) {
+  return { confirmed: 'improved', mixed: 'unchanged', falsified: 'regressed', unknown: 'unknown' }[status] ?? 'unknown';
+}
+
+function parseApplicable(value) {
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (['yes', 'true', 'applicable', '1'].includes(normalized)) return true;
+  if (['no', 'false', 'not_applicable', 'not-applicable', '0'].includes(normalized)) return false;
+  throw new Error('--applicable must be yes|no');
+}
+
+function parseJson(bytes, prefix) {
+  try {
+    return JSON.parse(bytes);
+  } catch (error) {
+    throw new Error(`${prefix}: ${error.message}`);
+  }
+}
+
+async function readJsonIfExists(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function gitOptional(root, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, { cwd: root, encoding: 'utf8' });
+    return stdout.trim();
+  } catch {
+    return '';
+  }
+}
+
+function normalizeObservedOutcomes(values) {
+  return (values ?? []).map((value) => {
+    if (value && typeof value === 'object') return value;
+    const [id, ...rest] = String(value).split(':');
+    return {
+      id: normalizeText(id) ?? `observation-${randomUUID().slice(0, 8)}`,
+      observation: normalizeText(rest.join(':')) ?? String(value)
+    };
+  });
+}
+
+function formatExpertPriorityCheck(check) {
+  if (!check || typeof check !== 'object') return String(check);
+  return [
+    `${check.path_id ?? 'detail'}/${check.step_id ?? 'check'}`,
+    check.question,
+    `if_true=${check.if_true}`,
+    `if_false=${check.if_false}`
+  ].filter(Boolean).join(' — ');
+}
+
+function formatNextAction(action) {
+  if (typeof action === 'string') return action;
+  if (!action || typeof action !== 'object') return String(action);
+  if (action.type === 'review_expert_judgment') {
+    const detailPaths = (action.detail_paths ?? []).map((path) => (
+      `詳細経路 ${path.path_id}: ${path.status}${path.recommendation ? ` — ${path.recommendation}` : ''}`
+    ));
+    const checks = (action.next_checks ?? [])
+      .filter((check) => !check.path_id)
+      .map((check) => check.question)
+      .filter(Boolean);
+    const options = (action.options ?? []).map((option) => option.summary).filter(Boolean);
+    const pending = [
+      ...(action.unknowns ?? []),
+      ...(action.context_requirements ?? []),
+      ...(action.upstream_unknowns ?? []).map((upstream) => upstream.node_id)
+    ];
+    return [
+      `専門判断 ${action.node_id} (採用状態: ${action.adoption_status})`, action.summary,
+      ...(detailPaths.length ? detailPaths : []),
+      ...(options.length ? [`選択肢: ${options.join(' / ')}`] : []),
+      ...(checks.length ? [`次の確認: ${checks.join(' / ')}`] : []),
+      ...(pending.length ? [`未解決: ${pending.join(', ')}`] : []),
+      '候補を確認して作業を選ぶ。実行権限の付与ではない'
+    ].filter(Boolean).join(' — ');
+  }
+  if (action.investigation_kind || String(action.type ?? '').startsWith('resolve_investigation_')
+    || String(action.type ?? '').startsWith('retry_investigation_')
+    || String(action.type ?? '').startsWith('reinterpret_investigation_')
+    || String(action.type ?? '').startsWith('collect_investigation_')) {
+    return [
+      action.type,
+      action.investigation_kind,
+      action.question,
+      action.reason
+    ].filter(Boolean).join(' / ');
+  }
+  return [action.type, action.hypothesis_id, action.detail, action.summary].filter(Boolean).join(' / ') || JSON.stringify(action);
+}
+
+function requireAllowed(value, allowed, flag) {
+  const normalized = requireText(value, `${flag} is required`);
+  if (!allowed.has(normalized)) throw new Error(`${flag} must be one of: ${[...allowed].join(', ')}`);
+  return normalized;
+}
+
+function requireText(value, message) {
+  const normalized = normalizeText(value);
+  if (!normalized) throw new Error(message);
+  return normalized;
+}
+
+function normalizeText(value) {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized || null;
+}
+
+function uniqueStrings(values = []) {
+  return [...new Set((values ?? []).filter((value) => typeof value === 'string' && value.trim()).map((value) => value.trim()))];
+}
+
+function sha256(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+function timestampId(value) {
+  return String(value).replace(/[^0-9A-Za-z]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function sanitizeError(error) {
+  return String(error?.message ?? error)
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 500);
+}

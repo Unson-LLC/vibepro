@@ -10,4 +10,4 @@ vibepro story derive . --json
 vibepro story diagnose . --id <story-id>
 ```
 
-Traceability connects Story clauses, Spec clauses, changed files, verification evidence, and PR gates. Impact Context can suggest related code, but it cannot decide product intent.
+Traceability connects Story clauses, Spec clauses, changed files, verification evidence, and the PR summary. Impact Context can suggest related code, but it cannot decide product intent. Start with the [one-change workflow](/guide/control-loop) to write a draft Spec and inspect its references.

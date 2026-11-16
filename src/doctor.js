@@ -2,9 +2,19 @@ import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { buildRuntimeDoctorCheck, collectRuntimeInfo } from './runtime-info.js';
-import { getWorkspaceDir, MANIFEST_FILE, SCHEMA_VERSION, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
+import {
+  getWorkspaceDir,
+  gitignoreTracksVibeproReviews,
+  JUDGMENT_GITIGNORE_MIGRATION_NOTE,
+  MANIFEST_FILE,
+  renderGitignoreUpdate,
+  SCHEMA_VERSION,
+  toWorkspaceRelative,
+  VIBEPRO_GITIGNORE_REVIEW_LINES,
+  writeManifest
+} from './workspace.js';
 
-const REQUIRED_GITIGNORE_LINES = [`${WORKSPACE_DIR}/*`, `!${WORKSPACE_DIR}/config.json`];
+const REQUIRED_GITIGNORE_LINES = VIBEPRO_GITIGNORE_REVIEW_LINES;
 
 export async function runDoctor(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -26,8 +36,16 @@ export async function runDoctor(repoRoot, options = {}) {
     next_commands: [],
     next_actions: [],
     artifacts: {},
-    toolchain: await collectRuntimeInfo()
+    toolchain: await collectRuntimeInfo({ env: options.env, purpose: 'observation' })
   };
+  result.runtime_identity = result.toolchain;
+  const runtimeCheck = buildRuntimeDoctorCheck(result.toolchain);
+  if (result.toolchain.integrity.status !== 'trusted') {
+    result.overall_status = 'blocked';
+    result.checks.push(runtimeCheck);
+    applyNextActions(result);
+    return result;
+  }
 
   const manifest = await readJsonIfExists(manifestPath);
   if (!manifest) {
@@ -46,7 +64,7 @@ export async function runDoctor(repoRoot, options = {}) {
         safe_to_run: true
       })]
     });
-    result.checks.push(buildRuntimeDoctorCheck(result.toolchain));
+    result.checks.push(runtimeCheck);
     applyNextActions(result);
     return result;
   }
@@ -231,10 +249,11 @@ export async function runDoctor(repoRoot, options = {}) {
       severity: 'warning',
       status: options.fix ? 'fixed' : 'fixable',
       fixable: true,
-      detail: gitignoreState.exists
-        ? `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} が含まれていない。`
-        : '.gitignore が存在せず .vibepro/ が無視されない。',
-      recommendation: 'vibepro doctor --fix または vibepro init で .gitignore に .vibepro/ を追記する。',
+      detail: gitignoreDetail(gitignoreState),
+      migration_note: gitignoreState.legacy_reviews_ignored ? JUDGMENT_GITIGNORE_MIGRATION_NOTE : null,
+      recommendation: gitignoreState.legacy_reviews_ignored
+        ? JUDGMENT_GITIGNORE_MIGRATION_NOTE
+        : 'vibepro doctor --fix または vibepro init で .gitignore に .vibepro/*、!.vibepro/config.json、!.vibepro/reviews/ を追記する。',
       next_actions: [buildAction({
         command: `vibepro doctor ${root} --fix`,
         reason: '.vibepro/ が git に含まれないように .gitignore を更新する。',
@@ -270,7 +289,7 @@ export async function runDoctor(repoRoot, options = {}) {
   if (configChanged) await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   if (manifestChanged) await writeManifest(root, manifest);
 
-  result.checks.push(buildRuntimeDoctorCheck(result.toolchain));
+  result.checks.push(runtimeCheck);
   result.overall_status = resolveDoctorStatus(result);
   applyNextActions(result);
   if (options.writeArtifacts !== false) await writeDoctorArtifact(root, result);
@@ -297,6 +316,16 @@ export function renderDoctor(result) {
 | Initialized | ${result.workspace.initialized ? 'yes' : 'no'} |
 | Overall | ${result.overall_status} |
 | Fix | ${result.fix ? 'yes' : 'no'} |
+| Runtime | ${result.runtime_identity?.package?.name ?? 'unknown'}@${result.runtime_identity?.package?.exact_version ?? result.runtime_identity?.package?.version ?? 'unknown'} |
+| Runtime mode | ${result.runtime_identity?.mode ?? 'unknown'} |
+| Runtime source | ${result.runtime_identity?.source_kind ?? 'unknown'} |
+| Runtime root | ${result.runtime_identity?.package?.root ?? 'unknown'} |
+| Runtime entrypoint | ${result.runtime_identity?.cli?.entrypoint ?? 'unknown'} |
+| Runtime SHA | ${result.runtime_identity?.source_git?.commit ?? 'unknown'} |
+| Runtime dirty | ${String(result.runtime_identity?.source_git?.dirty ?? 'unknown')} |
+| Runtime origin relation | ${result.runtime_identity?.source_git?.origin_main_relation ?? 'unknown'} |
+| Runtime integrity | ${result.runtime_identity?.integrity?.status ?? 'unknown'}${result.runtime_identity?.integrity?.code ? ` (${result.runtime_identity.integrity.code})` : ''} |
+| Runtime identity digest | ${result.runtime_identity?.identity_digest ?? 'unknown'} |
 
 ## Checks
 
@@ -325,19 +354,22 @@ async function checkGitignore(repoRoot) {
   }
   const lines = content.split(/\r?\n/).map((line) => line.trim());
   const hasRequired = REQUIRED_GITIGNORE_LINES.every((line) => lines.includes(line));
-  return { exists: true, content, needs_update: !hasRequired };
+  const tracksReviews = gitignoreTracksVibeproReviews(content);
+  const legacyReviewsIgnored = lines.includes('.vibepro/*') && lines.includes('!.vibepro/config.json') && !tracksReviews;
+  return { exists: true, content, needs_update: !hasRequired || !tracksReviews, legacy_reviews_ignored: legacyReviewsIgnored };
+}
+
+function gitignoreDetail(state) {
+  if (!state.exists) return '.gitignore が存在せず .vibepro/ が無視されない。';
+  if (state.legacy_reviews_ignored) return JUDGMENT_GITIGNORE_MIGRATION_NOTE;
+  return `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} が含まれていない。`;
 }
 
 async function applyGitignoreFix(repoRoot, state) {
   const gitignorePath = path.join(repoRoot, '.gitignore');
-  const existing = (state.content ?? '')
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== `${WORKSPACE_DIR}/`)
-    .join('\n');
-  const lines = existing.split(/\r?\n/).map((line) => line.trim());
-  const missing = REQUIRED_GITIGNORE_LINES.filter((line) => !lines.includes(line));
-  const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';
-  await writeFile(gitignorePath, `${prefix}${missing.join('\n')}\n`);
+  const updated = renderGitignoreUpdate(state.content ?? '', REQUIRED_GITIGNORE_LINES);
+  if (updated === null) return;
+  await writeFile(gitignorePath, updated);
 }
 
 async function readJsonIfExists(filePath) {
