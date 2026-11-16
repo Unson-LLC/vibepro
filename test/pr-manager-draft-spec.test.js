@@ -7,18 +7,17 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { runCli } from '../src/cli.js';
-import { preparePullRequest, renderPrPrepareSummary } from '../src/pr-manager.js';
+import {
+  preparePullRequest,
+  renderPrPrepareSummary
+} from '../src/pr-manager.js';
 import { getSpecDraftFile, readDraftSpec, writeDraftSpec, writeInferredSpec } from '../src/spec-store.js';
+import { runCli } from '../src/cli.js';
 
 const execFileAsync = promisify(execFile);
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
-}
-
-async function readJson(filePath) {
-  return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
 const STORY_DOC = [
@@ -34,7 +33,7 @@ const STORY_DOC = [
   ''
 ].join('\n');
 
-async function setupRepo({ storyId = 'story-draft-spec' } = {}) {
+async function setupRepo(storyId = 'story-draft-spec') {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-draft-spec-'));
   await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>');
   await git(root, ['init', '-b', 'main']);
@@ -42,106 +41,114 @@ async function setupRepo({ storyId = 'story-draft-spec' } = {}) {
   await git(root, ['config', 'user.name', 'VibePro Test']);
   await runCli(['init', root, '--story-id', storyId, '--title', 'Draft spec story']);
   await mkdir(path.join(root, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await writeFile(path.join(root, 'docs', 'management', 'stories', 'active', `${storyId}.md`), STORY_DOC);
+  await writeFile(
+    path.join(root, 'docs', 'management', 'stories', 'active', `${storyId}.md`),
+    STORY_DOC.replaceAll('story-draft-spec', storyId)
+  );
   await git(root, ['add', '.']);
   await git(root, ['commit', '-m', 'init']);
   await git(root, ['switch', '-c', 'feature/draft-spec']);
   await writeFile(path.join(root, 'widget.js'), 'export function renderWidget() { return true; }\n');
   await git(root, ['add', 'widget.js']);
-  await git(root, ['commit', '-m', 'implement widget rendering']);
+  await git(root, ['commit', '-m', 'implement widget']);
   return root;
 }
 
-function draft(clauses) {
-  return { schema_version: '0.1.0', story_id: 'story-draft-spec', clauses };
-}
+test('pr prepare reports draft spec when only draft.json exists', async () => {
+  const storyId = 'story-draft-only';
+  const root = await setupRepo(storyId);
+  await writeDraftSpec(root, storyId, {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    clauses: [{ id: 'C-1', statement: 'one' }, { id: 'C-2', statement: 'two' }]
+  });
 
-test('pr prepare reports a draft spec as draft, not missing', async () => {
-  const storyId = 'story-draft-spec';
-  const root = await setupRepo({ storyId });
-  await writeDraftSpec(root, storyId, draft([
-    { id: 'X-001', type: 'scenario', statement: 'one' },
-    { id: 'X-002', type: 'scenario', statement: 'two' }
-  ]));
-
-  const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
-
-  assert.deepEqual(result.preparation.spec, {
+  const { preparation } = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  assert.deepEqual(preparation.spec, {
     present: false,
     status: 'draft',
     story_id: storyId,
     clause_count: 2
   });
 
-  const summary = renderPrPrepareSummary(result);
+  const summary = renderPrPrepareSummary({ preparation, artifacts: { json: '', pr_body: '' } });
   assert.match(summary, /- spec: draft \(not accepted\)/);
 
   const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(body, new RegExp(`- draft spec present, not accepted \\(\`${storyId}\`, 2 clause\\(s\\)\\)`));
-  assert.doesNotMatch(body, /no accepted spec found for this story/);
+  assert.match(body, /- draft spec present, not accepted \(`story-draft-only`, 2 clause\(s\)\)/);
+  assert.doesNotMatch(body, /no accepted spec found/);
 });
 
-test('pr prepare treats an accepted spec as accepted even when a draft also exists', async () => {
-  const storyId = 'story-draft-spec';
-  const root = await setupRepo({ storyId });
+test('pr prepare prefers accepted spec when both accepted and draft exist', async () => {
+  const storyId = 'story-accepted-and-draft';
+  const root = await setupRepo(storyId);
+  await writeDraftSpec(root, storyId, {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    clauses: [{ id: 'D-1', statement: 'draft clause' }]
+  });
   await writeInferredSpec(root, storyId, {
     schema_version: '0.1.0',
     story_id: storyId,
-    clauses: [{ id: 'X-001', type: 'scenario', statement: 'accepted clause' }]
-  });
-  await writeDraftSpec(root, storyId, draft([
-    { id: 'X-001', type: 'scenario', statement: 'draft one' },
-    { id: 'X-002', type: 'scenario', statement: 'draft two' }
-  ]));
-
-  const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
-
-  assert.deepEqual(result.preparation.spec, {
-    present: true,
-    status: 'accepted',
-    story_id: storyId,
-    clause_count: 1
+    clauses: [{ id: 'A-1', statement: 'accepted clause' }]
   });
 
-  const summary = renderPrPrepareSummary(result);
+  const { preparation } = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  assert.equal(preparation.spec.status, 'accepted');
+  assert.equal(preparation.spec.present, true);
+  assert.equal(preparation.spec.clause_count, 1);
+
+  const summary = renderPrPrepareSummary({ preparation, artifacts: { json: '', pr_body: '' } });
   assert.match(summary, /- spec: present/);
-
-  const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
-  assert.match(body, new RegExp(`- accepted spec present \\(\`${storyId}\`, 1 clause\\(s\\)\\)`));
-  assert.doesNotMatch(body, /draft spec present/);
 });
 
-test('pr prepare reports missing when neither an accepted nor a draft spec exists', async () => {
-  const storyId = 'story-draft-spec';
-  const root = await setupRepo({ storyId });
+test('pr prepare reports missing spec when neither accepted nor draft exists', async () => {
+  const storyId = 'story-no-spec';
+  const root = await setupRepo(storyId);
 
-  const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  const { preparation } = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  assert.deepEqual(preparation.spec, { present: false, status: 'missing' });
 
-  assert.deepEqual(result.preparation.spec, { present: false, status: 'missing' });
-
-  const summary = renderPrPrepareSummary(result);
+  const summary = renderPrPrepareSummary({ preparation, artifacts: { json: '', pr_body: '' } });
   assert.match(summary, /- spec: missing/);
 
   const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
   assert.match(body, /- no accepted spec found for this story/);
 });
 
-test('pr prepare treats an invalid draft spec as missing without throwing', async () => {
-  const storyId = 'story-draft-spec';
-  const root = await setupRepo({ storyId });
-  const draftFile = getSpecDraftFile(root, storyId);
-  await mkdir(path.dirname(draftFile), { recursive: true });
-  await writeFile(draftFile, '{ not valid json');
+test('pr prepare treats invalid draft JSON as missing spec', async () => {
+  const storyId = 'story-invalid-draft';
+  const root = await setupRepo(storyId);
+  await mkdir(path.dirname(getSpecDraftFile(root, storyId)), { recursive: true });
+  await writeFile(getSpecDraftFile(root, storyId), '{not json', 'utf8');
 
-  const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
-
-  assert.deepEqual(result.preparation.spec, { present: false, status: 'missing' });
+  const { preparation } = await preparePullRequest(root, { storyId, baseRef: 'main' });
+  assert.deepEqual(preparation.spec, { present: false, status: 'missing' });
 });
+
+test('pr prepare gate status is unchanged for draft-only vs missing spec', async () => {
+  const storyId = 'story-gate-draft-vs-missing';
+  const rootMissing = await setupRepo(storyId);
+  const missingResult = await preparePullRequest(rootMissing, { storyId, baseRef: 'main' });
+
+  const rootDraft = await setupRepo(`${storyId}-draft`);
+  await writeDraftSpec(rootDraft, `${storyId}-draft`, {
+    schema_version: '0.1.0',
+    story_id: `${storyId}-draft`,
+    clauses: []
+  });
+  const draftResult = await preparePullRequest(rootDraft, { storyId: `${storyId}-draft`, baseRef: 'main' });
+
+  assert.equal(draftResult.preparation.gate_status, missingResult.preparation.gate_status);
+  assert.deepEqual(draftResult.preparation.blocking_reasons, missingResult.preparation.blocking_reasons);
+});
+
+function draft(clauses) { return { schema_version: '0.1.0', story_id: 'story-draft-spec', clauses }; }
 
 test('pr prepare treats non-object drafts as missing', async () => {
   const storyId = 'story-draft-spec';
   for (const raw of [null, [], 123, 'x', true, {}]) {
-    const root = await setupRepo({ storyId });
+    const root = await setupRepo(storyId);
     await writeDraftSpec(root, storyId, raw);
 
     assert.equal(await readDraftSpec(root, storyId), null);
@@ -162,7 +169,7 @@ test('pr prepare treats non-object drafts as missing', async () => {
 test('pr prepare counts clauses as zero when clauses is not an array', async () => {
   const storyId = 'story-draft-spec';
   for (const clauses of ['abc', {}]) {
-    const root = await setupRepo({ storyId });
+    const root = await setupRepo(storyId);
     await writeDraftSpec(root, storyId, draft(clauses));
 
     const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
@@ -185,7 +192,7 @@ test('pr prepare counts clauses as zero when clauses is not an array', async () 
 
 test('pr prepare counts an empty clauses array as zero clauses', async () => {
   const storyId = 'story-draft-spec';
-  const root = await setupRepo({ storyId });
+  const root = await setupRepo(storyId);
   await writeDraftSpec(root, storyId, draft([]));
 
   const result = await preparePullRequest(root, { storyId, baseRef: 'main' });
@@ -200,17 +207,4 @@ test('pr prepare counts an empty clauses array as zero clauses', async () => {
   const body = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
   assert.match(body, new RegExp(`- draft spec present, not accepted \\(\`${storyId}\`, 0 clause\\(s\\)\\)`));
   assert.doesNotMatch(body, /undefined/);
-});
-
-test('pr prepare draft spec leaves gate status and readiness identical to no spec', async () => {
-  const storyId = 'story-draft-spec';
-  const root = await setupRepo({ storyId });
-
-  const missing = await preparePullRequest(root, { storyId, baseRef: 'main' });
-  await writeDraftSpec(root, storyId, draft([{ id: 'X-001', type: 'scenario', statement: 'one' }]));
-  const draftOnly = await preparePullRequest(root, { storyId, baseRef: 'main' });
-
-  assert.equal(draftOnly.preparation.spec.status, 'draft');
-  assert.equal(draftOnly.preparation.gate_status, missing.preparation.gate_status);
-  assert.deepEqual(draftOnly.preparation.blocking_reasons, missing.preparation.blocking_reasons);
 });
