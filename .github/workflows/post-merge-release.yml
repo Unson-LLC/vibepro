@@ -12,7 +12,7 @@ concurrency:
 jobs:
   validation:
     if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     permissions:
       actions: read
       checks: read
@@ -56,7 +56,7 @@ jobs:
   release-candidate:
     needs: validation
     if: ${{ needs.validation.outputs.release_required == 'true' }}
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     timeout-minutes: 90
     permissions:
       contents: read
@@ -94,7 +94,7 @@ jobs:
     # exchange error - package not found"; brainbase and run 39088095340), so
     # this job does not publish. It dispatches npm-publish.yml, the npm Trusted
     # Publisher, and waits for it; a GITHUB_TOKEN may trigger workflow_dispatch.
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     timeout-minutes: 90
     permissions:
       actions: write
@@ -162,7 +162,7 @@ jobs:
     needs: [validation, release]
     # Docs follow a successful publication, or run alone when the version is unchanged.
     if: ${{ always() && needs.validation.result == 'success' && (needs.validation.outputs.release_required != 'true' || needs.release.result == 'success') }}
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     timeout-minutes: 90
     permissions:
       contents: write
@@ -222,7 +222,7 @@ jobs:
   recovery:
     needs: [validation, release-candidate, release, docs]
     if: ${{ always() && needs.validation.result == 'success' }}
-    runs-on: [self-hosted, Linux, X64, wsl-linux, nucbox-evo-x2]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' || '["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"]') }}
     permissions:
       contents: read
     steps:
