@@ -213,6 +213,64 @@
       },
       "first_seen_at": "2026-07-30T09:45:33.133Z",
       "last_revised_at": "2026-07-30T10:39:41.062Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Passing slash-bearing, whitespace-free, repository-relative --target values that do not resolve to an existing repository file are recorded unverified with the verification_target_path_missing warning rather than rejected. Strip :line, :a-b and #L suffixes before resolution; ignore globs, schemes, absolute and outside-repository paths, non-pass statuses, and ci_import targets. Preserve original observation targets and print warnings to CLI stderr while keeping --json stdout valid.",
+      "rationale": "Issue #447 preserves verify record as a manual/legacy escape hatch: targets may be check names like codecov/patch or wrong paths, so missing paths require a warning.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "未検証path は verification_target_path_missing 警告付きで記録する"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+            "section": "Acceptance Criteria",
+            "text_snippet": "verification_target_path_missing"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "missingTargetPaths"
+          },
+          {
+            "file": "src/cli.js",
+            "anchor": "warning.reason"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "verify record warns and still records a passing claim whose --target file does not exist"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "verify record accepts a check-name --target such as codecov/patch with a missing-path warning"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/verification-evidence.js",
+            "must_contain": "verification_target_path_missing"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/verification-command-test-path-guard.test.js",
+            "must_cover": "verify record warns and still records a passing claim whose --target file does not exist"
+          }
+        ]
+      },
+      "first_seen_at": "2026-11-01T00:00:00.000Z",
+      "last_revised_at": "2026-11-01T00:00:00.000Z"
     }
   ],
   "diagrams": [

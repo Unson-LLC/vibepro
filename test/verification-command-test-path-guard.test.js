@@ -1,6 +1,6 @@
 import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -173,4 +173,74 @@ test('failing recordはコマンドのパス実在に関係なく従来どおり
     summary: 'fails locally'
   });
   assert.equal(result.evidence.commands[0].status, 'fail');
+});
+
+test('verify record warns and still records a passing claim whose --target file does not exist', async () => {
+  const repo = await makeWorkspaceRepo();
+  await mkdir(path.join(repo, 'scripts'));
+  await writeFile(path.join(repo, 'scripts/check.sh'), 'exit 0\n');
+  const missing = ['scripts/check.ts', 'scripts/missing.js:42', 'scripts/missing.js:10-20', 'scripts/missing.js#L10-L20'];
+
+  for (const status of ['pass', 'passed', 'success', 'ok']) {
+    const result = await recordVerificationEvidence(repo, {
+      storyId: 'story-a', kind: 'unit', status, command: 'npm test',
+      targets: [...missing, 'scripts/check.sh']
+    });
+    const stored = JSON.parse(await readFile(path.join(repo, '.vibepro/pr/story-a/verification-evidence.json'), 'utf8'));
+    assert.equal(stored.commands[0].status, status);
+    assert.deepEqual(stored, result.evidence);
+    const warning = stored.commands[0].warnings.find((item) => item.id === 'verification_target_path_missing');
+    assert.ok(warning);
+    assert.equal(warning.command_name, 'verify record');
+    for (const target of missing) assert.ok(warning.reason.includes(target));
+    assert.match(warning.reason, /recorded unverified/);
+    assert.doesNotMatch(warning.reason, /check\.sh/);
+    assert.ok(stored.warnings.some((item) => item.id === warning.id));
+  }
+  assert.equal(await evidenceFileExists(repo, 'story-a'), true);
+});
+
+test('verify record accepts a check-name --target such as codecov/patch with a missing-path warning', async () => {
+  const repo = await makeWorkspaceRepo();
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'npm test',
+    targets: ['codecov/patch']
+  });
+  const stored = JSON.parse(await readFile(path.join(repo, '.vibepro/pr/story-a/verification-evidence.json'), 'utf8'));
+  assert.equal(stored.commands[0].status, 'pass');
+  assert.deepEqual(stored.commands[0].observation.targets, ['codecov/patch']);
+  const warning = stored.commands[0].warnings.find((item) => item.id === 'verification_target_path_missing');
+  assert.ok(warning);
+  assert.match(warning.reason, /codecov\/patch/);
+  assert.match(warning.reason, /recorded unverified/);
+});
+
+test('verify record accepts non-path targets and existing target files', async () => {
+  const repo = await makeWorkspaceRepo();
+  await addTestFile(repo, 'test/existing.test.js');
+  await writeFile(path.join(repo, 'existing.js'), '');
+  const targets = [
+    'auth_denied', 'surface', 'POST /api/x', 'vibepro.unson.jp', 'v1.2', 'missing-root.js',
+    'test/existing.test.js', 'test/existing.test.js:42', 'test/existing.test.js:10-20',
+    'test/existing.test.js#L10', './existing.js', 'existing.js', 'test/*.js', 'https://example.invalid/missing.js',
+    'custom:missing.js', '../outside.js', '/outside/missing.js'
+  ];
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'npm test', targets
+  });
+  assert.deepEqual(result.evidence.commands[0].observation.targets, targets);
+  assert.ok(!result.evidence.commands[0].warnings.some((item) => item.id === 'verification_target_path_missing'));
+});
+
+test('verify record keeps failing claims with a missing --target recordable', async () => {
+  const repo = await makeWorkspaceRepo();
+  for (const status of ['fail', 'failed', 'error', 'needs_setup']) {
+    const result = await recordVerificationEvidence(repo, {
+      storyId: 'story-a', kind: 'unit', status, command: 'npm test',
+      targets: ['scripts/missing.ts']
+    });
+    assert.equal(result.evidence.commands[0].status, status);
+    assert.ok(!result.evidence.commands[0].warnings.some((item) => item.id === 'verification_target_path_missing'));
+    assert.deepEqual(result.evidence.commands[0].observation.targets, ['scripts/missing.ts']);
+  }
 });
