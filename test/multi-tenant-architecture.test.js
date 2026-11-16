@@ -265,3 +265,32 @@ test('spec writeはStory本文を読み、finalを拒否してdraftへ警告を�
   assert.equal(draftWrite.output.multi_tenant_architecture.status, 'invalid');
   assert.ok(draftWrite.output.warnings.some((warning) => warning.code.startsWith('multi_tenant_')));
 });
+
+test('repository name containing "organization" does not activate the multi-tenant contract gate', async () => {
+  // Regression: Unson-LLC/brainbase-organization factory stories (T1/T2) failed `spec write --final`
+  // with multi_tenant_contract_missing only because "brainbase-organization" (actor substring) and
+  // generic words such as "statement"/"exports" (boundary substrings) co-occurred in the Story.
+  const storyText = `
+---
+owner_repository: brainbase-organization
+---
+## Acceptance Criteria
+- A draft PR with boundary tests exists on brainbase-organization.
+- Implementation lives only in brainbase-organization, never brainbase-unson.
+- statement: the reader exports a pure function over markdown text.
+`;
+  const detected = detectMultiTenantApplicability(storyText);
+  assert.notEqual(detected.status, 'applicable');
+  const report = assessMultiTenantArchitecture({ storyText });
+  assert.ok(!report.findings.some((finding) => finding.code === 'contract_missing'));
+
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-tenant-repo-name-'));
+  const validation = await validateSpec(repo, {
+    schema_version: '0.1.0', story_id: 'story-repo-name', clauses: []
+  }, { mode: 'final', storyContext: storyText });
+  assert.ok(!validation.errors.some((error) => error.code === 'multi_tenant_contract_missing'));
+
+  // Strong signals still activate the gate and still require a contract.
+  const strong = assessMultiTenantArchitecture({ storyText: `${storyText}\n複数テナントで tenant_id を伝播する。` });
+  assert.ok(strong.findings.some((finding) => finding.code === 'contract_missing'));
+});

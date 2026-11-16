@@ -18,6 +18,7 @@ import path from 'node:path';
 import process from 'node:process';
 import test from 'node:test';
 
+import { monotonicElapsed, monotonicNow } from '../../src/monotonic-clock.js';
 import { classifyTermination, createProgressDeadline } from '../../src/progress-deadline.js';
 import { runProcess } from '../../src/graphify-adapter.js';
 import { executeCommand } from '../../src/verification-runner.js';
@@ -120,14 +121,14 @@ test('AC5: streaming test-completion progress extends life; external SIGTERM rec
     '  if (i >= 15) { clearInterval(t); process.exit(0); }',
     '}, 50);'
   ].join('\n');
-  const startedAt = Date.now();
+  const startedAt = monotonicNow();
   const streamingResult = await executeCommand(process.cwd(), [process.execPath, '-e', streamingScript], {
     timeoutMs: 5000,
     noProgressDeadlineMs: 500,
     maxOutputBytes: 1_000_000,
     env: process.env
   });
-  const streamingElapsedMs = Date.now() - startedAt;
+  const streamingElapsedMs = monotonicElapsed(startedAt);
 
   // Sub-assertion 2: a signal verify run did not itself send (a self-delivered SIGTERM,
   // standing in for an external `kill` or an OOM killer) must be recorded as an external

@@ -7,6 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { createMarkdownRenderer } from 'vitepress';
 import { acquireLease } from '../scripts/npm-release-lock.mjs';
+import { publishedVersions } from '../scripts/published-versions.mjs';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const releaseTestParser = await createMarkdownRenderer(repositoryRoot);
@@ -22,6 +23,7 @@ import {
   projectPublishedVersion,
   projectReleaseNote,
   reconcileNpmRelease,
+  reconcilePublishedVersions,
   serializeBareMarkdownDestination,
   desiredDistTags,
   sanitizeReleaseContent,
@@ -538,6 +540,7 @@ test('RNLN-007 initializes the Markdown renderer only for projection commands', 
 
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-renderer-boundary-'));
   await mkdir(path.join(root, 'scripts'));
+  await writeFile(path.join(root, 'scripts/published-versions.mjs'), await readFile(path.join(repositoryRoot, 'scripts/published-versions.mjs'), 'utf8'));
   const isolatedScript = path.join(root, 'scripts', 'post-merge-release.mjs');
   await writeFile(isolatedScript, await readFile(path.join(repositoryRoot, 'scripts/post-merge-release.mjs'), 'utf8'));
   await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vibepro', version: '1.0.0' }));
@@ -708,6 +711,7 @@ function livePullRequestEvent(override = {}) {
 async function createReprojectFixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reproject-'));
   await mkdir(path.join(root, 'scripts'));
+  await writeFile(path.join(root, 'scripts/published-versions.mjs'), await readFile(path.join(repositoryRoot, 'scripts/published-versions.mjs'), 'utf8'));
   await mkdir(path.join(root, 'docs/releases'), { recursive: true });
   await mkdir(path.join(root, 'docs/ja/releases'), { recursive: true });
   await symlink(path.join(repositoryRoot, 'node_modules'), path.join(root, 'node_modules'), 'dir');
@@ -969,6 +973,99 @@ test('PCR-CON-005 serializes an interleaved older release with an atomic lease',
   assert.deepEqual(sleeps, [1_000, 10_000]);
 });
 
+function workflowJob(workflow, name) {
+  const start = workflow.indexOf(`\n  ${name}:\n`);
+  assert.ok(start >= 0, `missing job ${name}`);
+  const rest = workflow.slice(start + 1);
+  const next = rest.slice(1).search(/\n  [a-z][a-z-]*:\n/u);
+  return next < 0 ? rest : rest.slice(0, next + 1);
+}
+
+const SELF_HOSTED_RUNNER = /runs-on: \$\{\{ fromJSON\(vars\.CI_RUNNER_BACKUP == 'on' && '"ubuntu-latest"' \|\| '\["self-hosted","Linux","X64","wsl-linux","nucbox-evo-x2"\]'\) \}\}/u;
+
+// npm Trusted Publishing: OIDC works only on GitHub-hosted runners, and no
+// long-lived token may remain as a silent fallback. A fresh GitHub-hosted
+// checkout must fetch full history, or the prepack runtime-manifest guard
+// cannot see origin/main and refuses to pack.
+function assertTrustedPublishingJob(job) {
+  assert.match(job, /runs-on: ubuntu-latest/u);
+  assert.doesNotMatch(job, /self-hosted/u);
+  assert.match(job, /permissions:[\s\S]*?id-token: write/u);
+  assert.match(job, /actions\/checkout@v7\n\s+with:\n(?:\s+[a-z-]+: .+\n)*?\s+fetch-depth: 0\n/u);
+  // An environment claim would also have to match the npm Trusted Publisher
+  // entry, and npm logs the refusal reason only at verbose level.
+  assert.doesNotMatch(job, /^ {4}environment:/mu);
+  assert.match(job, /NPM_CONFIG_LOGLEVEL: verbose[\s\S]*publish-npm/u);
+  assert.match(job, /npm install --global npm@11\.21\.1$/mu);
+  assert.doesNotMatch(job, /NPM_TOKEN|NODE_AUTH_TOKEN|registry-url:/u);
+}
+
+test('PCR-CON-009 manual npm publish installs from the lockfile and proves a clean checkout before pack', async () => {
+  const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
+  assert.match(manualWorkflow, /^\s+- run: npm ci$/mu);
+  const verify = workflowJob(manualWorkflow, 'verify');
+  const publish = workflowJob(manualWorkflow, 'publish');
+  assert.match(verify, SELF_HOSTED_RUNNER);
+  assert.match(verify, /npm test[\s\S]*npm run pack:dry-run/u);
+  assert.doesNotMatch(verify, /id-token|npm publish|publish-npm/u);
+  assert.match(publish, /needs: verify/u);
+  assertTrustedPublishingJob(publish);
+  assert.doesNotMatch(manualWorkflow, /NPM_TOKEN|NODE_AUTH_TOKEN/u);
+  const cleanIndex = manualWorkflow.indexOf('- name: Assert clean checkout before publish');
+  assert.ok(cleanIndex > manualWorkflow.indexOf('npm run pack:dry-run'));
+  assert.ok(cleanIndex < manualWorkflow.indexOf('- name: Publish'));
+  assert.match(manualWorkflow.slice(cleanIndex), /git status --porcelain[\s\S]*exit 1/u);
+});
+
+test('PCR-CON-013 post-merge release validates on the self-hosted runner and publishes by dispatching the npm Trusted Publisher workflow', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  const candidate = workflowJob(workflow, 'release-candidate');
+  const release = workflowJob(workflow, 'release');
+  const docs = workflowJob(workflow, 'docs');
+  assert.match(candidate, SELF_HOSTED_RUNNER);
+  assert.match(candidate, /Validate release candidate[\s\S]*Run full validation fallback/u);
+  assert.doesNotMatch(candidate, /id-token|publish-npm/u);
+  assert.match(release, /needs: \[validation, release-candidate\]/u);
+  // npm refuses the OIDC token of a pull_request_target run, so the release job
+  // never publishes itself: it dispatches npm-publish.yml and waits for it.
+  assert.match(release, SELF_HOSTED_RUNNER);
+  assert.match(release, /permissions:[\s\S]*?actions: write/u);
+  assert.doesNotMatch(release, /id-token|publish-npm|npm publish/u);
+  assert.match(release, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"[\s\S]*gh workflow run npm-publish\.yml --repo "\$GITHUB_REPOSITORY" --ref main -f dry_run=false/u);
+  assert.match(release, /"\$RUN_SHA" != "\$RELEASE_SHA"[\s\S]*exit 1[\s\S]*gh run watch "\$RUN_ID"[^\n]*--exit-status/u);
+  assert.ok(release.indexOf('gh run watch') < release.indexOf('reconcile-github-release'));
+  assert.match(release, /npm_published_at: \$\{\{ steps\.publish\.outputs\.npm_published_at \}\}/u);
+  assert.match(docs, SELF_HOSTED_RUNNER);
+  assert.match(docs, /needs\.validation\.outputs\.release_required != 'true' \|\| needs\.release\.result == 'success'/u);
+  assert.doesNotMatch(docs, /id-token|publish-npm/u);
+  assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/u);
+});
+
+test('PCR-CON-011 no workflow installs dependencies with npm install', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const dir = new URL('../.github/workflows/', import.meta.url);
+  const files = (await readdir(dir)).filter((name) => /\.ya?ml$/u.test(name));
+  assert.ok(files.includes('ci.yml'));
+  for (const name of files) {
+    const text = await readFile(new URL(name, dir), 'utf8');
+    // The only allowed install is the pinned npm CLI itself, required by
+    // npm Trusted Publishing; package dependencies always come from npm ci.
+    const withoutNpmCli = text.replace(/^\s+run: npm install --global npm@\d+\.\d+\.\d+$/gmu, '');
+    assert.doesNotMatch(withoutNpmCli, /\bnpm (install|i)\b/u, `${name} must use npm ci`);
+  }
+  const ci = await readFile(new URL('ci.yml', dir), 'utf8');
+  assert.match(ci, /^\s+- run: npm ci$/mu);
+});
+
+test('PCR-CON-010 npm ci leaves the committed lockfile unchanged so the runtime-manifest dirty guard passes', async () => {
+  const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
+  const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.equal(lock.lockfileVersion, 3);
+  assert.equal(lock.packages[''].version, packageJson.version);
+  const guard = await readFile(new URL('../scripts/runtime-manifest.mjs', import.meta.url), 'utf8');
+  assert.match(guard, /Refusing to pack VibePro from a dirty Git checkout/u);
+});
+
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
@@ -979,17 +1076,16 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /group: post-merge-release-pr-\$\{\{ github\.event\.pull_request\.number \}\}/);
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
-  assert.match(workflow, /post-merge-release\.mjs publish-npm/);
+  assert.match(workflow, /gh workflow run npm-publish\.yml/);
+  assert.doesNotMatch(workflow, /post-merge-release\.mjs publish-npm/);
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
   assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
   assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);
   assert.match(workflow, /post-merge-release\.mjs reconcile-github-release/);
-  assert.match(workflow, /npm-release-lock\.mjs acquire/);
-  assert.match(workflow, /trap release_lock EXIT/);
   assert.match(workflow, /timeout-minutes: 90/);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('reconcile-github-release'));
+  assert.ok(workflow.indexOf('gh workflow run npm-publish.yml') < workflow.indexOf('Project PR body into release history'));
+  assert.ok(workflow.indexOf('gh workflow run npm-publish.yml') < workflow.indexOf('reconcile-github-release'));
   assert.ok(workflow.indexOf('reconcile-github-release') < workflow.indexOf('Project PR body into release history'));
   const deployStep = workflow.match(/- name: Deploy VitePress manual[\s\S]*?(?=\n      - name:|$)/)?.[0] ?? '';
   assert.match(deployStep, /git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
@@ -1000,7 +1096,7 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.match(manualWorkflow, /npm-release-lock\.mjs acquire/);
   assert.match(manualWorkflow, /timeout-minutes: 90/);
-  assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
+  assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 1);
 });
 
 test('PCR-CON-006 reconciles an existing immutable version and converges all tags', async () => {
@@ -1220,6 +1316,104 @@ test('PCR-CON-004 appends published-version history across sequential idempotent
   assert.deepEqual(await snapshot(), inconsistentSnapshot, 'semantic validation failure must not write any projection');
 });
 
+async function seedPublishedVersionDocs(root, documented) {
+  const history = (prose, betaThreeBody) => [
+    '# Channels',
+    '| Channel | Version | Authority |',
+    '| --- | --- | --- |',
+    `| npm \`latest\` | \`${documented}\` | Live npm registry dist-tag |`,
+    `| npm \`beta\` | \`${documented}\` | Live npm registry dist-tag |`,
+    `| Repository \`main\` | \`${documented}\` release source | package |`,
+    `## ${documented}`,
+    prose,
+    '## 0.2.0-beta.3',
+    betaThreeBody,
+    ''
+  ].join('\n');
+  const files = {
+    'docs/reference/version-history.md': history(
+      'Historical prose keeps 0.2.0-beta.30.',
+      'Body for 0.2.0-beta.3 stays.'
+    ),
+    'docs/ja/reference/version-history.md': history(
+      '履歴本文の0.2.0-beta.30は残す。',
+      '0.2.0-beta.3の見出し本文。'
+    ),
+    'docs/guide/release-and-audit.md': [
+      '## Upgrade to 0.1.9',
+      'Old upgrade stays.',
+      `## Upgrade to ${documented}`,
+      'Pin `vibepro@0.2.0-beta.2`.',
+      ''
+    ].join('\n'),
+    'docs/ja/guide/release-and-audit.md': [
+      '## 0.1.9へのupgrade',
+      '古いupgradeは残す。',
+      `## ${documented}へのupgrade`,
+      '`vibepro@0.2.0-beta.2`をpinする。',
+      ''
+    ].join('\n'),
+    'docs/.vitepress/config.mjs': `export default {\n  softwareVersion: '${documented}',\n};\n`,
+    'docs/releases/index.md': '| Version |\n| --- |\n',
+    'docs/ja/releases/index.md': '| Version |\n| --- |\n'
+  };
+  for (const [relative, content] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), content);
+  }
+}
+
+test('PCR-CON-013 advances a stale documented channel without reading npm dist-tags', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-version-gap-'));
+  await seedPublishedVersionDocs(root, '0.2.0-beta.30');
+  await projectPublishedVersion(root, '0.2.0-beta.31', '0.2.0-beta.32', '2026-10-15T17:02:00Z');
+  const projected = await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8');
+  await projectPublishedVersion(root, '0.2.0-beta.31', '0.2.0-beta.32', '2026-10-15T17:02:00Z');
+  assert.equal(await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8'), projected);
+
+  for (const relative of ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md']) {
+    const history = await readFile(path.join(root, relative), 'utf8');
+    assert.match(history, /\| npm `latest` \| `0\.2\.0-beta\.32` \|/);
+    assert.match(history, /\| npm `beta` \| `0\.2\.0-beta\.32` \|/);
+    assert.match(history, /\| Repository `main` \| `0\.2\.0-beta\.32` release source \|/);
+    assert.doesNotMatch(history, /0\.2\.0-beta\.320|0\.2\.0-beta\.310|0\.2\.0-beta\.31/);
+    const headings = [...history.matchAll(/^## (\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)$/gmu)].map((match) => match[1]);
+    assert.deepEqual(headings, ['0.2.0-beta.32', '0.2.0-beta.30', '0.2.0-beta.3']);
+  }
+  const english = await readFile(path.join(root, 'docs/reference/version-history.md'), 'utf8');
+  const japanese = await readFile(path.join(root, 'docs/ja/reference/version-history.md'), 'utf8');
+  assert.match(english, /Historical prose keeps 0\.2\.0-beta\.30\./);
+  assert.match(english, /Body for 0\.2\.0-beta\.3 stays\./);
+  assert.match(japanese, /履歴本文の0\.2\.0-beta\.30は残す。/);
+  assert.match(japanese, /0\.2\.0-beta\.3の見出し本文。/);
+
+  const guide = await readFile(path.join(root, 'docs/guide/release-and-audit.md'), 'utf8');
+  const jaGuide = await readFile(path.join(root, 'docs/ja/guide/release-and-audit.md'), 'utf8');
+  assert.match(guide, /## Upgrade to 0\.1\.9\nOld upgrade stays\./);
+  assert.match(guide, /## Upgrade to 0\.2\.0-beta\.32\nPin `vibepro@0\.2\.0-beta\.2`\./);
+  assert.doesNotMatch(guide, /## Upgrade to 0\.2\.0-beta\.30/);
+  assert.match(jaGuide, /## 0\.1\.9へのupgrade\n古いupgradeは残す。/);
+  assert.match(jaGuide, /## 0\.2\.0-beta\.32へのupgrade\n`vibepro@0\.2\.0-beta\.2`をpinする。/);
+  assert.match(await readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8'), /softwareVersion: '0\.2\.0-beta\.32'/);
+  assert.match(await readFile(path.join(root, 'docs/releases/index.md'), 'utf8'), /\/v\/0\.2\.0-beta\.32\)/);
+});
+
+test('PCR-CON-013 does not treat a prerelease prefix as the documented channel version', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-version-prefix-'));
+  await seedPublishedVersionDocs(root, '0.2.0-beta.30');
+  const before = Object.fromEntries(await Promise.all(
+    ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md', 'docs/guide/release-and-audit.md', 'docs/ja/guide/release-and-audit.md', 'docs/.vitepress/config.mjs']
+      .map(async (relative) => [relative, await readFile(path.join(root, relative), 'utf8')])
+  ));
+  await assert.rejects(
+    projectPublishedVersion(root, '0.2.0-beta.3', '0.2.0-beta.4', '2026-10-15T17:02:00Z'),
+    /\| npm `latest` \| identifies 0\.2\.0-beta\.30; must identify 0\.2\.0-beta\.3 or 0\.2\.0-beta\.4/
+  );
+  for (const [relative, content] of Object.entries(before)) {
+    assert.equal(await readFile(path.join(root, relative), 'utf8'), content);
+  }
+});
+
 test('post-merge docs release is not gated by an approval environment', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   assert.doesNotMatch(workflow, /^\s+environment:\s+npm\s*$/m);
@@ -1238,7 +1432,7 @@ test('post-merge release uses immutable pre-merge base code for fork validation'
   assert.match(workflow, /release:[\s\S]*ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
   assert.match(workflow, /pull_request\.merged == true/);
   assert.match(workflow, /pull_request\.base\.ref == 'main'/);
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('post-merge-release.mjs project'));
+  assert.ok(workflow.indexOf('gh workflow run npm-publish.yml') < workflow.indexOf('post-merge-release.mjs project'));
   assert.match(workflow, /git add[^\n]*docs\/\.vitepress\/config\.mjs/);
 });
 
@@ -1267,4 +1461,151 @@ test('post-merge first deployment executes the missing-selector fallback as full
   assert.match(recorded, /^validation_mode=full$/mu);
   assert.match(recorded, /^validation_reason=trusted_base_selector_unavailable$/mu);
   assert.equal(await readFile(summary, 'utf8'), recorded);
+});
+
+test('PCR-CON-012 npm view readback revalidates with --prefer-online and no cache by default', async () => {
+  const { npmMetadata, npmVersions } = await import('../scripts/post-merge-release.mjs');
+  const calls = [];
+  const spawn = (command, args) => {
+    calls.push([command, ...args]);
+    return args.includes('versions')
+      ? { status: 0, stdout: '["0.2.0-beta.1"]', stderr: '' }
+      : { status: 0, stdout: '{"version":"0.2.0-beta.1","gitHead":"abc123"}', stderr: '' };
+  };
+  assert.deepEqual(npmMetadata('0.2.0-beta.1', { spawn }), { version: '0.2.0-beta.1', gitHead: 'abc123' });
+  assert.deepEqual(npmVersions({ spawn }), ['0.2.0-beta.1']);
+  for (const call of calls) {
+    assert.ok(call.includes('--prefer-online'), call.join(' '));
+    assert.ok(!call.includes('--cache'), call.join(' '));
+  }
+});
+
+test('PCR-CON-012 bypassCache uses a throwaway --cache dir and removes it', async () => {
+  const { existsSync } = await import('node:fs');
+  const { npmMetadata } = await import('../scripts/post-merge-release.mjs');
+  let cacheDirectory = '';
+  const spawn = (_command, args) => {
+    cacheDirectory = args[args.indexOf('--cache') + 1];
+    assert.equal(existsSync(cacheDirectory), true);
+    assert.ok(args.includes('--prefer-online'));
+    return { status: 1, stdout: '', stderr: 'npm error code E404\nNo match found for version 0.2.0-beta.1' };
+  };
+  assert.equal(npmMetadata('0.2.0-beta.1', { bypassCache: true, spawn }), null);
+  assert.match(cacheDirectory, /vibepro-npm-readback-cache-/);
+  assert.equal(existsSync(cacheDirectory), false);
+});
+
+test('PCR-CON-012 convergence window is 15 attempts / 301 s, longer than packument max-age 300 s', async () => {
+  const {
+    NPM_REGISTRY_CONVERGENCE_ATTEMPTS, NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS, npmRegistryConvergenceDelays
+  } = await import('../scripts/post-merge-release.mjs');
+  const delays = npmRegistryConvergenceDelays();
+  assert.equal(NPM_REGISTRY_CONVERGENCE_ATTEMPTS, 15);
+  assert.equal(delays.length, 14);
+  assert.equal(Math.max(...delays), NPM_REGISTRY_CONVERGENCE_MAX_DELAY_MS);
+  const total = delays.reduce((sum, value) => sum + value, 0);
+  assert.equal(total, 301_000);
+  assert.ok(total > 300_000);
+});
+
+test('PCR-CON-012 default readback waits the full window and bypasses the cache after the first attempt', async () => {
+  const delays = [];
+  const metadataOptions = [];
+  let reads = 0;
+  await assert.rejects(reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123',
+    metadata: (_version, options) => { reads += 1; metadataOptions.push(options); return null; },
+    versions: () => ['0.2.0-beta.1'],
+    execute: () => '',
+    delay: async (milliseconds) => { delays.push(milliseconds); }
+  }), /did not converge after 15 attempts/);
+  assert.equal(reads, 16);
+  assert.equal(metadataOptions[0], undefined);
+  assert.deepEqual(metadataOptions[1], { bypassCache: false });
+  for (const options of metadataOptions.slice(2)) assert.deepEqual(options, { bypassCache: true });
+  const postPublishDelays = delays.slice(-14);
+  assert.equal(postPublishDelays.reduce((sum, value) => sum + value, 0), 301_000);
+});
+
+test('PCR-CON-012 converges past a cached pre-publish 404 and reads dist-tags with --prefer-online', async () => {
+  let reads = 0;
+  const views = [];
+  const versionOptions = [];
+  const result = await reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123',
+    metadata: () => { reads += 1; return reads < 5 ? null : { version: '0.2.0-beta.1', gitHead: 'abc123' }; },
+    versions: (options) => { versionOptions.push(options); return ['0.2.0-beta.1']; },
+    execute: (command, args) => {
+      if (args[0] === 'view') { views.push(args); return JSON.stringify({ beta: '0.2.0-beta.1', latest: '0.2.0-beta.1' }); }
+      return '';
+    },
+    delay: async () => {}
+  });
+  assert.equal(result.gitHead, 'abc123');
+  assert.equal(reads, 5);
+  assert.deepEqual(versionOptions[0], { bypassCache: false });
+  assert.ok(views.length > 0);
+  for (const args of views) assert.ok(args.includes('--prefer-online'), args.join(' '));
+});
+
+test('reconcilePublishedVersions adds npm-published versions missing from the version history', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reconcile-'));
+  const files = ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md', 'docs/releases/index.md', 'docs/ja/releases/index.md'];
+  for (const file of files) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true });
+    await writeFile(path.join(root, file), file.includes('version-history')
+      ? '# History\n\n## 0.2.0-beta.30\n\nExisting details.\n'
+      : '# Releases\n\n| Published | Version | Channel | Summary |\n| --- | --- | --- | --- |\n');
+  }
+  const npmTime = { created: '2026-01-01', modified: '2026-10-18', invalid: '2026-10-18', '01.2.3': '2026-10-18', '0.2.0-beta.01': '2026-10-18',
+    '0.2.0-beta.31': '2026-10-15T23:30:00-02:00', '0.2.0-beta.32': '2026-10-17T00:00:00Z', '0.2.0-beta.34': '2026-10-18T00:00:00Z' };
+  await reconcilePublishedVersions(root, npmTime);
+  const first = await Promise.all(files.map((file) => readFile(path.join(root, file), 'utf8')));
+  const headings = (content) => [...content.matchAll(/^## (.+)$/gmu)].map((m) => m[1]);
+  assert.deepEqual(headings(first[0]), [34, 32, 31, 30].map((n) => `0.2.0-beta.${n}`));
+  assert.deepEqual(headings(first[0]), headings(first[1]));
+  for (const content of first) assert.ok(!content.includes('0.2.0-beta.33'));
+  for (const content of first.slice(2)) {
+    assert.match(content, /\| 2026-10-16 \| \[`0.2.0-beta.31`\]/u);
+    assert.ok(content.indexOf('/v/0.2.0-beta.34') < content.indexOf('/v/0.2.0-beta.32'));
+    assert.match(content, /npm `beta` \/ `latest`/u);
+  }
+  await reconcilePublishedVersions(root, npmTime);
+  assert.deepEqual(await Promise.all(files.map((file) => readFile(path.join(root, file), 'utf8'))), first);
+});
+
+test('reconcilePublishedVersions ignores npm versions older than the ledger and fills gaps in order', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reconcile-floor-'));
+  const files = ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md', 'docs/releases/index.md', 'docs/ja/releases/index.md'];
+  const row = (n) => `| 2026-10-15 | [\`0.2.0-beta.${n}\`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.${n}) | npm \`beta\` | Existing |`;
+  for (const file of files) {
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true });
+    await writeFile(path.join(root, file), file.includes('version-history')
+      ? '# History\n\n## 0.2.0-beta.32\n\nKept.\n\n## 0.2.0-beta.30\n\nKept.\n\nFooter paragraph.\n'
+      : `# Releases\n\n| Published | Version | Channel | Summary |\n| --- | --- | --- | --- |\n${row(32)}\n${row(30)}\n`);
+  }
+  const npmTime = Object.fromEntries(['0.1.0-alpha.0', '0.2.0-beta.0', '0.2.0-beta.29', '0.2.0-beta.31', '0.2.0-beta.32', '0.2.0-beta.34']
+    .map((version) => [version, '2026-10-15T00:00:00Z']));
+  await reconcilePublishedVersions(root, npmTime);
+  const [en, ja, ...indexes] = await Promise.all(files.map((file) => readFile(path.join(root, file), 'utf8')));
+  for (const history of [en, ja]) {
+    assert.deepEqual([...history.matchAll(/^## (.+)$/gmu)].map((m) => m[1]), [34, 32, 31, 30].map((n) => `0.2.0-beta.${n}`));
+    assert.ok(history.endsWith('Footer paragraph.\n'));
+  }
+  for (const index of indexes) {
+    assert.deepEqual([...index.matchAll(/\/v\/([^)]*)\)/gu)].map((m) => m[1]), [34, 32, 31, 30].map((n) => `0.2.0-beta.${n}`));
+  }
+});
+
+test('committed version history lists every release-index npm version newer than its oldest heading', async () => {
+  const index = await readFile(path.join(repositoryRoot, 'docs/releases/index.md'), 'utf8');
+  const npmTime = Object.fromEntries([...index.matchAll(/^\|.*https:\/\/www\.npmjs\.com\/package\/vibepro\/v\/([^)]*)\)/gmu)].map((match) => [match[1], '']));
+  for (const relative of ['docs/reference/version-history.md', 'docs/ja/reference/version-history.md']) {
+    const history = await readFile(path.join(repositoryRoot, relative), 'utf8');
+    const headings = [...history.matchAll(/^## (\d\S*)$/gmu)].map((match) => match[1]);
+    assert.equal(headings.at(-1), '0.2.0-beta.2', `${relative} ledger must start at 0.2.0-beta.2`);
+    const expected = publishedVersions(npmTime, headings);
+    assert.ok(expected.includes('0.2.0-beta.34'));
+    for (const version of expected) assert.ok(headings.includes(version), `${relative} missing ${version}`);
+  }
 });

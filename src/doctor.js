@@ -2,9 +2,19 @@ import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { buildRuntimeDoctorCheck, collectRuntimeInfo } from './runtime-info.js';
-import { getWorkspaceDir, MANIFEST_FILE, SCHEMA_VERSION, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
+import {
+  getWorkspaceDir,
+  gitignoreTracksVibeproReviews,
+  JUDGMENT_GITIGNORE_MIGRATION_NOTE,
+  MANIFEST_FILE,
+  renderGitignoreUpdate,
+  SCHEMA_VERSION,
+  toWorkspaceRelative,
+  VIBEPRO_GITIGNORE_REVIEW_LINES,
+  writeManifest
+} from './workspace.js';
 
-const REQUIRED_GITIGNORE_LINES = [`${WORKSPACE_DIR}/*`, `!${WORKSPACE_DIR}/config.json`];
+const REQUIRED_GITIGNORE_LINES = VIBEPRO_GITIGNORE_REVIEW_LINES;
 
 export async function runDoctor(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -239,10 +249,11 @@ export async function runDoctor(repoRoot, options = {}) {
       severity: 'warning',
       status: options.fix ? 'fixed' : 'fixable',
       fixable: true,
-      detail: gitignoreState.exists
-        ? `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} が含まれていない。`
-        : '.gitignore が存在せず .vibepro/ が無視されない。',
-      recommendation: 'vibepro doctor --fix または vibepro init で .gitignore に .vibepro/ を追記する。',
+      detail: gitignoreDetail(gitignoreState),
+      migration_note: gitignoreState.legacy_reviews_ignored ? JUDGMENT_GITIGNORE_MIGRATION_NOTE : null,
+      recommendation: gitignoreState.legacy_reviews_ignored
+        ? JUDGMENT_GITIGNORE_MIGRATION_NOTE
+        : 'vibepro doctor --fix または vibepro init で .gitignore に .vibepro/*、!.vibepro/config.json、!.vibepro/reviews/ を追記する。',
       next_actions: [buildAction({
         command: `vibepro doctor ${root} --fix`,
         reason: '.vibepro/ が git に含まれないように .gitignore を更新する。',
@@ -343,19 +354,22 @@ async function checkGitignore(repoRoot) {
   }
   const lines = content.split(/\r?\n/).map((line) => line.trim());
   const hasRequired = REQUIRED_GITIGNORE_LINES.every((line) => lines.includes(line));
-  return { exists: true, content, needs_update: !hasRequired };
+  const tracksReviews = gitignoreTracksVibeproReviews(content);
+  const legacyReviewsIgnored = lines.includes('.vibepro/*') && lines.includes('!.vibepro/config.json') && !tracksReviews;
+  return { exists: true, content, needs_update: !hasRequired || !tracksReviews, legacy_reviews_ignored: legacyReviewsIgnored };
+}
+
+function gitignoreDetail(state) {
+  if (!state.exists) return '.gitignore が存在せず .vibepro/ が無視されない。';
+  if (state.legacy_reviews_ignored) return JUDGMENT_GITIGNORE_MIGRATION_NOTE;
+  return `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} が含まれていない。`;
 }
 
 async function applyGitignoreFix(repoRoot, state) {
   const gitignorePath = path.join(repoRoot, '.gitignore');
-  const existing = (state.content ?? '')
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== `${WORKSPACE_DIR}/`)
-    .join('\n');
-  const lines = existing.split(/\r?\n/).map((line) => line.trim());
-  const missing = REQUIRED_GITIGNORE_LINES.filter((line) => !lines.includes(line));
-  const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';
-  await writeFile(gitignorePath, `${prefix}${missing.join('\n')}\n`);
+  const updated = renderGitignoreUpdate(state.content ?? '', REQUIRED_GITIGNORE_LINES);
+  if (updated === null) return;
+  await writeFile(gitignorePath, updated);
 }
 
 async function readJsonIfExists(filePath) {

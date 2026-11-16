@@ -1444,9 +1444,141 @@
         "started_at": null,
         "due_at": null,
         "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-disposition-reviewed-by",
+        "title": "judgment disposition record が --reviewed-by を保存しない",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-14",
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-reject-nongenuine-judgment-runs",
+        "title": "手作りの判断runを採択できないようにする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-prepare-reads-story-judgment",
+        "title": "judgment prepare が Story の見出しを判断入力に読む",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-monotonic-verification-clock",
+        "title": "検証の経過時間とタイムアウトを単調時計で測る",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-journey-scope-steps-curate",
+        "title": "Journey を Story の範囲で絞り、必須 step と curate での step・論点の追加を扱う",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "feature"
+      },
+      {
+        "story_id": "story-vibepro-npm-readback-prefer-online",
+        "title": "npm 公開後の readback を registry の cache に左右されず収束させる",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-15",
+        "due_at": null,
+        "contract_type": "bug_fix"
+      },
+      {
+        "story_id": "story-vibepro-journey-cli-routing",
+        "title": "vibepro journey derive / handoff / curate を CLI から実行できるようにする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-15",
+        "due_at": null,
+        "contract_type": "feature"
+      },
+      {
+        "story_id": "story-vibepro-task-plan-overlap-refs",
+        "title": "task-plan 0.2.0 に overlap_refs を追加する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-task-plan-decomposer",
+        "title": "Storyからtask-planを作る",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-ac-heading-paren-suffix",
+        "title": "受入条件見出しの括弧サフィックスを認識する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": "2026-10-17",
+        "due_at": null,
+        "contract_type": null
+      },
+      {
+        "story_id": "story-vibepro-brainbase-producer-ci",
+        "title": "Brainbase producer契約テストを別ディレクトリでも実行する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-10",
+        "started_at": null,
+        "due_at": null,
+        "contract_type": "bug_fix"
       }
     ],
-    "current_story_id": "story-vibepro-brainbase-outcome-case-binding-v2"
+    "current_story_id": "story-vibepro-disposition-reviewed-by"
   },
   "current_story_id": "story-vibepro-release-0-2-0-beta-8"
 }

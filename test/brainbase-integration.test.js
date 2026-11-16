@@ -10,6 +10,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { resolvePrArtifactFile } from '../src/artifact-routing.js';
+import { monotonicElapsed, monotonicNow } from '../src/monotonic-clock.js';
 import {
   bindBrainbaseContext,
   canonicalManagedHandoffPayload,
@@ -324,8 +325,8 @@ function runRebindChild(sourceUrl, env) {
 }
 
 async function waitForFiles(filePaths, timeoutMs = 10_000) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
+  const startedAt = monotonicNow();
+  while (monotonicElapsed(startedAt) < timeoutMs) {
     const present = await Promise.all(filePaths.map(async (filePath) => {
       try {
         await readFile(filePath);

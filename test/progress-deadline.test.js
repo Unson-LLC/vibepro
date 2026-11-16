@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { monotonicElapsed } from '../src/monotonic-clock.js';
 import { classifyTermination, createProgressDeadline } from '../src/progress-deadline.js';
 
 function fakeClock(startMs) {
@@ -210,6 +211,24 @@ test('classifyTermination: no signal is a plain exit', () => {
 test('classifyTermination: a signal the policy sent is a policy kill', () => {
   const verdict = classifyTermination({ signal: 'SIGTERM', sentSignals: ['SIGTERM', 'SIGKILL'] });
   assert.deepEqual(verdict, { kind: 'policy_kill', signal: 'SIGTERM' });
+});
+
+test('a backwards clock step does not go negative or trip a deadline early', () => {
+  const clock = fakeClock(1_000);
+  const kernel = createProgressDeadline({
+    no_progress_deadline_ms: 500,
+    max_wall_clock_ms: 5_000,
+    started_at: 1_000,
+    now: clock.now
+  });
+  clock.advance(-278);
+  assert.equal(monotonicElapsed(1_000, clock.now()), 0);
+  assert.deepEqual(kernel.check(), { ok: true });
+  clock.advance(6_000);
+  const verdict = kernel.check();
+  assert.equal(verdict.ok, false);
+  assert.equal(verdict.kill.code, 'max_wall_clock_exceeded');
+  assert.equal(verdict.kill.details.elapsed_ms >= 0, true);
 });
 
 test('classifyTermination: a signal the policy did not send is an external kill', () => {

@@ -1,3 +1,5 @@
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
+
 // Side-effect-free policy kernel for "stay alive while progress advances, die on an
 // independent hard cap" semantics. No timers, no child_process, no I/O: every notion of
 // "now" comes from the injected `now` clock, and every notion of progress comes from an
@@ -21,11 +23,14 @@ const DEFAULT_MAX_COST_USD = 0;
  *   attempts value passed into `check()`.
  * @param {number} [options.max_cost_usd] - independent hard cap checked against the cost
  *   value passed into `check()`. 0 (default) disables cost enforcement.
- * @param {number|string|Date} options.started_at - wall-clock origin.
+ * @param {number|string|Date} options.started_at - origin on the same clock as `now`.
+ *   Production callers pass monotonicNow(). A Date is only valid when `now`
+ *   returns Date values too.
  * @param {number|string|Date} [options.progress_started_at] - no-progress-clock origin;
  *   defaults to `started_at`. Kept distinct because a resumed/recovered attempt can restart
- *   the no-progress clock without resetting the wall-clock origin.
- * @param {() => (number|string|Date)} [options.now] - injected clock. Defaults to Date.now.
+ *   the no-progress clock without resetting the hard-cap origin.
+ * @param {() => (number|string|Date)} [options.now] - injected clock. Defaults to the
+ *   monotonic clock. A backwards step is clamped to 0 elapsed milliseconds.
  */
 export function createProgressDeadline({
   no_progress_deadline_ms,
@@ -34,7 +39,7 @@ export function createProgressDeadline({
   max_cost_usd = DEFAULT_MAX_COST_USD,
   started_at,
   progress_started_at,
-  now = () => Date.now()
+  now = monotonicNow
 } = {}) {
   if (!Number.isFinite(no_progress_deadline_ms) || no_progress_deadline_ms <= 0) {
     throw new TypeError('createProgressDeadline requires a positive no_progress_deadline_ms');
@@ -81,8 +86,8 @@ export function createProgressDeadline({
    */
   function check({ attempts = 1, costUsd = null } = {}) {
     const nowMs = toMillis(now());
-    const elapsedMs = nowMs - startedAtMs;
-    const noProgressElapsedMs = nowMs - lastProgressAtMs;
+    const elapsedMs = monotonicElapsed(startedAtMs, nowMs);
+    const noProgressElapsedMs = monotonicElapsed(lastProgressAtMs, nowMs);
     if (elapsedMs > max_wall_clock_ms) {
       return kill('max_wall_clock_exceeded', { elapsed_ms: elapsedMs, max_wall_clock_ms });
     }

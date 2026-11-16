@@ -88,6 +88,19 @@ Recommendationに対して次を追記する。
 
 投影は常に`blocking=false`であり、存在しない場合は`not_recorded`、読取不能時は`unavailable`として表示する。
 
+### TLのTask計画と外部実行
+
+TLは助言だけでなく、Storyの目的と委任範囲を引き継いだ技術計画を作る。計画は既存の
+Taskを単位に、`prerequisite`・`interface`・`overlap`の依存分類、版付きの接続契約、担当範囲、
+統合順、競合解決担当、再計画の参照を持つ。前提依存を解除する根拠はTaskのstatusではなく、
+計画版・成果物revision・証拠参照を持つ外部観測である。接続契約の合意と実装milestoneの
+検証は分けて扱い、契約合意後の実装は並行できる。
+
+セッション起動、worktree、担当の占有、再試行、復旧、実行進捗の正本はCodex親などの外部hostに
+置く。VibeProのTask計画は汎用実行engineや第二のTask台帳にならない。Brainbase接続時はStory
+参照と進捗を投影できるが、計画や実行記録を別の正本として持たない。TLの判断はdispatch
+readinessと再計画を示せるが、既存のPR・merge・release gateやmerge・deploy権限を変更しない。
+
 ## 不変条件
 
 1. FrameとStoryの採択は既存の人間権限に残す。

@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRuntimeIntegrity } from './runtime-info.js';
 import { toWorkspaceRelative } from './workspace.js';
+import { monotonicElapsed, monotonicNow } from './monotonic-clock.js';
 import { classifyTermination, createProgressDeadline } from './progress-deadline.js';
 import {
   RUNNER_EVIDENCE_RECEIPT,
@@ -176,6 +177,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   // source file mid-run moves the tree without moving HEAD, so both are sampled.
   const treeBefore = await sampleTreeState(root);
   const startedAt = new Date();
+  const startedMono = monotonicNow();
   const execution = await executeCommand(root, argv, { timeoutMs, noProgressDeadlineMs, maxOutputBytes, env: options.env });
   const finishedAt = new Date();
   const treeAfter = await sampleTreeState(root);
@@ -186,7 +188,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const parsedCounts = extractOutputCounts(execution.stdout) ?? extractOutputCounts(output);
   const runCounts = parsedCounts?.counts ?? null;
   const outputMetrics = parsedCounts?.format ?? 'none';
-  const durationMs = finishedAt.getTime() - startedAt.getTime();
+  const durationMs = Math.round(monotonicElapsed(startedMono));
   const status = execution.exitCode === 0 && !execution.signal ? 'pass' : 'fail';
   const headMoved = Boolean(headBefore && headAfter && headBefore !== headAfter);
   const worktreeComparison = compareWorktreeSamples(treeBefore, treeAfter);
@@ -492,11 +494,12 @@ export function executeCommand(root, argv, { timeoutMs, noProgressDeadlineMs, ma
       return;
     }
 
+    const startedMono = monotonicNow();
     const kernel = createProgressDeadline({
       no_progress_deadline_ms: noProgressDeadlineMs,
       max_wall_clock_ms: timeoutMs,
-      started_at: Date.now(),
-      now: () => Date.now()
+      started_at: startedMono,
+      now: monotonicNow
     });
 
     let stdout = '';

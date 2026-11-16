@@ -15,14 +15,15 @@
 // Bug-fix scope and external outcome boundaries are reported separately so a
 // local implementation result cannot be presented as a verified user outcome.
 
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
-import { readDrift, readInferredSpec } from './spec-store.js';
+import { readDrift, readDraftSpec, readInferredSpec } from './spec-store.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getReviewStatus } from './lightweight-review.js';
 import { bindStoryTraceability, buildAcceptedSpecClauseMap, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
@@ -30,13 +31,18 @@ import { findStorySource } from './requirement-consistency.js';
 import { assertRuntimeIntegrity, evaluateRuntimeIntegrity, RuntimeIntegrityError } from './runtime-info.js';
 import { assertSelectedTaskAccepted, assertSelectedTaskScope, readTaskAuthorities } from './task-authority.js';
 import { evaluateContentBinding } from './content-binding.js';
-import { assessMultiTenantArchitecture, multiTenantReviewLenses } from './multi-tenant-architecture.js';
+import {
+  assessMultiTenantArchitecture,
+  multiTenantReviewLenses,
+  projectMultiTenantNonApplicabilityDeclaration
+} from './multi-tenant-architecture.js';
 import { buildExecutionDag } from './managed-worktree.js';
 import { readOperationalJudgmentProjection } from './judgment-operations.js';
 import { readNarrative } from './report-store.js';
 import { buildReportFingerprint } from './report-fingerprint.js';
 import { validateReportNarrative } from './report-validator.js';
 import { inspectManagedV2OutcomeCaseProjection } from './brainbase-integration.js';
+import { buildDeployHandoff, validateDeployHandoffInput } from './deploy-handoff.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -48,13 +54,17 @@ const SCHEMA_VERSION = '0.2.0';
 export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'pr prepare');
+  const deployHandoffInput = options.deployHandoff === undefined
+    ? null
+    : validateDeployHandoffInput(options.deployHandoff);
   const runtimeIdentity = await assertRuntimeIntegrity({ purpose: 'pr_judgment', env: options.env });
   const language = await resolveHumanOutputLanguage(root, options);
 
-  const [storyRecord, git, spec, drift, verification, review, developmentJudgment] = await Promise.all([
+  const [storyRecord, git, spec, draftSpec, drift, verification, review, developmentJudgment] = await Promise.all([
     readStory(root, storyId, options),
     collectGitState(root, options),
     readInferredSpec(root, storyId).catch(() => null),
+    readDraftSpec(root, storyId).catch(() => null),
     readDrift(root, storyId).catch(() => null),
     readVerificationSummary(root, storyId),
     readReviewSummary(root, storyId),
@@ -65,6 +75,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
 
   const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
   const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
+  const deployHandoffPath = deployHandoffInput
+    ? await resolvePrArtifactFile(root, storyId, 'deploy-handoff.json')
+    : null;
 
   const storySource = await findStorySource(root, story).catch(() => null);
   const readiness = resolvePrReadiness({ review });
@@ -92,10 +105,18 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const selectedTaskScope = await assertSelectedTaskScope(root, selectedTaskAuthority?.selected, git);
   const multiTenantArchitecture = assessMultiTenantArchitecture({
     storyText: storySource?.content ?? '',
+    spec,
+    storySourcePresent: Boolean(storySource?.content?.trim()),
     contract: spec?.multi_tenancy ?? null,
     applicabilityEvidence: options.multiTenantApplicabilityEvidence,
     expectedHeadCommit: git.head_sha,
     mode: 'final'
+  });
+  const multiTenantNonApplicabilityDeclaration = projectMultiTenantNonApplicabilityDeclaration({
+    spec,
+    multiTenantArchitecture,
+    headCommit: git.head_sha,
+    storyId
   });
 
   const preparation = {
@@ -116,7 +137,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     task_authorities: taskAuthorities,
     output: { language },
     git,
-    spec: spec ? { present: true, story_id: spec.story_id ?? storyId, clause_count: (spec.clauses ?? []).length } : { present: false },
+    spec: summarizeSpec(spec, draftSpec, storyId),
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
     review,
@@ -125,11 +146,15 @@ export async function preparePullRequest(repoRoot, options = {}) {
       ...multiTenantArchitecture,
       review_lenses: multiTenantReviewLenses(multiTenantArchitecture)
     },
+    ...(multiTenantNonApplicabilityDeclaration
+      ? { multi_tenant_non_applicability_declaration: multiTenantNonApplicabilityDeclaration }
+      : {}),
     ...(fixScope ? { fix_scope: fixScope } : {}),
     execution_dag: executionDag,
     gate_status: readiness.status,
     blocking_reasons: readiness.reasons,
     story_source: summarizeStorySource(storySource),
+    ...(deployHandoffPath ? { deploy_handoff_ref: toWorkspaceRelative(root, deployHandoffPath) } : {}),
     // Informational only — never blocks `pr prepare`. Unmapped AC ids are
     // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
     traceability: summarizeClauseMapForPrepare(clauseMap)
@@ -154,12 +179,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
   // must fail instead of reporting success with contradictory artifacts.
   await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification, storySource, clauseMap });
 
+  if (deployHandoffInput) {
+    await writeDeployHandoffArtifact(root, {
+      input: deployHandoffInput,
+      preparation,
+      storySource,
+      verification,
+      prPreparePath: jsonPath,
+      outputPath: deployHandoffPath
+    });
+  }
+
   return {
     story,
     preparation,
     artifacts: {
       json: jsonPath,
-      pr_body: bodyPath
+      pr_body: bodyPath,
+      ...(deployHandoffPath ? { deploy_handoff: deployHandoffPath } : {})
     }
   };
 }
@@ -493,6 +530,71 @@ async function recordManifestPrPrepare(repoRoot, storyId, artifacts) {
   await writeManifest(repoRoot, manifest);
 }
 
+async function writeDeployHandoffArtifact(repoRoot, {
+  input,
+  preparation,
+  storySource,
+  verification,
+  prPreparePath,
+  outputPath
+}) {
+  const [storyRef, verificationRef, prPrepareRef] = await Promise.all([
+    createDeployHandoffReference(repoRoot, storySource?.path, 'Story'),
+    createDeployHandoffReference(repoRoot, verification?.artifact, 'verification'),
+    createDeployHandoffReference(repoRoot, prPreparePath, 'PR prepare')
+  ]);
+  const handoff = buildDeployHandoff({
+    storyId: preparation.story.story_id,
+    headSha: preparation.git.head_sha,
+    storyRef,
+    verificationRef,
+    prPrepareRef,
+    target: input.target,
+    acceptanceCriteria: input.acceptance_criteria,
+    mode: input.mode,
+    authorityRef: input.authority_ref,
+    externalRefs: input.external_refs,
+    createdAt: preparation.created_at
+  });
+  await writeFile(outputPath, `${JSON.stringify(handoff, null, 2)}\n`, 'utf8');
+  return outputPath;
+}
+
+async function createDeployHandoffReference(repoRoot, filePath, label) {
+  if (typeof filePath !== 'string' || filePath.trim() === '') {
+    throw new Error(`deploy handoff requires a repository-relative ${label} reference`);
+  }
+  const root = path.resolve(repoRoot);
+  const realRoot = await realpath(root);
+  const candidate = path.isAbsolute(filePath)
+    ? path.resolve(filePath)
+    : path.resolve(root, filePath);
+  const relative = path.relative(root, candidate);
+  if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`deploy handoff ${label} reference must remain inside the repository`);
+  }
+  let realCandidate;
+  try {
+    realCandidate = await realpath(candidate);
+  } catch (error) {
+    throw new Error(`deploy handoff ${label} reference is unavailable: ${relative}`, { cause: error });
+  }
+  const realRelative = path.relative(realRoot, realCandidate);
+  if (!realRelative || realRelative === '..' || realRelative.startsWith(`..${path.sep}`) || path.isAbsolute(realRelative)) {
+    throw new Error(`deploy handoff ${label} reference must resolve inside the repository`);
+  }
+  let content;
+  try {
+    content = await readFile(realCandidate);
+  } catch (error) {
+    throw new Error(`deploy handoff ${label} reference is unavailable: ${relative}`, { cause: error });
+  }
+  return {
+    path: relative.split(path.sep).join('/'),
+    sha256: createHash('sha256').update(content).digest('hex')
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Git state (minimal: branch, head, base, changed files, dirty files)
 // ---------------------------------------------------------------------------
@@ -509,6 +611,7 @@ async function collectGitState(repoRoot, options) {
     current_branch: currentBranch || null,
     head_sha: headSha || null,
     base_ref: baseRef,
+    ...(options.baseRef && options.baseRef !== baseRef ? { base_ref_requested: options.baseRef } : {}),
     head_ref: headRef,
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
@@ -517,7 +620,22 @@ async function collectGitState(repoRoot, options) {
 }
 
 async function resolveBaseRef(repoRoot, explicit) {
-  if (explicit) return explicit;
+  if (explicit) {
+    if (await gitRefExists(repoRoot, `refs/heads/${explicit}`) &&
+        await gitRefExists(repoRoot, `refs/remotes/origin/${explicit}`)) {
+      const localSha = await gitOptional(repoRoot, ['rev-parse', `refs/heads/${explicit}`]);
+      const originSha = await gitOptional(repoRoot, ['rev-parse', `refs/remotes/origin/${explicit}`]);
+      if (localSha !== originSha) {
+        try {
+          await execFileAsync('git', ['merge-base', '--is-ancestor', localSha, originSha], { cwd: repoRoot, encoding: 'utf8' });
+          return `origin/${explicit}`;
+        } catch {
+          // Keep the requested base when ancestry cannot be established.
+        }
+      }
+    }
+    return explicit;
+  }
   const symbolic = await gitOptional(repoRoot, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']);
   if (symbolic) return symbolic;
   if (await gitRefExists(repoRoot, 'origin/main')) return 'origin/main';
@@ -620,8 +738,28 @@ function renderPrNarrative(narrative, status = 'missing') {
   return sections.length > 0 ? `### 保存済みの判断説明\n\n${sections.join('\n\n')}\n\n` : '';
 }
 
+function summarizeSpec(acceptedSpec, draftSpec, storyId) {
+  if (acceptedSpec) {
+    return {
+      present: true,
+      status: 'accepted',
+      story_id: acceptedSpec.story_id ?? storyId,
+      clause_count: (acceptedSpec.clauses ?? []).length
+    };
+  }
+  if (draftSpec) {
+    return {
+      present: false,
+      status: 'draft',
+      story_id: draftSpec.story_id ?? storyId,
+      clause_count: Array.isArray(draftSpec.clauses) ? draftSpec.clauses.length : 0
+    };
+  }
+  return { present: false, status: 'missing' };
+}
+
 function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missing' } = {}) {
-  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, development_judgment: developmentJudgment, story_source: storySource, traceability, task_authorities: taskAuthorities, multi_tenant_architecture: multiTenantArchitecture, multi_tenant_non_applicability_declaration: multiTenantNonApplicabilityDeclaration, outcome_case: outcomeCase, outcome_case_status: outcomeCaseStatus, outcome_case_reason_code: outcomeCaseReasonCode, outcome_case_recovery: outcomeCaseRecovery } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
@@ -687,9 +825,13 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
   }
   lines.push('');
   lines.push('### Spec');
-  lines.push(spec.present
-    ? `- accepted spec present (\`${spec.story_id}\`, ${spec.clause_count} clause(s))`
-    : '- no accepted spec found for this story');
+  if (spec.present) {
+    lines.push(`- accepted spec present (\`${spec.story_id}\`, ${spec.clause_count} clause(s))`);
+  } else if (spec.status === 'draft') {
+    lines.push(`- draft spec present, not accepted (\`${spec.story_id}\`, ${spec.clause_count} clause(s))`);
+  } else {
+    lines.push('- no accepted spec found for this story');
+  }
   if (specDrift) {
     lines.push(`- drift: ${specDrift.status ?? 'unknown'} (${specDrift.item_count} item(s))`);
   }
@@ -722,6 +864,17 @@ function renderPrBody(preparation, { narrative = null, narrativeStatus = 'missin
   lines.push('### Multi-tenant architecture');
   if (!multiTenantArchitecture?.applicable) {
     lines.push('- status: not_applicable');
+    if (multiTenantNonApplicabilityDeclaration) {
+      lines.push('- reasoned non-applicability declaration:');
+      lines.push(`  - spec: \`${multiTenantNonApplicabilityDeclaration.spec_id ?? 'unknown'}\``);
+      lines.push(`  - head: \`${multiTenantNonApplicabilityDeclaration.head_commit ?? 'unknown'}\``);
+      lines.push(`  - verdict: \`${multiTenantNonApplicabilityDeclaration.verdict}\``);
+      lines.push(`  - reason: ${multiTenantNonApplicabilityDeclaration.reason ?? 'n/a'}`);
+      lines.push(`  - evidence_ref: \`${multiTenantNonApplicabilityDeclaration.evidence_ref ?? 'n/a'}\``);
+      if (multiTenantNonApplicabilityDeclaration.refusal_reason) {
+        lines.push(`  - refusal: \`${multiTenantNonApplicabilityDeclaration.refusal_reason}\``);
+      }
+    }
   } else {
     lines.push(`- status: ${multiTenantArchitecture.status}`);
     lines.push(`- activation: ${(multiTenantArchitecture.activation_reasons ?? []).join(', ') || 'unknown'}`);
@@ -1268,14 +1421,16 @@ export function renderPrPrepareSummary(result) {
     '',
     `- story: ${preparation.story.story_id}`,
     `- base: ${preparation.git.base_ref}`,
+    ...(preparation.git.base_ref_requested ? [`- requested base: ${preparation.git.base_ref_requested} (stale local branch)`] : []),
     `- head: ${preparation.git.head_ref} (${preparation.git.head_sha ?? '-'})`,
     `- changed files: ${preparation.git.changed_files.length}`,
-    `- spec: ${preparation.spec.present ? 'present' : 'missing'}`,
+    `- spec: ${preparation.spec.status === 'accepted' ? 'present' : preparation.spec.status === 'draft' ? 'draft (not accepted)' : 'missing'}`,
     `- outcome case: ${preparation.outcome_case_status ?? 'unknown'} (${preparation.outcome_case_reason_code ?? 'projection_status_missing'})`,
     `- verification: ${preparation.verification.recorded ? `${preparation.verification.commands.length} command(s) recorded` : 'not recorded'}`,
     `- review: ${preparation.review.recorded ? (preparation.review.status ?? 'recorded') : 'not recorded'}`,
     `- gate: ${preparation.gate_status}`,
     ...(preparation.fix_scope ? [`- fix scope: ${preparation.fix_scope.status} (${preparation.fix_scope.completion_claim})`] : []),
+    ...(result.artifacts.deploy_handoff ? [`- deploy handoff: ${result.artifacts.deploy_handoff}`] : []),
     `- artifacts: ${result.artifacts.json}, ${result.artifacts.pr_body}`,
     ''
   ];
