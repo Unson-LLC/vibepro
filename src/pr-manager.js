@@ -611,6 +611,7 @@ async function collectGitState(repoRoot, options) {
     current_branch: currentBranch || null,
     head_sha: headSha || null,
     base_ref: baseRef,
+    ...(options.baseRef && options.baseRef !== baseRef ? { base_ref_requested: options.baseRef } : {}),
     head_ref: headRef,
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
@@ -619,7 +620,22 @@ async function collectGitState(repoRoot, options) {
 }
 
 async function resolveBaseRef(repoRoot, explicit) {
-  if (explicit) return explicit;
+  if (explicit) {
+    if (await gitRefExists(repoRoot, `refs/heads/${explicit}`) &&
+        await gitRefExists(repoRoot, `refs/remotes/origin/${explicit}`)) {
+      const localSha = await gitOptional(repoRoot, ['rev-parse', `refs/heads/${explicit}`]);
+      const originSha = await gitOptional(repoRoot, ['rev-parse', `refs/remotes/origin/${explicit}`]);
+      if (localSha !== originSha) {
+        try {
+          await execFileAsync('git', ['merge-base', '--is-ancestor', localSha, originSha], { cwd: repoRoot, encoding: 'utf8' });
+          return `origin/${explicit}`;
+        } catch {
+          // Keep the requested base when ancestry cannot be established.
+        }
+      }
+    }
+    return explicit;
+  }
   const symbolic = await gitOptional(repoRoot, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']);
   if (symbolic) return symbolic;
   if (await gitRefExists(repoRoot, 'origin/main')) return 'origin/main';
@@ -1405,6 +1421,7 @@ export function renderPrPrepareSummary(result) {
     '',
     `- story: ${preparation.story.story_id}`,
     `- base: ${preparation.git.base_ref}`,
+    ...(preparation.git.base_ref_requested ? [`- requested base: ${preparation.git.base_ref_requested} (stale local branch)`] : []),
     `- head: ${preparation.git.head_ref} (${preparation.git.head_sha ?? '-'})`,
     `- changed files: ${preparation.git.changed_files.length}`,
     `- spec: ${preparation.spec.status === 'accepted' ? 'present' : preparation.spec.status === 'draft' ? 'draft (not accepted)' : 'missing'}`,

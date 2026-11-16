@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { recordVerificationEvidence } from '../src/verification-evidence.js';
+import { recordVerificationEvidence, renderVerificationEvidenceSummary } from '../src/verification-evidence.js';
 
 async function makeWorkspaceRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-artifact-check-'));
@@ -35,6 +35,48 @@ async function evidenceFileExists(root, storyId) {
 function latestCommand(result) {
   return result.evidence.commands[0];
 }
+
+test('verify record warns when a different command replaces the same-kind record', async () => {
+  for (const [earlier, next] of [
+    ['npm run e2e:first', 'npm run e2e:second'],
+    [null, 'npm run e2e:second'],
+    ['npm run e2e:first', null]
+  ]) {
+    const repo = await makeWorkspaceRepo();
+    const options = { storyId: 'story-a', kind: 'e2e', status: 'fail' };
+    const executedAt = '2026-10-01T00:00:00.000Z';
+    await recordVerificationEvidence(repo, { ...options, command: earlier, executedAt });
+    const result = await recordVerificationEvidence(repo, { ...options, command: next });
+    const warning = latestCommand(result).warnings.find((item) => item.id === 'verification_same_kind_replaced');
+    assert.ok(warning);
+    assert.equal(warning.command_name, 'verify record');
+    assert.ok(warning.reason.includes(earlier === null ? 'a record without a command' : JSON.stringify(earlier)));
+    assert.ok(warning.reason.includes(executedAt));
+    assert.match(warning.reason, /keeps one record per kind/);
+    assert.match(warning.reason, /earlier result is no longer counted/);
+    assert.equal(result.evidence.commands.length, 1);
+    assert.equal(latestCommand(result).command, next);
+    assert.deepEqual(result.evidence.warnings, [warning]);
+    assert.ok(renderVerificationEvidenceSummary(result).includes(warning.reason));
+    const stored = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-a', 'verification-evidence.json'), 'utf8'));
+    assert.deepEqual(stored.warnings, [warning]);
+    assert.deepEqual(stored.commands[0].warnings, [warning]);
+  }
+});
+
+test('verify record does not warn when the same command is re-recorded', async () => {
+  for (const command of ['npm run e2e:first', null]) {
+    const repo = await makeWorkspaceRepo();
+    const options = { storyId: 'story-a', kind: 'e2e', status: 'fail', command };
+    await recordVerificationEvidence(repo, options);
+    const result = await recordVerificationEvidence(repo, options);
+    assert.equal(result.evidence.commands.length, 1);
+    assert.equal(latestCommand(result).command, command);
+    assert.deepEqual(latestCommand(result).warnings, []);
+    assert.deepEqual(result.evidence.warnings, []);
+    assert.doesNotMatch(renderVerificationEvidenceSummary(result), /verification_same_kind_replaced/);
+  }
+});
 
 test('pass申告とvitest成功artifactが一致する場合_artifact_checkがverifiedで記録される', async () => {
   const repo = await makeWorkspaceRepo();
