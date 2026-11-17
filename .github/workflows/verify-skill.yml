@@ -41,7 +41,7 @@ jobs:
               rm -rf .git && echo "removed leftover partial clone"
             fi
           fi
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Test the decision logic
