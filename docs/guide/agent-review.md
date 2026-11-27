@@ -33,3 +33,5 @@ A passing record requires an existing inspection input outside `.vibepro`. Revie
 Older stage, lifecycle, cost, and strict-head settings are ignored by the lightweight review. PR preparation presents the Story, Spec, verification, and review records as evidence for human review.
 
 After fixing a finding, inspect the final changed surface and record the review again.
+
+For ADR changes, use the [shared ADR convention proposal](https://github.com/Unson-LLC/brainbase-project/blob/main/docs/architecture/adr-authoring.md) ([pending version](https://github.com/Unson-LLC/brainbase-project/blob/docs/uns-294-adr-conventions/docs/architecture/adr-authoring.md) before adoption).

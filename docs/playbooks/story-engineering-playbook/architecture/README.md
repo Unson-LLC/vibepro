@@ -3,7 +3,7 @@
 このディレクトリは、プロジェクト全体で共通する技術設計を管理します。
 
 機能ごとの具体的な技術差分は、各feature配下の `04_technical_delta.md` に記載します。
-後から理由を知る必要がある設計判断は、`docs/adr/` に記録します。
+後から理由を知る必要がある設計判断は、`docs/architecture/` に記録します。
 
 ```text
 docs/features/[feature-name]/04_technical_delta.md
@@ -22,3 +22,5 @@ docs/features/[feature-name]/04_technical_delta.md
 | `07_non_functional_requirements.md` | パフォーマンス、可用性、運用などの非機能要件 |
 | `08_security_design.md` | 守るべき情報、セキュリティ要件、実装時の注意点 |
 | `09_directory_structure.md` | 推奨ディレクトリ構成と責務分離 |
+
+ADR の規約と雛形は[共通ADR規約案](https://github.com/Unson-LLC/brainbase-project/blob/main/docs/architecture/adr-authoring.md)を参照する。採用前は[提案中の版](https://github.com/Unson-LLC/brainbase-project/blob/docs/uns-294-adr-conventions/docs/architecture/adr-authoring.md)を参照する。

@@ -10,7 +10,7 @@
 - [非機能要件](../../architecture/07_non_functional_requirements.md)
 - [セキュリティ設計](../../architecture/08_security_design.md)
 - [ディレクトリ構成](../../architecture/09_directory_structure.md)
-- [ADR](../../adr/README.md)
+- [ADR一覧](../../architecture/README.md)
 
 ---
 
@@ -176,7 +176,7 @@ src/
 
 ## 13. ADRが必要な判断
 
-以下すべてに当てはまる判断がある場合は、`../../adr/` にADRを作成します。
+以下すべてに当てはまる判断がある場合は、`docs/architecture/` にADRを作成します。
 
 - 後から変更するコストが高い
 - 背景を知らない人が見たら意外に感じる

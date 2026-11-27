@@ -43,3 +43,5 @@ Do not use or require retired contracts such as:
 - raw `gh pr create` prohibition
 
 For bug fixes, record the original user problem and the affected outcome stages. Treat local implementation and test evidence as a `partial_fix`; keep downstream execution and canonical receiver readback unknown until they are directly verified. For repository-local decisions, the target repository's own `AGENTS.md` remains authoritative; this managed block only defines VibePro-specific behavior.
+
+ADR を扱う際は[共通ADR規約案](https://github.com/Unson-LLC/brainbase-project/blob/main/docs/architecture/adr-authoring.md)を参照する。採用前は[提案中の版](https://github.com/Unson-LLC/brainbase-project/blob/docs/uns-294-adr-conventions/docs/architecture/adr-authoring.md)を参照する。
