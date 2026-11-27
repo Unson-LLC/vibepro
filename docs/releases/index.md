@@ -853,3 +853,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:623:start -->
 - [PR #623](https://github.com/Unson-LLC/vibepro/pull/623) — [2026-11](/releases/2026-11): ci: 検証スキルと verify-skill の結果を付ける仕組みを入れる
 <!-- vibepro-release-index-pr:623:end -->
+
+<!-- vibepro-release-index-pr:625:start -->
+- [PR #625](https://github.com/Unson-LLC/vibepro/pull/625) — [2026-11](/releases/2026-11): chore(dependabot): remove .github/dependabot.yml to stop automated PRs (Item #251)
+<!-- vibepro-release-index-pr:625:end -->

@@ -4402,3 +4402,24 @@ Version-history projection now reads the documented SemVer token in the channel 
 なし
 
 <!-- vibepro-release-pr:623:end -->
+
+<!-- vibepro-release-pr:625:start -->
+## [#625](https://github.com/Unson-LLC/vibepro/pull/625) chore(dependabot): remove .github/dependabot.yml to stop automated PRs (Item #251)
+
+- Author: @sintariran
+- Merged: 2026-11-27T09:39:30Z
+- Commit: `e4c0ab89553722163cfbb56e170e0601e8bf34c8`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:625:end -->
