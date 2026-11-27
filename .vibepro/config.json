@@ -1566,6 +1566,18 @@
         "contract_type": null
       },
       {
+        "story_id": "oco-judgment-gate-and-vibepro-out-of-diff",
+        "title": "Require recorded judgment for large or risky PR preparation",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": null,
+        "period": null,
+        "started_at": null,
+        "due_at": null,
+        "contract_type": null
+      },
+      {
         "story_id": "story-vibepro-brainbase-producer-ci",
         "title": "Brainbase producer契約テストを別ディレクトリでも実行する",
         "ssot": "local",
